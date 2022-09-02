@@ -1,13 +1,14 @@
 import { trpc } from "@/utils/trpc"
 
 export default function IndexPage() {
-  const hello = trpc.hello.useQuery({ text: "client" })
-  if (!hello.data) {
+  const { data } = trpc.modules.useQuery({ buildSystemId: "skylark" })
+
+  if (!data) {
     return <div>Loading...</div>
   }
   return (
     <div>
-      <p>{hello.data.greeting}</p>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   )
 }
