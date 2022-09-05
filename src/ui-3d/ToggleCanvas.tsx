@@ -24,70 +24,54 @@ import Lighting from "./Lighting"
 import * as THREE from "three"
 import { useKey } from "react-use"
 import "mapbox-gl/dist/mapbox-gl.css"
+import global, { setMapboxMap } from "@/hooks/global"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
 extend(THREE)
 
-const mapboxStyleUrl = "mapbox://styles/mapbox/streets-v11"
+const mapboxStyleUrl =
+  "mapbox://styles/mysterybear/cl7oys94w001c15obt2vozspx/draft"
 
 type Props = PropsWithChildren<RenderProps<HTMLCanvasElement>>
-
 const ToggleCanvas = (props: Props) => {
   const { children, ...canvasProps } = props
 
   const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null)
 
-  const [map, setMap] = useState<mapboxgl.Map | undefined>()
   const [root, setRoot] = useState<
     ReconcilerRoot<HTMLCanvasElement> | undefined
   >()
 
-  const toggleAllLayers = useCallback(
-    (b: boolean) => {
-      console.log(`toggle all layers ${b}`)
-      if (!map) return
+  const toggleAllLayers = useCallback((b: boolean) => {
+    if (!global.mapboxMap) return
+    const style = global.mapboxMap.getStyle()
+    if (!style) return
 
-      const style = map.getStyle()
-      console.log(style)
-      if (!style) return
+    for (const layer of global.mapboxMap.getStyle().layers) {
+      global.mapboxMap.setLayoutProperty(
+        layer.id,
+        "visibility",
+        b ? "visible" : "none"
+      )
+    }
 
-      for (const layer of map.getStyle().layers) {
-        console.log("layer")
-        map.setLayoutProperty(layer.id, "visibility", b ? "visible" : "none")
-      }
-
-      map.triggerRepaint()
-      advance(Date.now(), true)
-    },
-    [map]
-  )
+    global.mapboxMap.triggerRepaint()
+    advance(Date.now(), true)
+  }, [])
 
   const mapboxEnabled = useRef(true)
 
-  useKey(
-    "m",
-    () => {
-      console.log("m")
-      mapboxEnabled.current = !mapboxEnabled.current
-
-      toggleAllLayers(mapboxEnabled.current)
-      // map?.setStyle(
-      //   mapboxEnabled.current
-      //     ? mapboxStyleUrl
-      //     : "mapbox://styles/mapbox/empty-v8"
-      // )
-      // toggleAllLayers(mapboxEnabled.current)
-    },
-    undefined,
-    [map]
-  )
+  useKey("m", () => {
+    mapboxEnabled.current = !mapboxEnabled.current
+    toggleAllLayers(mapboxEnabled.current)
+  })
 
   useEffect(() => {
     if (!mapElement) return
 
-    if (!map) {
-      setMap(
+    if (!global.mapboxMap) {
+      setMapboxMap(
         new mapboxgl.Map({
           container: mapElement, // container ID
           style: mapboxStyleUrl, // style URL
@@ -98,7 +82,7 @@ const ToggleCanvas = (props: Props) => {
         })
       )
     }
-    if (!map) return
+    if (!global.mapboxMap) return
 
     // const size = { width: window.innerWidth, height: window.innerHeight }
     const canvas = mapElement.querySelector("canvas")
@@ -189,7 +173,7 @@ const ToggleCanvas = (props: Props) => {
       },
       render: (ctx?: WebGLRenderingContext, matrix?: number[]): void => {
         advance(Date.now(), true)
-        map.triggerRepaint()
+        global.mapboxMap!.triggerRepaint()
       },
     }
 
@@ -236,18 +220,16 @@ const ToggleCanvas = (props: Props) => {
     //   },
     // }
 
-    map.on("style.load", (e) => {
+    global.mapboxMap.on("style.load", (e) => {
       // console.log("styledata", e)
-      // map.setFog({}) // Set the default atmosphere style
+      // global.mapboxMap!.setFog({}) // Set the default atmosphere style
       // map.addLayer(buildingsLayer)
-      console.log("adding custom layer")
-      map.addLayer(customLayer)
-      // const style = map.getStyle()
-      // console.log(style)
+      // console.log("adding custom layer")
+      global.mapboxMap!.addLayer(customLayer)
     })
 
     return () => root.unmount()
-  }, [canvasProps, children, map, mapElement, root, setMap, setRoot])
+  }, [canvasProps, children, mapElement, root, setRoot])
 
   return (
     <div className="absolute h-full w-full">

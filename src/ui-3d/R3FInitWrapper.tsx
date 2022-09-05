@@ -13,15 +13,8 @@ const SiteThreeInit = (props: Props) => {
   return (
     <FullScreenContainer>
       <ToggleCanvas camera={{ position: [10, 10, 10] }}>
-        <axesHelper />
-        <Lighting />
-        <RectangularGrid
-          x={{ cells: 61, size: 1 }}
-          z={{ cells: 61, size: 1 }}
-          color="#ababab"
-        />
+        {/* <OrbitControls /> */}
         {children}
-        <OrbitControls />
       </ToggleCanvas>
     </FullScreenContainer>
   )

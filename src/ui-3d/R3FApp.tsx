@@ -1,4 +1,14 @@
-import React from "react"
+import global from "@/hooks/global"
+import { useThree } from "@react-three/fiber"
+import React, { useEffect, useRef } from "react"
+import { Group } from "three"
+import { useSnapshot } from "valtio"
+import CameraSync from "@/threebox/camera/CameraSync"
+import Lighting from "./Lighting"
+import RectangularGrid from "./RectangularGrid"
+import { DEFAULT_ORIGIN } from "@/constants"
+import { pipe } from "fp-ts/lib/function"
+import utils from "@/threebox/utils/utils"
 
 // matrix inside
 type M<T> = T[][][]
@@ -16,14 +26,46 @@ type ModuleTetromino = {
 
 const R3FApp = () => {
   const tetrominoes: any[] = []
+  const worldRef = useRef<Group>(null)
+  const camera = useThree((t) => t.camera)
+
+  const { mapboxMap } = useSnapshot(global)
+
+  useEffect(() => {
+    if (!global.cameraSync && worldRef.current) {
+      global.cameraSync = new CameraSync(mapboxMap, camera, worldRef.current)
+    }
+  }, [camera, mapboxMap])
+
+  const [lat, lng] = DEFAULT_ORIGIN
+
+  const mapCenter = pipe(utils.projectToWorld([lng, lat]), (v3) => {
+    return v3
+  })
+
+  const perMeter = utils.projectedUnitsPerMeter(lat)
   return (
-    <group>
-      {tetrominoes.map(({ color, key }) => (
-        <mesh key={key}>
-          <boxBufferGeometry args={[]} />
-          <meshBasicMaterial color={color} />
-        </mesh>
-      ))}
+    <group ref={worldRef}>
+      <group
+        scale={perMeter}
+        // scale={0.5}
+        position={mapCenter}
+        rotation-x={Math.PI / 2}
+      >
+        <axesHelper />
+        <Lighting />
+        <RectangularGrid
+          x={{ cells: 61, size: 1 }}
+          z={{ cells: 61, size: 1 }}
+          color="#ababab"
+        />
+        {tetrominoes.map(({ color, key }) => (
+          <mesh key={key}>
+            <boxBufferGeometry args={[]} />
+            <meshBasicMaterial color={color} />
+          </mesh>
+        ))}
+      </group>
     </group>
   )
 }
