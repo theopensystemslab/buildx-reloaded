@@ -1,14 +1,17 @@
-import { trpc } from "@/utils/trpc"
+import R3FApp from "@/ui-3d/R3FApp"
+import dynamic from "next/dynamic"
+import React from "react"
 
-export default function IndexPage() {
-  const { data } = trpc.modules.useQuery({ buildSystemId: "skylark" })
+const R3FInitWrapper = dynamic(() => import("@/ui-3d/R3FInitWrapper"), {
+  ssr: false,
+})
 
-  if (!data) {
-    return <div>Loading...</div>
-  }
+const Tetris = () => {
   return (
-    <div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
+    <R3FInitWrapper>
+      <R3FApp />
+    </R3FInitWrapper>
   )
 }
+
+export default Tetris

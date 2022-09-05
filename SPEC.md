@@ -96,3 +96,4 @@ type BlockPos = {
 - Ah, it might actually be `{ z: [min,max], y: [min,max], x: [min,max]}`
 - Perhaps x, y and z are arbitrary and can be rotate-shifted (so x is y, y is z,
   z is x)?
+- It's all about https://threejs.org/docs/#api/en/math/Box3

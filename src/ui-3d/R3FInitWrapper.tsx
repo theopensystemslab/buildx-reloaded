@@ -1,10 +1,9 @@
 import FullScreenContainer from "@/ui/FullScreenContainer"
 import { OrbitControls } from "@react-three/drei"
-import { Canvas } from "@react-three/fiber"
 import { PropsWithChildren } from "react"
-import { Vector3 } from "three"
 import Lighting from "../ui-3d/Lighting"
 import RectangularGrid from "../ui-3d/RectangularGrid"
+import ToggleCanvas from "./ToggleCanvas"
 
 type Props = PropsWithChildren<{}>
 
@@ -13,7 +12,7 @@ const SiteThreeInit = (props: Props) => {
 
   return (
     <FullScreenContainer>
-      <Canvas camera={{ position: [10, 10, 10] }}>
+      <ToggleCanvas camera={{ position: [10, 10, 10] }}>
         <axesHelper />
         <Lighting />
         <RectangularGrid
@@ -23,7 +22,7 @@ const SiteThreeInit = (props: Props) => {
         />
         {children}
         <OrbitControls />
-      </Canvas>
+      </ToggleCanvas>
     </FullScreenContainer>
   )
 }
