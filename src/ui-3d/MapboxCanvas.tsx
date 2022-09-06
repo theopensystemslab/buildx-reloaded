@@ -34,7 +34,8 @@ const mapboxStyleUrl =
   "mapbox://styles/mysterybear/cl7oys94w001c15obt2vozspx/draft"
 
 type Props = PropsWithChildren<RenderProps<HTMLCanvasElement>>
-const ToggleCanvas = (props: Props) => {
+
+const MapboxCanvas = (props: Props) => {
   const { children, ...canvasProps } = props
 
   const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null)
@@ -55,9 +56,6 @@ const ToggleCanvas = (props: Props) => {
         b ? "visible" : "none"
       )
     }
-
-    global.mapboxMap.triggerRepaint()
-    advance(Date.now(), true)
   }, [])
 
   const mapboxEnabled = useRef(true)
@@ -76,15 +74,16 @@ const ToggleCanvas = (props: Props) => {
           container: mapElement, // container ID
           style: mapboxStyleUrl, // style URL
           center: reverseV2(DEFAULT_ORIGIN), // starting position [lng, lat]
-          zoom: 18, // starting zoom
+          zoom: 20, // starting zoom
           antialias: true,
           interactive: true,
+          pitch: 45, // pitch in degrees
+          bearing: -45, // bearing in degrees
         })
       )
     }
     if (!global.mapboxMap) return
 
-    // const size = { width: window.innerWidth, height: window.innerHeight }
     const canvas = mapElement.querySelector("canvas")
 
     if (!canvas) return
@@ -173,58 +172,10 @@ const ToggleCanvas = (props: Props) => {
       },
       render: (ctx?: WebGLRenderingContext, matrix?: number[]): void => {
         advance(Date.now(), true)
-        global.mapboxMap!.triggerRepaint()
       },
     }
 
-    const minZoom = 12
-
-    // const buildingsLayer: AnyLayer = {
-    //   id: "3d-buildings",
-    //   source: "composite",
-    //   "source-layer": "building",
-    //   filter: ["==", "extrude", "true"],
-    //   type: "fill-extrusion",
-    //   minzoom: minZoom,
-    //   paint: {
-    //     "fill-extrusion-color": [
-    //       "case",
-    //       ["boolean", ["feature-state", "select"], false],
-    //       "lightgreen",
-    //       ["boolean", ["feature-state", "hover"], false],
-    //       "lightblue",
-    //       "#aaa",
-    //     ],
-
-    //     // use an 'interpolate' expression to add a smooth transition effect to the
-    //     // buildings as the user zooms in
-    //     "fill-extrusion-height": [
-    //       "interpolate",
-    //       ["linear"],
-    //       ["zoom"],
-    //       minZoom,
-    //       0,
-    //       minZoom + 0.05,
-    //       ["get", "height"],
-    //     ],
-    //     "fill-extrusion-base": [
-    //       "interpolate",
-    //       ["linear"],
-    //       ["zoom"],
-    //       minZoom,
-    //       0,
-    //       minZoom + 0.05,
-    //       ["get", "min_height"],
-    //     ],
-    //     "fill-extrusion-opacity": 0.9,
-    //   },
-    // }
-
     global.mapboxMap.on("style.load", (e) => {
-      // console.log("styledata", e)
-      // global.mapboxMap!.setFog({}) // Set the default atmosphere style
-      // map.addLayer(buildingsLayer)
-      // console.log("adding custom layer")
       global.mapboxMap!.addLayer(customLayer)
     })
 
@@ -238,4 +189,4 @@ const ToggleCanvas = (props: Props) => {
   )
 }
 
-export default ToggleCanvas
+export default MapboxCanvas

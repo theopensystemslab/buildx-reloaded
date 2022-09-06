@@ -2,16 +2,16 @@ import R3FApp from "@/ui-3d/R3FApp"
 import dynamic from "next/dynamic"
 import React from "react"
 
-const R3FInitWrapper = dynamic(() => import("@/ui-3d/R3FInitWrapper"), {
+const R3FInit = dynamic(() => import("@/ui-3d/R3FInit"), {
   ssr: false,
 })
 
-const Tetris = () => {
+const IndexPage = () => {
   return (
-    <R3FInitWrapper>
+    <R3FInit>
       <R3FApp />
-    </R3FInitWrapper>
+    </R3FInit>
   )
 }
 
-export default Tetris
+export default IndexPage
