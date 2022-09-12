@@ -24,7 +24,8 @@ import Lighting from "./Lighting"
 import * as THREE from "three"
 import { useKey } from "react-use"
 import "mapbox-gl/dist/mapbox-gl.css"
-import global, { setMapboxMap } from "@/hooks/global"
+import globals, { setMapboxMap } from "@/hooks/globals"
+import HtmlUi from "../ui/HtmlUi"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
@@ -45,12 +46,12 @@ const MapboxCanvas = (props: Props) => {
   >()
 
   const toggleAllLayers = useCallback((b: boolean) => {
-    if (!global.mapboxMap) return
-    const style = global.mapboxMap.getStyle()
+    if (!globals.mapboxMap) return
+    const style = globals.mapboxMap.getStyle()
     if (!style) return
 
-    for (const layer of global.mapboxMap.getStyle().layers) {
-      global.mapboxMap.setLayoutProperty(
+    for (const layer of globals.mapboxMap.getStyle().layers) {
+      globals.mapboxMap.setLayoutProperty(
         layer.id,
         "visibility",
         b ? "visible" : "none"
@@ -68,7 +69,7 @@ const MapboxCanvas = (props: Props) => {
   useEffect(() => {
     if (!mapElement) return
 
-    if (!global.mapboxMap) {
+    if (!globals.mapboxMap) {
       setMapboxMap(
         new mapboxgl.Map({
           container: mapElement, // container ID
@@ -82,7 +83,7 @@ const MapboxCanvas = (props: Props) => {
         })
       )
     }
-    if (!global.mapboxMap) return
+    if (!globals.mapboxMap) return
 
     const canvas = mapElement.querySelector("canvas")
 
@@ -175,8 +176,8 @@ const MapboxCanvas = (props: Props) => {
       },
     }
 
-    global.mapboxMap.on("style.load", (e) => {
-      global.mapboxMap!.addLayer(customLayer)
+    globals.mapboxMap.on("style.load", (e) => {
+      globals.mapboxMap!.addLayer(customLayer)
     })
 
     return () => root.unmount()
@@ -185,6 +186,7 @@ const MapboxCanvas = (props: Props) => {
   return (
     <div className="absolute h-full w-full">
       <div ref={setMapElement} className="h-full w-full" />
+      <HtmlUi />
     </div>
   )
 }

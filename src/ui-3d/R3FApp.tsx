@@ -1,4 +1,4 @@
-import global from "@/hooks/global"
+import globals from "@/hooks/globals"
 import { useThree } from "@react-three/fiber"
 import React, { useEffect, useRef } from "react"
 import { Group } from "three"
@@ -29,11 +29,11 @@ const R3FApp = () => {
   const worldRef = useRef<Group>(null)
   const camera = useThree((t) => t.camera)
 
-  const { mapboxMap } = useSnapshot(global)
+  const { mapboxMap } = useSnapshot(globals)
 
   useEffect(() => {
-    if (!global.cameraSync && worldRef.current) {
-      global.cameraSync = new CameraSync(mapboxMap, camera, worldRef.current)
+    if (!globals.cameraSync && worldRef.current) {
+      globals.cameraSync = new CameraSync(mapboxMap, camera, worldRef.current)
     }
   }, [camera, mapboxMap])
 

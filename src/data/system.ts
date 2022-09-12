@@ -19,3 +19,7 @@ export const systems: Array<System> = z
 
 export const systemFromId = (id: string) =>
   systems.find((x) => x.id === id) ?? null
+
+export const systemIdParser = z.object({
+  systemId: z.string().min(1),
+})

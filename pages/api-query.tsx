@@ -1,14 +1,17 @@
-import { trpc } from "@/utils/trpc"
+import { useAllHouseTypes } from "../src/data/houseType"
+import { useSystemModules } from "../src/hooks/modules"
 
 export default function IndexPage() {
-  const { data } = trpc.modules.useQuery({ buildSystemId: "skylark" })
+  // const { data: allHouseTypes } = useAllHouseTypes()
+  const { data: skylarkModules } = useSystemModules({ systemId: "skylark" })
 
-  if (!data) {
+  if (!skylarkModules) {
     return <div>Loading...</div>
   }
+
   return (
     <div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <pre>{JSON.stringify(skylarkModules, null, 2)}</pre>
     </div>
   )
 }
