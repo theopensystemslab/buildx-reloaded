@@ -1,15 +1,15 @@
-import { useAllHouseTypes, useSystemHouseTypes } from "@/data/houseType"
+import { useAllHouseTypes } from "@/data/houseType"
 import { System, systems } from "@/data/system"
 import { useCameraGroundRaycast } from "@/hooks/camera"
 // import { useGetCameraGroundPlaneIntersect } from "@/stores/camera"
 // import houses from "@/stores/houses"
 import Sidebar from "@/ui/Sidebar"
-import { useQueryClient } from "@tanstack/react-query"
 import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
+import houses from "../hooks/houses"
 import HouseThumbnail from "./HouseThumbnail"
 // import HouseThumbnail from "./HouseThumbnail"
 
@@ -75,20 +75,20 @@ const SiteSidebar = ({ open, close }: Props) => {
                       houseType={houseType}
                       onAdd={() => {
                         const id = nanoid()
-
                         const position = cameraGroundRaycast() ?? [0, 0]
 
-                        // houses[id] = {
-                        //   id,
-                        //   houseTypeId: houseType.id,
-                        //   systemId: houseType.systemId,
-                        //   position,
-                        //   rotation: 0,
-                        //   dna: houseType.dna as string[],
-                        //   modifiedMaterials: {},
-                        //   modifiedMaterialsPreview: {},
-                        //   friendlyName: `Building ${keys(houses).length + 1}`,
-                        // }
+                        houses[id] = {
+                          id,
+                          houseTypeId: houseType.id,
+                          systemId: houseType.systemId,
+                          position,
+                          rotation: 0,
+                          dna: houseType.dna as string[],
+                          modifiedMaterials: {},
+                          modifiedMaterialsPreview: {},
+                          friendlyName: `Building ${keys(houses).length + 1}`,
+                        }
+
                         close()
                       }}
                     />

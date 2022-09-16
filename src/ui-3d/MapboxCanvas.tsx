@@ -32,7 +32,8 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 extend(THREE)
 
 const mapboxStyleUrl =
-  "mapbox://styles/mysterybear/cl7oys94w001c15obt2vozspx/draft"
+  // "mapbox://styles/mysterybear/cl7oys94w001c15obt2vozspx/draft"
+  "mapbox://styles/mysterybear/cl837pv57007914n5k67jft02/draft"
 
 type Props = PropsWithChildren<RenderProps<HTMLCanvasElement>>
 

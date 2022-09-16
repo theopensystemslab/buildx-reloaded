@@ -2,10 +2,13 @@ import { PositionedRow } from "@/hooks/layouts"
 import { Plane } from "three"
 import * as RA from "fp-ts/ReadonlyArray"
 import { pipe } from "fp-ts/lib/function"
-import IfcModule from "./IfcModule"
+import dynamic from "next/dynamic"
+import { Suspense } from "react"
+
+const IfcModule = dynamic(() => import("./IfcModule"), { ssr: false })
 
 type Props = {
-  buildingId: string
+  houseId: string
   columnZ: number
   columnIndex: number
   mirror?: boolean
@@ -15,7 +18,7 @@ type Props = {
 
 const IfcColumn = (props: Props) => {
   const {
-    buildingId,
+    houseId,
     columnIndex,
     columnZ,
     gridGroups,
@@ -23,30 +26,32 @@ const IfcColumn = (props: Props) => {
     verticalCutPlanes,
   } = props
   const levels = pipe(
-    gridGroups.slice(1, 2),
+    gridGroups,
     RA.map(({ levelIndex, modules, y }) =>
       pipe(
         modules,
         RA.mapWithIndex((groupIndex, { module, z }) => {
+          const key = `${columnIndex}-${levelIndex}-${groupIndex}`
           return (
-            <IfcModule
-              key={`${columnIndex}-${levelIndex}-${groupIndex}`}
-              module={module}
-              columnIndex={columnIndex}
-              levelIndex={levelIndex}
-              levelY={y}
-              groupIndex={groupIndex}
-              buildingId={buildingId}
-              position={[
-                0,
-                y,
-                mirror
-                  ? z + module.length / 2
-                  : z - module.length + module.length / 2,
-              ]}
-              scale={[1, 1, mirror ? 1 : -1]}
-              verticalCutPlanes={verticalCutPlanes}
-            />
+            <Suspense key={key} fallback={null}>
+              <IfcModule
+                module={module}
+                columnIndex={columnIndex}
+                levelIndex={levelIndex}
+                levelY={y}
+                groupIndex={groupIndex}
+                houseId={houseId}
+                position={[
+                  0,
+                  y,
+                  mirror
+                    ? z + module.length / 2
+                    : z - module.length + module.length / 2,
+                ]}
+                scale={[1, 1, mirror ? 1 : -1]}
+                verticalCutPlanes={verticalCutPlanes}
+              />
+            </Suspense>
           )
         })
       )

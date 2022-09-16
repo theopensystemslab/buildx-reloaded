@@ -1,23 +1,39 @@
-import { pipe } from "fp-ts/lib/function"
-import { Module } from "../data/module"
-import { trpc } from "../utils/trpc"
-import * as RA from "fp-ts/ReadonlyArray"
-import * as Ord from "fp-ts/Ord"
-import * as S from "fp-ts/string"
-import * as O from "fp-ts/Option"
 import * as A from "fp-ts/Array"
-import { all } from "../utils/functions"
+import { pipe } from "fp-ts/lib/function"
 import { toNullable } from "fp-ts/lib/Option"
+import * as Ord from "fp-ts/Ord"
+import * as RA from "fp-ts/ReadonlyArray"
+import * as S from "fp-ts/string"
+import { proxy, useSnapshot } from "valtio"
+import { Module } from "../data/module"
+import { all } from "../utils/functions"
+import { trpc } from "../utils/trpc"
 
-export const useSystemModules = ({ systemId }: { systemId: string }) =>
-  trpc.systemModules.useQuery({
-    systemId: systemId,
-  })
+const systemModules = proxy<Record<string, Module[]>>({})
+
+export const useSystemModules = ({ systemId }: { systemId: string }) => {
+  const snap = useSnapshot(systemModules)
+  return snap?.[systemId] ?? []
+}
+
+export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
+  trpc.systemModules.useQuery(
+    {
+      systemId: systemId,
+    },
+    {
+      onSuccess: (data) => {
+        systemModules[systemId] = data
+      },
+    }
+  )
+  return useSystemModules({ systemId })
+}
 
 export const useGetVanillaModule = (systemId: string) => {
-  const { data: allModules } = useSystemModules({ systemId })
+  const systemModules = useSystemModules({ systemId })
 
-  if (!allModules) throw new Error("No modules")
+  if (!systemModules) throw new Error("No modules")
 
   return (
     module: Module,
@@ -28,11 +44,6 @@ export const useGetVanillaModule = (systemId: string) => {
     } = {}
   ) => {
     const { positionType, levelType, constrainGridType = true } = opts
-
-    const systemModules = pipe(
-      allModules,
-      RA.filter((m) => m.systemId === module.systemId)
-    )
 
     const vanillaModule = pipe(
       systemModules,
@@ -98,3 +109,5 @@ export const usePadColumn = (systemId: string) => {
     )
   }
 }
+
+export default systemModules

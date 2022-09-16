@@ -1,9 +1,9 @@
-import { useAllHouseTypes } from "../src/data/houseType"
-import { useSystemModules } from "../src/hooks/modules"
+import { useInitSystemModules, useSystemModules } from "../src/hooks/modules"
 
 export default function IndexPage() {
   // const { data: allHouseTypes } = useAllHouseTypes()
-  const { data: skylarkModules } = useSystemModules({ systemId: "skylark" })
+  useInitSystemModules({ systemId: "skylark" })
+  const skylarkModules = useSystemModules({ systemId: "skylark" })
 
   if (!skylarkModules) {
     return <div>Loading...</div>

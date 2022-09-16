@@ -1,31 +1,19 @@
+import { DEFAULT_ORIGIN } from "@/constants"
 import globals from "@/hooks/globals"
+import CameraSync from "@/threebox/camera/CameraSync"
+import utils from "@/threebox/utils/utils"
 import { useThree } from "@react-three/fiber"
-import React, { useEffect, useRef } from "react"
+import { pipe } from "fp-ts/lib/function"
+import { useEffect, useRef } from "react"
 import { Group } from "three"
 import { useSnapshot } from "valtio"
-import CameraSync from "@/threebox/camera/CameraSync"
+import { useHouses } from "../hooks/houses"
+import { RA, RR } from "../utils/functions"
+import IfcHouse from "./IfcHouse"
 import Lighting from "./Lighting"
 import RectangularGrid from "./RectangularGrid"
-import { DEFAULT_ORIGIN } from "@/constants"
-import { pipe } from "fp-ts/lib/function"
-import utils from "@/threebox/utils/utils"
-
-// matrix inside
-type M<T> = T[][][]
-
-type Module = {
-  length: number
-  height: number
-  width: number
-}
-
-// container
-type ModuleTetromino = {
-  m: M<Module>
-}
 
 const R3FApp = () => {
-  const tetrominoes: any[] = []
   const worldRef = useRef<Group>(null)
   const camera = useThree((t) => t.camera)
 
@@ -44,14 +32,18 @@ const R3FApp = () => {
   })
 
   const perMeter = utils.projectedUnitsPerMeter(lat)
+
+  const houses = useHouses()
+
+  const children = pipe(
+    houses,
+    RR.keys,
+    RA.map((id) => <IfcHouse key={id} id={id} />)
+  )
+
   return (
     <group ref={worldRef}>
-      <group
-        scale={perMeter}
-        // scale={0.5}
-        position={mapCenter}
-        rotation-x={Math.PI / 2}
-      >
+      <group scale={perMeter} position={mapCenter} rotation-x={Math.PI / 2}>
         <axesHelper />
         <Lighting />
         <RectangularGrid
@@ -59,12 +51,7 @@ const R3FApp = () => {
           z={{ cells: 61, size: 1 }}
           color="#ababab"
         />
-        {tetrominoes.map(({ color, key }) => (
-          <mesh key={key}>
-            <boxBufferGeometry args={[]} />
-            <meshBasicMaterial color={color} />
-          </mesh>
-        ))}
+        {children}
       </group>
     </group>
   )

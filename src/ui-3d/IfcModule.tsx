@@ -1,7 +1,7 @@
 import { Module } from "@/data/module"
 import { useBVH } from "@react-three/drei"
-import { GroupProps, useLoader } from "@react-three/fiber"
-import { useMemo, useRef } from "react"
+import { GroupProps, useLoader, useThree } from "@react-three/fiber"
+import { useEffect, useMemo, useRef } from "react"
 import { Group, Mesh, MeshLambertMaterial, Plane } from "three"
 import { IFCLoader } from "web-ifc-three"
 
@@ -10,14 +10,14 @@ type Props = GroupProps & {
   columnIndex: number
   levelIndex: number
   groupIndex: number
-  buildingId: string
+  houseId: string
   levelY: number
   verticalCutPlanes: Plane[]
 }
 
 const IfcModule = (props: Props) => {
   const {
-    buildingId,
+    houseId,
     columnIndex,
     levelIndex,
     groupIndex,
@@ -30,7 +30,15 @@ const IfcModule = (props: Props) => {
   const groupRef = useRef<Group>(null)
   const meshRef = useRef<Mesh>(null)
 
-  console.log(module.dna)
+  console.log(`loading ${module.ifcUrl}`)
+
+  // const scene = useThree((t) => t.scene)
+
+  // useEffect(() => {
+  //   const ifcLoader = new IFCLoader()
+  //   ifcLoader.ifcManager.setWasmPath("../../../wasm/")
+  //   ifcLoader.load(module.ifcUrl, (ifcModel) => scene.add(ifcModel))
+  // }, [])
 
   const { geometry, material, ifcManager, modelID } = useLoader(
     IFCLoader,

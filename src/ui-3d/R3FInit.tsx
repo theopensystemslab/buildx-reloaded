@@ -1,8 +1,5 @@
 import FullScreenContainer from "@/ui/FullScreenContainer"
-import { OrbitControls } from "@react-three/drei"
 import { PropsWithChildren } from "react"
-import Lighting from "./Lighting"
-import RectangularGrid from "./RectangularGrid"
 import MapboxCanvas from "./MapboxCanvas"
 
 type Props = PropsWithChildren<{}>

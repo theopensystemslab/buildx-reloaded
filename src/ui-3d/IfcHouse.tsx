@@ -5,16 +5,18 @@ type Props = {
   id: string
 }
 
-const IfcBuilding = (props: Props) => {
+const IfcHouse = (props: Props) => {
   const { id } = props
   const columns = useColumnLayout(id)
 
+  console.log(id)
+
   return (
     <group>
-      {columns.slice(1, 2).map(({ columnIndex, z, gridGroups, length }) => (
+      {columns.map(({ columnIndex, z, gridGroups, length }) => (
         <IfcColumn
           key={columnIndex}
-          buildingId={id}
+          houseId={id}
           columnIndex={columnIndex}
           columnZ={z}
           gridGroups={gridGroups}
@@ -26,4 +28,4 @@ const IfcBuilding = (props: Props) => {
   )
 }
 
-export default IfcBuilding
+export default IfcHouse

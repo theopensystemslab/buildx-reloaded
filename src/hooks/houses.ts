@@ -1,11 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
+import { none, some } from "fp-ts/lib/Option"
+import * as RA from "fp-ts/ReadonlyArray"
+import produce from "immer"
 import { proxy, useSnapshot } from "valtio"
 import { getHousesFromLocalStorage, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module } from "../data/module"
-import * as RA from "fp-ts/ReadonlyArray"
-import { none, some } from "fp-ts/lib/Option"
-import produce from "immer"
 import { useSystemModules } from "./modules"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
@@ -28,8 +28,7 @@ export const useHouseType = (houseId: string) => {
 
 export const useHouseModules = (houseId: string) => {
   const { systemId } = useHouse(houseId)
-  const { data } = useSystemModules({ systemId })
-  const systemModules = data ?? []
+  const systemModules = useSystemModules({ systemId })
 
   const house = useSnapshot(houses)[houseId]
 
