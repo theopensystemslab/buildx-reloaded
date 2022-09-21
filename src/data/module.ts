@@ -64,6 +64,11 @@ export const moduleParser = z
           url: z.string().min(1),
         })
       ),
+      GLB_model: z.array(
+        z.object({
+          url: z.string().min(1),
+        })
+      ),
       section_width: z.array(z.number()),
       level_height: z.array(z.number()),
       length_dims: z.number(),
@@ -84,6 +89,7 @@ export const moduleParser = z
       fields: {
         module_code,
         IFC_model,
+        GLB_model,
         section_width: [width],
         level_height: [height],
         length_dims: length,
@@ -99,6 +105,7 @@ export const moduleParser = z
       id,
       dna: module_code,
       ifcUrl: IFC_model[0].url,
+      modelUrl: GLB_model[0].url,
       structuredDna: parseDna(module_code),
       length,
       height,
@@ -121,6 +128,7 @@ export type Module = {
   dna: string
   structuredDna: StructuredDna
   ifcUrl: string
+  modelUrl: string
   width: number
   height: number
   length: number

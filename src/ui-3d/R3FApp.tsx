@@ -51,6 +51,7 @@ const R3FApp = () => {
           z={{ cells: 61, size: 1 }}
           color="#ababab"
         />
+
         {children}
       </group>
     </group>

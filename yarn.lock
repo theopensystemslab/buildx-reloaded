@@ -525,12 +525,24 @@
   resolved "https://registry.yarnpkg.com/@use-gesture/core/-/core-10.2.19.tgz#cbb249ef714a554564518fcac2c9ed3eb15ba89e"
   integrity sha512-fsvuWmEfDDVgCEChLZuJFO8ZgBQLsEsL40ncv+HWYbkF90SwrLo2lkCu+O9TZa9ipqWC2KBXl27pRODY5ogr4w==
 
+"@use-gesture/core@10.2.20":
+  version "10.2.20"
+  resolved "https://registry.yarnpkg.com/@use-gesture/core/-/core-10.2.20.tgz#b29e0aadd5e90336e599d849e50eef0e06aa28bf"
+  integrity sha512-4lFhHc8so4yIHkBEs641DnEsBxPyhJ5GEjB4PURFDH4p/FcZriH6w99knZgI63zN/MBFfylMyb8+PDuj6RIXKQ==
+
 "@use-gesture/react@^10.2.0":
   version "10.2.19"
   resolved "https://registry.yarnpkg.com/@use-gesture/react/-/react-10.2.19.tgz#3e5d4757aaad9efe0e40ef17a952e9d5e10e97aa"
   integrity sha512-pzRBEHehKKaM0T1bRlvLACfUlFetfaTrNH3mduJlRTsWvgKV+SNhoGxZzIavqyZW1kcIacYeXPr3XfvutpoN2w==
   dependencies:
     "@use-gesture/core" "10.2.19"
+
+"@use-gesture/react@^10.2.20":
+  version "10.2.20"
+  resolved "https://registry.yarnpkg.com/@use-gesture/react/-/react-10.2.20.tgz#2d556a62c22200507b9d478ce7159057004acb8d"
+  integrity sha512-KnJq9ZSqprWA6uNhWTUHZqTCh+rfa0j8ehTzqeBhktUPrmTj7yVOBvEQ/vSFU/7d72cGgWSsJ0f5T6GQCHXnvg==
+  dependencies:
+    "@use-gesture/core" "10.2.20"
 
 "@webgpu/glslang@^0.0.15":
   version "0.0.15"

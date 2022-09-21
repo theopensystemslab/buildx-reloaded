@@ -1,7 +1,7 @@
 import { Module } from "@/data/module"
 import { useBVH } from "@react-three/drei"
-import { GroupProps, useLoader, useThree } from "@react-three/fiber"
-import { useEffect, useMemo, useRef } from "react"
+import { GroupProps, useLoader } from "@react-three/fiber"
+import { useMemo, useRef } from "react"
 import { Group, Mesh, MeshLambertMaterial, Plane } from "three"
 import { IFCLoader } from "web-ifc-three"
 
@@ -29,8 +29,6 @@ const IfcModule = (props: Props) => {
 
   const groupRef = useRef<Group>(null)
   const meshRef = useRef<Mesh>(null)
-
-  console.log(`loading ${module.ifcUrl}`)
 
   // const scene = useThree((t) => t.scene)
 
@@ -82,13 +80,13 @@ const IfcModule = (props: Props) => {
         onClick={({ faceIndex }) => {
           const group = groupRef.current
           if (!ifcManager || !faceIndex || !group) {
-            console.log({ ifcManager, faceIndex, group })
+            // console.log({ ifcManager, faceIndex, group })
             return
           }
           const expressID = ifcManager.getExpressId(geometry, faceIndex)
           const ifcType = ifcManager.getIfcType(modelID, expressID)
 
-          console.log(ifcType)
+          // console.log(ifcType)
 
           // ifcManager.createSubset({
           //   ids: [expressID],

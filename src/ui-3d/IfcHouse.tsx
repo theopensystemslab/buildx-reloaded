@@ -1,4 +1,5 @@
 import { useColumnLayout } from "@/hooks/layouts"
+import { useGesture } from "@use-gesture/react"
 import IfcColumn from "./IfcColumn"
 
 type Props = {
@@ -9,10 +10,16 @@ const IfcHouse = (props: Props) => {
   const { id } = props
   const columns = useColumnLayout(id)
 
-  console.log(id)
+  const bind = useGesture({
+    onDrag: ({ first, last }) => {
+      if (first) console.log("first")
+      console.log("dragging")
+      if (last) console.log("last")
+    },
+  })
 
   return (
-    <group>
+    <group {...(bind() as any)}>
       {columns.map(({ columnIndex, z, gridGroups, length }) => (
         <IfcColumn
           key={columnIndex}

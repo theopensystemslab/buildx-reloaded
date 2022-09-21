@@ -17,6 +17,7 @@
     "@trpc/next": "^10.0.0-proxy-alpha.63",
     "@trpc/react": "^10.0.0-proxy-alpha.63",
     "@trpc/server": "^10.0.0-proxy-alpha.63",
+    "@use-gesture/react": "^10.2.20",
     "airtable": "^0.11.4",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
