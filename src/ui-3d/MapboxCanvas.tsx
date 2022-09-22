@@ -26,6 +26,7 @@ import { useKey } from "react-use"
 import "mapbox-gl/dist/mapbox-gl.css"
 import globals, { setMapboxMap } from "@/hooks/globals"
 import HtmlUi from "../ui/HtmlUi"
+import EventDiv from "../ui/EventDiv"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
@@ -185,10 +186,10 @@ const MapboxCanvas = (props: Props) => {
   }, [canvasProps, children, mapElement, root, setRoot])
 
   return (
-    <div className="absolute h-full w-full">
+    <EventDiv>
       <div ref={setMapElement} className="h-full w-full" />
       <HtmlUi />
-    </div>
+    </EventDiv>
   )
 }
 

@@ -73,7 +73,7 @@ const IfcModule = (props: Props) => {
   )
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} {...groupProps}>
       <mesh
         ref={meshRef}
         {...{ geometry, material }}

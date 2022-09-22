@@ -32,6 +32,11 @@ const IfcColumn = (props: Props) => {
         modules,
         RA.mapWithIndex((groupIndex, { module, z }) => {
           const key = `${columnIndex}-${levelIndex}-${groupIndex}`
+          const position: V3 = [
+            0,
+            y,
+            mirror ? z + module.length / 2 : z - module.length / 2,
+          ]
           return (
             <Suspense key={key} fallback={null}>
               <IfcModule
@@ -41,13 +46,7 @@ const IfcColumn = (props: Props) => {
                 levelY={y}
                 groupIndex={groupIndex}
                 houseId={houseId}
-                position={[
-                  0,
-                  y,
-                  mirror
-                    ? z + module.length / 2
-                    : z - module.length + module.length / 2,
-                ]}
+                position={position}
                 scale={[1, 1, mirror ? 1 : -1]}
                 verticalCutPlanes={verticalCutPlanes}
               />

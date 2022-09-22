@@ -9,9 +9,7 @@ const R3FInit = (props: Props) => {
 
   return (
     <FullScreenContainer>
-      <MapboxCanvas camera={{ position: [10, 10, 10] }}>
-        {children}
-      </MapboxCanvas>
+      <MapboxCanvas>{children}</MapboxCanvas>
     </FullScreenContainer>
   )
 }

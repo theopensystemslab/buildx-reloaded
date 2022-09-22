@@ -265,7 +265,8 @@ export const useColumnLayout = (buildingId: string) => {
                   ? -height
                   : levelLetter === "G"
                   ? 0
-                  : positionedRows[levelIndex - 1].y + height
+                  : positionedRows[levelIndex - 1].y +
+                    positionedRows[levelIndex - 1].modules[0].module.height
 
               return [
                 ...positionedRows,
