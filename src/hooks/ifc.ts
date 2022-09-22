@@ -1,12 +1,14 @@
 import { proxy } from "valtio"
 import { IFCModel } from "web-ifc-three/IFC/components/IFCModel"
 
+type Models = Record<string, IFCModel>
+
 export type IFCStore = {
-  models: IFCModel[]
+  models: Models
 }
 
 export const ifcStore = proxy<IFCStore>({
-  models: [],
+  models: {},
 })
 
 export default ifcStore

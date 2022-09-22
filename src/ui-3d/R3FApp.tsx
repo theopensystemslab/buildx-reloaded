@@ -4,14 +4,17 @@ import CameraSync from "@/threebox/camera/CameraSync"
 import utils from "@/threebox/utils/utils"
 import { advance, useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useKey } from "react-use"
-import { Group } from "three"
+import { Group, Raycaster } from "three"
 import { useHouses } from "../hooks/houses"
 import { RA, RR } from "../utils/functions"
 import IfcHouse from "./IfcHouse"
 import Lighting from "./Lighting"
 import RectangularGrid from "./RectangularGrid"
+import { subscribeKey } from "valtio/utils"
+import ifcStore from "../hooks/ifc"
+import { ref } from "valtio"
 
 const R3FApp = () => {
   const worldRef = useRef<Group>(null)
@@ -41,9 +44,29 @@ const R3FApp = () => {
     RA.map((id) => <IfcHouse key={id} id={id} />)
   )
 
+  const raycaster = useMemo(() => new Raycaster(), [])
+
+  useEffect(() => {
+    return subscribeKey(globals, "pointerXY", () => {
+      // console.log(ifcStore.models)
+      const [x, y] = globals.pointerXY
+      raycaster.setFromCamera({ x, y }, camera)
+      const ifcModels = Object.values(ifcStore.models)
+      const foo = raycaster.intersectObjects(ifcModels)
+      if (foo.length > 1) console.log(foo)
+    })
+  }, [camera, raycaster])
+
   return (
     <group ref={worldRef}>
-      <group scale={perMeter} position={mapCenter} rotation-x={Math.PI / 2}>
+      <group
+        ref={(scene) => {
+          if (scene) globals.scene = ref(scene)
+        }}
+        scale={perMeter}
+        position={mapCenter}
+        rotation-x={Math.PI / 2}
+      >
         <axesHelper />
         <Lighting />
         <RectangularGrid

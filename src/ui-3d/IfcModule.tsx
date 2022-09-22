@@ -1,9 +1,17 @@
 import { Module } from "@/data/module"
 import { useBVH } from "@react-three/drei"
-import { GroupProps, useLoader } from "@react-three/fiber"
-import { useMemo, useRef } from "react"
+import { GroupProps, useLoader, useThree } from "@react-three/fiber"
+import { useEffect, useMemo, useRef } from "react"
 import { Group, Mesh, MeshLambertMaterial, Plane } from "three"
+import {
+  acceleratedRaycast,
+  computeBoundsTree,
+  disposeBoundsTree,
+} from "three-mesh-bvh"
+import { ref } from "valtio"
 import { IFCLoader } from "web-ifc-three"
+import { useGlobals, useScene } from "../hooks/globals"
+import ifcStore from "../hooks/ifc"
 
 type Props = GroupProps & {
   module: Module
@@ -28,9 +36,31 @@ const IfcModule = (props: Props) => {
   } = props
 
   const groupRef = useRef<Group>(null)
-  const meshRef = useRef<Mesh>(null)
 
-  // const scene = useThree((t) => t.scene)
+  const key = `${houseId}:${columnIndex},${levelIndex},${groupIndex}`
+
+  const ifcModel = useLoader(IFCLoader, module.ifcUrl, (loader) => {
+    if (loader instanceof IFCLoader) {
+      loader.ifcManager.setWasmPath("../../../wasm/")
+    }
+  })
+
+  useEffect(() => {
+    if (!groupRef.current) return
+    ifcStore.models[key] = ref(ifcModel)
+    groupRef.current.add(ifcModel)
+
+    ifcModel?.ifcManager?.setupThreeMeshBVH(
+      computeBoundsTree,
+      disposeBoundsTree,
+      acceleratedRaycast
+    )
+    return () => {
+      delete ifcStore.models[key]
+    }
+  }, [ifcModel, key])
+
+  return <group ref={groupRef} {...groupProps} />
 
   // useEffect(() => {
   //   const ifcLoader = new IFCLoader()
@@ -38,17 +68,17 @@ const IfcModule = (props: Props) => {
   //   ifcLoader.load(module.ifcUrl, (ifcModel) => scene.add(ifcModel))
   // }, [])
 
-  const { geometry, material, ifcManager, modelID } = useLoader(
-    IFCLoader,
-    module.ifcUrl,
-    (loader) => {
-      if (loader instanceof IFCLoader) {
-        loader.ifcManager.setWasmPath("../../../wasm/")
-      }
-    }
-  )
+  // const { geometry, material, ifcManager, modelID } = useLoader(
+  //   IFCLoader,
+  //   module.ifcUrl,
+  //   (loader) => {
+  //     if (loader instanceof IFCLoader) {
+  //       loader.ifcManager.setWasmPath("../../../wasm/")
+  //     }
+  //   }
+  // )
 
-  useBVH(meshRef as any)
+  // useBVH(meshRef as any)
 
   // useEffect(() => {
   //   if (ifcManager === null) return
@@ -61,43 +91,33 @@ const IfcModule = (props: Props) => {
 
   // useHelper(meshRef, MeshBVHVisualizer)
 
-  const fooMaterial = useMemo(
-    () =>
-      new MeshLambertMaterial({
-        // transparent: true,
-        // opacity: 0.6,
-        color: 0xff88ff,
-        depthTest: false,
-      }),
-    []
-  )
+  // const fooMaterial = useMemo(
+  //   () =>
+  //     new MeshLambertMaterial({
+  //       // transparent: true,
+  //       // opacity: 0.6,
+  //       color: 0xff88ff,
+  //       depthTest: false,
+  //     }),
+  //   []
+  // )
 
-  return (
-    <group ref={groupRef} {...groupProps}>
-      <mesh
-        ref={meshRef}
-        {...{ geometry, material }}
-        onClick={({ faceIndex }) => {
-          const group = groupRef.current
-          if (!ifcManager || !faceIndex || !group) {
-            // console.log({ ifcManager, faceIndex, group })
-            return
-          }
-          const expressID = ifcManager.getExpressId(geometry, faceIndex)
-          const ifcType = ifcManager.getIfcType(modelID, expressID)
-
-          // console.log(ifcType)
-
-          // ifcManager.createSubset({
-          //   ids: [expressID],
-          //   modelID,
-          //   removePrevious: true,
-          //   scene: group,
-          //   material: fooMaterial,
-          // })
-        }}
-      />
-    </group>
-  )
+  // return (
+  //   <group ref={groupRef} {...groupProps}>
+  //     <mesh
+  //       ref={meshRef}
+  //       {...{ geometry, material }}
+  //       onClick={({ faceIndex }) => {
+  //         const group = groupRef.current
+  //         if (!ifcManager || !faceIndex || !group) {
+  //           // console.log({ ifcManager, faceIndex, group })
+  //           return
+  //         }
+  //         const expressID = ifcManager.getExpressId(geometry, faceIndex)
+  //         const ifcType = ifcManager.getIfcType(modelID, expressID)
+  //       }}
+  //     />
+  //   </group>
+  // )
 }
 export default IfcModule

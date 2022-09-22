@@ -5,10 +5,7 @@ const HtmlUi = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   return (
     <div>
-      <SiteSidebar
-        open={sidebarOpen}
-        close={() => void setSidebarOpen(false)}
-      />
+      <SiteSidebar open={sidebarOpen} close={() => void setSidebarOpen(true)} />
     </div>
   )
 }
