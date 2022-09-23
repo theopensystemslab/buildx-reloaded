@@ -7,15 +7,12 @@ const R3FInit = dynamic(() => import("@/ui-3d/R3FInit"), {
   ssr: false,
 })
 
-const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
-
 const IndexPage = () => {
   return (
     <Fragment>
       <DataInit />
       <R3FInit>
         <R3FApp />
-        <DataPreload />
       </R3FInit>
     </Fragment>
   )

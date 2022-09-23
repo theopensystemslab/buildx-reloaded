@@ -4,7 +4,8 @@ import CameraSync from "@/threebox/camera/CameraSync"
 import utils from "@/threebox/utils/utils"
 import { useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useMemo, useRef } from "react"
+import dynamic from "next/dynamic"
+import { Fragment, useEffect, useMemo, useRef } from "react"
 import { Group, Raycaster } from "three"
 import { subscribeKey } from "valtio/utils"
 import { useHouses } from "../hooks/houses"
@@ -14,10 +15,12 @@ import IfcHouse from "./IfcHouse"
 import Lighting from "./Lighting"
 import RectangularGrid from "./RectangularGrid"
 
+const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
+
 const R3FApp = () => {
   const worldRef = useRef<Group>(null)
   const { camera, setSize } = useThree()
-  const { size, mapboxMap } = useGlobals()
+  const { size, mapboxMap, preload } = useGlobals()
 
   useEffect(() => {
     if (size === null) return
@@ -56,19 +59,22 @@ const R3FApp = () => {
   }, [camera, raycaster])
 
   return (
-    <group ref={worldRef}>
-      <group scale={perMeter} position={mapCenter} rotation-x={Math.PI / 2}>
-        <axesHelper />
-        <Lighting />
-        <RectangularGrid
-          x={{ cells: 61, size: 1 }}
-          z={{ cells: 61, size: 1 }}
-          color="#ababab"
-        />
+    <Fragment>
+      <group ref={worldRef}>
+        <group scale={perMeter} position={mapCenter} rotation-x={Math.PI / 2}>
+          <axesHelper />
+          <Lighting />
+          <RectangularGrid
+            x={{ cells: 61, size: 1 }}
+            z={{ cells: 61, size: 1 }}
+            color="#ababab"
+          />
 
-        {children}
+          {children}
+        </group>
       </group>
-    </group>
+      {preload && <DataPreload />}
+    </Fragment>
   )
 }
 
