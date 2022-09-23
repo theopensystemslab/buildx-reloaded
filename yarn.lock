@@ -17,6 +17,25 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@carbon/icon-helpers@^10.33.0":
+  version "10.33.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.33.0.tgz#6b9e467529c7f950fe87a6f45ae0efdcb9b55a26"
+  integrity sha512-cdax+RiemAnrATgxL5zyCsD5CV1rJAVTjORXyKxhKSu9Fw6AFJEovJLR9+QQBbPaj/QNTB4o7mJ3YD15LLlB2w==
+
+"@carbon/icons-react@^11.8.0":
+  version "11.8.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icons-react/-/icons-react-11.8.0.tgz#cae7405a364b567792bd90f9f120dab28b3652cf"
+  integrity sha512-bMn/+heKO8G/OdBAcL8/93lBfVdj6uq+B+Gm4Y/MoLNFXfV8TpO5e4rQ1cgshbfoIxtj2D2tUHmFmucBnrUerg==
+  dependencies:
+    "@carbon/icon-helpers" "^10.33.0"
+    "@carbon/telemetry" "0.1.0"
+    prop-types "^15.7.2"
+
+"@carbon/telemetry@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@carbon/telemetry/-/telemetry-0.1.0.tgz#57b331cd5a855b4abbf55457456da8211624d879"
+  integrity sha512-kNWt0bkgPwGW0i5h7HFuljbKRXPvIhsKbB+1tEURAYLXoJg9iJLF1eGvWN5iVoFCS2zje4GR3OGOsvvKVe7Hlg==
+
 "@chevrotain/cst-dts-gen@10.3.0":
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/@chevrotain/cst-dts-gen/-/cst-dts-gen-10.3.0.tgz#434b267f7b38b2a760002a1bad699b4be1bd27a5"
@@ -381,6 +400,11 @@
   version "10.0.0-proxy-alpha.63"
   resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.0.0-proxy-alpha.63.tgz#e62d0d23a0a7fc17f198182a3a5ba64d9b5b8391"
   integrity sha512-uKf0yBtO+thQCCWqB4iesECSsU8FC/pQ96G0W9o//XLxjisk1XQAvN+GqiSCI5DCjR7azbtgrjGG9Ig4wWRY2Q==
+
+"@types/carbon__icons-react@^11.8.0":
+  version "11.8.0"
+  resolved "https://registry.yarnpkg.com/@types/carbon__icons-react/-/carbon__icons-react-11.8.0.tgz#3e0f210d9715d938da1340082beb4c61ffbc196a"
+  integrity sha512-afuckfgjBeUHo/5lWgalThmvkfufyKkShIW8+wbNBd+4MUtDfkSg024s1EOEESZyN/0U4JhmQtBQtJI3eqpR+A==
 
 "@types/estree@0.0.39":
   version "0.0.39"
@@ -2325,7 +2349,7 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-prop-types@^15.6.0, prop-types@^15.8.1:
+prop-types@^15.6.0, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
