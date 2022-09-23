@@ -7,10 +7,10 @@ export const useCameraGroundRaycast = () => {
   const raycaster = useMemo(() => new Raycaster(), [])
 
   return (): [number, number] | null => {
-    if (!globals.cameraSync?.camera || !globals.xzMesh) return null
+    if (!globals.cameraSync?.camera || !globals.groundMesh) return null
 
     raycaster.setFromCamera({ x: 0, y: 0 }, globals.cameraSync.camera)
-    const intersections = raycaster.intersectObject(globals.xzMesh)
+    const intersections = raycaster.intersectObject(globals.groundMesh)
     if (intersections.length === 0) return null
 
     const [

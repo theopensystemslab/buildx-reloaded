@@ -1,7 +1,6 @@
 import { useAllHouseTypes } from "@/data/houseType"
 import { System, systems } from "@/data/system"
 import { useCameraGroundRaycast } from "@/hooks/camera"
-// import { useGetCameraGroundPlaneIntersect } from "@/stores/camera"
 // import houses from "@/stores/houses"
 import Sidebar from "@/ui/Sidebar"
 import { pipe } from "fp-ts/lib/function"

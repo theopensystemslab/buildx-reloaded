@@ -2,19 +2,17 @@ import { DEFAULT_ORIGIN } from "@/constants"
 import globals, { useGlobals } from "@/hooks/globals"
 import CameraSync from "@/threebox/camera/CameraSync"
 import utils from "@/threebox/utils/utils"
-import { advance, useThree } from "@react-three/fiber"
+import { useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useMemo, useRef } from "react"
-import { useKey } from "react-use"
 import { Group, Raycaster } from "three"
+import { subscribeKey } from "valtio/utils"
 import { useHouses } from "../hooks/houses"
+import ifcStore from "../hooks/ifc"
 import { RA, RR } from "../utils/functions"
 import IfcHouse from "./IfcHouse"
 import Lighting from "./Lighting"
 import RectangularGrid from "./RectangularGrid"
-import { subscribeKey } from "valtio/utils"
-import ifcStore from "../hooks/ifc"
-import { ref } from "valtio"
 
 const R3FApp = () => {
   const worldRef = useRef<Group>(null)
@@ -59,14 +57,7 @@ const R3FApp = () => {
 
   return (
     <group ref={worldRef}>
-      <group
-        ref={(scene) => {
-          if (scene) globals.scene = ref(scene)
-        }}
-        scale={perMeter}
-        position={mapCenter}
-        rotation-x={Math.PI / 2}
-      >
+      <group scale={perMeter} position={mapCenter} rotation-x={Math.PI / 2}>
         <axesHelper />
         <Lighting />
         <RectangularGrid

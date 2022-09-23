@@ -8,7 +8,7 @@ type GlobalStore = {
   cameraSync: CameraSync | null
   size: RectReadOnly | null
   pointerXY: V2
-  scene: Group | null
+  groundMesh: Mesh | null
 }
 
 const globals = proxy<GlobalStore>({
@@ -16,7 +16,7 @@ const globals = proxy<GlobalStore>({
   cameraSync: null,
   size: null,
   pointerXY: [0, 0],
-  scene: null,
+  groundMesh: null,
 })
 
 export const setMapboxMap = (mapboxMap: mapboxgl.Map) => {
@@ -24,13 +24,5 @@ export const setMapboxMap = (mapboxMap: mapboxgl.Map) => {
 }
 
 export const useGlobals = () => useSnapshot(globals)
-
-export const useScene = () => {
-  const { scene } = useGlobals()
-
-  if (scene === null) throw new Error("null scene")
-
-  return scene
-}
 
 export default globals

@@ -1,8 +1,7 @@
 import { Module } from "@/data/module"
-import { useBVH } from "@react-three/drei"
-import { GroupProps, useLoader, useThree } from "@react-three/fiber"
-import { useEffect, useMemo, useRef } from "react"
-import { Group, Mesh, MeshLambertMaterial, Plane } from "three"
+import { GroupProps, useLoader } from "@react-three/fiber"
+import { useEffect, useRef } from "react"
+import { Group, Plane } from "three"
 import {
   acceleratedRaycast,
   computeBoundsTree,
@@ -10,7 +9,6 @@ import {
 } from "three-mesh-bvh"
 import { ref } from "valtio"
 import { IFCLoader } from "web-ifc-three"
-import { useGlobals, useScene } from "../hooks/globals"
 import ifcStore from "../hooks/ifc"
 
 type Props = GroupProps & {
