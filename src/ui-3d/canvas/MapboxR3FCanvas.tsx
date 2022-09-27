@@ -1,4 +1,7 @@
 import { DEFAULT_ORIGIN } from "@/constants"
+import mapboxStore, { setMapboxMap } from "@/hooks/mapboxStore"
+import EventDiv from "@/ui/EventDiv"
+import HtmlUi from "@/ui/HtmlUi"
 import { reverseV2 } from "@/utils/math"
 import {
   addAfterEffect,
@@ -11,22 +14,17 @@ import {
   RenderProps,
 } from "@react-three/fiber"
 import mapboxgl, { AnyLayer } from "mapbox-gl"
+import "mapbox-gl/dist/mapbox-gl.css"
 import {
-  Fragment,
   PropsWithChildren,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react"
-import { BasicShadowMap, sRGBEncoding } from "three"
-import Lighting from "./Lighting"
-import * as THREE from "three"
 import { useKey } from "react-use"
-import "mapbox-gl/dist/mapbox-gl.css"
-import globals, { setMapboxMap } from "@/hooks/globals"
-import HtmlUi from "../ui/HtmlUi"
-import EventDiv from "../ui/EventDiv"
+import * as THREE from "three"
+import { BasicShadowMap, sRGBEncoding } from "three"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
@@ -38,7 +36,7 @@ const mapboxStyleUrl =
 
 type Props = PropsWithChildren<RenderProps<HTMLCanvasElement>>
 
-const MapboxCanvas = (props: Props) => {
+const MapboxR3FCanvas = (props: Props) => {
   const { children, ...canvasProps } = props
 
   const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null)
@@ -48,12 +46,12 @@ const MapboxCanvas = (props: Props) => {
   >()
 
   const toggleAllLayers = useCallback((b: boolean) => {
-    if (!globals.mapboxMap) return
-    const style = globals.mapboxMap.getStyle()
+    if (!mapboxStore.mapboxMap) return
+    const style = mapboxStore.mapboxMap.getStyle()
     if (!style) return
 
-    for (const layer of globals.mapboxMap.getStyle().layers) {
-      globals.mapboxMap.setLayoutProperty(
+    for (const layer of mapboxStore.mapboxMap.getStyle().layers) {
+      mapboxStore.mapboxMap.setLayoutProperty(
         layer.id,
         "visibility",
         b ? "visible" : "none"
@@ -71,7 +69,7 @@ const MapboxCanvas = (props: Props) => {
   useEffect(() => {
     if (!mapElement) return
 
-    if (!globals.mapboxMap) {
+    if (!mapboxStore.mapboxMap) {
       setMapboxMap(
         new mapboxgl.Map({
           container: mapElement, // container ID
@@ -85,7 +83,7 @@ const MapboxCanvas = (props: Props) => {
         })
       )
     }
-    if (!globals.mapboxMap) return
+    if (!mapboxStore.mapboxMap) return
 
     const canvas = mapElement.querySelector("canvas")
 
@@ -136,61 +134,22 @@ const MapboxCanvas = (props: Props) => {
 
         map.repaint = false
 
-        root.render(
-          <Fragment>
-            {/* <MapboxThreeAppThreeTree /> */}
-            {/* <axesHelper /> */}
-            <Lighting />
-            {/* <group position={[0.5, 0, 0.5]}> */}
-            {/* <RectangularGrid
-              x={{ cells: 61, size: 1 }}
-              z={{ cells: 61, size: 1 }}
-              color="#ababab"
-            /> */}
-            {/* </group> */}
-            {/* <HorizontalPlane
-              onChange={setXZ}
-              onNearClick={() => {
-                menu.open = false
-                scope.selected = null
-                clearIlluminatedMaterials()
-              }}
-              onNearHover={() => {
-                if (menu.open) return
-                scope.hovered = null
-                if (scope.selected === null) clearIlluminatedMaterials()
-              }}
-            /> */}
-            {/* {shadows && (
-              <>
-                <GroundCircle />
-                <ShadowPlane />
-              </>
-            )} */}
-            {/* {boundary && <lineLoop args={[boundary, boundaryMaterial]} />} */}
-            {/* <Effects /> */}
-            {children}
-          </Fragment>
-        )
+        root.render(children)
       },
       render: (ctx?: WebGLRenderingContext, matrix?: number[]): void => {
         advance(Date.now(), true)
       },
     }
 
-    globals.mapboxMap.on("style.load", (e) => {
-      globals.mapboxMap!.addLayer(customLayer)
+    mapboxStore.mapboxMap.on("style.load", (e) => {
+      mapboxStore.mapboxMap!.getCanvas().style.cursor = "default"
+      mapboxStore.mapboxMap!.addLayer(customLayer)
     })
 
     return () => root.unmount()
   }, [canvasProps, children, mapElement, root, setRoot])
 
-  return (
-    <EventDiv>
-      <div ref={setMapElement} className="h-full w-full" />
-      <HtmlUi />
-    </EventDiv>
-  )
+  return <div ref={setMapElement} className="h-full w-full" />
 }
 
-export default MapboxCanvas
+export default MapboxR3FCanvas

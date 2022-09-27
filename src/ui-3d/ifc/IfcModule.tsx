@@ -9,7 +9,7 @@ import {
 } from "three-mesh-bvh"
 import { ref } from "valtio"
 import { IFCLoader } from "web-ifc-three"
-import ifcStore from "../hooks/ifc"
+import ifcStore from "@/hooks/ifc"
 
 type Props = GroupProps & {
   module: Module

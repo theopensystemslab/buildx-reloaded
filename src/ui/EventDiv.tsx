@@ -18,12 +18,8 @@ const EventDiv = (props: PropsWithChildren<Props>) => {
 
   const bind = useGesture(
     {
-      onPointerMove: ({ event: { offsetX, offsetY, clientX, clientY } }) => {
+      onPointerMove: ({ event: { clientX, clientY } }) => {
         if (!globals.size) return
-        // globals.pointerXY = [
-        //   (offsetX / globals.size.width) * 2 - 1,
-        //   (-offsetY / globals.size.height) * 2 + 1,
-        // ]
         const x1 = clientX - size.left
         const x2 = size.right - size.left
         const x = (x1 / x2) * 2 - 1
