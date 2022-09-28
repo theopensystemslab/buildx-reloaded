@@ -2,7 +2,9 @@ import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { proxy, useSnapshot } from "valtio"
+import { useEffect } from "react"
+import { proxy, subscribe, useSnapshot } from "valtio"
+import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module } from "../data/module"
@@ -10,7 +12,22 @@ import { useSystemModules } from "./modules"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
-export const useHouses = () => useSnapshot(houses)
+export const useLocallyStoredHouses = () =>
+  useEffect(
+    () =>
+      subscribe(houses, () => {
+        localStorage.setItem(
+          BUILDX_LOCAL_STORAGE_HOUSES_KEY,
+          JSON.stringify(houses)
+        )
+      }),
+    []
+  )
+
+export const useHouses = () => {
+  useLocallyStoredHouses()
+  return useSnapshot(houses)
+}
 
 export const useHouse = (houseId: string) => {
   const housesSnap = useSnapshot(houses)

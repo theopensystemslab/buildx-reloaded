@@ -1,15 +1,15 @@
-import { useThree } from "@react-three/fiber"
 import { useMemo } from "react"
 import { Raycaster } from "three"
 import globals from "./globals"
+import mapboxStore from "./mapboxStore"
 
 export const useCameraGroundRaycast = () => {
   const raycaster = useMemo(() => new Raycaster(), [])
 
-  return (): [number, number] | null => {
-    if (!globals.cameraSync?.camera || !globals.groundMesh) return null
+  return (): [number, number, number] | null => {
+    if (!mapboxStore.cameraSync?.camera || !globals.groundMesh) return null
 
-    raycaster.setFromCamera({ x: 0, y: 0 }, globals.cameraSync.camera)
+    raycaster.setFromCamera({ x: 0, y: 0 }, mapboxStore.cameraSync.camera)
     const intersections = raycaster.intersectObject(globals.groundMesh)
     if (intersections.length === 0) return null
 
@@ -19,6 +19,6 @@ export const useCameraGroundRaycast = () => {
       },
     ] = intersections
 
-    return [x, z]
+    return [x, 0, z]
   }
 }

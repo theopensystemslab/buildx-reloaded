@@ -9,7 +9,7 @@ import {
 } from "three-mesh-bvh"
 import { ref } from "valtio"
 import { IFCLoader } from "web-ifc-three"
-import ifcStore from "../hooks/ifc"
+import ifcStore from "@/hooks/ifcStore"
 
 type Props = GroupProps & {
   module: Module
@@ -46,7 +46,7 @@ const IfcModule = (props: Props) => {
   useEffect(() => {
     if (!groupRef.current) return
     ifcStore.models[key] = ref(ifcModel)
-    groupRef.current.add(ifcModel)
+    groupRef.current.add(ifcModel.clone())
 
     ifcModel?.ifcManager?.setupThreeMeshBVH(
       computeBoundsTree,

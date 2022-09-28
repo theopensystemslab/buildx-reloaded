@@ -10,7 +10,7 @@ export const houseParser = z.object({
   modifiedMaterials: z.record(z.string().min(1)),
   modifiedMaterialsPreview: z.record(z.string().min(1)),
   friendlyName: z.string().min(1),
-  position: z.tuple([z.number(), z.number()]),
+  position: z.tuple([z.number(), z.number(), z.number()]),
   rotation: z.number(),
 })
 

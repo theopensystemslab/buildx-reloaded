@@ -20,17 +20,19 @@ const IfcHouse = (props: Props) => {
 
   return (
     <group {...(bind() as any)}>
-      {columns.map(({ columnIndex, z, gridGroups, length }) => (
-        <IfcColumn
-          key={columnIndex}
-          houseId={id}
-          columnIndex={columnIndex}
-          columnZ={z}
-          gridGroups={gridGroups}
-          verticalCutPlanes={[]}
-          mirror={columnIndex === columns.length - 1}
-        />
-      ))}
+      {columns.map(({ columnIndex, z, gridGroups }) => {
+        return (
+          <IfcColumn
+            key={columnIndex}
+            houseId={id}
+            columnIndex={columnIndex}
+            columnZ={z}
+            gridGroups={gridGroups}
+            verticalCutPlanes={[]}
+            mirror={columnIndex === columns.length - 1}
+          />
+        )
+      })}
     </group>
   )
 }

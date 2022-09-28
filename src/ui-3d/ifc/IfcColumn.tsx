@@ -24,6 +24,7 @@ const IfcColumn = (props: Props) => {
     gridGroups,
     mirror = false,
     verticalCutPlanes,
+    ...groupProps
   } = props
   const levels = pipe(
     gridGroups,
@@ -31,7 +32,7 @@ const IfcColumn = (props: Props) => {
       pipe(
         modules,
         RA.mapWithIndex((groupIndex, { module, z }) => {
-          const key = `${columnIndex}-${levelIndex}-${groupIndex}`
+          const key = `${houseId}:${columnIndex}-${levelIndex}-${groupIndex}`
           const position: V3 = [
             0,
             y,
@@ -56,6 +57,10 @@ const IfcColumn = (props: Props) => {
       )
     )
   )
-  return <group position-z={columnZ}>{levels}</group>
+  return (
+    <group position-z={columnZ} {...groupProps}>
+      {levels}
+    </group>
+  )
 }
 export default IfcColumn

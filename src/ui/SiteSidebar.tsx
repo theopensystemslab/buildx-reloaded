@@ -74,7 +74,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                       houseType={houseType}
                       onAdd={() => {
                         const id = nanoid()
-                        const position = cameraGroundRaycast() ?? [0, 0]
+                        const position = cameraGroundRaycast() ?? [0, 0, 0]
 
                         houses[id] = {
                           id,
