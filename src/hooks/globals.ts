@@ -1,6 +1,10 @@
+import { useThree } from "@react-three/fiber"
+import { useEffect } from "react"
 import { RectReadOnly } from "react-use-measure"
-import { Mesh } from "three"
-import { proxy, useSnapshot } from "valtio"
+import { Event, Intersection, Mesh, Object3D } from "three"
+import { proxy, ref, useSnapshot } from "valtio"
+import { subscribeKey } from "valtio/utils"
+import ifcStore from "./ifcStore"
 
 type GlobalStore = {
   size: RectReadOnly | null
@@ -8,6 +12,7 @@ type GlobalStore = {
   groundMesh: Mesh | null
   sidebar: boolean
   preload: boolean
+  intersection: Intersection<Object3D<Event>> | null
 }
 
 const globals = proxy<GlobalStore>({
@@ -16,6 +21,7 @@ const globals = proxy<GlobalStore>({
   groundMesh: null,
   sidebar: false,
   preload: false,
+  intersection: null,
 })
 
 export const useGlobals = () => useSnapshot(globals)
@@ -38,4 +44,26 @@ export const setSidebar = (b: boolean) => {
 //   })
 // }, [camera, raycaster])
 
+export const useRaycasting = () => {
+  const raycaster = useThree((t) => t.raycaster)
+  const camera = useThree((t) => t.camera)
+
+  useEffect(
+    () =>
+      subscribeKey(globals, "pointerXY", () => {
+        const [x, y] = globals.pointerXY
+        raycaster.setFromCamera({ x, y }, camera)
+        const intersections = raycaster.intersectObjects(
+          Object.values(ifcStore.models)
+        )
+        if (intersections.length > 0) {
+          globals.intersection = ref(intersections[0])
+        } else {
+          globals.intersection = null
+        }
+        console.log(globals.intersection)
+      }),
+    [camera, raycaster]
+  )
+}
 export default globals

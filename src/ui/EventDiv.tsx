@@ -2,6 +2,8 @@ import { useGesture, useHover } from "@use-gesture/react"
 import React, { PropsWithChildren, useEffect } from "react"
 import useMeasure from "react-use-measure"
 import globals from "../hooks/globals"
+import { subscribeKey } from "valtio/utils"
+import { Raycaster } from "three"
 
 type Props = {}
 

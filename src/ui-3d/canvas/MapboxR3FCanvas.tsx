@@ -1,7 +1,5 @@
 import { DEFAULT_ORIGIN } from "@/constants"
 import mapboxStore, { setMapboxMap } from "@/hooks/mapboxStore"
-import EventDiv from "@/ui/EventDiv"
-import HtmlUi from "@/ui/HtmlUi"
 import { reverseV2 } from "@/utils/math"
 import {
   addAfterEffect,

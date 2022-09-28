@@ -1,4 +1,4 @@
-import { useGlobals } from "@/hooks/globals"
+import { useGlobals, useRaycasting } from "@/hooks/globals"
 import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
 import MapboxR3FCanvas from "@/ui-3d/canvas/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/canvas/MapboxR3FCanvasProjector"
@@ -10,6 +10,7 @@ import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import { useKey } from "react-use"
+import FullScreenContainer from "../../ui/FullScreenContainer"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -17,6 +18,8 @@ type Props = PropsWithChildren<{}>
 
 const _SharedInit = () => {
   const { preload } = useGlobals()
+
+  useRaycasting()
 
   return (
     <Fragment>
@@ -42,22 +45,24 @@ const AppInit = (props: Props) => {
   })
 
   return (
-    <EventDiv>
-      {!mapboxEnabled ? (
-        <VanillaR3FCanvas>
-          <_SharedInit />
-          {children}
-        </VanillaR3FCanvas>
-      ) : (
-        <MapboxR3FCanvas>
-          <MapboxR3FCanvasProjector>
+    <FullScreenContainer className="overflow-hidden">
+      <EventDiv>
+        {!mapboxEnabled ? (
+          <VanillaR3FCanvas>
             <_SharedInit />
             {children}
-          </MapboxR3FCanvasProjector>
-        </MapboxR3FCanvas>
-      )}
+          </VanillaR3FCanvas>
+        ) : (
+          <MapboxR3FCanvas>
+            <MapboxR3FCanvasProjector>
+              <_SharedInit />
+              {children}
+            </MapboxR3FCanvasProjector>
+          </MapboxR3FCanvas>
+        )}
+      </EventDiv>
       <HtmlUi />
-    </EventDiv>
+    </FullScreenContainer>
   )
 }
 
