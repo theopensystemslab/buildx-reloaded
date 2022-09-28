@@ -37,11 +37,7 @@ const EventDiv = (props: PropsWithChildren<Props>) => {
   )
 
   return (
-    <div
-      ref={ref}
-      className="absolute w-full h-full overflow-hidden"
-      {...bind()}
-    >
+    <div ref={ref} className="absolute w-full h-full" {...bind()}>
       {children}
     </div>
   )
