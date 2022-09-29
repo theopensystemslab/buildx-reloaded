@@ -1,6 +1,6 @@
 import { useThree } from "@react-three/fiber"
-import { useEffect } from "react"
-import { Raycaster, Vector2 } from "three"
+import { useEffect, useMemo, useRef } from "react"
+import { MeshLambertMaterial, Raycaster, Vector2 } from "three"
 import { ref } from "valtio"
 import ifcStore, { useIFCLoader } from "../../hooks/ifcStore"
 
@@ -10,7 +10,22 @@ const TestIfcApp = () => {
   const raycaster = useThree((t) => t.raycaster)
   const camera = useThree((t) => t.camera)
 
+  const highlightMaterial = useMemo(
+    () =>
+      new MeshLambertMaterial({
+        transparent: true,
+        opacity: 0.6,
+        color: 0xff88ff,
+        depthTest: false,
+      }),
+    []
+  )
+
+  const highlightIndex = useRef(-1)
+
   const ifcLoader = useIFCLoader()
+
+  const ifcManager = ifcLoader.ifcManager
 
   useEffect(() => {
     ifcLoader.load("../../../01.ifc", (ifcModel) => {
@@ -52,8 +67,35 @@ const TestIfcApp = () => {
       }
     }
 
-    window.ondblclick = pick
-  }, [camera, ifcLoader, raycaster, scene, size])
+    function highlight(event: any, material: any, model: any) {
+      const found: any = cast(event)[0]
+      if (found) {
+        // Gets model ID
+        model.id = found.object.modelID
+
+        // Gets Express ID
+        const index = found.faceIndex
+        const geometry = found.object.geometry
+        const id = ifcManager.getExpressId(geometry, index)
+
+        // Creates subset
+        ifcLoader.ifcManager.createSubset({
+          modelID: model.id,
+          ids: [id],
+          material: material,
+          scene: scene,
+          removePrevious: true,
+        })
+      } else {
+        // Remove previous highlight
+        // @ts-ignore
+        ifcManager.removeSubset(model.id, scene, material)
+      }
+    }
+
+    window.onmousemove = (event) =>
+      highlight(event, highlightMaterial, { id: highlightIndex.current })
+  }, [camera, highlightMaterial, ifcLoader, ifcManager, raycaster, scene, size])
 
   return null
 }
