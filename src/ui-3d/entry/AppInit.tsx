@@ -1,4 +1,4 @@
-import { useGlobals, useRaycasting } from "@/hooks/globals"
+import { useGlobals } from "@/hooks/globals"
 import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
 import MapboxR3FCanvas from "@/ui-3d/canvas/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/canvas/MapboxR3FCanvasProjector"
@@ -18,8 +18,6 @@ type Props = PropsWithChildren<{}>
 
 const _SharedInit = () => {
   const { preload } = useGlobals()
-
-  useRaycasting()
 
   return (
     <Fragment>
