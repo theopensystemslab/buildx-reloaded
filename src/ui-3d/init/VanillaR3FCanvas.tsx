@@ -1,7 +1,6 @@
-import { OrbitControls } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
-import React from "react"
 import { PropsWithChildren } from "react"
+import SiteCamControls from "../camera/SiteCamControls"
 
 type Props = PropsWithChildren<{}>
 
@@ -10,7 +9,7 @@ const VanillaR3FCanvas = (props: Props) => {
   return (
     <Canvas>
       {children}
-      <OrbitControls />
+      <SiteCamControls />
     </Canvas>
   )
 }

@@ -250,6 +250,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@oieduardorabelo/use-user-agent@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@oieduardorabelo/use-user-agent/-/use-user-agent-5.0.1.tgz#316121042c8c4e3c6f0685d5638e9845b0332f6a"
+  integrity sha512-dmoIMC4tMlK01slckw5ha5gDTYCYmXCL/HHslQSUd2kEU2s2wnBB66x1W0cvNBVZLutCdENsDZv9LE5YtP1EAQ==
+  dependencies:
+    ua-parser-js "1.0.2"
+
 "@react-spring/animated@~9.5.2":
   version "9.5.2"
   resolved "https://registry.yarnpkg.com/@react-spring/animated/-/animated-9.5.2.tgz#42785b4f369d9715e9ee32c04b78483e7bb85489"
@@ -824,6 +831,11 @@ camelcase-css@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/camelcase-css/-/camelcase-css-2.0.1.tgz#ee978f6947914cc30c6b44741b6ed1df7f043fd5"
   integrity sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==
+
+camera-controls@^1.37.2:
+  version "1.37.2"
+  resolved "https://registry.yarnpkg.com/camera-controls/-/camera-controls-1.37.2.tgz#12d808c98b3fea1fffd72c8dfeb024f2495ab307"
+  integrity sha512-b+8DYJc/honm3b/PzjTQbVjsnkdgiDnI44/PRAWKlLhF0lzggGtaU9ZSGRM/lll2HkF0KN+OHx/ZN80wJmEbqA==
 
 caniuse-lite@^1.0.30001332:
   version "1.0.30001387"
@@ -2969,6 +2981,11 @@ typescript@^4.8.2:
   version "4.8.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.2.tgz#e3b33d5ccfb5914e4eeab6699cf208adee3fd790"
   integrity sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==
+
+ua-parser-js@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.2.tgz#e2976c34dbfb30b15d2c300b2a53eac87c57a775"
+  integrity sha512-00y/AXhx0/SsnI51fTc0rLRmafiGOM4/O+ny10Ps7f+j/b8p/ZY11ytMgznXkOVo4GQ+KwQG5UQLkLGirsACRg==
 
 un-eval@^1.2.0:
   version "1.2.0"

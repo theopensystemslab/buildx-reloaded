@@ -30,12 +30,13 @@ const EventDiv = (props: PropsWithChildren<Props>) => {
 
         globals.pointerXY = [x, y]
       },
+      onDrag: ({}) => {},
     },
     { eventOptions: { capture: true } }
   )
 
   return (
-    <div ref={ref} className="absolute w-full h-full" {...bind()}>
+    <div ref={ref} className="absolute w-full h-full touch-none" {...bind()}>
       {children}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useColumnLayout } from "@/hooks/layouts"
 import { useGesture } from "@use-gesture/react"
+import { setCameraEnabled } from "../../hooks/camera"
 import BoxColumn from "./BoxColumn"
 
 type Props = {
@@ -11,10 +12,12 @@ const BoxHouse = (props: Props) => {
   const columns = useColumnLayout(id)
 
   const bind = useGesture({
-    onDrag: ({ first, last }) => {
-      if (first) console.log("first")
-      console.log("dragging")
-      if (last) console.log("last")
+    onDrag: (state) => {
+      const { first, last } = state
+      if (first) setCameraEnabled(false)
+      const { delta, direction } = state
+      console.log(delta, direction)
+      if (last) setCameraEnabled(true)
     },
   })
 

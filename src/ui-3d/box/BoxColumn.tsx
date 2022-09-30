@@ -29,7 +29,7 @@ const BoxColumn = (props: Props) => {
       pipe(
         modules,
         RA.mapWithIndex((groupIndex, { module, z }) => {
-          const key = `${houseId}:${columnIndex}-${levelIndex}-${groupIndex}`
+          const key = `${houseId}:${columnIndex},${levelIndex},${groupIndex}`
           const position: V3 = [
             0,
             y,
@@ -37,6 +37,7 @@ const BoxColumn = (props: Props) => {
           ]
           return (
             <BoxModule
+              key={key}
               module={module}
               columnIndex={columnIndex}
               levelIndex={levelIndex}

@@ -9,6 +9,8 @@ type GlobalStore = {
   sidebar: boolean
   preload: boolean
   intersection: Intersection<Object3D<Event>> | null
+  orthographic: boolean
+  shadows: boolean
 }
 
 const globals = proxy<GlobalStore>({
@@ -18,6 +20,8 @@ const globals = proxy<GlobalStore>({
   sidebar: false,
   preload: false,
   intersection: null,
+  orthographic: false,
+  shadows: true,
 })
 
 export const useGlobals = () => useSnapshot(globals)
