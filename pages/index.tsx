@@ -1,19 +1,14 @@
 import DataInit from "@/data/DataInit"
+import BoxApp from "@/ui-3d/box/BoxApp"
+import AppInit from "@/ui-3d/init/AppInit"
 import { Fragment } from "react"
-import { App, AppInit } from "@/ui-3d/entry"
-import dynamic from "next/dynamic"
-
-const TestIfcApp = dynamic(() => import("@/ui-3d/ifc/TestIfcApp"), {
-  ssr: false,
-})
 
 const IndexPage = () => {
   return (
     <Fragment>
       <DataInit />
       <AppInit>
-        {/* <App /> */}
-        <TestIfcApp />
+        <BoxApp />
       </AppInit>
     </Fragment>
   )
