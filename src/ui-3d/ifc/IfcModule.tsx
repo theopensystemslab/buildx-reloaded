@@ -1,15 +1,15 @@
 import { Module } from "@/data/module"
+import ifcStore, { pushIfcModel, useIfcLoader } from "@/hooks/ifcStore"
 import { GroupProps, useLoader } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
 import { Group, Plane } from "three"
-import {
-  acceleratedRaycast,
-  computeBoundsTree,
-  disposeBoundsTree,
-} from "three-mesh-bvh"
-import { ref } from "valtio"
+import { ref, subscribe } from "valtio"
 import { IFCLoader } from "web-ifc-three"
-import ifcStore from "@/hooks/ifcStore"
+import { suspend } from "suspend-react"
+import { IFCModel } from "web-ifc-three/IFC/components/IFCModel"
+import { subscribeKey } from "valtio/utils"
+import globals from "../../hooks/globals"
+import { IfcMesh } from "web-ifc-three/IFC/BaseDefinitions"
 
 type Props = GroupProps & {
   module: Module
@@ -37,28 +37,53 @@ const IfcModule = (props: Props) => {
 
   const key = `${houseId}:${columnIndex},${levelIndex},${groupIndex}`
 
-  const ifcModel = useLoader(IFCLoader, module.ifcUrl, (loader) => {
-    if (loader instanceof IFCLoader) {
-      loader.ifcManager.setWasmPath("../../../wasm/")
-    }
-  })
+  const loader = useIfcLoader()
+  const manager = loader.ifcManager
 
-  useEffect(() => {
-    if (!groupRef.current) return
-    ifcStore.models[key] = ref(ifcModel)
-    groupRef.current.add(ifcModel.clone())
+  const ifcModel = suspend(async () => {
+    const ifcModel: IFCModel = await loader.loadAsync(module.ifcUrl)
 
-    ifcModel?.ifcManager?.setupThreeMeshBVH(
-      computeBoundsTree,
-      disposeBoundsTree,
-      acceleratedRaycast
-    )
-    return () => {
-      delete ifcStore.models[key]
-    }
-  }, [ifcModel, key])
+    console.log(manager.state.models)
 
-  return <group ref={groupRef} {...groupProps} />
+    pushIfcModel(key, ifcModel)
+
+    return ifcModel
+  }, [module.ifcUrl, key])
+
+  useEffect(() =>
+    subscribeKey(globals, "intersection", () => {
+      if (!groupRef.current) return
+      const { intersection } = globals
+      if (intersection === null) return
+      if (typeof intersection.faceIndex === "undefined") return
+
+      const mesh = intersection.object as IfcMesh
+      const modelID = mesh.modelID
+      if (modelID !== ifcModel.modelID) return
+
+      // @ts-ignore
+      manager.state.models[modelID] = mesh
+
+      const expressID = manager.getExpressId(
+        mesh.geometry,
+        intersection.faceIndex
+      )
+
+      manager.createSubset({
+        scene: groupRef.current,
+        ids: [expressID],
+        modelID,
+        removePrevious: true,
+        material: ifcStore.highlightMaterial,
+      })
+    })
+  )
+
+  return (
+    <group ref={groupRef} {...groupProps}>
+      <primitive object={ifcModel} />
+    </group>
+  )
 
   // useEffect(() => {
   //   const ifcLoader = new IFCLoader()
@@ -88,17 +113,6 @@ const IfcModule = (props: Props) => {
   // }, [ifcManager])
 
   // useHelper(meshRef, MeshBVHVisualizer)
-
-  // const fooMaterial = useMemo(
-  //   () =>
-  //     new MeshLambertMaterial({
-  //       // transparent: true,
-  //       // opacity: 0.6,
-  //       color: 0xff88ff,
-  //       depthTest: false,
-  //     }),
-  //   []
-  // )
 
   // return (
   //   <group ref={groupRef} {...groupProps}>

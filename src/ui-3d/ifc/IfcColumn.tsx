@@ -1,11 +1,9 @@
 import { PositionedRow } from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
-import dynamic from "next/dynamic"
 import { Suspense } from "react"
 import { Plane } from "three"
-
-const IfcModule = dynamic(() => import("./IfcModule"), { ssr: false })
+import IfcModule from "./IfcModule"
 
 type Props = {
   houseId: string
@@ -41,6 +39,7 @@ const IfcColumn = (props: Props) => {
           return (
             <Suspense key={key} fallback={null}>
               <IfcModule
+                key={key}
                 module={module}
                 columnIndex={columnIndex}
                 levelIndex={levelIndex}
