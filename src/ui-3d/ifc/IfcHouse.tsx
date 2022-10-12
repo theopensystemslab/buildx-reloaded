@@ -12,9 +12,9 @@ const IfcHouse = (props: Props) => {
 
   const bind = useGesture({
     onDrag: ({ first, last }) => {
-      if (first) console.log("first")
-      console.log("dragging")
-      if (last) console.log("last")
+      // if (first) console.log("first")
+      // console.log("dragging")
+      // if (last) console.log("last")
     },
   })
 
