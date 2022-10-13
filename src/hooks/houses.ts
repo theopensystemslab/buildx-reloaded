@@ -2,7 +2,7 @@ import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, Houses } from "../data/house"
@@ -49,17 +49,22 @@ export const useHouseModules = (houseId: string) => {
 
   const house = useSnapshot(houses)[houseId]
 
-  return pipe(
-    house.dna,
-    RA.filterMap((dna) =>
+  return useMemo(
+    () =>
       pipe(
-        systemModules,
-        RA.findFirst(
-          (systemModule: Module) =>
-            systemModule.systemId === house.systemId && systemModule.dna === dna
+        house.dna,
+        RA.filterMap((dna) =>
+          pipe(
+            systemModules,
+            RA.findFirst(
+              (systemModule: Module) =>
+                systemModule.systemId === house.systemId &&
+                systemModule.dna === dna
+            )
+          )
         )
-      )
-    )
+      ),
+    [house.dna, house.systemId, systemModules]
   )
 }
 
