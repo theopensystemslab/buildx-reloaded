@@ -3,9 +3,9 @@ import { useThree } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { useCallback, useMemo, useRef } from "react"
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from "three"
-import { setCameraEnabled } from "../../hooks/camera"
-import houses from "../../hooks/houses"
+import houses, { useMoveHouse } from "../../hooks/houses"
 import { useRotateVector } from "../../hooks/transforms"
+import RotateHandles from "../RotateHandles"
 import BoxColumn from "./BoxColumn"
 
 type Props = {
@@ -16,6 +16,12 @@ const BoxHouse = (props: Props) => {
   const groupRef = useRef<Group>(null!)
   const { id } = props
   const columns = useColumnLayout(id)
+
+  // width/length depends on columns
+
+  // box2 depends on position/rotation and columns
+
+  // be good to be able to talk dims from box/gltf/ifc
 
   const rotateVector = useRotateVector(id)
 
@@ -52,16 +58,6 @@ const BoxHouse = (props: Props) => {
     scene.add(mesh)
   }, [getBox2Points, id, scene])
 
-  const bind = useGesture({
-    onDrag: (state) => {
-      const { first, last } = state
-      if (first) setCameraEnabled(false)
-      const { delta, direction } = state
-      console.log(delta, direction)
-      if (last) setCameraEnabled(true)
-    },
-  })
-
   // movestart, move, moveend
   // rotatestart, rotate, rotateend
 
@@ -72,6 +68,12 @@ const BoxHouse = (props: Props) => {
   // on move end or init
 
   // maybe debounce it
+
+  const { houseDragHandler } = useMoveHouse(id, groupRef)
+
+  const bind = useGesture({
+    onDrag: houseDragHandler as any,
+  })
 
   return (
     <group ref={groupRef} {...(bind() as any)}>
@@ -88,6 +90,7 @@ const BoxHouse = (props: Props) => {
           />
         )
       })}
+      <RotateHandles houseId={id} houseLength={0} houseWidth={0} />
     </group>
   )
 }

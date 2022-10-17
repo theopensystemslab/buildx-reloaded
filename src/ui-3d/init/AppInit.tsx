@@ -1,4 +1,4 @@
-import { useGlobals } from "@/hooks/globals"
+import globals, { useGlobals } from "@/hooks/globals"
 import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
 import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/init/MapboxR3FCanvasProjector"
@@ -11,12 +11,13 @@ import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import { useKey } from "react-use"
 import FullScreenContainer from "../../ui/FullScreenContainer"
+import GroundPlane from "../GroundPlane"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
 type Props = PropsWithChildren<{}>
 
-const _SharedInit = () => {
+const Shared = () => {
   const { preload } = useGlobals()
 
   return (
@@ -27,6 +28,19 @@ const _SharedInit = () => {
         x={{ cells: 61, size: 1 }}
         z={{ cells: 61, size: 1 }}
         color="#ababab"
+      />
+      <GroundPlane
+        onChange={(xz) => void (globals.pointerXZ = xz)}
+        onNearClick={() => {
+          // menu.open = false
+          // scope.selected = null
+          // clearIlluminatedMaterials()
+        }}
+        onNearHover={() => {
+          // if (menu.open) return
+          // scope.hovered = null
+          // if (scope.selected === null) clearIlluminatedMaterials()
+        }}
       />
       {preload && <DataPreload />}
     </Fragment>
@@ -47,13 +61,13 @@ const AppInit = (props: Props) => {
       <EventDiv>
         {!mapboxEnabled ? (
           <VanillaR3FCanvas>
-            <_SharedInit />
+            <Shared />
             {children}
           </VanillaR3FCanvas>
         ) : (
           <MapboxR3FCanvas>
             <MapboxR3FCanvasProjector>
-              <_SharedInit />
+              <Shared />
               {children}
             </MapboxR3FCanvasProjector>
           </MapboxR3FCanvas>

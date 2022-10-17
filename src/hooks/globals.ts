@@ -5,6 +5,7 @@ import { proxy, useSnapshot } from "valtio"
 type GlobalStore = {
   size: RectReadOnly | null
   pointerXY: V2
+  pointerXZ: V2
   groundMesh: Mesh | null
   sidebar: boolean
   preload: boolean
@@ -16,6 +17,7 @@ type GlobalStore = {
 const globals = proxy<GlobalStore>({
   size: null,
   pointerXY: [0, 0],
+  pointerXZ: [0, 0],
   groundMesh: null,
   sidebar: false,
   preload: false,
