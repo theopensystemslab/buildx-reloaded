@@ -1,9 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Group } from "three"
+import { useCallback, useEffect, useState } from "react"
 import { subscribeKey } from "valtio/utils"
 import dimensions from "../../hooks/dimensions"
-import houses from "../../hooks/houses"
 import { RA } from "../../utils/functions"
 
 type Props = {

@@ -8,10 +8,16 @@ import RectangularGrid from "@/ui-3d/init/RectangularGrid"
 import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
-import { Fragment, PropsWithChildren } from "react"
+import { Fragment, PropsWithChildren, useEffect } from "react"
 import { useKey } from "react-use"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 import GroundPlane from "../GroundPlane"
+import { subscribeKey } from "valtio/utils"
+import events from "../../hooks/events"
+import dimensions from "../../hooks/dimensions"
+import { pipe } from "fp-ts/lib/function"
+import { RR } from "../../utils/functions"
+import houses from "../../hooks/houses"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -55,6 +61,34 @@ const AppInit = (props: Props) => {
   useKey("t", () => {
     mapboxStore.mapboxEnabled = !mapboxStore.mapboxEnabled
   })
+
+  useEffect(
+    () =>
+      subscribeKey(events.before, "newHouseTransform", () => {
+        if (events.before.newHouseTransform === null) return
+        const { houseId, position, rotation } = events.before.newHouseTransform
+
+        const thisDimensions = dimensions[houseId]
+
+        let allowed = true
+
+        for (let [k, v] of Object.entries(dimensions)) {
+          if (k === houseId) continue
+          const intersects = thisDimensions.intersectsBox(v)
+          console.log(intersects)
+          if (intersects) {
+            allowed = false
+            break
+          }
+        }
+
+        if (!allowed) return
+
+        if (position) houses[houseId].position = position
+        if (rotation) houses[houseId].rotation = rotation
+      }),
+    []
+  )
 
   return (
     <FullScreenContainer className="overflow-hidden">

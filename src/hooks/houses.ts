@@ -19,6 +19,7 @@ import { getHousesFromLocalStorage, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module } from "../data/module"
 import { setCameraEnabled } from "./camera"
+import events from "./events"
 import globals from "./globals"
 import { useSystemModules } from "./modules"
 
@@ -123,7 +124,7 @@ export const useMoveHouse = (
 
   useEffect(() => {
     onPositionUpdate()
-    return subscribe(houses[houseId].position, onPositionUpdate)
+    return subscribeKey(houses[houseId], "position", onPositionUpdate)
   }, [houseId, onPositionUpdate])
 
   const onRotationUpdate = useCallback(() => {
@@ -164,8 +165,14 @@ export const useMoveHouse = (
 
     const [dx, dz] = [px1 - px0, pz1 - pz0]
 
-    houses[houseId].position[0] += dx
-    houses[houseId].position[2] += dz
+    events.before.newHouseTransform = {
+      houseId,
+      position: [
+        houses[houseId].position[0] + dx,
+        houses[houseId].position[1],
+        houses[houseId].position[2] + dz,
+      ],
+    }
 
     // invalidate()
     const snapToGrid = (x: number) => {

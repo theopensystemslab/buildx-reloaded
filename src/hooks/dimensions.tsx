@@ -27,12 +27,12 @@ export const useDimensionsSubscriber = (
 
     const vc = new Vector2(0 + px, 0 + pz)
 
-    const v0 = new Vector2(x0 + px, z0 + pz).rotateAround(
+    const v0 = new Vector2(-x0 + px, z0 + pz).rotateAround(
       vc,
       -houses[houseId].rotation
     )
 
-    const v1 = new Vector2(x1 + px, z1 + pz).rotateAround(
+    const v1 = new Vector2(x0 + px, z1 + pz).rotateAround(
       vc,
       -houses[houseId].rotation
     )
