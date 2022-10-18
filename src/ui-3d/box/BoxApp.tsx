@@ -7,13 +7,13 @@ import BoxHouse from "./BoxHouse"
 const BoxApp = () => {
   const houses = useHouses()
 
-  const children = pipe(
+  const housesChildren = pipe(
     houses,
     RR.keys,
     RA.map((id) => <BoxHouse key={id} id={id} />)
   )
 
-  return <Fragment>{children}</Fragment>
+  return <Fragment>{housesChildren}</Fragment>
 }
 
 export default BoxApp
