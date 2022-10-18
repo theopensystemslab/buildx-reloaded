@@ -11,17 +11,17 @@ type Props = {
 const DebugBox = (props: Props) => {
   const { houseId } = props
 
-  const [circles, setCircles] = useState<[number, number][]>([])
+  const [circles, setCircles] = useState<[number, number, number][]>([])
 
   const update = useCallback(() => {
     const {
-      min: { x: x0, y: z0 },
-      max: { x: x1, y: z1 },
+      min: { x: x0, y: y0, z: z0 },
+      max: { x: x1, y: y1, z: z1 },
     } = dimensions[houseId]
 
     setCircles([
-      [x0, z0],
-      [x1, z1],
+      [x0, y0, z0],
+      [x1, y1, z1],
     ])
   }, [houseId])
 
@@ -34,8 +34,8 @@ const DebugBox = (props: Props) => {
     <group>
       {pipe(
         circles,
-        RA.mapWithIndex((i, [x, z]) => (
-          <mesh key={i} position={[x, 0, z]}>
+        RA.mapWithIndex((i, [x, y, z]) => (
+          <mesh key={i} position={[x, y, z]}>
             <sphereGeometry args={[0.1]} />
             <meshBasicMaterial color="blue" />
           </mesh>

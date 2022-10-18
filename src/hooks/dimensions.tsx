@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from "react"
-import { Box2, Vector2 } from "three"
+import { Box2, Box3, Vector2, Vector3 } from "three"
 import { proxy } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import houses from "./houses"
 import { ColumnLayout } from "./layouts"
 
-const dimensions = proxy<Record<string, Box2>>({})
+const dimensions = proxy<Record<string, Box3>>({})
 
 export const useDimensionsSubscriber = (
   houseId: string,
@@ -25,19 +25,18 @@ export const useDimensionsSubscriber = (
 
     const [px, , pz] = houses[houseId].position
 
-    const vc = new Vector2(0 + px, 0 + pz)
+    const yAxis = new Vector3(0, 1, 0)
 
-    const v0 = new Vector2(-x0 + px, z0 + pz).rotateAround(
-      vc,
-      -houses[houseId].rotation
-    )
+    const vx = new Vector3(-x0, 0, z0)
+    const vz = new Vector3(x0, 1, z1)
 
-    const v1 = new Vector2(x0 + px, z1 + pz).rotateAround(
-      vc,
-      -houses[houseId].rotation
-    )
+    vx.applyAxisAngle(yAxis, houses[houseId].rotation)
+    vz.applyAxisAngle(yAxis, houses[houseId].rotation)
 
-    dimensions[houseId] = new Box2(v0, v1)
+    vx.add(new Vector3(px, 0, pz))
+    vz.add(new Vector3(px, 0, pz))
+
+    dimensions[houseId] = new Box3(vx, vz)
   }, [columns, houseId])
 
   useEffect(() => {
