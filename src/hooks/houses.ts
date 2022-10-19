@@ -167,11 +167,8 @@ export const useMoveHouse = (
 
     events.before.newHouseTransform = {
       houseId,
-      position: [
-        houses[houseId].position[0] + dx,
-        houses[houseId].position[1],
-        houses[houseId].position[2] + dz,
-      ],
+      positionDelta: [dx, 0, dz],
+      rotationDelta: 0,
     }
 
     // invalidate()

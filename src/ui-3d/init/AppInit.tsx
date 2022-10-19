@@ -8,13 +8,15 @@ import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
 import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
-import { Fragment, PropsWithChildren, useEffect } from "react"
+import { Fragment, PropsWithChildren, useEffect, useRef } from "react"
 import { useKey } from "react-use"
+import { Matrix4 } from "three"
 import { subscribeKey } from "valtio/utils"
 import dimensions from "../../hooks/dimensions"
 import events from "../../hooks/events"
 import houses from "../../hooks/houses"
 import FullScreenContainer from "../../ui/FullScreenContainer"
+import { addV3 } from "../../utils/math"
 import GroundPlane from "../GroundPlane"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
@@ -60,13 +62,22 @@ const AppInit = (props: Props) => {
     mapboxStore.mapboxEnabled = !mapboxStore.mapboxEnabled
   })
 
+  const m4 = useRef(new Matrix4())
+
   useEffect(
     () =>
       subscribeKey(events.before, "newHouseTransform", () => {
         if (events.before.newHouseTransform === null) return
-        const { houseId, position, rotation } = events.before.newHouseTransform
+        const { houseId, positionDelta, rotationDelta } =
+          events.before.newHouseTransform
+
+        const [dx, dy, dz] = positionDelta
 
         const thisDimensions = dimensions[houseId]
+
+        m4.current.makeTranslation(dx, dy, dz)
+
+        thisDimensions.applyMatrix4(m4.current)
 
         // try new dimensions
 
@@ -82,10 +93,18 @@ const AppInit = (props: Props) => {
         }
 
         // reset dimensions if not working
-        if (!allowed) return
+        if (!allowed) {
+          m4.current.invert()
+          thisDimensions.applyMatrix4(m4.current)
+          return
+        }
 
-        if (position) houses[houseId].position = position
-        if (rotation) houses[houseId].rotation = rotation
+        if (positionDelta)
+          houses[houseId].position = addV3(
+            houses[houseId].position,
+            positionDelta
+          )
+        if (rotationDelta) houses[houseId].rotation = rotationDelta
       }),
     []
   )

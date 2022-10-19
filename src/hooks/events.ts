@@ -4,8 +4,8 @@ type T = {
   before: {
     newHouseTransform: {
       houseId: string
-      position?: V3
-      rotation?: number
+      positionDelta: V3
+      rotationDelta: number
     } | null
   }
 }
