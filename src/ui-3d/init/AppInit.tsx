@@ -1,23 +1,21 @@
 import globals, { useGlobals } from "@/hooks/globals"
 import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
+import Lighting from "@/ui-3d/init/Lighting"
 import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/init/MapboxR3FCanvasProjector"
-import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
-import Lighting from "@/ui-3d/init/Lighting"
 import RectangularGrid from "@/ui-3d/init/RectangularGrid"
+import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
 import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren, useEffect } from "react"
 import { useKey } from "react-use"
+import { subscribeKey } from "valtio/utils"
+import dimensions from "../../hooks/dimensions"
+import events from "../../hooks/events"
+import houses from "../../hooks/houses"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 import GroundPlane from "../GroundPlane"
-import { subscribeKey } from "valtio/utils"
-import events from "../../hooks/events"
-import dimensions from "../../hooks/dimensions"
-import { pipe } from "fp-ts/lib/function"
-import { RR } from "../../utils/functions"
-import houses from "../../hooks/houses"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -70,18 +68,20 @@ const AppInit = (props: Props) => {
 
         const thisDimensions = dimensions[houseId]
 
+        // try new dimensions
+
         let allowed = true
 
         for (let [k, v] of Object.entries(dimensions)) {
           if (k === houseId) continue
-          const intersects = thisDimensions.intersectsBox(v)
-          console.log(intersects)
+          const intersects = v.intersectsBox(thisDimensions)
           if (intersects) {
             allowed = false
             break
           }
         }
 
+        // reset dimensions if not working
         if (!allowed) return
 
         if (position) houses[houseId].position = position
