@@ -2,7 +2,7 @@ import { useColumnLayout } from "@/hooks/layouts"
 import { useGesture } from "@use-gesture/react"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
-import { useDimensionsSubscriber } from "../../hooks/dimensions"
+import { useOBBSubscriber } from "../../hooks/obb"
 import { useMoveHouse } from "../../hooks/houses"
 import RotateHandles from "../RotateHandles"
 import BoxColumn from "./BoxColumn"
@@ -16,7 +16,7 @@ const BoxHouse = (props: Props) => {
   const { id } = props
   const columns = useColumnLayout(id)
 
-  useDimensionsSubscriber(id, columns)
+  useOBBSubscriber(id, columns)
 
   const { houseDragHandler } = useMoveHouse(id, groupRef)
 

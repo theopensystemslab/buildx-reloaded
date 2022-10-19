@@ -12,7 +12,7 @@ import { Fragment, PropsWithChildren, useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Matrix4 } from "three"
 import { subscribeKey } from "valtio/utils"
-import dimensions from "../../hooks/dimensions"
+import obbs from "../../hooks/obb"
 import events from "../../hooks/events"
 import houses from "../../hooks/houses"
 import FullScreenContainer from "../../ui/FullScreenContainer"
@@ -73,7 +73,7 @@ const AppInit = (props: Props) => {
 
         const [dx, dy, dz] = positionDelta
 
-        const thisDimensions = dimensions[houseId]
+        const thisDimensions = obbs[houseId]
 
         m4.current.makeRotationY(rotation)
         m4.current.makeTranslation(dx, dy, dz)
@@ -84,9 +84,10 @@ const AppInit = (props: Props) => {
 
         let allowed = true
 
-        for (let [k, v] of Object.entries(dimensions)) {
+        for (let [k, v] of Object.entries(obbs)) {
           if (k === houseId) continue
-          const intersects = v.intersectsBox(thisDimensions)
+          const intersects = v.intersectsOBB(thisDimensions)
+          console.log(intersects)
           if (intersects) {
             allowed = false
             break
