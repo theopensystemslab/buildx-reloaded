@@ -168,7 +168,7 @@ export const useMoveHouse = (
     events.before.newHouseTransform = {
       houseId,
       positionDelta: [dx, 0, dz],
-      rotationDelta: 0,
+      rotation: 0,
     }
 
     // invalidate()
@@ -178,9 +178,9 @@ export const useMoveHouse = (
 
     if (last) {
       setCameraEnabled(true)
-      const [x, , z] = houses[houseId].position.map(snapToGrid)
-      houses[houseId].position[0] = x
-      houses[houseId].position[2] = z
+      // const [x, , z] = houses[houseId].position.map(snapToGrid)
+      // houses[houseId].position[0] = x
+      // houses[houseId].position[2] = z
     }
 
     lastPointer.current = globals.pointerXZ

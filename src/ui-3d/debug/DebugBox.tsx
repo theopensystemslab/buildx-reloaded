@@ -13,6 +13,8 @@ const DebugBox = (props: Props) => {
 
   const [circles, setCircles] = useState<[number, number, number][]>([])
 
+  useEffect(() => void console.log(circles), [circles])
+
   const update = useCallback(() => {
     const {
       min: { x: x0, y: y0, z: z0 },

@@ -40,7 +40,7 @@ const RotateHandles = (props: Props) => {
 
       events.before.newHouseTransform = {
         houseId,
-        rotationDelta: initialRotation.current - (angle - angle0),
+        rotation: initialRotation.current - (angle - angle0),
         positionDelta: [0, 0, 0],
       }
 

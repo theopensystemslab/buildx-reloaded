@@ -68,13 +68,14 @@ const AppInit = (props: Props) => {
     () =>
       subscribeKey(events.before, "newHouseTransform", () => {
         if (events.before.newHouseTransform === null) return
-        const { houseId, positionDelta, rotationDelta } =
+        const { houseId, positionDelta, rotation } =
           events.before.newHouseTransform
 
         const [dx, dy, dz] = positionDelta
 
         const thisDimensions = dimensions[houseId]
 
+        m4.current.makeRotationY(rotation)
         m4.current.makeTranslation(dx, dy, dz)
 
         thisDimensions.applyMatrix4(m4.current)
@@ -104,7 +105,7 @@ const AppInit = (props: Props) => {
             houses[houseId].position,
             positionDelta
           )
-        if (rotationDelta) houses[houseId].rotation = rotationDelta
+        if (rotation) houses[houseId].rotation = rotation
       }),
     []
   )

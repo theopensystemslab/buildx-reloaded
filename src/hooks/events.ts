@@ -5,7 +5,7 @@ type T = {
     newHouseTransform: {
       houseId: string
       positionDelta: V3
-      rotationDelta: number
+      rotation: number
     } | null
   }
 }
