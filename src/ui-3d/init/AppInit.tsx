@@ -87,7 +87,6 @@ const AppInit = (props: Props) => {
         for (let [k, v] of Object.entries(obbs)) {
           if (k === houseId) continue
           const intersects = v.intersectsOBB(thisDimensions)
-          console.log(intersects)
           if (intersects) {
             allowed = false
             break

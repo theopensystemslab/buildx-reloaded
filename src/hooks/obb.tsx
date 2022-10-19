@@ -17,7 +17,7 @@ export const useOBBSubscriber = (houseId: string, columns: ColumnLayout) => {
   const update = useCallback(() => {
     if (columns.length < 1) return
 
-    const x0 = -columns[0].gridGroups[0].modules[0].module.width / 2
+    const halfWidth = columns[0].gridGroups[0].modules[0].module.width / 2
     const z0 = columns[0].gridGroups[0].modules[0].z
     const lastColumn = columns[columns.length - 1]
     const lastGridGroup =
@@ -30,7 +30,7 @@ export const useOBBSubscriber = (houseId: string, columns: ColumnLayout) => {
     const [px, , pz] = houses[houseId].position
 
     const center = new Vector3(0, 0, 0)
-    const halfSize = new Vector3(x0, 1, length / 2)
+    const halfSize = new Vector3(halfWidth, 1, length / 2)
     const obb = new OBB(center, halfSize)
 
     preTransM.current.makeTranslation(0, 0, length / 2)
