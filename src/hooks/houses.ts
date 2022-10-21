@@ -1,5 +1,5 @@
 import { ThreeEvent } from "@react-three/fiber"
-import { Handler } from "@use-gesture/react"
+import { Handler, useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
 import * as RA from "fp-ts/ReadonlyArray"
@@ -112,7 +112,57 @@ export const useHouseRows = (buildingId: string) => {
   return modulesToRows(houseModules)
 }
 
-export const useMoveHouse = (
+export const useHouseEventHandlers = (houseId: string): any => {
+  // const contextMode = useSiteContextMode()
+  // const { editMode } = useSiteContext()
+
+  const lastPointer = useRef<[number, number]>([0, 0])
+
+  return useGesture({
+    onDrag: ({ first, last }) => {
+      // if (
+      //   contextMode !== SiteContextModeEnum.Enum.SITE ||
+      //   editMode !== EditModeEnum.Enum.MOVE_ROTATE
+      // ) {
+      //   return
+      // }
+
+      // if (scope.selected?.buildingId !== houseId) return
+
+      if (first) {
+        setCameraEnabled(false)
+        lastPointer.current = globals.pointerXZ
+      }
+
+      const [px0, pz0] = lastPointer.current
+      const [px1, pz1] = globals.pointerXZ
+
+      const [dx, dz] = [px1 - px0, pz1 - pz0]
+
+      events.before.newHouseTransform = {
+        houseId,
+        positionDelta: [dx, 0, dz],
+        rotation: 0,
+      }
+
+      // invalidate()
+      const snapToGrid = (x: number) => {
+        return Math.round(x)
+      }
+
+      if (last) {
+        setCameraEnabled(true)
+        // const [x, , z] = houses[houseId].position.map(snapToGrid)
+        // houses[houseId].position[0] = x
+        // houses[houseId].position[2] = z
+      }
+
+      lastPointer.current = globals.pointerXZ
+    },
+  })
+}
+
+export const useMoveRotateSubscription = (
   houseId: string,
   groupRef: MutableRefObject<Group | null>
 ) => {
@@ -136,57 +186,6 @@ export const useMoveHouse = (
     onRotationUpdate()
     return subscribeKey(houses[houseId], "rotation", onRotationUpdate)
   }, [houseId, onRotationUpdate])
-
-  // const contextMode = useSiteContextMode()
-  // const { editMode } = useSiteContext()
-
-  const lastPointer = useRef<[number, number]>([0, 0])
-
-  const houseDragHandler: Handler<"drag", ThreeEvent<PointerEvent>> = ({
-    first,
-    last,
-  }) => {
-    // if (
-    //   contextMode !== SiteContextModeEnum.Enum.SITE ||
-    //   editMode !== EditModeEnum.Enum.MOVE_ROTATE
-    // ) {
-    //   return
-    // }
-
-    // if (scope.selected?.buildingId !== houseId) return
-
-    if (first) {
-      setCameraEnabled(false)
-      lastPointer.current = globals.pointerXZ
-    }
-
-    const [px0, pz0] = lastPointer.current
-    const [px1, pz1] = globals.pointerXZ
-
-    const [dx, dz] = [px1 - px0, pz1 - pz0]
-
-    events.before.newHouseTransform = {
-      houseId,
-      positionDelta: [dx, 0, dz],
-      rotation: 0,
-    }
-
-    // invalidate()
-    const snapToGrid = (x: number) => {
-      return Math.round(x)
-    }
-
-    if (last) {
-      setCameraEnabled(true)
-      // const [x, , z] = houses[houseId].position.map(snapToGrid)
-      // houses[houseId].position[0] = x
-      // houses[houseId].position[2] = z
-    }
-
-    lastPointer.current = globals.pointerXZ
-  }
-
-  return { houseDragHandler }
 }
 
 export default houses

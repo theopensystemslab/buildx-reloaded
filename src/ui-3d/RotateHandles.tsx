@@ -5,6 +5,7 @@ import events from "../hooks/events"
 import globals from "../hooks/globals"
 import houses from "../hooks/houses"
 import HandleMaterial from "../materials/HandleMaterial"
+import CircularHandle from "./CircularHandle"
 
 type Props = {
   houseId: string
@@ -53,22 +54,16 @@ const RotateHandles = (props: Props) => {
 
   return (
     <Fragment>
-      <mesh
+      <CircularHandle
         rotation-x={-Math.PI / 2}
         position={[0, 0, -1.5]}
         {...(bind(0) as any)}
-      >
-        <circleBufferGeometry args={[0.5, 10]} />
-        <HandleMaterial />
-      </mesh>
-      <mesh
+      />
+      <CircularHandle
         rotation-x={-Math.PI / 2}
         position={[-houseWidth / 2 - 1.5, 0, houseLength / 2]}
         {...(bind(1) as any)}
-      >
-        <circleBufferGeometry args={[0.5, 10]} />
-        <HandleMaterial />
-      </mesh>
+      />
     </Fragment>
   )
 }

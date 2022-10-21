@@ -1,10 +1,7 @@
-import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Matrix4, Mesh } from "three"
 import { subscribeKey } from "valtio/utils"
-import houses from "../../hooks/houses"
-import obbs from "../../hooks/obb"
-import { RA } from "../../utils/functions"
+import dimensions from "../../hooks/dimensions"
 
 type Props = {
   houseId: string
@@ -20,8 +17,9 @@ const DebugBox = (props: Props) => {
   const m4 = useRef(new Matrix4())
 
   const update = useCallback(() => {
-    const obb = obbs[houseId]
-    const { center, halfSize, rotation } = obb
+    const {
+      obb: { center, halfSize, rotation },
+    } = dimensions[houseId]
 
     if (width === null) setWidth(halfSize.x * 2)
     if (length === null) setLength(halfSize.z * 2)
@@ -37,7 +35,7 @@ const DebugBox = (props: Props) => {
 
   useEffect(() => {
     update()
-    return subscribeKey(obbs, houseId, update)
+    return subscribeKey(dimensions, houseId, update)
   }, [houseId, update])
 
   return (

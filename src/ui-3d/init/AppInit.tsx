@@ -12,7 +12,7 @@ import { Fragment, PropsWithChildren, useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Matrix4 } from "three"
 import { subscribeKey } from "valtio/utils"
-import obbs from "../../hooks/obb"
+import dimensions from "../../hooks/dimensions"
 import events from "../../hooks/events"
 import houses from "../../hooks/houses"
 import FullScreenContainer from "../../ui/FullScreenContainer"
@@ -23,7 +23,7 @@ const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
 type Props = PropsWithChildren<{}>
 
-const Shared = () => {
+const Common = () => {
   const { preload } = useGlobals()
 
   return (
@@ -73,20 +73,20 @@ const AppInit = (props: Props) => {
 
         const [dx, dy, dz] = positionDelta
 
-        const thisDimensions = obbs[houseId]
+        const thisObb = dimensions[houseId].obb
 
         m4.current.makeRotationY(rotation)
         m4.current.makeTranslation(dx, dy, dz)
 
-        thisDimensions.applyMatrix4(m4.current)
+        thisObb.applyMatrix4(m4.current)
 
         // try new dimensions
 
         let allowed = true
 
-        for (let [k, v] of Object.entries(obbs)) {
+        for (let [k, { obb }] of Object.entries(dimensions)) {
           if (k === houseId) continue
-          const intersects = v.intersectsOBB(thisDimensions)
+          const intersects = obb.intersectsOBB(thisObb)
           if (intersects) {
             allowed = false
             break
@@ -96,7 +96,7 @@ const AppInit = (props: Props) => {
         // reset dimensions if not working
         if (!allowed) {
           m4.current.invert()
-          thisDimensions.applyMatrix4(m4.current)
+          thisObb.applyMatrix4(m4.current)
           return
         }
 
@@ -115,13 +115,13 @@ const AppInit = (props: Props) => {
       <EventDiv>
         {!mapboxEnabled ? (
           <VanillaR3FCanvas>
-            <Shared />
+            <Common />
             {children}
           </VanillaR3FCanvas>
         ) : (
           <MapboxR3FCanvas>
             <MapboxR3FCanvasProjector>
-              <Shared />
+              <Common />
               {children}
             </MapboxR3FCanvasProjector>
           </MapboxR3FCanvas>

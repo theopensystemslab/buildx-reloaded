@@ -1,12 +1,12 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useSnapshot } from "valtio"
-import obbs from "../../hooks/obb"
-import { RA, RR } from "../../utils/functions"
+import dimensions from "../../hooks/dimensions"
+import { RA, RR } from "../../lib/functions"
 import DebugBox from "./DebugBox"
 
 const DebugApp = () => {
-  const debugBoxes = useSnapshot(obbs)
+  const debugBoxes = useSnapshot(dimensions)
 
   const debugChildren = pipe(
     debugBoxes,
