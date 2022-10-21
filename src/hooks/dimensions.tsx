@@ -3,7 +3,6 @@ import { Box3, Matrix3, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref } from "valtio"
 import { subscribeKey } from "valtio/utils"
-import { abs } from "../lib/utils/math"
 import houses from "./houses"
 import { ColumnLayout } from "./layouts"
 
