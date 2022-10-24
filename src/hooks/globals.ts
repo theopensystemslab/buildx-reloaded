@@ -6,6 +6,7 @@ type GlobalStore = {
   size: RectReadOnly | null
   pointerXY: V2
   pointerXZ: V2
+  pointerY: number
   groundMesh: Mesh | null
   sidebar: boolean
   preload: boolean
@@ -16,6 +17,7 @@ type GlobalStore = {
 
 const globals = proxy<GlobalStore>({
   size: null,
+  pointerY: 0,
   pointerXY: [0, 0],
   pointerXZ: [0, 0],
   groundMesh: null,

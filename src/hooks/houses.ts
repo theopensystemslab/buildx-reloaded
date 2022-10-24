@@ -168,8 +168,8 @@ export const useMoveRotateSubscription = (
 ) => {
   const onPositionUpdate = useCallback(() => {
     if (!groupRef.current) return
-    const [x, _, z] = houses[houseId].position
-    groupRef.current.position.set(x, 0, z)
+    const [x, y, z] = houses[houseId].position
+    groupRef.current.position.set(x, y, z)
   }, [groupRef, houseId])
 
   useEffect(() => {

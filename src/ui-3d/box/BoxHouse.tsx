@@ -27,23 +27,25 @@ const BoxHouse = (props: Props) => {
 
   return (
     <Fragment>
-      <group ref={groupRef} {...bind()}>
-        {columns.map(({ columnIndex, z, gridGroups }) => {
-          return (
-            <BoxColumn
-              key={columnIndex}
-              houseId={id}
-              columnIndex={columnIndex}
-              columnZ={z}
-              gridGroups={gridGroups}
-              verticalCutPlanes={[]}
-              mirror={columnIndex === columns.length - 1}
-            />
-          )
-        })}
+      <group ref={groupRef}>
+        <group {...bind()}>
+          {columns.map(({ columnIndex, z, gridGroups }) => {
+            return (
+              <BoxColumn
+                key={columnIndex}
+                houseId={id}
+                columnIndex={columnIndex}
+                columnZ={z}
+                gridGroups={gridGroups}
+                verticalCutPlanes={[]}
+                mirror={columnIndex === columns.length - 1}
+              />
+            )
+          })}
+        </group>
         <RotateHandles houseId={id} houseLength={0} houseWidth={0} />
-        <VerticalHandle houseId={id} />
       </group>
+      <VerticalHandle houseId={id} />
     </Fragment>
   )
 }
