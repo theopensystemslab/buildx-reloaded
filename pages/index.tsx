@@ -1,13 +1,16 @@
 import DataInit from "@/data/DataInit"
+import BoxApp from "@/ui-3d/box/BoxApp"
+import AppInit from "@/ui-3d/init/AppInit"
 import { Fragment } from "react"
-import { App, AppInit } from "@/ui-3d/entry"
+import DebugApp from "../src/ui-3d/debug/DebugApp"
 
 const IndexPage = () => {
   return (
     <Fragment>
       <DataInit />
       <AppInit>
-        <App />
+        <BoxApp />
+        <DebugApp />
       </AppInit>
     </Fragment>
   )

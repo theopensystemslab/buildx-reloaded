@@ -1,0 +1,88 @@
+import { ThreeEvent } from "@react-three/fiber"
+import { useGesture } from "@use-gesture/react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { Group, Mesh } from "three"
+import { subscribeKey } from "valtio/utils"
+import { RaycasterLayer } from "../constants"
+import { setCameraEnabled } from "../hooks/camera"
+import dimensions from "../hooks/dimensions"
+import events from "../hooks/events"
+import globals from "../hooks/globals"
+import CircularHandle from "./CircularHandle"
+import YPlane from "./YPlane"
+
+type Props = {
+  houseId: string
+}
+
+const VerticalHandle = (props: Props) => {
+  const { houseId } = props
+
+  const groupRef = useRef<Group>(null)
+  const handleRef = useRef<Mesh>(null)
+
+  const [hovered, setHovered] = useState(false)
+
+  const update = useCallback(() => {
+    if (!groupRef.current || !(houseId in dimensions)) return
+    const { height, length } = dimensions[houseId]
+    groupRef.current.position.set(0, height + 2, length / 2)
+  }, [houseId])
+
+  useEffect(() => {
+    update()
+    return subscribeKey(dimensions, houseId, update)
+  }, [houseId, update])
+
+  const y0 = useRef(0)
+  const dragging = useRef(false)
+
+  const bind: any = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+    onDrag: ({
+      event: {
+        intersections: [ix0],
+      },
+      first,
+      last,
+    }) => {
+      if (!handleRef.current) return
+      if (first) {
+        y0.current = globals.pointerY
+        setCameraEnabled(false)
+        dragging.current = true
+        return
+      }
+
+      const dy = globals.pointerY - y0.current
+
+      events.before.newHouseTransform = {
+        houseId,
+        positionDelta: [0, dy, 0],
+        rotation: 0,
+      }
+
+      y0.current = globals.pointerY
+      handleRef.current.position.y += dy
+
+      if (last) {
+        setCameraEnabled(true)
+        dragging.current = false
+      }
+    },
+    onHover: ({ hovering }) => {
+      if (dragging.current && hovered) return
+      setHovered(hovering ?? false)
+    },
+  })
+
+  return (
+    <group ref={groupRef}>
+      <CircularHandle ref={handleRef} {...bind()} />
+      <YPlane
+        layers={hovered ? RaycasterLayer.ENABLED : RaycasterLayer.DISABLED}
+      />
+    </group>
+  )
+}
+
+export default VerticalHandle

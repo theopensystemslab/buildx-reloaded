@@ -1,9 +1,7 @@
-import { useGesture, useHover } from "@use-gesture/react"
-import React, { PropsWithChildren, useEffect } from "react"
+import { useGesture } from "@use-gesture/react"
+import { PropsWithChildren, useEffect } from "react"
 import useMeasure from "react-use-measure"
 import globals from "../hooks/globals"
-import { subscribeKey } from "valtio/utils"
-import { Raycaster } from "three"
 
 type Props = {}
 
@@ -32,12 +30,13 @@ const EventDiv = (props: PropsWithChildren<Props>) => {
 
         globals.pointerXY = [x, y]
       },
+      onDrag: ({}) => {},
     },
     { eventOptions: { capture: true } }
   )
 
   return (
-    <div ref={ref} className="absolute w-full h-full" {...bind()}>
+    <div ref={ref} className="absolute w-full h-full touch-none" {...bind()}>
       {children}
     </div>
   )

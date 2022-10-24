@@ -1,6 +1,5 @@
 import { DEFAULT_ORIGIN } from "@/constants"
 import mapboxStore, { setMapboxMap } from "@/hooks/mapboxStore"
-import { reverseV2 } from "@/utils/math"
 import {
   addAfterEffect,
   addEffect,
@@ -10,6 +9,7 @@ import {
   extend,
   ReconcilerRoot,
   RenderProps,
+  RootState,
 } from "@react-three/fiber"
 import mapboxgl, { AnyLayer } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
@@ -23,6 +23,8 @@ import {
 import { useKey } from "react-use"
 import * as THREE from "three"
 import { BasicShadowMap, sRGBEncoding } from "three"
+import { onCreated } from "../../utils/common"
+import { reverseV2 } from "../../utils/math"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
@@ -118,14 +120,11 @@ const MapboxR3FCanvas = (props: Props) => {
             top: 0,
             left: 0,
           },
-          onCreated: (state: any) => {
+          onCreated: (state: RootState) => {
+            onCreated(state)
             state.events.connect?.(mapElement)
             addEffect(() => state.gl.resetState())
             addAfterEffect(() => map.triggerRepaint())
-
-            state.gl.localClippingEnabled = true
-            // state.raycaster.layers.enable(RaycasterLayer.clickable)
-            // state.raycaster.layers.disable(RaycasterLayer.non_clickable)
           },
           ...canvasProps,
         })
