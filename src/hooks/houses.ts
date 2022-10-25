@@ -1,8 +1,7 @@
-import { ThreeEvent } from "@react-three/fiber"
-import { Handler, useGesture } from "@use-gesture/react"
+import { useGesture } from "@use-gesture/react"
+import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
-import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import {
   MutableRefObject,
@@ -15,9 +14,10 @@ import { Group } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
-import { getHousesFromLocalStorage, Houses } from "../data/house"
+import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module } from "../data/module"
+import { A, R, RA, RR, S } from "../utils/functions"
 import { setCameraEnabled } from "./camera"
 import events from "./events"
 import globals from "./globals"
@@ -186,6 +186,34 @@ export const useMoveRotateSubscription = (
     onRotationUpdate()
     return subscribeKey(houses[houseId], "rotation", onRotationUpdate)
   }, [houseId, onRotationUpdate])
+}
+
+export const useHousesSystems = () => {
+  const snap = useSnapshot(houses) as typeof houses
+  return pipe(
+    snap,
+    RR.reduce(S.Ord)([], (acc: string[], { systemId }) => {
+      return A.uniq(S.Eq)([...acc, systemId])
+    })
+  )
+}
+
+export const useSystemHouses = (systemId: string): House[] => {
+  const snap = useSnapshot(houses) as typeof houses
+
+  return pipe(
+    snap,
+    R.filter((v) => v.systemId === systemId),
+    values
+  )
+}
+
+export const useSystemUniqueDnas = (systemId: string): string[] => {
+  const systemHouses = useSystemHouses(systemId)
+  return pipe(
+    systemHouses,
+    A.reduce([], (acc: string[], { dna }) => A.uniq(S.Eq)([...acc, ...dna]))
+  )
 }
 
 export default houses
