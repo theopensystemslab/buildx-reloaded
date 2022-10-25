@@ -3,7 +3,9 @@ import { modulesQuery } from "@/data/module"
 import { initTRPC } from "@trpc/server"
 import * as trpcNext from "@trpc/server/adapters/next"
 import Airtable from "airtable"
-import { systemIdParser } from "../../../src/data/system"
+import { elementsQuery } from "@/data/element"
+import { materialsQuery } from "@/data/material"
+import { systemIdParser } from "@/data/system"
 
 export const t = initTRPC()()
 
@@ -18,6 +20,8 @@ export const appRouter = t.router({
     .input(systemIdParser)
     .query(systemHouseTypesQuery(airtable)),
   allHouseTypes: t.procedure.query(allHouseTypesQuery(airtable)),
+  elements: t.procedure.input(systemIdParser).query(elementsQuery(airtable)),
+  materials: t.procedure.input(systemIdParser).query(materialsQuery(airtable)),
 })
 
 // export type definition of API
