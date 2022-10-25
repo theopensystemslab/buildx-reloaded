@@ -8,13 +8,13 @@ import {
 } from "../../hooks/houses"
 import RotateHandles from "../RotateHandles"
 import VerticalHandle from "../VerticalHandle"
-import BoxColumn from "./BoxColumn"
+import GltfColumn from "./GltfColumn"
 
 type Props = {
   id: string
 }
 
-const BoxHouse = (props: Props) => {
+const GltfHouse = (props: Props) => {
   const groupRef = useRef<Group>(null!)
   const { id } = props
   const columns = useColumnLayout(id)
@@ -30,7 +30,7 @@ const BoxHouse = (props: Props) => {
         <group {...bind()}>
           {columns.map(({ columnIndex, z, gridGroups }) => {
             return (
-              <BoxColumn
+              <GltfColumn
                 key={columnIndex}
                 houseId={id}
                 columnIndex={columnIndex}
@@ -49,4 +49,4 @@ const BoxHouse = (props: Props) => {
   )
 }
 
-export default BoxHouse
+export default GltfHouse
