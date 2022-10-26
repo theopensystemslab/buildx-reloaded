@@ -13,6 +13,7 @@ const DebugBox = (props: Props) => {
 
   const [width, setWidth] = useState<number | null>(null)
   const [length, setLength] = useState<number | null>(null)
+  const [height, setHeight] = useState<number | null>(null)
 
   const m4 = useRef(new Matrix4())
 
@@ -23,6 +24,7 @@ const DebugBox = (props: Props) => {
 
     if (width === null) setWidth(halfSize.x * 2)
     if (length === null) setLength(halfSize.z * 2)
+    if (height === null) setHeight(halfSize.y * 2)
 
     if (!meshRef.current) return
 
@@ -30,8 +32,8 @@ const DebugBox = (props: Props) => {
 
     m4.current.setFromMatrix3(rotation)
     meshRef.current.setRotationFromMatrix(m4.current)
-    meshRef.current.position.set(x, y + halfSize.y / 2, z)
-  }, [houseId, length, width])
+    meshRef.current.position.set(x, y + halfSize.y, z)
+  }, [houseId, length, width, height])
 
   useEffect(() => {
     update()
@@ -40,7 +42,7 @@ const DebugBox = (props: Props) => {
 
   return (
     <mesh ref={meshRef}>
-      <boxBufferGeometry args={[width ?? 0, 1, length ?? 0]} />
+      <boxBufferGeometry args={[width ?? 0, height ?? 0, length ?? 0]} />
       <meshBasicMaterial color="yellow" />
       {/* {pipe(
         circles,
