@@ -1,6 +1,5 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import { House } from "../../data/house"
 import { useSystemUniqueDnas } from "../../hooks/houses"
 import { A } from "../../utils/functions"
 import InstancedModule from "./InstancedModule"
