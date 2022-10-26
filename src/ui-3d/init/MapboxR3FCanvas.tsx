@@ -13,14 +13,7 @@ import {
 } from "@react-three/fiber"
 import mapboxgl, { AnyLayer } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
-import { useKey } from "react-use"
+import { PropsWithChildren, useEffect, useState } from "react"
 import * as THREE from "three"
 import { BasicShadowMap, sRGBEncoding } from "three"
 import { onCreated } from "../../utils/common"
@@ -45,26 +38,26 @@ const MapboxR3FCanvas = (props: Props) => {
     ReconcilerRoot<HTMLCanvasElement> | undefined
   >()
 
-  const toggleAllLayers = useCallback((b: boolean) => {
-    if (!mapboxStore.mapboxMap) return
-    const style = mapboxStore.mapboxMap.getStyle()
-    if (!style) return
+  // const toggleAllLayers = useCallback((b: boolean) => {
+  //   if (!mapboxStore.mapboxMap) return
+  //   const style = mapboxStore.mapboxMap.getStyle()
+  //   if (!style) return
 
-    for (const layer of mapboxStore.mapboxMap.getStyle().layers) {
-      mapboxStore.mapboxMap.setLayoutProperty(
-        layer.id,
-        "visibility",
-        b ? "visible" : "none"
-      )
-    }
-  }, [])
+  //   for (const layer of mapboxStore.mapboxMap.getStyle().layers) {
+  //     mapboxStore.mapboxMap.setLayoutProperty(
+  //       layer.id,
+  //       "visibility",
+  //       b ? "visible" : "none"
+  //     )
+  //   }
+  // }, [])
 
-  const mapboxEnabled = useRef(true)
+  // const mapboxEnabled = useRef(true)
 
-  useKey("m", () => {
-    mapboxEnabled.current = !mapboxEnabled.current
-    toggleAllLayers(mapboxEnabled.current)
-  })
+  // useKey("m", () => {
+  //   mapboxEnabled.current = !mapboxEnabled.current
+  //   toggleAllLayers(mapboxEnabled.current)
+  // })
 
   useEffect(() => {
     if (!mapElement) return
@@ -128,9 +121,7 @@ const MapboxR3FCanvas = (props: Props) => {
           },
           ...canvasProps,
         })
-
         map.repaint = false
-
         root.render(children)
       },
       render: (ctx?: WebGLRenderingContext, matrix?: number[]): void => {
@@ -143,7 +134,11 @@ const MapboxR3FCanvas = (props: Props) => {
       mapboxStore.mapboxMap!.addLayer(customLayer)
     })
 
-    return () => root.unmount()
+    return () => {
+      root.unmount()
+      mapElement.innerHTML = ""
+      mapboxStore.mapboxMap = null
+    }
   }, [canvasProps, children, mapElement, root, setRoot])
 
   return <div ref={setMapElement} className="h-full w-full" />
