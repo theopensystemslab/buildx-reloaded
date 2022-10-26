@@ -8,6 +8,7 @@ import { setCameraEnabled } from "../hooks/camera"
 import dimensions from "../hooks/dimensions"
 import events from "../hooks/events"
 import globals from "../hooks/globals"
+import houses from "../hooks/houses"
 import CircularHandle from "./CircularHandle"
 import YPlane from "./YPlane"
 
@@ -25,8 +26,13 @@ const VerticalHandle = (props: Props) => {
 
   const update = useCallback(() => {
     if (!groupRef.current || !(houseId in dimensions)) return
+    const {
+      position: [px, py, pz],
+      rotation,
+    } = houses[houseId]
     const { height, length } = dimensions[houseId]
-    groupRef.current.position.set(0, height + 2, length / 2)
+    groupRef.current.position.set(px, height + 2, pz + length / 2)
+    groupRef.current.rotation.y = rotation
   }, [houseId])
 
   useEffect(() => {

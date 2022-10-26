@@ -39,7 +39,7 @@ export const useDimensionsSubscription = (
 
     const length = z1 - z0
 
-    const [px, , pz] = houses[houseId].position
+    const [px, py, pz] = houses[houseId].position
 
     const center = new Vector3(0, 0, 0)
     const halfSize = new Vector3(width / 2, 1, length / 2)
@@ -47,7 +47,7 @@ export const useDimensionsSubscription = (
 
     preTransM.current.makeTranslation(0, 0, length / 2)
     rotationMatrix.current.makeRotationY(houses[houseId].rotation)
-    postTransM.current.makeTranslation(px, 0, pz)
+    postTransM.current.makeTranslation(px, py, pz)
 
     obb.applyMatrix4(
       postTransM.current.multiply(
