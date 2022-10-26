@@ -1,17 +1,25 @@
 import { proxy } from "valtio"
 
+type NewHouseTransform = {
+  houseId: string
+  positionDelta: V3
+  rotation: number
+}
+
 type T = {
   before: {
-    newHouseTransform: {
-      houseId: string
-      positionDelta: V3
-      rotation: number
-    } | null
+    newHouseTransform: NewHouseTransform | null
+  }
+  after: {
+    newHouseTransform: NewHouseTransform | null
   }
 }
 
 const events = proxy<T>({
   before: {
+    newHouseTransform: null,
+  },
+  after: {
     newHouseTransform: null,
   },
 })

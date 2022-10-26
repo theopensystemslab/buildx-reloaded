@@ -43,6 +43,22 @@ const VerticalHandle = (props: Props) => {
   const y0 = useRef(0)
   const dragging = useRef(false)
 
+  useEffect(() =>
+    subscribeKey(events.after, "newHouseTransform", () => {
+      if (
+        !handleRef.current ||
+        events.after.newHouseTransform === null ||
+        events.after.newHouseTransform.houseId !== houseId
+      )
+        return
+      const {
+        positionDelta: [dx, dy, dz],
+        rotation: dr,
+      } = events.after.newHouseTransform
+      handleRef.current.position.y += dy
+    })
+  )
+
   const bind: any = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
     onDrag: ({
       event: {
@@ -68,7 +84,6 @@ const VerticalHandle = (props: Props) => {
       }
 
       y0.current = globals.pointerY
-      handleRef.current.position.y += dy
 
       if (last) {
         setCameraEnabled(true)

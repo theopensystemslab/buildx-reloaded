@@ -106,6 +106,8 @@ const AppInit = (props: Props) => {
             positionDelta
           )
         if (rotation) houses[houseId].rotation = rotation
+
+        events.after.newHouseTransform = events.before.newHouseTransform
       }),
     []
   )
