@@ -1,15 +1,9 @@
 import { Module } from "@/data/module"
-import { GroupProps, useLoader } from "@react-three/fiber"
+import { GroupProps } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
 import { Group, Plane } from "three"
-import {
-  acceleratedRaycast,
-  computeBoundsTree,
-  disposeBoundsTree,
-} from "three-mesh-bvh"
-import { ref } from "valtio"
-import { IFCLoader } from "web-ifc-three"
-import ifcStore from "@/hooks/ifcStore"
+import { models } from "../../hooks/ifc"
+import { subscribeMapKey } from "../../utils/valtio"
 
 type Props = GroupProps & {
   module: Module
@@ -37,28 +31,58 @@ const IfcModule = (props: Props) => {
 
   const key = `${houseId}:${columnIndex},${levelIndex},${groupIndex}`
 
-  const ifcModel = useLoader(IFCLoader, module.ifcUrl, (loader) => {
-    if (loader instanceof IFCLoader) {
-      loader.ifcManager.setWasmPath("../../../wasm/")
-    }
-  })
-
   useEffect(() => {
-    if (!groupRef.current) return
-    ifcStore.models[key] = ref(ifcModel)
-    groupRef.current.add(ifcModel.clone())
+    return subscribeMapKey(models, module.ifcUrl, async () => {
+      console.log("called sub")
+      const model = models.get(module.ifcUrl)
+      if (!model) return
+      console.log(model)
+      // const items = await ifc.loader.ifcManager.getAllItemsOfType(
+      //   model.modelID,
+      //   0,
+      //   false
+      // )
+      // console.log(items)
+    })
+  }, [module.ifcUrl])
 
-    ifcModel?.ifcManager?.setupThreeMeshBVH(
-      computeBoundsTree,
-      disposeBoundsTree,
-      acceleratedRaycast
-    )
-    return () => {
-      delete ifcStore.models[key]
-    }
-  }, [ifcModel, key])
+  // const ifcModel = useModel(module.ifcUrl)
+  // console.log(ifcModel)
 
-  return <group ref={groupRef} {...groupProps} />
+  // useEffect(() => {
+  //   if (!groupRef.current) return
+  //   groupRef.current.clear()
+  //   groupRef.current.add(ifcModel.mesh)
+  // }, [ifcModel])
+
+  // useLoader(IFCLoader, module.ifcUrl, (loader) => {
+  //   if (loader instanceof IFCLoader) {
+  //     loader.ifcManager.setWasmPath("../../../wasm/")
+  //   }
+  // })
+
+  // useEffect(() => {
+  //   if (!groupRef.current) return
+  //   ifcStore.models[key] = ref(ifcModel)
+  //   groupRef.current.add(ifcModel.clone())
+
+  //   ifcModel?.ifcManager?.setupThreeMeshBVH(
+  //     computeBoundsTree,
+  //     disposeBoundsTree,
+  //     acceleratedRaycast
+  //   )
+  //   return () => {
+  //     delete ifcStore.models[key]
+  //   }
+  // }, [ifcModel, key])
+
+  return (
+    <group ref={groupRef} {...groupProps}>
+      {/* <mesh geometry={ifcModel.mesh.geometry}>
+        <meshBasicMaterial />
+      </mesh> */}
+    </group>
+  )
 
   // useEffect(() => {
   //   const ifcLoader = new IFCLoader()

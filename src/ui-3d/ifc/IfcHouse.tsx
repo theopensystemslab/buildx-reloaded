@@ -1,5 +1,10 @@
 import { useColumnLayout } from "@/hooks/layouts"
 import { useGesture } from "@use-gesture/react"
+import { useEffect } from "react"
+import { subscribe } from "valtio"
+import { IFCPROJECT, IFCWALL } from "web-ifc"
+import ifc, { models } from "../../hooks/ifc"
+import { subscribeMapKey } from "../../utils/valtio"
 import IfcColumn from "./IfcColumn"
 
 type Props = {
@@ -17,6 +22,34 @@ const IfcHouse = (props: Props) => {
       if (last) console.log("last")
     },
   })
+
+  // useEffect(() => {
+  //   console.log("called effect")
+  //   const ifcUrl0 = columns?.[0]?.gridGroups?.[0].modules?.[0].module.ifcUrl
+  //   subscribeMapKey(models, ifcUrl0, async () => {
+  //     console.log("called sub")
+  //     const model = models.get(ifcUrl0)
+  //     if (!model) return
+  //     console.log(model)
+  //     console.log(model.types)
+  //     // const items = await ifc.loader.ifcManager.getAllItemsOfType(
+  //     //   model.modelID,
+  //     //   0,
+  //     //   false
+  //     // )
+  //     // console.log(items)
+  //   })
+  // }, [columns])
+
+  // useEffect(() => {
+  //   console.log("called")
+  //   const ifcUrl0 = columns?.[0]?.gridGroups?.[0].modules?.[0].module.ifcUrl
+  //   console.log(ifcUrl0)
+  //   const model = models.get(ifcUrl0)
+  //   if (!model) return
+  //   const space = ifc.loader.ifcManager.getSpatialStructure(model.modelID)
+  //   console.log(space)
+  // }, [columns])
 
   return (
     <group {...(bind() as any)}>
