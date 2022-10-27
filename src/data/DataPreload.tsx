@@ -1,7 +1,6 @@
-import { useLoader } from "@react-three/fiber"
+import { useGLTF } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
-import { IFCLoader } from "web-ifc-three"
 import systemModules from "../hooks/modules"
 import { RA, RR } from "../utils/functions"
 
@@ -12,11 +11,12 @@ const DataPreload = () => {
     snap,
     RR.map(
       RA.map((m) => {
-        useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
-          if (loader instanceof IFCLoader) {
-            loader.ifcManager.setWasmPath("../../../wasm/")
-          }
-        })
+        useGLTF.preload(m.modelUrl)
+        // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
+        //   if (loader instanceof IFCLoader) {
+        //     loader.ifcManager.setWasmPath("../../../wasm/")
+        //   }
+        // })
       })
     )
   )
