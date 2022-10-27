@@ -30,6 +30,14 @@ const globals = proxy<GlobalStore>({
 
 export const useGlobals = () => useSnapshot(globals)
 
+export const setOrthographic = (b: boolean) => {
+  globals.orthographic = b
+}
+
+export const setShadows = (b: boolean) => {
+  globals.shadows = b
+}
+
 export const setSidebar = (b: boolean) => {
   globals.sidebar = b
   if (!globals.preload) globals.preload = true

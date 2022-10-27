@@ -17,6 +17,10 @@ export const setMapboxMap = (mapboxMap: mapboxgl.Map) => {
   mapboxStore.mapboxMap = ref(mapboxMap)
 }
 
+export const setMapboxEnabled = (b: boolean) => {
+  mapboxStore.mapboxEnabled = b
+}
+
 export const useMapboxStore = () => useSnapshot(mapboxStore)
 
 export default mapboxStore
