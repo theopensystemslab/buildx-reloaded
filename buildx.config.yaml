@@ -14,3 +14,6 @@ systems:
   - id: skylark
     name: WikiHouse Skylark
     airtableId: app7fME5xo63IoGGI
+  - id: skylark-2
+    name: Skylark Ng
+    airtableId: appIft3BCbLGb8nZG
