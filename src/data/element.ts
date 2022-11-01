@@ -72,11 +72,11 @@ export const elementsQuery =
     )
   }
 
-export const useSystemElements = ({
-  systemId,
-}: {
-  systemId: string
-}): Element[] =>
-  trpc.elements.useQuery({
-    systemId,
-  }).data ?? []
+// export const useSystemElements = ({
+//   systemId,
+// }: {
+//   systemId: string
+// }): Element[] =>
+//   trpc.systemElements.useQuery({
+//     systemId,
+//   }).data ?? []

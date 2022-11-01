@@ -85,6 +85,6 @@ export const materialsQuery =
     )
 
 export const useSystemMaterials = ({ systemId }: { systemId: string }) =>
-  trpc.materials.useQuery({
+  trpc.systemMaterials.useQuery({
     systemId,
   })

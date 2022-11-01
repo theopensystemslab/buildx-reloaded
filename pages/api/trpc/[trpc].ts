@@ -20,8 +20,12 @@ export const appRouter = t.router({
     .input(systemIdParser)
     .query(systemHouseTypesQuery(airtable)),
   allHouseTypes: t.procedure.query(allHouseTypesQuery(airtable)),
-  elements: t.procedure.input(systemIdParser).query(elementsQuery(airtable)),
-  materials: t.procedure.input(systemIdParser).query(materialsQuery(airtable)),
+  systemElements: t.procedure
+    .input(systemIdParser)
+    .query(elementsQuery(airtable)),
+  systemMaterials: t.procedure
+    .input(systemIdParser)
+    .query(materialsQuery(airtable)),
 })
 
 // export type definition of API

@@ -1,17 +1,16 @@
 import { useGLTF } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { useSnapshot } from "valtio"
-import systemModules from "../hooks/modules"
+import { useAllSystemModules } from "../hooks/modules"
 import { RA, RR } from "../utils/functions"
 
 const DataPreload = () => {
-  const snap = useSnapshot(systemModules)
+  const systemModules = useAllSystemModules()
 
   pipe(
-    snap,
+    systemModules,
     RR.map(
       RA.map((m) => {
-        useGLTF.preload(m.modelUrl)
+        useGLTF.preload(m.glbUrl)
         // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
         //   if (loader instanceof IFCLoader) {
         //     loader.ifcManager.setWasmPath("../../../wasm/")

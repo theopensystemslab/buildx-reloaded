@@ -9,3 +9,5 @@ export const onCreated = (state: RootState) => {
   state.raycaster.layers.enable(CameraLayer.INVISIBLE)
   state.raycaster.layers.enable(RaycasterLayer.ENABLED)
 }
+
+export const isSSR = () => typeof window === "undefined"

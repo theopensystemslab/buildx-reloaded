@@ -105,7 +105,7 @@ export const moduleParser = z
       id,
       dna: module_code,
       ifcUrl: IFC_model[0].url,
-      modelUrl: GLB_model[0].url,
+      glbUrl: GLB_model[0].url,
       structuredDna: parseDna(module_code),
       length,
       height,
@@ -128,7 +128,7 @@ export type Module = {
   dna: string
   structuredDna: StructuredDna
   ifcUrl: string
-  modelUrl: string
+  glbUrl: string
   width: number
   height: number
   length: number

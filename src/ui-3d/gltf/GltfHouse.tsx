@@ -2,6 +2,7 @@ import { useColumnLayout } from "@/hooks/layouts"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { useDimensionsSubscription } from "../../hooks/dimensions"
+import { useHouseGeometries } from "../../hooks/geometries"
 import {
   useHouseEventHandlers,
   useMoveRotateSubscription,
@@ -23,6 +24,9 @@ const GltfHouse = (props: Props) => {
   useMoveRotateSubscription(id, groupRef)
 
   const bind = useHouseEventHandlers(id)
+
+  const foo = useHouseGeometries(id)
+  console.log(foo)
 
   return (
     <Fragment>

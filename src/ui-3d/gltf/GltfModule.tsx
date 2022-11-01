@@ -1,6 +1,4 @@
 // import { BareModule, LoadedModule } from "@/data/module"
-// import { useRotateVector } from "@/hooks/geometry"
-import { columnMatrixToDna } from "@/hooks/layouts"
 // import { setCameraEnabled } from "@/stores/camera"
 // import siteContext, {
 //   SiteContextModeEnum,
@@ -15,18 +13,11 @@ import { columnMatrixToDna } from "@/hooks/layouts"
 // import scope from "@/stores/scope"
 // import swap from "@/stores/swap"
 // import { reduceWithIndexM, StrOrd } from "@/utils"
-import { GroupProps, invalidate } from "@react-three/fiber"
-import { useDrag } from "@use-gesture/react"
-import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { useEffect, useMemo, useRef } from "react"
+import { GroupProps } from "@react-three/fiber"
+import { useRef } from "react"
 import { Group, Plane, Vector3 } from "three"
-import { subscribe } from "valtio"
-import { subscribeKey } from "valtio/utils"
 import { Module } from "../../data/module"
-import { useModuleGeometries } from "../../hooks/geometries"
 // import { getSibling } from "../../../stores/swap"
-import GltfElement from "./GltfElement"
 
 type Props = GroupProps & {
   module: Module
@@ -64,11 +55,11 @@ const GltfModule = (props: Props) => {
 
   const groupRef = useRef<Group>(null)
 
-  const moduleGeometries = useModuleGeometries(
-    module.systemId,
-    module.dna
-    // module.gltf
-  )
+  // const moduleGeometries = useModuleElementGeometries(
+  //   module.systemId,
+  //   module.dna
+  //   // module.gltf
+  // )
 
   // const context = useSiteContext()
 

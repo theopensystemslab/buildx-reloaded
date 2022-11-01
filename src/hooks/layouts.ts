@@ -4,14 +4,26 @@ import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
+import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
 import { Module } from "../data/module"
-import { useHouseRows } from "./houses"
+import { RNEA } from "../utils/functions"
+import houses, { useHouseRows } from "./houses"
 import { usePadColumn } from "./modules"
 
 export type PositionedModule = {
   module: Module
   z: number
+  gridGroupIndex: number
+}
+
+export type PositionedInstancedModule = {
+  module: Module
+  y: number
+  z: number
+  columnIndex: number
+  levelIndex: number
+  gridGroupIndex: number
 }
 
 export type PositionedRow = {
@@ -55,6 +67,7 @@ export const useRowLayout = (buildingId: string): RowLayout =>
               {
                 module,
                 z,
+                gridGroupIndex: i,
               },
             ]
           }
@@ -292,6 +305,7 @@ export const useColumnLayout = (buildingId: string) => {
                           ...positionedModules,
                           {
                             module,
+                            gridGroupIndex: i,
                             z,
                           },
                         ]
@@ -318,6 +332,39 @@ export const useColumnLayout = (buildingId: string) => {
         ]
       }
     )
+  )
+}
+
+type Desired = {
+  [dna: string]: PositionedInstancedModule[]
+}
+
+export const useInstancedColumnLayout = (houseId: string) => {
+  const columnLayout = useColumnLayout(houseId)
+
+  return pipe(
+    columnLayout,
+    RA.chain(({ gridGroups, columnIndex }) =>
+      pipe(
+        gridGroups,
+        RA.chain(({ modules, y, levelIndex }) =>
+          pipe(
+            modules,
+            RA.map(
+              ({ gridGroupIndex, module, z }): PositionedInstancedModule => ({
+                module,
+                columnIndex,
+                levelIndex,
+                gridGroupIndex,
+                y,
+                z,
+              })
+            )
+          )
+        )
+      )
+    ),
+    RNEA.groupBy((v) => v.module.dna)
   )
 }
 
@@ -399,4 +446,10 @@ export const rowMatrixToDna = (rowMatrix: Module[][]) =>
 export const usePadColumnMatrix = (systemId: string) => {
   const padColumn = usePadColumn(systemId)
   return (columnMatrix: Module[][][]) => pipe(columnMatrix, A.map(padColumn))
+}
+
+type SystemHouseLayouts = Map<string, {}>
+
+export const useHouseLayouts = (): SystemHouseLayouts => {
+  return undefined as any
 }

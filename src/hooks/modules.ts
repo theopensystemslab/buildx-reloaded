@@ -16,6 +16,8 @@ export const useSystemModules = ({ systemId }: { systemId: string }) => {
   return snap?.[systemId] ?? []
 }
 
+export const useAllSystemModules = () => useSnapshot(systemModules)
+
 export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
   trpc.systemModules.useQuery(
     {
