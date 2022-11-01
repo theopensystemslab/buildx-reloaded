@@ -16,8 +16,8 @@ import "mapbox-gl/dist/mapbox-gl.css"
 import { PropsWithChildren, useEffect, useState } from "react"
 import * as THREE from "three"
 import { BasicShadowMap, sRGBEncoding } from "three"
-import { onCreated } from "../../utils/common"
 import { reverseV2 } from "../../utils/math"
+import { onCreated } from "../../utils/three"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 

@@ -1,8 +1,8 @@
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "@/constants"
-import { isSSR } from "@/utils/common"
 import { useEffect } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
+import { isSSR } from "../utils/next"
 import houses from "./houses"
 
 export const EditModeEnum = z.enum(["MOVE_ROTATE", "STRETCH"])

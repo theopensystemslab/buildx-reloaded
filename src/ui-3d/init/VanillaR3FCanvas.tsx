@@ -1,7 +1,7 @@
 import { Canvas } from "@react-three/fiber"
 import { PropsWithChildren } from "react"
 import { BasicShadowMap } from "three"
-import { onCreated } from "../../utils/common"
+import { onCreated } from "../../utils/three"
 import SiteCamControls from "../camera/SiteCamControls"
 
 type Props = PropsWithChildren<{}>
