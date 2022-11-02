@@ -3,10 +3,34 @@ import produce from "immer"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { proxyMap } from "valtio/utils"
-import { O, R, RA, RNEA, RR } from "../utils/functions"
+import { M, O, R, RA, RM, RNEA, RR, S } from "../utils/functions"
 import { isMesh, useGLTF } from "../utils/three"
 import { useSystemElements } from "./elements"
 import houses, { useHouseModules } from "./houses"
+
+type ElementName = string
+
+type SystemIdModuleDna = string
+
+export const moduleElementGeometries = proxyMap<
+  SystemIdModuleDna,
+  Map<
+    ElementName, // element ifc tag or element code
+    BufferGeometry
+  >
+>()
+
+export const getModuleElementGeometriesKey = ({
+  systemId,
+  dna,
+}: {
+  systemId: string
+  dna: string
+}) => `${systemId}:${dna}`
+export const invertModuleElementGeometriesKey = (input: string) => {
+  const [systemId, dna] = input.split(":")
+  return { systemId, dna }
+}
 
 const useNodeTypeToElement = (systemId: string) => {
   const elements = useSystemElements({ systemId })
@@ -37,6 +61,7 @@ const useNodeTypeToElement = (systemId: string) => {
 }
 
 export const useHouseGeometries = (houseId: string) => {
+  const systemId = houses[houseId].systemId
   const modules = useHouseModules(houseId)
 
   const [dnas, glbUrls] = pipe(
@@ -53,7 +78,7 @@ export const useHouseGeometries = (houseId: string) => {
 
   const gltfs = useGLTF(glbUrls as string[])
 
-  const nodeTypeToElement = useNodeTypeToElement(houses[houseId].systemId)
+  const nodeTypeToElement = useNodeTypeToElement(systemId)
 
   pipe(
     gltfs,
@@ -80,124 +105,89 @@ export const useHouseGeometries = (houseId: string) => {
           Boolean(bg)
         ),
         (elementsGeometries) => {
-          // if (module element geometries proxy doesn't have this)
-          // insert it
-          // otherwise nothing
+          const elementMap = new Map<ElementName, BufferGeometry>()
+          Object.entries(elementsGeometries).forEach(([k, v]) => {
+            elementMap.set(k, v)
+          })
+
+          moduleElementGeometries.set(
+            getModuleElementGeometriesKey({ systemId, dna: dnas[i] }),
+            elementMap
+          )
         }
       )
     )
+    // module element geoms to house element geoms
   )
-  // const foo = pipe(gltfs, RA.reduceWithIndex({}, (i,acc,gltf) => {
-  //   return acc
-  // }))
-
-  // const elementMeshes = pipe(
-  //   gltf.nodes,
-  //   toArray,
-  //   reduceA({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
-  //     const element = getElement(nodeType)
-  //     if (!element) return acc
-  //     return produce(acc, (draft) => {
-  //       node.traverse((child) => {
-  //         if (isMesh(child)) {
-  //           if (element.name in draft) draft[element.name].push(child)
-  //           else draft[element.name] = [child]
-  //         }
-  //       })
-  //     })
-  //   }),
-  //   mapR((meshes) =>
-  //     mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
-  //   ),
-  //   filterR((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg))
-  // )
-
-  // const moduleIFCs =
 }
 
-// useModuleGeometry
+// export const useModuleElementGeometries = (
+//   systemId: string,
+//   moduleDna: string
+//   // gltf: GltfT
+// ) => {
+//   const elements = useSystemElements({ systemId })
+//   // const { elements: systemElements } = useSystemsData()
+//   // const elements = systemElements.filter((el) => el.systemId === systemId)
 
-// useModuleElementGeometries
+//   const maybeModuleGeometries = moduleElementGeometries.get(moduleDna)
+//   if (maybeModuleGeometries) return maybeModuleGeometries
 
-// useHouseElementGeometries
+//   const elementMap = new Map<ElementName, BufferGeometry>()
 
-type ElementName = string
+//   const getElement = (nodeType: string) => {
+//     const strippedNodeType = nodeType
+//       .replace(/I?None.*/, "")
+//       .replace(/Component.*/, "")
+//       .replace(/Union.*/, "")
+//       .replaceAll(/[0-9]/g, "")
+//       .replace(/Object/, "")
+//       .replace(/(Ifc.*)(Ifc.*)/, "$1")
+//     const result = pipe(
+//       elements,
+//       RA.findFirst((el) => {
+//         return el.ifc4Variable === strippedNodeType
+//       }),
+//       O.toUndefined
+//     )
 
-export const elementGeometries = proxyMap<
-  string, // systemId
-  Map<
-    ElementName, // element ifc tag or element code
-    BufferGeometry
-  >
->()
+//     if (result === undefined && nodeType.startsWith("Ifc")) {
+//       console.log({
+//         unmatchedNodeType: { nodeType, strippedNodeType, moduleDna },
+//       })
+//     }
 
-export const useModuleElementGeometries = (
-  systemId: string,
-  moduleDna: string
-  // gltf: GltfT
-) => {
-  const elements = useSystemElements({ systemId })
-  // const { elements: systemElements } = useSystemsData()
-  // const elements = systemElements.filter((el) => el.systemId === systemId)
+//     return result
+//   }
 
-  const maybeModuleGeometries = elementGeometries.get(moduleDna)
-  if (maybeModuleGeometries) return maybeModuleGeometries
+//   // const elementMeshes = pipe(
+//   //   gltf.nodes,
+//   //   toArray,
+//   //   reduceA({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
+//   //     const element = getElement(nodeType)
+//   //     if (!element) return acc
+//   //     return produce(acc, (draft) => {
+//   //       node.traverse((child) => {
+//   //         if (isMesh(child)) {
+//   //           if (element.name in draft) draft[element.name].push(child)
+//   //           else draft[element.name] = [child]
+//   //         }
+//   //       })
+//   //     })
+//   //   }),
+//   //   mapR((meshes) =>
+//   //     mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
+//   //   ),
+//   //   filterR((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg))
+//   // )
 
-  const elementMap = new Map<ElementName, BufferGeometry>()
+//   // Object.entries(elementMeshes).forEach(([k, v]) => {
+//   //   elementMap.set(k, v)
+//   // })
 
-  const getElement = (nodeType: string) => {
-    const strippedNodeType = nodeType
-      .replace(/I?None.*/, "")
-      .replace(/Component.*/, "")
-      .replace(/Union.*/, "")
-      .replaceAll(/[0-9]/g, "")
-      .replace(/Object/, "")
-      .replace(/(Ifc.*)(Ifc.*)/, "$1")
-    const result = pipe(
-      elements,
-      RA.findFirst((el) => {
-        return el.ifc4Variable === strippedNodeType
-      }),
-      O.toUndefined
-    )
+//   // geometries.set(`${systemId}:${moduleDna}`, elementMap)
 
-    if (result === undefined && nodeType.startsWith("Ifc")) {
-      console.log({
-        unmatchedNodeType: { nodeType, strippedNodeType, moduleDna },
-      })
-    }
-
-    return result
-  }
-
-  // const elementMeshes = pipe(
-  //   gltf.nodes,
-  //   toArray,
-  //   reduceA({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
-  //     const element = getElement(nodeType)
-  //     if (!element) return acc
-  //     return produce(acc, (draft) => {
-  //       node.traverse((child) => {
-  //         if (isMesh(child)) {
-  //           if (element.name in draft) draft[element.name].push(child)
-  //           else draft[element.name] = [child]
-  //         }
-  //       })
-  //     })
-  //   }),
-  //   mapR((meshes) =>
-  //     mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
-  //   ),
-  //   filterR((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg))
-  // )
-
-  // Object.entries(elementMeshes).forEach(([k, v]) => {
-  //   elementMap.set(k, v)
-  // })
-
-  // geometries.set(`${systemId}:${moduleDna}`, elementMap)
-
-  return elementMap
-}
+//   return elementMap
+// }
 
 // export default geometries
