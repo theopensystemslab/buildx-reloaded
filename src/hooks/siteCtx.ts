@@ -21,7 +21,7 @@ const defaults = {
   sidebar: false,
   buildingId: null,
   levelIndex: null,
-  editMode: null,
+  editMode: EditModeEnum.Enum.STRETCH,
   projectName: null,
   region: "EU",
 }
@@ -73,6 +73,11 @@ export const useSiteCtxMode = (): SiteCtxMode => {
     : buildingId !== null
     ? SiteCtxModeEnum.Enum.BUILDING
     : SiteCtxModeEnum.Enum.SITE
+}
+
+export const useEditMode = (): EditMode | null => {
+  const { editMode } = useSiteCtx()
+  return editMode
 }
 
 export const enterBuildingMode = (buildingId: string) => {

@@ -12,6 +12,7 @@ export interface Element {
   ifc4Variable: string
   defaultMaterial: string
   materialOptions: Array<string>
+  category: string
 }
 
 export const elementParser = z.object({
@@ -45,7 +46,10 @@ export const elementsQuery =
         .then(
           z.array(
             elementParser.transform(
-              ({ id, fields: { element_code, ifc4_variable } }) => {
+              ({
+                id,
+                fields: { element_code, ifc4_variable, element_category },
+              }) => {
                 const defaultMaterials = materials.filter(({ defaultFor }) =>
                   defaultFor.includes(id)
                 )
@@ -64,6 +68,7 @@ export const elementsQuery =
                   ifc4Variable: ifc4_variable,
                   defaultMaterial,
                   materialOptions,
+                  category: element_category,
                 }
               }
             )
