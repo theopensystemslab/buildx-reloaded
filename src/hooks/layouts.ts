@@ -6,10 +6,9 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
-import { Module } from "../data/module"
+import { Module, usePadColumn } from "../data/modules"
 import { RNEA } from "../utils/functions"
 import houses, { useHouseRows } from "./houses"
-import { usePadColumn } from "./modules"
 
 export type PositionedModule = {
   module: Module
@@ -33,6 +32,8 @@ export type PositionedRow = {
   modules: Readonly<Array<PositionedModule>>
   length: number
 }
+
+export type GridGroup = PositionedRow
 
 export type RowLayout = Array<PositionedRow>
 
@@ -453,3 +454,15 @@ type SystemHouseLayouts = Map<string, {}>
 export const useHouseLayouts = (): SystemHouseLayouts => {
   return undefined as any
 }
+
+export type ColumnLayoutKeyInput = {
+  columnIndex: number
+  levelIndex: number
+  gridGroupIndex: number
+}
+
+export const indicesToKey = ({
+  columnIndex,
+  levelIndex,
+  gridGroupIndex,
+}: ColumnLayoutKeyInput) => `${columnIndex},${levelIndex},${gridGroupIndex}`

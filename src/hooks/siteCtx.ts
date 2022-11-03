@@ -2,6 +2,7 @@ import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "@/constants"
 import { useEffect } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
+import { guardNotNullish } from "../utils/functions"
 import { isSSR } from "../utils/next"
 import houses from "./houses"
 
@@ -9,7 +10,6 @@ export const EditModeEnum = z.enum(["MOVE_ROTATE", "STRETCH"])
 export type EditMode = z.infer<typeof EditModeEnum>
 
 type SiteCtx = {
-  sidebar: boolean
   buildingHouseId: string | null
   levelIndex: number | null
   editMode: EditMode | null
@@ -18,10 +18,9 @@ type SiteCtx = {
 }
 
 const defaults = {
-  sidebar: false,
   buildingId: null,
   levelIndex: null,
-  editMode: EditModeEnum.Enum.STRETCH,
+  editMode: EditModeEnum.Enum.MOVE_ROTATE,
   projectName: null,
   region: "EU",
 }
@@ -68,9 +67,9 @@ export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
 export const useSiteCtxMode = (): SiteCtxMode => {
   const { buildingHouseId: buildingId, levelIndex } = useSiteCtx()
 
-  return levelIndex !== null
+  return guardNotNullish(levelIndex)
     ? SiteCtxModeEnum.Enum.LEVEL
-    : buildingId !== null
+    : guardNotNullish(buildingId)
     ? SiteCtxModeEnum.Enum.BUILDING
     : SiteCtxModeEnum.Enum.SITE
 }

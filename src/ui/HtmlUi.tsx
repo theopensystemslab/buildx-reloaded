@@ -15,12 +15,20 @@ import IconMenu from "./IconMenu"
 import Radio from "./Radio"
 import { useCameraReset } from "../hooks/camera"
 import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
+import { useSnapshot } from "valtio"
+import elementCategories from "../hooks/elementCategories"
+import { pipe } from "fp-ts/lib/function"
+import Checklist from "./Checklist"
+import { R, RR, S } from "../utils/functions"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
   const { mapboxEnabled } = useMapboxStore()
   const [universalMenu, setUniversalMenu] = useState(false)
   const cameraReset = useCameraReset()
+
+  const categories = useSnapshot(elementCategories) as typeof elementCategories
+
   return (
     <Fragment>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
@@ -74,6 +82,30 @@ const HtmlUi = () => {
           </IconButton>
         </IconMenu>
         <IconMenu icon={SectionCuts}>
+          <Checklist
+            label="Layers"
+            options={pipe(
+              categories,
+              R.collect(S.Ord)((label, value) => ({ label, value: label }))
+            )}
+            selected={pipe(
+              categories,
+              R.filter((x) => x),
+              R.collect(S.Ord)((value) => value)
+            )}
+            onChange={(selectedCategories) =>
+              pipe(
+                elementCategories,
+                R.collect(S.Ord)((k, b) => {
+                  if (selectedCategories.includes(k)) {
+                    if (!elementCategories[k]) elementCategories[k] = true
+                  } else {
+                    if (elementCategories[k]) elementCategories[k] = false
+                  }
+                })
+              )
+            }
+          />
           {/* <Checklist
             label="Vertical cuts"
             options={[

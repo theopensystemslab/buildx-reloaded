@@ -1,12 +1,12 @@
 import { allHouseTypesQuery, systemHouseTypesQuery } from "@/data/houseType"
-import { modulesQuery } from "@/data/module"
 import { initTRPC } from "@trpc/server"
 import * as trpcNext from "@trpc/server/adapters/next"
 import Airtable from "airtable"
-import { elementsQuery } from "@/data/element"
-import { materialsQuery } from "@/data/material"
+import { materialsQuery } from "@/data/materials"
 import { systemIdParser } from "@/data/system"
 import { sectionTypesQuery } from "@/data/sectionTypes"
+import { modulesQuery } from "@/data/modules"
+import { elementsQuery } from "@/data/elements"
 
 export const t = initTRPC()()
 

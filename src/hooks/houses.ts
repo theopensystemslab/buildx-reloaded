@@ -16,12 +16,11 @@ import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
-import { Module } from "../data/module"
+import { Module, useSystemModules } from "../data/modules"
 import { A, R, RA, RR, S } from "../utils/functions"
 import { setCameraEnabled } from "./camera"
 import events from "./events"
 import globals from "./globals"
-import { useSystemModules } from "./modules"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 

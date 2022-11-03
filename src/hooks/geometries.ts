@@ -1,12 +1,16 @@
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
+import { useEffect } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
+import { useSnapshot } from "valtio"
 import { proxyMap } from "valtio/utils"
+import { useSystemElements } from "../data/elements"
 import { M, O, R, RA, RM, RNEA, RR, S } from "../utils/functions"
 import { isMesh, useGLTF } from "../utils/three"
-import { useSystemElements } from "./elements"
+import { subscribeMapKey } from "../utils/valtio"
 import houses, { useHouseModules } from "./houses"
+import { ColumnLayout } from "./layouts"
 
 type ElementName = string
 
@@ -133,4 +137,28 @@ export const useHouseModuleElementGeometries = (houseId: string) => {
           )
     })
   )
+}
+
+export const useHouseElementGeometries = (
+  houseId: string,
+  columns: ColumnLayout
+) => {}
+
+export const useModuleElementGeometries = (systemId: string, dna: string) => {
+  const moduleElementGeometriesMap = useSnapshot(moduleElementGeometries)
+  const key = getModuleElementGeometriesKey({ systemId, dna })
+  const elementMap = moduleElementGeometriesMap.get(key)
+  if (!elementMap) throw new Error("no element map")
+  return elementMap
+
+  // useEffect(
+  //   () =>
+  //     subscribeMapKey(moduleElementGeometries, key, () => {
+  //       const elementMap = moduleElementGeometries.get(key)
+  //       if (!elementMap) throw new Error("no element map")
+
+  //       elementMap.get
+  //     }),
+  //   [key, dna, systemId]
+  // )
 }

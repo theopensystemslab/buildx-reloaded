@@ -3,7 +3,8 @@ import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { trpc } from "../utils/trpc"
-import { materialsQuery } from "./material"
+import { materialsQuery } from "./materials"
+import { proxy, useSnapshot } from "valtio"
 
 export interface Element {
   id: string
@@ -77,11 +78,25 @@ export const elementsQuery =
     )
   }
 
-// export const useSystemElements = ({
-//   systemId,
-// }: {
-//   systemId: string
-// }): Element[] =>
-//   trpc.systemElements.useQuery({
-//     systemId,
-//   }).data ?? []
+const systemElements = proxy<Record<string, Element[]>>({})
+
+export const useSystemElements = ({ systemId }: { systemId: string }) => {
+  const snap = useSnapshot(systemElements)
+  return snap?.[systemId] ?? []
+}
+
+export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
+  trpc.systemElements.useQuery(
+    {
+      systemId: systemId,
+    },
+    {
+      onSuccess: (data) => {
+        systemElements[systemId] = data
+      },
+    }
+  )
+  return useSystemElements({ systemId })
+}
+
+export default systemElements

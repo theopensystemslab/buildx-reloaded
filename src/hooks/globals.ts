@@ -13,6 +13,10 @@ type GlobalStore = {
   intersection: Intersection<Object3D<Event>> | null
   orthographic: boolean
   shadows: boolean
+  verticalCuts: {
+    width: boolean
+    length: boolean
+  }
 }
 
 const globals = proxy<GlobalStore>({
@@ -26,6 +30,10 @@ const globals = proxy<GlobalStore>({
   intersection: null,
   orthographic: false,
   shadows: true,
+  verticalCuts: {
+    width: false,
+    length: false,
+  },
 })
 
 export const useGlobals = () => useSnapshot(globals)
@@ -41,6 +49,16 @@ export const setShadows = (b: boolean) => {
 export const setSidebar = (b: boolean) => {
   globals.sidebar = b
   if (!globals.preload) globals.preload = true
+}
+
+export const setVerticalCuts = (input: string[]) => {
+  globals.verticalCuts.width = input.includes("width")
+  globals.verticalCuts.length = input.includes("length")
+}
+
+export const useVerticalCuts = () => {
+  const { verticalCuts } = useGlobals()
+  return [verticalCuts, setVerticalCuts] as const
 }
 
 export default globals

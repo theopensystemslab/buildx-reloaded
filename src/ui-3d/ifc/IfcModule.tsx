@@ -1,4 +1,3 @@
-import { Module } from "@/data/module"
 import { GroupProps, useLoader } from "@react-three/fiber"
 import { useEffect, useRef } from "react"
 import { Group, Plane } from "three"
@@ -10,6 +9,7 @@ import {
 import { ref } from "valtio"
 import { IFCLoader } from "web-ifc-three"
 import ifcStore from "@/hooks/ifcStore"
+import { Module } from "../../data/modules"
 
 type Props = GroupProps & {
   module: Module

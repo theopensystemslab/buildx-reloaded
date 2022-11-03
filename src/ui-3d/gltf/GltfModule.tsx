@@ -16,7 +16,7 @@
 import { GroupProps } from "@react-three/fiber"
 import { useRef } from "react"
 import { Group, Plane, Vector3 } from "three"
-import { Module } from "../../data/module"
+import { Module } from "../../data/modules"
 // import { getSibling } from "../../../stores/swap"
 
 type Props = GroupProps & {

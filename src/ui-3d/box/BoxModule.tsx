@@ -1,6 +1,6 @@
-import { Module } from "@/data/module"
 import { GroupProps } from "@react-three/fiber"
 import { Plane } from "three"
+import { Module } from "../../data/modules"
 
 type Props = GroupProps & {
   module: Module

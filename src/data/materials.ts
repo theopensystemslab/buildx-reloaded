@@ -3,10 +3,15 @@
 // import { includes } from "ramda"
 import { systemFromId } from "@/data/system"
 import Airtable from "airtable"
-import { pipe } from "fp-ts/lib/function"
-import { MeshStandardMaterial } from "three"
+import { identity, pipe } from "fp-ts/lib/function"
+import { MeshBasicMaterial, MeshStandardMaterial } from "three"
+import { proxy, ref, useSnapshot } from "valtio"
 import * as z from "zod"
+import houses, { useHouse } from "../hooks/houses"
+import { errorThrower, O, RA, someOrError } from "../utils/functions"
+import { createMaterial } from "../utils/three"
 import { trpc } from "../utils/trpc"
+import { useSystemElements } from "./elements"
 
 export interface Material {
   id: string
@@ -84,7 +89,52 @@ export const materialsQuery =
         )
     )
 
-export const useSystemMaterials = ({ systemId }: { systemId: string }) =>
-  trpc.systemMaterials.useQuery({
-    systemId,
-  })
+// export const useSystemMaterials = ({ systemId }: { systemId: string }) =>
+//   trpc.systemMaterials.useQuery({
+//     systemId,
+//   })
+
+const materials = proxy<Record<string, Material[]>>({})
+
+export const useSystemMaterials = ({ systemId }: { systemId: string }) => {
+  const snap = useSnapshot(materials) as typeof materials
+  return snap?.[systemId] ?? []
+}
+
+export const useInitSystemMaterials = ({ systemId }: { systemId: string }) => {
+  trpc.systemMaterials.useQuery(
+    {
+      systemId: systemId,
+    },
+    {
+      onSuccess: (data) => {
+        materials[systemId] = data
+        materials[systemId].forEach((material) => {
+          material.threeMaterial = ref(createMaterial(material))
+        })
+      },
+    }
+  )
+  return useSystemMaterials({ systemId })
+}
+
+export const useGetMaterial = (houseId: string) => {
+  const { systemId } = useHouse(houseId)
+
+  const elements = useSystemElements({ systemId })
+
+  const materials = useSystemMaterials({ systemId })
+
+  return (elementName: string) =>
+    pipe(
+      elements,
+      RA.findFirst((element) => element.name === elementName),
+      O.match(errorThrower(`no element ${elementName}`), (element) =>
+        pipe(
+          materials,
+          RA.findFirst((material) => material.name === element.defaultMaterial),
+          someOrError(`no material found for ${element.defaultMaterial}`)
+        )
+      )
+    ).threeMaterial
+}

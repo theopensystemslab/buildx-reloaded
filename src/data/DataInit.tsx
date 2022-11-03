@@ -1,9 +1,11 @@
-import { useInitSystemElements } from "../hooks/elements"
-import { useInitSystemModules } from "../hooks/modules"
+import { useInitSystemElements } from "./elements"
+import { useInitSystemModules } from "./modules"
+import { useInitSystemMaterials } from "./materials"
 
 const DataInit = () => {
   useInitSystemModules({ systemId: "skylark" })
   useInitSystemElements({ systemId: "skylark" })
+  useInitSystemMaterials({ systemId: "skylark" })
   return null
 }
 

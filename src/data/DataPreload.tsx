@@ -1,6 +1,6 @@
 import { useGLTF } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { useAllSystemModules } from "../hooks/modules"
+import { useAllSystemModules } from "./modules"
 import { RA, RR } from "../utils/functions"
 
 const DataPreload = () => {
