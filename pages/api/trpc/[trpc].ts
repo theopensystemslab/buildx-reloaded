@@ -6,6 +6,7 @@ import Airtable from "airtable"
 import { elementsQuery } from "@/data/element"
 import { materialsQuery } from "@/data/material"
 import { systemIdParser } from "@/data/system"
+import { sectionTypesQuery } from "@/data/sectionTypes"
 
 export const t = initTRPC()()
 
@@ -26,6 +27,9 @@ export const appRouter = t.router({
   systemMaterials: t.procedure
     .input(systemIdParser)
     .query(materialsQuery(airtable)),
+  sectionTypes: t.procedure
+    .input(systemIdParser)
+    .query(sectionTypesQuery(airtable)),
 })
 
 // export type definition of API
