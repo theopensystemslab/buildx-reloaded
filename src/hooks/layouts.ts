@@ -456,13 +456,18 @@ export const useHouseLayouts = (): SystemHouseLayouts => {
 }
 
 export type ColumnLayoutKeyInput = {
+  systemId: string
+  houseId: string
   columnIndex: number
   levelIndex: number
   gridGroupIndex: number
 }
 
 export const indicesToKey = ({
+  systemId,
+  houseId,
   columnIndex,
   levelIndex,
   gridGroupIndex,
-}: ColumnLayoutKeyInput) => `${columnIndex},${levelIndex},${gridGroupIndex}`
+}: ColumnLayoutKeyInput) =>
+  `system:${systemId}-house:${houseId}-location:${columnIndex},${levelIndex},${gridGroupIndex}`

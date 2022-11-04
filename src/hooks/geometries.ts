@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { useSnapshot } from "valtio"
@@ -16,8 +16,18 @@ type ElementName = string
 
 type SystemIdModuleDna = string
 
+type HouseId = string
+
 export const moduleElementGeometries = proxyMap<
   SystemIdModuleDna,
+  Map<
+    ElementName, // element ifc tag or element code
+    BufferGeometry
+  >
+>()
+
+export const houseElementGeometries = proxyMap<
+  HouseId,
   Map<
     ElementName, // element ifc tag or element code
     BufferGeometry
@@ -136,20 +146,23 @@ export const useHouseModuleElementGeometries = (houseId: string) => {
             )
           )
     })
+    // () => moduleElementGeometries
   )
 }
 
-export const useHouseElementGeometries = (
-  houseId: string,
-  columns: ColumnLayout
-) => {}
+// I think you don't want this because it can't instance beyond the house
+// export const useHouseElementGeometries = (houseId: string, columnLayout: ColumnLayout) => {
+//   const houseModuleElementGeometries = useHouseModuleElementGeometries(houseId)
+//   pipe(
+//     houseModuleElementGeometries,
+//     RM.collect(S.Ord)((k, moduleGeometries) => pipe(moduleGeometries, RM.))
+//   )
+// }
 
 export const useModuleElementGeometries = (systemId: string, dna: string) => {
   const moduleElementGeometriesMap = useSnapshot(moduleElementGeometries)
   const key = getModuleElementGeometriesKey({ systemId, dna })
-  const elementMap = moduleElementGeometriesMap.get(key)
-  if (!elementMap) throw new Error("no element map")
-  return elementMap
+  return moduleElementGeometriesMap.get(key)
 
   // useEffect(
   //   () =>
@@ -162,3 +175,7 @@ export const useModuleElementGeometries = (systemId: string, dna: string) => {
   //   [key, dna, systemId]
   // )
 }
+
+// export const useHouseModuleElementGeometries = (houseId: string) => {
+//   const [foo, setFoo] = useState<any>()
+// }
