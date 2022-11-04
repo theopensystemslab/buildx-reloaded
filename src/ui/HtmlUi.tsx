@@ -20,6 +20,7 @@ import elementCategories from "../hooks/elementCategories"
 import { pipe } from "fp-ts/lib/function"
 import Checklist from "./Checklist"
 import { R, RR, S } from "../utils/functions"
+import { useInsert1000Skylarks } from "../hooks/houses"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -28,6 +29,8 @@ const HtmlUi = () => {
   const cameraReset = useCameraReset()
 
   const categories = useSnapshot(elementCategories) as typeof elementCategories
+
+  useInsert1000Skylarks()
 
   return (
     <Fragment>

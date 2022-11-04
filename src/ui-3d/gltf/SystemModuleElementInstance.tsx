@@ -4,7 +4,7 @@ import { subscribeKey } from "valtio/utils"
 import houses from "../../hooks/houses"
 import { InstanceData } from "../../hooks/instances"
 
-const SingleInstance = (props: InstanceData) => {
+const SystemModuleElementInstance = (props: InstanceData) => {
   const ref = useRef<any>()
   const {
     systemId,
@@ -19,11 +19,13 @@ const SingleInstance = (props: InstanceData) => {
   } = props
 
   useEffect(() => {
-    return subscribeKey(houses[houseId], "position", () => {
+    const go = () => {
       const [hx, hy, hz] = houses[houseId].position
       const [px, py, pz] = position
       ref.current.position.set(hx + px, hy + py, hz + pz)
-    })
+    }
+    go()
+    return subscribeKey(houses[houseId], "position", go)
   }, [houseId, position])
 
   return (
@@ -53,4 +55,4 @@ const SingleInstance = (props: InstanceData) => {
   )
 }
 
-export default SingleInstance
+export default SystemModuleElementInstance

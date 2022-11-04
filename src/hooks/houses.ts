@@ -23,6 +23,9 @@ import { setCameraEnabled } from "./camera"
 import events from "./events"
 import globals from "./globals"
 import { InstanceData } from "./instances"
+import { nanoid } from "nanoid"
+import { useKey } from "react-use"
+import { keys } from "fp-ts/lib/ReadonlyRecord"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -269,6 +272,41 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
     systemHouses,
     A.reduce([], (acc: string[], { dna }) => A.uniq(S.Eq)([...acc, ...dna]))
   )
+}
+
+export const useInsert1000Skylarks = () => {
+  const { data: allHouseTypes } = useAllHouseTypes()
+
+  useKey("x", () => {
+    // const position = cameraGroundRaycast() ?? [0, 0, 0]
+    const houseTypeId = "recSARkreiK3KMoTi"
+
+    const houseType = allHouseTypes?.find((x) => x.id === houseTypeId)
+    if (!houseType) throw new Error("skylark not found")
+
+    const count = 7,
+      incX = 7,
+      incZ = 3,
+      startX = -(incX * count) / 2,
+      startZ = -(incZ * count) / 2
+
+    for (let x = startX; x < incX * count; x += incX) {
+      for (let z = startZ; z < incZ * count; z += incZ) {
+        const id = nanoid()
+        houses[id] = {
+          id,
+          houseTypeId,
+          systemId: houseType.systemId,
+          position: [x, 0, z],
+          rotation: 0,
+          dna: houseType.dna as string[],
+          modifiedMaterials: {},
+          modifiedMaterialsPreview: {},
+          friendlyName: `Building ${keys(houses).length + 1}`,
+        }
+      }
+    }
+  })
 }
 
 export default houses

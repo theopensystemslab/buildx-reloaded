@@ -1,14 +1,11 @@
-import { Instance, Instances } from "@react-three/drei"
-import { Position } from "@react-three/drei/helpers/Position"
-import { ThreeEvent } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
+import { Instances } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { getGeometry } from "../../hooks/geometries"
 import { useNewHouseEventsHandlers } from "../../hooks/houses"
-import { InstanceData, useInstances } from "../../hooks/instances"
+import { useInstances } from "../../hooks/instances"
 import { RA, RM, S } from "../../utils/functions"
-import SingleInstance from "./SingleInstance"
+import SystemModuleElementInstance from "./SystemModuleElementInstance"
 
 const Instantiaminatrixificator = () => {
   const instances = useInstances()
@@ -55,7 +52,7 @@ const Instantiaminatrixificator = () => {
               {pipe(
                 instanceData,
                 RA.map(({ position, rotation, ...restProps }) => (
-                  <SingleInstance
+                  <SystemModuleElementInstance
                     key={JSON.stringify(restProps)}
                     {...{ ...restProps, position, rotation }}
                   />

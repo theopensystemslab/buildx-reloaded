@@ -5,7 +5,7 @@ import { useHouses } from "../../hooks/houses"
 import { useSiteCtx } from "../../hooks/siteCtx"
 import { RA, RR } from "../../utils/functions"
 import GltfHouse from "./GltfHouse"
-import Instantiaminatrixificator from "./Instantiaminatrixificator"
+import SystemModuleElementInstances from "./SystemModuleElementInstances"
 
 const GltfApp = () => {
   const houses = useHouses()
@@ -23,7 +23,7 @@ const GltfApp = () => {
           </Suspense>
         ))
       )}
-      <Instantiaminatrixificator />
+      <SystemModuleElementInstances />
     </Fragment>
   )
 }

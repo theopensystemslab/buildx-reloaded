@@ -4,7 +4,7 @@ import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { useDimensionsSubscription } from "../../hooks/dimensions"
 import { useHouseModuleElementGeometries } from "../../hooks/geometries"
-import {
+import houses, {
   useHouse,
   useHouseEventHandlers,
   useMoveRotateSubscription,
@@ -31,12 +31,9 @@ const GltfHouse = (props: Props) => {
   const endHandleRef = useRef<Group>(null!)
   const { id } = props
 
+  const systemId = houses[id].systemId
+
   // TODO: subscription event arch
-  const {
-    position: [buildingX, buildingZ],
-    rotation,
-    systemId,
-  } = useHouse(id)
 
   const columnLayout = useColumnLayout(id)
 
