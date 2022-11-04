@@ -8,6 +8,7 @@ import { getGeometry } from "../../hooks/geometries"
 import { useNewHouseEventsHandlers } from "../../hooks/houses"
 import { InstanceData, useInstances } from "../../hooks/instances"
 import { RA, RM, S } from "../../utils/functions"
+import SingleInstance from "./SingleInstance"
 
 const Instantiaminatrixificator = () => {
   const instances = useInstances()
@@ -53,43 +54,12 @@ const Instantiaminatrixificator = () => {
 
               {pipe(
                 instanceData,
-                RA.map((instanceDatum) => {
-                  const {
-                    systemId,
-                    houseId,
-                    columnIndex,
-                    levelIndex,
-                    gridGroupIndex,
-                    dna,
-                    elementName,
-                    position,
-                    rotation,
-                  } = instanceDatum
-                  return (
-                    <Instance
-                      key={JSON.stringify({
-                        systemId,
-                        houseId,
-                        columnIndex,
-                        levelIndex,
-                        gridGroupIndex,
-                        dna,
-                        elementName,
-                      })}
-                      position={position}
-                      rotation={[0, rotation, 0]}
-                      userData={{
-                        systemId,
-                        houseId,
-                        columnIndex,
-                        levelIndex,
-                        gridGroupIndex,
-                        dna,
-                        elementName,
-                      }}
-                    />
-                  )
-                })
+                RA.map(({ position, rotation, ...restProps }) => (
+                  <SingleInstance
+                    key={JSON.stringify(restProps)}
+                    {...{ ...restProps, position, rotation }}
+                  />
+                ))
               )}
             </Instances>
           )
