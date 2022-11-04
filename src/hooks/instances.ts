@@ -1,15 +1,17 @@
 import { fromEquals } from "fp-ts/lib/Eq"
 import { pipe } from "fp-ts/lib/function"
+import { BufferGeometry, Material } from "three"
 import { useSnapshot } from "valtio"
 import { proxyMap } from "valtio/utils"
 import { useGetMaterial } from "../data/materials"
 import { O, RA } from "../utils/functions"
 import { ColumnLayoutKeyInput } from "./layouts"
+import * as z from "zod"
 
 // module level
 // system+dna+elementName :: InstanceT
 
-type SystemIdDnaElementName = string
+type SystemIdDnaElementNameString = string
 
 type InstanceData = ColumnLayoutKeyInput & {
   position: V3
@@ -18,11 +20,17 @@ type InstanceData = ColumnLayoutKeyInput & {
   elementName: string
 }
 
-const instances = proxyMap<SystemIdDnaElementName, InstanceData[]>()
+// type InstancesData = {
+//   geometry: BufferGeometry
+//   material: Material
+//   instances: InstanceData[]
+// }
+
+const instances = proxyMap<SystemIdDnaElementNameString, InstanceData[]>()
 
 export const useInstances = () => useSnapshot(instances) as typeof instances
 
-const getInstancesKey = ({
+export const getInstancesKey = ({
   systemId,
   dna,
   elementName,
@@ -31,6 +39,18 @@ const getInstancesKey = ({
   dna: string
   elementName: string
 }) => `system:${systemId}-dna:${dna}-elementName:${elementName}`
+
+export const invertInstancesKey = (input: string) =>
+  pipe(
+    JSON.parse(input),
+    z.object({
+      systemId: z.string().min(1),
+      dna: z.string().min(1),
+      elementName: z.string().min(1),
+    }).parse
+  )
+
+export type InstancesKey = ReturnType<typeof invertInstancesKey>
 
 const instanceDataEq = fromEquals<InstanceData>(
   (a, b) =>

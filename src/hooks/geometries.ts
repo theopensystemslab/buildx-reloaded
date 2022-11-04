@@ -10,6 +10,7 @@ import { M, O, R, RA, RM, RNEA, RR, S } from "../utils/functions"
 import { isMesh, useGLTF } from "../utils/three"
 import { subscribeMapKey } from "../utils/valtio"
 import houses, { useHouseModules } from "./houses"
+import { InstancesKey } from "./instances"
 import { ColumnLayout } from "./layouts"
 
 type ElementName = string
@@ -179,3 +180,9 @@ export const useModuleElementGeometries = (systemId: string, dna: string) => {
 // export const useHouseModuleElementGeometries = (houseId: string) => {
 //   const [foo, setFoo] = useState<any>()
 // }
+
+export const getGeometry = ({ systemId, dna, elementName }: InstancesKey) => {
+  return moduleElementGeometries
+    .get(getModuleElementGeometriesKey({ systemId, dna }))
+    ?.get(elementName)
+}
