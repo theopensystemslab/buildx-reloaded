@@ -1,20 +1,37 @@
 import { Instance, Instances } from "@react-three/drei"
+import { Position } from "@react-three/drei/helpers/Position"
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { getGeometry } from "../../hooks/geometries"
-import { useInstances } from "../../hooks/instances"
+import { useNewHouseEventsHandlers } from "../../hooks/houses"
+import { InstanceData, useInstances } from "../../hooks/instances"
 import { RA, RM, S } from "../../utils/functions"
 
 const Instantiaminatrixificator = () => {
   const instances = useInstances()
 
-  const bind = useGesture({
-    onHover: (state: any) => {
-      console.log(state.event.intersections.map((ix: any) => ix.instanceId))
-    },
-  })
+  // const bind = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+  //   onDrag: ({
+  //     event: {
+  //       object: { userData },
+  //     },
+  //   }) => {
+  //     const {
+  //       systemId,
+  //       houseId,
+  //       columnIndex,
+  //       levelIndex,
+  //       gridGroupIndex,
+  //       dna,
+  //       elementName,
+  //     } = userData as InstanceData
+
+  //     console.log(elementName)
+  //   },
+  // })
+  const bind = useNewHouseEventsHandlers()
 
   return (
     <Fragment>
@@ -61,6 +78,15 @@ const Instantiaminatrixificator = () => {
                       })}
                       position={position}
                       rotation={[0, rotation, 0]}
+                      userData={{
+                        systemId,
+                        houseId,
+                        columnIndex,
+                        levelIndex,
+                        gridGroupIndex,
+                        dna,
+                        elementName,
+                      }}
                     />
                   )
                 })

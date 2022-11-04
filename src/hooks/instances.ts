@@ -13,7 +13,7 @@ import * as z from "zod"
 
 type SystemIdDnaElementNameString = string
 
-type InstanceData = ColumnLayoutKeyInput & {
+export type InstanceData = ColumnLayoutKeyInput & {
   position: V3
   rotation: number
   dna: string
