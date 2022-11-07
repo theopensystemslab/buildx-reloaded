@@ -71,34 +71,34 @@ const AppInit = (props: Props) => {
         const { houseId, positionDelta, rotation } =
           events.before.newHouseTransform
 
-        const [dx, dy, dz] = positionDelta
+        // const [dx, dy, dz] = positionDelta
 
-        const thisObb = dimensions[houseId].obb
+        // const thisObb = dimensions[houseId].obb
 
-        m4.current.makeRotationY(rotation)
-        m4.current.makeTranslation(dx, dy, dz)
+        // m4.current.makeRotationY(rotation)
+        // m4.current.makeTranslation(dx, dy, dz)
 
-        thisObb.applyMatrix4(m4.current)
+        // thisObb.applyMatrix4(m4.current)
 
         // try new dimensions
 
-        let allowed = true
+        // let allowed = true
 
-        for (let [k, { obb }] of Object.entries(dimensions)) {
-          if (k === houseId) continue
-          const intersects = obb.intersectsOBB(thisObb)
-          if (intersects) {
-            allowed = false
-            break
-          }
-        }
+        // for (let [k, { obb }] of Object.entries(dimensions)) {
+        //   if (k === houseId) continue
+        //   const intersects = obb.intersectsOBB(thisObb)
+        //   if (intersects) {
+        //     allowed = false
+        //     break
+        //   }
+        // }
 
-        // reset dimensions if not working
-        if (!allowed) {
-          m4.current.invert()
-          thisObb.applyMatrix4(m4.current)
-          return
-        }
+        // // reset dimensions if not working
+        // if (!allowed) {
+        //   m4.current.invert()
+        //   thisObb.applyMatrix4(m4.current)
+        //   return
+        // }
 
         if (positionDelta)
           houses[houseId].position = addV3(

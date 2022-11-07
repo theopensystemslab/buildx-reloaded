@@ -17,6 +17,7 @@ export const useGetElementVisible = (systemId: string) => {
 
   return useCallback(
     (elementName: string): boolean =>
+      true ||
       pipe(
         elements,
         RA.findFirstMap((element) =>
