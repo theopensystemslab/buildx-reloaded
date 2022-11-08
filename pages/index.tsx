@@ -1,17 +1,14 @@
 import DataInit from "@/data/DataInit"
+import DefaultApp from "@/ui-3d/default/DefaultApp"
 import AppInit from "@/ui-3d/init/AppInit"
-import { Fragment } from "react"
-import GltfApp from "../src/ui-3d/gltf/GltfApp"
+import { Fragment, Suspense } from "react"
 
 const IndexPage = () => {
   return (
     <Fragment>
       <DataInit />
       <AppInit>
-        {/* <BoxApp />
-        <DebugApp /> */}
-        {/* <InstancedApp /> */}
-        <GltfApp />
+        <DefaultApp />
       </AppInit>
     </Fragment>
   )

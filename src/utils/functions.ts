@@ -50,6 +50,8 @@ export const errorThrower = (message?: string) => () => {
 export const someOrError = <T extends unknown>(message?: string) =>
   O.match<T, T>(errorThrower(message), identity)
 
+export const pipeLog = <T extends unknown>(x: T): T => (console.log(x), x)
+
 export * as A from "fp-ts/Array"
 export * as R from "fp-ts/Record"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"

@@ -1,13 +1,11 @@
-import { Instances } from "@react-three/drei"
 import { identity, pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import { useHouses } from "../../hooks/houses"
 import { useSiteCtx } from "../../hooks/siteCtx"
 import { RA, RR } from "../../utils/functions"
-import GltfHouse from "./GltfHouse"
-import SystemModuleElementInstances from "./SystemModuleElementInstances"
+import DefaultHouse from "./DefaultHouse"
 
-const GltfApp = () => {
+const DefaultApp = () => {
   const houses = useHouses()
 
   const { buildingHouseId: buildingId } = useSiteCtx()
@@ -19,13 +17,12 @@ const GltfApp = () => {
         buildingId ? RA.filter((id) => id === buildingId) : identity,
         RA.map((id) => (
           <Suspense key={id} fallback={null}>
-            <GltfHouse id={id} />
+            <DefaultHouse houseId={id} />
           </Suspense>
         ))
       )}
-      <SystemModuleElementInstances />
     </Fragment>
   )
 }
 
-export default GltfApp
+export default DefaultApp

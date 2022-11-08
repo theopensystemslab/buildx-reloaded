@@ -4,11 +4,12 @@ import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
+import { proxy } from "valtio"
 import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
 import { Module, usePadColumn } from "../data/modules"
 import { RNEA } from "../utils/functions"
-import houses, { useHouseRows } from "./houses"
+import houses, { useHouseRows, useHouses } from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -45,6 +46,12 @@ export type PositionedColumn = {
 }
 
 export type ColumnLayout = Array<PositionedColumn>
+
+// const layouts = proxy<{
+//   column: Record<string, ColumnLayout> // houseId
+// }>({
+//   column: {},
+// })
 
 export const useRowLayout = (buildingId: string): RowLayout =>
   pipe(
@@ -179,8 +186,8 @@ const columnify =
     return pipe(acc, transposeRA)
   }
 
-export const useColumnLayout = (buildingId: string) => {
-  const rows = useHouseRows(buildingId)
+export const useColumnLayout = (houseId: string) => {
+  const rows = useHouseRows(houseId)
 
   const columns = pipe(
     rows,
@@ -336,38 +343,45 @@ export const useColumnLayout = (buildingId: string) => {
   )
 }
 
-type Desired = {
-  [dna: string]: PositionedInstancedModule[]
+export const useGroupedColumnLayouts = (systemId: string) => {
+  const houses = useHouses()
+
+  // group by systemId:houseId:{moduleId}:elementName
+  // or columnLayout to instances?
+  // -> system:module:element:material
+  //      needs house info for modified materials
+
+  // system:dna:elementName:materialName
 }
 
-export const useInstancedColumnLayout = (houseId: string) => {
-  const columnLayout = useColumnLayout(houseId)
+// export const useInstancedColumnLayout = (houseId: string) => {
+//   const columnLayout = useColumnLayout(houseId)
 
-  return pipe(
-    columnLayout,
-    RA.chain(({ gridGroups, columnIndex }) =>
-      pipe(
-        gridGroups,
-        RA.chain(({ modules, y, levelIndex }) =>
-          pipe(
-            modules,
-            RA.map(
-              ({ gridGroupIndex, module, z }): PositionedInstancedModule => ({
-                module,
-                columnIndex,
-                levelIndex,
-                gridGroupIndex,
-                y,
-                z,
-              })
-            )
-          )
-        )
-      )
-    ),
-    RNEA.groupBy((v) => v.module.dna)
-  )
-}
+//   return pipe(
+//     columnLayout,
+//     RA.chain(({ gridGroups, columnIndex }) =>
+//       pipe(
+//         gridGroups,
+//         RA.chain(({ modules, y, levelIndex }) =>
+//           pipe(
+//             modules,
+//             RA.map(
+//               ({ gridGroupIndex, module, z }): PositionedInstancedModule => ({
+//                 module,
+//                 columnIndex,
+//                 levelIndex,
+//                 gridGroupIndex,
+//                 y,
+//                 z,
+//               })
+//             )
+//           )
+//         )
+//       )
+//     ),
+//     RNEA.groupBy((v) => v.module.dna)
+//   )
+// }
 
 export const columnLayoutToDNA = (
   columnLayout: Omit<PositionedColumn, "length" | "z" | "columnIndex">[]

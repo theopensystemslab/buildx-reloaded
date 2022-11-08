@@ -5,8 +5,17 @@ import * as z from "zod"
 import { trpc } from "../utils/trpc"
 import { materialsQuery } from "./materials"
 import { proxy, useSnapshot } from "valtio"
+import { Module } from "./modules"
+import { O, R, RA, RR } from "../utils/functions"
+import { isMesh, useGLTF } from "../utils/three"
+import { proxyMap, subscribeKey } from "valtio/utils"
+import { BufferGeometry, Mesh } from "three"
+import produce from "immer"
+import { mergeBufferGeometries } from "three-stdlib"
+import { hashGeometry } from "@/hooks/hashedGeometries"
+import { useCallback, useEffect, useState } from "react"
 
-export interface Element {
+export type Element = {
   id: string
   systemId: string
   name: string
@@ -14,6 +23,15 @@ export interface Element {
   defaultMaterial: string
   materialOptions: Array<string>
   category: string
+}
+
+export type ElementIdentifier = {
+  systemId: string
+  houseId: string
+  columnIndex: number
+  levelIndex: number
+  gridGroupIndex: number
+  elementName: string
 }
 
 export const elementParser = z.object({
@@ -82,6 +100,7 @@ const systemElements = proxy<Record<string, Element[]>>({})
 
 export const useSystemElements = ({ systemId }: { systemId: string }) => {
   const snap = useSnapshot(systemElements)
+  console.log("useSystemElements", systemElements)
   return snap?.[systemId] ?? []
 }
 
@@ -92,11 +111,115 @@ export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
     },
     {
       onSuccess: (data) => {
+        console.log("onSuccess", data)
         systemElements[systemId] = data
       },
     }
   )
   return useSystemElements({ systemId })
+}
+
+const useNodeTypeToElement = (systemId: string) => {
+  const elements = useSystemElements({ systemId })
+
+  return useCallback(
+    (nodeType: string) => {
+      const strippedNodeType = nodeType
+        .replace(/I?None.*/, "")
+        .replace(/Component.*/, "")
+        .replace(/Union.*/, "")
+        .replaceAll(/[0-9]/g, "")
+        .replace(/Object/, "")
+        .replace(/(Ifc.*)(Ifc.*)/, "$1")
+      const result = pipe(
+        elements,
+        RA.findFirst((el) => {
+          return el.ifc4Variable === strippedNodeType
+        }),
+        O.toUndefined
+      )
+
+      if (result === undefined && nodeType.startsWith("Ifc")) {
+        console.log({
+          unmatchedNodeType: { nodeType, strippedNodeType },
+        })
+      }
+
+      return result
+    },
+    [elements]
+  )
+}
+
+type ElementName = string
+type SystemIdModuleDna = string
+type GeometryHash = string
+
+type ElementGeometryHashMap = Map<
+  ElementName, // element ifc tag or element code
+  GeometryHash
+>
+
+export const moduleElementGeometryHashMaps = proxyMap<
+  SystemIdModuleDna,
+  ElementGeometryHashMap
+>()
+
+export const getModuleElementGeometriesKey = ({
+  systemId,
+  dna,
+}: {
+  systemId: string
+  dna: string
+}) => `${systemId}:${dna}`
+
+export const invertModuleElementGeometriesKey = (input: string) => {
+  const [systemId, dna] = input.split(":")
+  return { systemId, dna }
+}
+
+export const useModuleElements = ({
+  systemId,
+  glbUrl,
+  dna,
+}: Module): ElementGeometryHashMap => {
+  const nodeTypeToElement = useNodeTypeToElement(systemId)
+  const gltf = useGLTF(glbUrl)
+  const key = getModuleElementGeometriesKey({ systemId, dna })
+  const maybeModuleElementGeometries = moduleElementGeometryHashMaps.get(key)
+  if (maybeModuleElementGeometries) return maybeModuleElementGeometries
+
+  return pipe(
+    gltf.nodes,
+    R.toArray,
+    RA.reduce({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
+      const element = nodeTypeToElement(nodeType)
+      if (!element) return acc
+      return produce(acc, (draft) => {
+        node.traverse((child) => {
+          if (isMesh(child)) {
+            if (element.name in draft) draft[element.name].push(child)
+            else draft[element.name] = [child]
+          }
+        })
+      })
+    }),
+    RR.map((meshes) =>
+      mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
+    ),
+    RR.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
+    (elementGeometries) => {
+      const elements = new Map<ElementName, GeometryHash>()
+      Object.entries(elementGeometries).forEach(([k, geom]) => {
+        const hash = hashGeometry(geom)
+        elements.set(k, hash)
+      })
+
+      moduleElementGeometryHashMaps.set(key, elements)
+
+      return elements
+    }
+  )
 }
 
 export default systemElements

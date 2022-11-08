@@ -18,14 +18,14 @@ import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
-import { A, R, RA, RR, S } from "../utils/functions"
+import { A, R, RA, RNEA, RR, S } from "../utils/functions"
 import { setCameraEnabled } from "./camera"
 import events from "./events"
 import globals from "./globals"
-import { InstanceData } from "./instances"
 import { nanoid } from "nanoid"
 import { useKey } from "react-use"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
+import { ElementIdentifier } from "../data/elements"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -61,27 +61,24 @@ export const useHouseType = (houseId: string) => {
 }
 
 export const useHouseModules = (houseId: string) => {
-  const { systemId } = useHouse(houseId)
+  const { systemId, dna } = useHouse(houseId)
   const systemModules = useSystemModules({ systemId })
-
-  const house = useSnapshot(houses)[houseId]
 
   return useMemo(
     () =>
       pipe(
-        house.dna,
+        dna,
         RA.filterMap((dna) =>
           pipe(
             systemModules,
             RA.findFirst(
               (systemModule: Module) =>
-                systemModule.systemId === house.systemId &&
-                systemModule.dna === dna
+                systemModule.systemId === systemId && systemModule.dna === dna
             )
           )
         )
       ),
-    [house.dna, house.systemId, systemModules]
+    [dna, systemId, systemModules]
   )
 }
 
@@ -124,7 +121,7 @@ export const useNewHouseEventsHandlers = () => {
       first,
       last,
       event: {
-        object: { userData },
+        object: { userData: elementIdentifier },
       },
     }) => {
       const {
@@ -133,9 +130,8 @@ export const useNewHouseEventsHandlers = () => {
         columnIndex,
         levelIndex,
         gridGroupIndex,
-        dna,
         elementName,
-      } = userData as InstanceData
+      } = elementIdentifier as ElementIdentifier
 
       if (first) {
         setCameraEnabled(false)
@@ -307,6 +303,57 @@ export const useInsert1000Skylarks = () => {
       }
     }
   })
+}
+
+export const systemDnaElementMaterials = proxy<string[]>([])
+
+export const useSystemDnaElementMaterials = () => {
+  // use default material from elementName
+  useEffect(() => {
+    return subscribe(houses, () => {
+      const systemDnas = pipe(
+        houses,
+        RR.collect(S.Ord)((k, a) => a),
+        RNEA.groupBy(({ systemId }) => systemId),
+        RR.map(
+          (houses) =>
+            pipe(
+              houses,
+              RA.reduce([], (acc: string[], { dna }) => [...acc, ...dna]),
+              RA.uniq(S.Eq)
+            )
+          // ...house.reduce((acc: string[], v) => [...acc, ...v.dna], []),
+        )
+        // RR.map((houses) =>
+        //   pipe(
+        //     houses,
+        //     RA.reduce({}, (acc,house) => produce(acc, draft => {
+        //       house.dna.forEach(strand => {
+        //         draft[strand].
+        //       })
+        //     }))
+        //   )
+        // )
+        // RA.uniq(S.Eq)
+      )
+
+      // group by systemId
+
+      const uniqueDnas = pipe(
+        // this needs to be foreach'd by system
+        houses,
+        RR.collect(S.Ord)((_, { dna }) => dna),
+        RA.flatten,
+        RA.uniq(S.Eq)
+      )
+
+      // unique systems
+      // unique modules
+
+      // modified materials
+      console.log(houses)
+    })
+  }, [])
 }
 
 export default houses

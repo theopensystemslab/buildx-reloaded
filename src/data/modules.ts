@@ -187,6 +187,9 @@ export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
       onSuccess: (data) => {
         systemModules[systemId] = data
       },
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     }
   )
   return useSystemModules({ systemId })

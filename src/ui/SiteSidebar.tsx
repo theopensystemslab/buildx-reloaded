@@ -76,8 +76,6 @@ const SiteSidebar = ({ open, close }: Props) => {
                         const id = nanoid()
                         const position = cameraGroundRaycast() ?? [0, 0, 0]
 
-                        console.log(houseType.id)
-
                         houses[id] = {
                           id,
                           houseTypeId: houseType.id,
