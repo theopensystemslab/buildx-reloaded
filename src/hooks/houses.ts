@@ -273,36 +273,43 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
 export const useInsert1000Skylarks = () => {
   const { data: allHouseTypes } = useAllHouseTypes()
 
-  useKey("x", () => {
-    // const position = cameraGroundRaycast() ?? [0, 0, 0]
-    const houseTypeId = "recSARkreiK3KMoTi"
+  console.log(allHouseTypes)
 
-    const houseType = allHouseTypes?.find((x) => x.id === houseTypeId)
-    if (!houseType) throw new Error("skylark not found")
+  useKey(
+    "x",
+    () => {
+      // const position = cameraGroundRaycast() ?? [0, 0, 0]
+      const houseTypeId = "recSARkreiK3KMoTi"
 
-    const count = 11,
-      incX = 7,
-      incZ = 3,
-      startX = -(incX * count) / 2,
-      startZ = -(incZ * count) / 2
+      const houseType = allHouseTypes?.find((x) => x.id === houseTypeId)
+      if (!houseType) throw new Error("skylark not found")
 
-    for (let x = startX; x < incX * count; x += incX) {
-      for (let z = startZ; z < incZ * count; z += incZ) {
-        const id = nanoid()
-        houses[id] = {
-          id,
-          houseTypeId,
-          systemId: houseType.systemId,
-          position: [x, 0, z],
-          rotation: 0,
-          dna: houseType.dna as string[],
-          modifiedMaterials: {},
-          modifiedMaterialsPreview: {},
-          friendlyName: `Building ${keys(houses).length + 1}`,
+      const count = 11,
+        incX = 7,
+        incZ = 3,
+        startX = -(incX * count) / 2,
+        startZ = -(incZ * count) / 2
+
+      for (let x = startX; x < incX * count; x += incX) {
+        for (let z = startZ; z < incZ * count; z += incZ) {
+          const id = nanoid()
+          houses[id] = {
+            id,
+            houseTypeId,
+            systemId: houseType.systemId,
+            position: [x, 0, z],
+            rotation: 0,
+            dna: houseType.dna as string[],
+            modifiedMaterials: {},
+            modifiedMaterialsPreview: {},
+            friendlyName: `Building ${keys(houses).length + 1}`,
+          }
         }
       }
-    }
-  })
+    },
+    undefined,
+    [allHouseTypes]
+  )
 }
 
 export const systemDnaElementMaterials = proxy<string[]>([])

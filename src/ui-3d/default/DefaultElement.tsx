@@ -2,7 +2,6 @@ import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import { setInstance } from "../../hooks/instances"
 import { useElementInstancePosition } from "../../hooks/transforms"
 import { ModuleProps } from "./DefaultModule"
 
@@ -16,7 +15,6 @@ const DefaultElement = (props: Props) => {
   const {
     systemId,
     houseId,
-    module,
     elementName,
     geometryHash,
     columnIndex,
@@ -34,19 +32,6 @@ const DefaultElement = (props: Props) => {
 
   const geometry = useHashedGeometry(geometryHash)
   const material = useHashedMaterial(materialHash)
-  // setInstance({
-  //   systemId,
-  //   houseId,
-  //   columnIndex,
-  //   levelIndex,
-  //   gridGroupIndex,
-  //   geometryHash,
-  //   materialHash,
-  //   columnZ,
-  //   levelY,
-  //   moduleZ,
-  //   elementName,
-  // })
 
   useElementInstancePosition({
     ref,

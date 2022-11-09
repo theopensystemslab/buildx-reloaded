@@ -12,21 +12,27 @@ type NewHouseTransform = {
   rotation: number
 }
 
+type NewStretch = {}
+
 type T = {
   before: {
     newHouseTransform: NewHouseTransform | null
+    newStretch: NewStretch | null
   }
   after: {
     newHouseTransform: NewHouseTransform | null
+    newStretch: NewStretch | null
   }
 }
 
 const events = proxy<T>({
   before: {
     newHouseTransform: null,
+    newStretch: null,
   },
   after: {
     newHouseTransform: null,
+    newStretch: null,
   },
 })
 
