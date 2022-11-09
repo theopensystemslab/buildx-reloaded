@@ -100,7 +100,6 @@ const systemElements = proxy<Record<string, Element[]>>({})
 
 export const useSystemElements = ({ systemId }: { systemId: string }) => {
   const snap = useSnapshot(systemElements)
-  console.log("useSystemElements", systemElements)
   return snap?.[systemId] ?? []
 }
 
@@ -111,7 +110,6 @@ export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
     },
     {
       onSuccess: (data) => {
-        console.log("onSuccess", data)
         systemElements[systemId] = data
       },
     }

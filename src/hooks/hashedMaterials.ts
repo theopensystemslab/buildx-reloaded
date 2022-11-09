@@ -49,7 +49,7 @@ export const useMaterialName = (houseId: string, elementName: string) => {
   ])
 }
 
-export const useMaterial = (input: {
+export const useMaterialHash = (input: {
   systemId: string
   houseId: string
   elementName: string
@@ -72,12 +72,12 @@ export const useMaterial = (input: {
       visible,
     })
     const maybeMaterial = hashedMaterials.get(materialHash)
-    if (maybeMaterial) return maybeMaterial
+    if (maybeMaterial) return materialHash
 
     const newMaterial = createMaterial(material)
     hashedMaterials.set(materialHash, newMaterial)
 
-    return newMaterial
+    return materialHash
   }, [clippingPlanes, material, visible])
 }
 

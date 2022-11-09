@@ -1,5 +1,6 @@
 import { hashedGeometries } from "@/hooks/hashedGeometries"
-import { useMaterial } from "@/hooks/hashedMaterials"
+import { useMaterialHash } from "@/hooks/hashedMaterials"
+import { setInstance } from "../../hooks/instances"
 import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
@@ -14,6 +15,9 @@ const DefaultElement = (props: Props) => {
     module,
     elementName,
     geometryHash,
+    columnIndex,
+    levelIndex,
+    gridGroupIndex,
     columnZ,
     levelY,
     moduleZ,
@@ -22,7 +26,7 @@ const DefaultElement = (props: Props) => {
 
   const z = columnZ + moduleZ
 
-  const material = useMaterial({
+  const materialHash = useMaterialHash({
     systemId,
     houseId,
     elementName,
@@ -30,26 +34,44 @@ const DefaultElement = (props: Props) => {
     clippingPlanes: [],
   })
 
-  const geometry = hashedGeometries.get(geometryHash)
-
   const position: V3 = [
     0,
     levelY,
-    mirror ? z + module.length / 2 : z - module.length / 2,
+    (mirror ? z + module.length / 2 : z - module.length / 2) + 1 * columnIndex,
   ]
 
   const scale: V3 = [1, 1, mirror ? 1 : -1]
 
-  return (
-    <mesh
-      {...{
-        position,
-        scale,
-        geometry,
-        material,
-      }}
-    />
-  )
+  setInstance({
+    systemId,
+    houseId,
+    columnIndex,
+    levelIndex,
+    gridGroupIndex,
+    geometryHash,
+    materialHash,
+    position,
+    scale,
+
+    // columnZ,
+    // levelY,
+    // moduleZ,
+
+    elementName,
+  })
+
+  return null
+
+  // return (
+  //   <mesh
+  //     {...{
+  //       position,
+  //       scale,
+  //       geometry,
+  //       material,
+  //     }}
+  //   />
+  // )
 }
 
 export default DefaultElement
