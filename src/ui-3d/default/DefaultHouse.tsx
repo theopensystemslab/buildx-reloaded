@@ -1,7 +1,12 @@
 import houses from "@/hooks/houses"
-import { indicesToKey, useColumnLayout } from "@/hooks/layouts"
+import {
+  indicesToKey,
+  PositionedColumn,
+  useColumnLayout,
+} from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
+import { splitColumns } from "../../hooks/stretch"
 import { RA } from "../../utils/functions"
 import DefaultModule from "./DefaultModule"
 
@@ -12,12 +17,20 @@ type Props = {
 const DefaultHouse = (props: Props) => {
   const { houseId } = props
   const systemId = houses[houseId].systemId
-  const columnLayout = useColumnLayout(houseId)
 
-  const children = pipe(
-    columnLayout,
-    RA.chain(({ columnIndex, gridGroups, z: columnZ }) =>
-      pipe(
+  const { startColumn, midColumns, endColumn } = splitColumns(
+    useColumnLayout(houseId)
+  )
+
+  const renderColumn = (
+    { columnIndex, gridGroups }: PositionedColumn,
+    userData: { startColumn?: boolean; endColumn?: boolean } = {
+      startColumn: false,
+      endColumn: false,
+    }
+  ) => (
+    <Fragment key={columnIndex}>
+      {pipe(
         gridGroups,
         RA.chain(({ modules, levelIndex, y: levelY }) =>
           pipe(
@@ -39,21 +52,36 @@ const DefaultHouse = (props: Props) => {
                     columnIndex,
                     levelIndex,
                     gridGroupIndex,
-                    columnZ,
-                    levelY,
-                    moduleZ,
-                    mirror: columnIndex === columnLayout.length - 1,
+                    ...userData,
+                    // columnZ,
+                    // levelY,
+                    // moduleZ,
+                    // mirror: columnIndex === columnLayout.length - 1,
                   }}
                 />
               )
             })
           )
         )
-      )
-    )
+      )}
+    </Fragment>
   )
 
-  return <Fragment>{children}</Fragment>
+  return (
+    <Fragment>
+      <Fragment>{renderColumn(startColumn, { startColumn: true })}</Fragment>
+      <Fragment>{pipe(midColumns, RA.map(renderColumn))}</Fragment>
+      <Fragment>{renderColumn(endColumn, { endColumn: true })}</Fragment>
+    </Fragment>
+  )
+
+  // const children = pipe(
+  //   columnLayout,
+  //   RA.chain(({ columnIndex, gridGroups, z: columnZ }) =>
+  //   )
+  // )
+
+  // return <Fragment>{children}</Fragment>
 }
 
 export default DefaultHouse

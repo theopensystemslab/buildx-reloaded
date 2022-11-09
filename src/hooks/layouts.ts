@@ -342,48 +342,8 @@ export const useColumnLayout = (houseId: string) => {
 
   layouts[houseId] = ref(layout)
 
-  return layouts[houseId]
+  return layout
 }
-
-export const useGroupedColumnLayouts = (systemId: string) => {
-  const houses = useHouses()
-
-  // group by systemId:houseId:{moduleId}:elementName
-  // or columnLayout to instances?
-  // -> system:module:element:material
-  //      needs house info for modified materials
-
-  // system:dna:elementName:materialName
-}
-
-// export const useInstancedColumnLayout = (houseId: string) => {
-//   const columnLayout = useColumnLayout(houseId)
-
-//   return pipe(
-//     columnLayout,
-//     RA.chain(({ gridGroups, columnIndex }) =>
-//       pipe(
-//         gridGroups,
-//         RA.chain(({ modules, y, levelIndex }) =>
-//           pipe(
-//             modules,
-//             RA.map(
-//               ({ gridGroupIndex, module, z }): PositionedInstancedModule => ({
-//                 module,
-//                 columnIndex,
-//                 levelIndex,
-//                 gridGroupIndex,
-//                 y,
-//                 z,
-//               })
-//             )
-//           )
-//         )
-//       )
-//     ),
-//     RNEA.groupBy((v) => v.module.dna)
-//   )
-// }
 
 export const columnLayoutToDNA = (
   columnLayout: Omit<PositionedColumn, "length" | "z" | "columnIndex">[]

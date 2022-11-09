@@ -3,10 +3,10 @@ import { Fragment, Suspense } from "react"
 import { useHouses } from "../../hooks/houses"
 import { useSiteCtx } from "../../hooks/siteCtx"
 import { pipeLogWith, RA, RR } from "../../utils/functions"
-import DefaultHouse from "./DefaultHouse"
-// import ElementInstances from "./ElementInstances"
+import InstancedHouse from "./InstancedHouse"
+import ElementInstances from "./ElementInstances"
 
-const DefaultApp = () => {
+const InstancedApp = () => {
   const houses = useHouses()
 
   const { buildingHouseId: buildingId } = useSiteCtx()
@@ -15,17 +15,18 @@ const DefaultApp = () => {
     <Fragment>
       {pipe(
         RR.keys(houses),
+
         pipeLogWith((x) => x.length),
         buildingId ? RA.filter((id) => id === buildingId) : identity,
         RA.map((id) => (
           <Suspense key={id} fallback={null}>
-            <DefaultHouse houseId={id} />
+            <InstancedHouse houseId={id} />
           </Suspense>
         ))
       )}
-      {/* <ElementInstances /> */}
+      <ElementInstances />
     </Fragment>
   )
 }
 
-export default DefaultApp
+export default InstancedApp

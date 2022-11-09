@@ -10,23 +10,33 @@ const ElementInstance = ({ data }: { data: ElementInstanceInput }) => {
 
   const { houseId } = data
 
-  const bind = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
-    onDrag: ({
-      event: {
-        object: { userData },
-      },
-    }) => {
-      // console.log(userData)
-      // console.log(ref.current)
-    },
-  })
+  // const bind = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+  //   onDrag: ({
+  //     event: {
+  //       object: { userData },
+  //     },
+  //   }) => {
+  //     // console.log(userData)
+  //     // console.log(ref.current)
+  //   },
+  // })
 
   useElementInstancePosition({
     ...data,
     ref,
   })
 
-  return <Instance ref={ref} userData={data} {...(bind() as any)} />
+  // useEffect(() => {
+  //   ref.current.position.set()
+  // }, [])
+
+  return (
+    <Instance
+      ref={ref}
+      userData={data}
+      // {...(bind() as any)}
+    />
+  )
 }
 
 export default ElementInstance

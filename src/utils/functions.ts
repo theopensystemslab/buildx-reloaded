@@ -52,6 +52,13 @@ export const someOrError = <T extends unknown>(message?: string) =>
 
 export const pipeLog = <T extends unknown>(x: T): T => (console.log(x), x)
 
+export const pipeLogWith =
+  <T extends unknown>(f: (t: T) => void) =>
+  (t: T): T => {
+    console.log(f(t))
+    return t
+  }
+
 export * as A from "fp-ts/Array"
 export * as R from "fp-ts/Record"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"

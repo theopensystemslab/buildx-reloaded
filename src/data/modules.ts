@@ -172,7 +172,7 @@ export const modulesQuery =
 const systemModules = proxy<Record<string, Module[]>>({})
 
 export const useSystemModules = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemModules)
+  const snap = useSnapshot(systemModules) as typeof systemModules
   return snap?.[systemId] ?? []
 }
 

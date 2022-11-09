@@ -1,10 +1,16 @@
 import { flow, identity, pipe } from "fp-ts/lib/function"
 import { BufferGeometry, Mesh } from "three"
-import { proxy } from "valtio"
+import { proxy, useSnapshot } from "valtio"
 import { Module, useGetVanillaModule } from "../../data/modules"
 import { errorThrower, O, RA, RR } from "../../utils/functions"
 import houses from "../houses"
-import { PositionedColumn, PositionedModule, PositionedRow } from "../layouts"
+import {
+  ColumnLayout,
+  layouts,
+  PositionedColumn,
+  PositionedModule,
+  PositionedRow,
+} from "../layouts"
 
 export const stretch = proxy({
   endVanillaColumns: 0,
@@ -122,6 +128,20 @@ export type VanillaPositionedRow = PositionedRow & {
 //     )
 //   )
 // }
+
+export const splitColumns = (layout: ColumnLayout) =>
+  pipe(
+    layout,
+    RA.partition(
+      ({ columnIndex }) =>
+        columnIndex === 0 || columnIndex === layout.length - 1
+    ),
+    ({ left: midColumns, right: [startColumn, endColumn] }) => ({
+      startColumn,
+      endColumn,
+      midColumns,
+    })
+  )
 
 // export const useStretchLength = (
 //   houseId: string,

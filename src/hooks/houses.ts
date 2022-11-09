@@ -18,7 +18,7 @@ import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
-import { A, R, RA, RNEA, RR, S } from "../utils/functions"
+import { A, pipeLog, R, RA, RNEA, RR, S } from "../utils/functions"
 import { setCameraEnabled } from "./camera"
 import events from "./events"
 import globals from "./globals"
@@ -280,7 +280,7 @@ export const useInsert1000Skylarks = () => {
     const houseType = allHouseTypes?.find((x) => x.id === houseTypeId)
     if (!houseType) throw new Error("skylark not found")
 
-    const count = 7,
+    const count = 11,
       incX = 7,
       incZ = 3,
       startX = -(incX * count) / 2,

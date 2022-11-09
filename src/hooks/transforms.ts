@@ -1,6 +1,12 @@
 import houses from "@/hooks/houses"
-import { useCallback, useEffect, useRef } from "react"
-import { Matrix4, Vector3 } from "three"
+import {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react"
+import { Matrix4, Mesh, Vector3 } from "three"
 import { subscribeKey } from "valtio/utils"
 import { ElementInstanceInput } from "./instances"
 import { layouts } from "./layouts"
@@ -25,8 +31,15 @@ export const useElementInstancePosition = ({
   columnIndex,
   levelIndex,
   gridGroupIndex,
-}: ElementInstanceInput & {
-  ref: any
+  elementName,
+}: {
+  ref: RefObject<Mesh>
+  systemId: string
+  houseId: string
+  columnIndex: number
+  levelIndex: number
+  gridGroupIndex: number
+  elementName: string
 }) => {
   const go = useCallback(() => {
     const column = layouts[houseId][columnIndex]
@@ -36,11 +49,16 @@ export const useElementInstancePosition = ({
     const mirror = columnIndex === layouts[houseId].length - 1
     const { length } = gridGroup.modules[gridGroupIndex].module
     const [hx, hy, hz] = houses[houseId].position
-    ref.current.position.set(
+    const [tx, ty, tz] = [
       hx,
       hy + y,
-      mirror ? hz + z + length / 2 : hz + z - length / 2
-    )
+      mirror ? hz + z + length / 2 : hz + z - length / 2,
+    ]
+
+    if (!ref.current) return
+
+    ref.current.position.set(tx, ty, tz)
+
     ref.current.scale.set(1, 1, mirror ? 1 : -1)
   }, [columnIndex, gridGroupIndex, houseId, levelIndex, ref])
 

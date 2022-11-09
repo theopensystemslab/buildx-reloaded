@@ -19,7 +19,12 @@ const ElementInstancesSet = ({ hash }: { hash: string }) => {
   const instances = useElementInstances(hash)
 
   return (
-    <Instances geometry={geometry} material={material}>
+    <Instances
+      limit={100} // Optional: max amount of items (for calculating buffer size)
+      range={100} // Optional: draw-range
+      geometry={geometry}
+      material={material}
+    >
       {pipe(
         instances,
         RR.toReadonlyArray,

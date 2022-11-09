@@ -98,7 +98,7 @@ export const elementsQuery =
 const systemElements = proxy<Record<string, Element[]>>({})
 
 export const useSystemElements = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemElements)
+  const snap = useSnapshot(systemElements) as typeof systemElements
   return snap?.[systemId] ?? []
 }
 
