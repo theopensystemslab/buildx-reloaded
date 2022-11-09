@@ -37,7 +37,7 @@ const DefaultElement = (props: Props) => {
   const position: V3 = [
     0,
     levelY,
-    (mirror ? z + module.length / 2 : z - module.length / 2) + 1 * columnIndex,
+    mirror ? z + module.length / 2 : z - module.length / 2,
   ]
 
   const scale: V3 = [1, 1, mirror ? 1 : -1]
@@ -52,26 +52,10 @@ const DefaultElement = (props: Props) => {
     materialHash,
     position,
     scale,
-
-    // columnZ,
-    // levelY,
-    // moduleZ,
-
     elementName,
   })
 
   return null
-
-  // return (
-  //   <mesh
-  //     {...{
-  //       position,
-  //       scale,
-  //       geometry,
-  //       material,
-  //     }}
-  //   />
-  // )
 }
 
 export default DefaultElement

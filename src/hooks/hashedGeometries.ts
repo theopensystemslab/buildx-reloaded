@@ -1,10 +1,15 @@
-import { BufferAttribute, BufferGeometry } from "three"
-import { proxyMap } from "valtio/utils"
 import CryptoJS from "crypto-js"
+import { BufferAttribute, BufferGeometry } from "three"
+import { proxy, ref, useSnapshot } from "valtio"
 
 type GeometryHash = string
 
-export const hashedGeometries = proxyMap<GeometryHash, BufferGeometry>()
+export const hashedGeometries = proxy<Record<GeometryHash, BufferGeometry>>({})
+
+export const useHashedGeometry = (geometryHash: string) => {
+  const snap = useSnapshot(hashedGeometries) as typeof hashedGeometries
+  return hashedGeometries[geometryHash]
+}
 
 export const hashGeometry = (geom: BufferGeometry) => {
   // const uv = geom.getAttribute("uv") as BufferAttribute
@@ -24,9 +29,9 @@ export const hashGeometry = (geom: BufferGeometry) => {
       .join(",")
   ).toString()
 
-  const maybeHashedGeometry = hashedGeometries.get(hash)
+  const maybeHashedGeometry = hashedGeometries?.[hash]
   if (maybeHashedGeometry) return hash
 
-  hashedGeometries.set(hash, geom)
+  hashedGeometries[hash] = ref(geom)
   return hash
 }

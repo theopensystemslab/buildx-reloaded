@@ -1,13 +1,7 @@
-// key with a hash
-
-import { pipe } from "fp-ts/lib/function"
 import { useEffect, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
-import { derive, proxyMap } from "valtio/utils"
 import { RM, S } from "../utils/functions"
 import { subscribeMapKey } from "../utils/valtio"
-
-// it's just geom and material hashes
 
 type ElementInstanceInput = {
   systemId: string
@@ -15,16 +9,11 @@ type ElementInstanceInput = {
   columnIndex: number
   levelIndex: number
   gridGroupIndex: number
-  // columnZ: number
-  // levelY: number
-  // moduleZ: number
   position: V3
   scale: V3
   elementName: string
   geometryHash: string
   materialHash: string
-  // position: V3
-  // rotation: number
 }
 
 type ElementInstanceKeyHash = string
@@ -57,10 +46,12 @@ export const getGeometryMaterialHash = ({
 export const splitGeometryMaterialHash = (input: string) =>
   input.split("::") as [string, string]
 
-const elements = proxyMap<
-  GeometryMaterialHash,
-  Map<ElementInstanceKeyHash, ElementInstanceValue>
->()
+const elements = proxy<
+  Record<
+    GeometryMaterialHash,
+    Record<ElementInstanceKeyHash, ElementInstanceValue>
+  >
+>({})
 
 export const setInstance = (input: ElementInstanceInput) => {
   const { geometryHash, materialHash } = input
@@ -72,37 +63,49 @@ export const setInstance = (input: ElementInstanceInput) => {
 
   const elementInstanceKeyHash = getElementInstanceKeyHash(input)
 
-  const maybeElements = elements.get(geometryMaterialHash)
+  const maybeElements = elements?.[geometryMaterialHash]
 
   if (!maybeElements) {
-    const map = new Map<ElementInstanceKeyHash, ElementInstanceValue>()
-    map.set(elementInstanceKeyHash, input)
-    elements.set(geometryMaterialHash, map)
+    // const map = new Map<ElementInstanceKeyHash, ElementInstanceValue>()
+    // map.set(elementInstanceKeyHash, input)
+    elements[geometryMaterialHash] = {
+      [elementInstanceKeyHash]: input,
+    }
     return
   } else {
-    maybeElements.set(elementInstanceKeyHash, input)
+    maybeElements[elementInstanceKeyHash] = input
   }
 }
 
-export const useElementGeometryMaterialHashes = () => {
-  const instances = useSnapshot(elements)
-  return RM.keys(S.Ord)(instances)
+export const useElementInstancesKeys = () => {
+  const snap = useSnapshot(elements)
+  return Object.keys(snap)
 }
 
-export const useElementInstanceValues = (hash: string) => {
-  const [elementInstanceValues, setElementInstanceValues] = useState<
-    ElementInstanceValue[]
-  >([])
-
-  useEffect(
-    () =>
-      subscribeMapKey(elements, hash, () => {
-        const foo = elements.get(hash)
-        if (!foo) setElementInstanceValues([])
-        setElementInstanceValues(Array.from(foo?.values() ?? []))
-      }),
-    [hash]
-  )
-
-  return elementInstanceValues
+export const useElementInstances = (hash: string) => {
+  const snap = useSnapshot(elements[hash])
+  return snap
 }
+
+// export const useElementGeometryMaterialHashes = () => {
+//   const instances = useSnapshot(elements)
+//   return RM.keys(S.Ord)(instances)
+// }
+
+// export const useElementInstanceValues = (hash: string) => {
+//   const [elementInstanceValues, setElementInstanceValues] = useState<
+//     ElementInstanceValue[]
+//   >([])
+
+//   useEffect(
+//     () =>
+//       subscribeMapKey(elements, hash, () => {
+//         const foo = elements.get(hash)
+//         if (!foo) setElementInstanceValues([])
+//         setElementInstanceValues(Array.from(foo?.values() ?? []))
+//       }),
+//     [hash]
+//   )
+
+//   return elementInstanceValues
+// }

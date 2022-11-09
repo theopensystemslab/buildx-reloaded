@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"
 import { Material, Plane } from "three"
-import { proxyMap } from "valtio/utils"
+import { proxy, ref, useSnapshot } from "valtio"
 import { useSystemElements } from "../data/elements"
 import { useSystemMaterials } from "../data/materials"
 import { O, RA, someOrError } from "../utils/functions"
@@ -19,7 +19,7 @@ type HashedMaterialKey = string
 const getMaterialHash = ({ color, visible, clippingPlanes }: MaterialKey) =>
   `color:${color};visible:${visible};clipPlanes:${clippingPlanes}`
 
-const hashedMaterials = proxyMap<HashedMaterialKey, Material>()
+const hashedMaterials = proxy<Record<HashedMaterialKey, Material>>({})
 // hash is system:house:element:material:clippingPlanes:visible
 
 export const useMaterialName = (houseId: string, elementName: string) => {
@@ -71,14 +71,19 @@ export const useMaterialHash = (input: {
       clippingPlanes,
       visible,
     })
-    const maybeMaterial = hashedMaterials.get(materialHash)
+    const maybeMaterial = hashedMaterials?.[materialHash]
     if (maybeMaterial) return materialHash
 
     const newMaterial = createMaterial(material)
-    hashedMaterials.set(materialHash, newMaterial)
+    hashedMaterials[materialHash] = ref(newMaterial)
 
     return materialHash
   }, [clippingPlanes, material, visible])
+}
+
+export const useHashedMaterial = (materialHash: string) => {
+  const snap = useSnapshot(hashedMaterials)
+  return snap[materialHash]
 }
 
 export default hashedMaterials

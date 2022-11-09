@@ -4,7 +4,7 @@ import { useHouses } from "../../hooks/houses"
 import { useSiteCtx } from "../../hooks/siteCtx"
 import { RA, RR } from "../../utils/functions"
 import DefaultHouse from "./DefaultHouse"
-import ElementInstances from "./ElementInstances"
+import ElementInstancesManager from "./ElementInstancesManager"
 
 const DefaultApp = () => {
   const houses = useHouses()
@@ -22,7 +22,7 @@ const DefaultApp = () => {
           </Suspense>
         ))
       )}
-      <ElementInstances />
+      <ElementInstancesManager />
     </Fragment>
   )
 }

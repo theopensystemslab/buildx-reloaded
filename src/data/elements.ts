@@ -8,7 +8,6 @@ import { proxy, useSnapshot } from "valtio"
 import { Module } from "./modules"
 import { O, R, RA, RR } from "../utils/functions"
 import { isMesh, useGLTF } from "../utils/three"
-import { proxyMap, subscribeKey } from "valtio/utils"
 import { BufferGeometry, Mesh } from "three"
 import produce from "immer"
 import { mergeBufferGeometries } from "three-stdlib"
@@ -158,10 +157,8 @@ type ElementGeometryHashMap = Map<
   GeometryHash
 >
 
-export const moduleElementGeometryHashMaps = proxyMap<
-  SystemIdModuleDna,
-  ElementGeometryHashMap
->()
+export const moduleElementGeometryHashMaps =
+  proxy<Record<SystemIdModuleDna, ElementGeometryHashMap>>()
 
 export const getModuleElementGeometriesKey = ({
   systemId,
@@ -184,7 +181,7 @@ export const useModuleElements = ({
   const nodeTypeToElement = useNodeTypeToElement(systemId)
   const gltf = useGLTF(glbUrl)
   const key = getModuleElementGeometriesKey({ systemId, dna })
-  const maybeModuleElementGeometries = moduleElementGeometryHashMaps.get(key)
+  const maybeModuleElementGeometries = moduleElementGeometryHashMaps?.[key]
   if (maybeModuleElementGeometries) return maybeModuleElementGeometries
 
   return pipe(
@@ -213,7 +210,7 @@ export const useModuleElements = ({
         elements.set(k, hash)
       })
 
-      moduleElementGeometryHashMaps.set(key, elements)
+      moduleElementGeometryHashMaps[key] = elements
 
       return elements
     }
