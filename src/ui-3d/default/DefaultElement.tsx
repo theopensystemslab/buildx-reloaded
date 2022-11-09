@@ -1,4 +1,3 @@
-import { hashedGeometries } from "@/hooks/hashedGeometries"
 import { useMaterialHash } from "@/hooks/hashedMaterials"
 import { setInstance } from "../../hooks/instances"
 import { ModuleProps } from "./DefaultModule"
@@ -24,8 +23,6 @@ const DefaultElement = (props: Props) => {
     mirror,
   } = props
 
-  const z = columnZ + moduleZ
-
   const materialHash = useMaterialHash({
     systemId,
     houseId,
@@ -33,14 +30,6 @@ const DefaultElement = (props: Props) => {
     visible: true,
     clippingPlanes: [],
   })
-
-  const position: V3 = [
-    0,
-    levelY,
-    mirror ? z + module.length / 2 : z - module.length / 2,
-  ]
-
-  const scale: V3 = [1, 1, mirror ? 1 : -1]
 
   setInstance({
     systemId,
@@ -50,8 +39,9 @@ const DefaultElement = (props: Props) => {
     gridGroupIndex,
     geometryHash,
     materialHash,
-    position,
-    scale,
+    columnZ,
+    levelY,
+    moduleZ,
     elementName,
   })
 

@@ -1,4 +1,4 @@
-import { Instance, Instances } from "@react-three/drei"
+import { Instances } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
@@ -9,8 +9,9 @@ import {
   useElementInstancesKeys,
 } from "../../hooks/instances"
 import { RA, RR } from "../../utils/functions"
+import ElementInstance from "./ElementInstance"
 
-const ElementInstances = ({ hash }: { hash: string }) => {
+const ElementInstancesSet = ({ hash }: { hash: string }) => {
   const [geometryHash, materialHash] = splitGeometryMaterialHash(hash)
   const geometry = useHashedGeometry(geometryHash)
   const material = useHashedMaterial(materialHash)
@@ -22,16 +23,13 @@ const ElementInstances = ({ hash }: { hash: string }) => {
       {pipe(
         instances,
         RR.toReadonlyArray,
-        RA.map(([k, { position, scale }]) => {
-          console.log(k)
-          return <Instance key={k} {...{ position, scale }} />
-        })
+        RA.map(([hash, data]) => <ElementInstance key={hash} data={data} />)
       )}
     </Instances>
   )
 }
 
-const ElementInstancesManager = () => {
+const ElementInstances = () => {
   const instanceKeys = useElementInstancesKeys()
 
   return (
@@ -39,11 +37,11 @@ const ElementInstancesManager = () => {
       {pipe(
         instanceKeys,
         RA.map((key) => {
-          return <ElementInstances key={key} hash={key} />
+          return <ElementInstancesSet key={key} hash={key} />
         })
       )}
     </Fragment>
   )
 }
 
-export default ElementInstancesManager
+export default ElementInstances

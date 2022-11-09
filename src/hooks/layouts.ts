@@ -4,7 +4,7 @@ import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { proxy } from "valtio"
+import { proxy, ref } from "valtio"
 import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
 import { Module, usePadColumn } from "../data/modules"
@@ -47,11 +47,9 @@ export type PositionedColumn = {
 
 export type ColumnLayout = Array<PositionedColumn>
 
-// const layouts = proxy<{
-//   column: Record<string, ColumnLayout> // houseId
-// }>({
-//   column: {},
-// })
+export const layouts = proxy<
+  Record<string, ColumnLayout> // houseId
+>({})
 
 export const useRowLayout = (buildingId: string): RowLayout =>
   pipe(
@@ -258,7 +256,7 @@ export const useColumnLayout = (houseId: string) => {
     RA.flatten
   )
 
-  return pipe(
+  const layout = pipe(
     columnifiedFurther,
     RA.reduceWithIndex(
       [],
@@ -341,6 +339,10 @@ export const useColumnLayout = (houseId: string) => {
       }
     )
   )
+
+  layouts[houseId] = ref(layout)
+
+  return layouts[houseId]
 }
 
 export const useGroupedColumnLayouts = (systemId: string) => {

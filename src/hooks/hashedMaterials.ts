@@ -1,5 +1,5 @@
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { Material, Plane } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSystemElements } from "../data/elements"
@@ -65,6 +65,11 @@ export const useMaterialHash = (input: {
     someOrError("no material")
   )
 
+  const createNewMaterial = useCallback(
+    () => createMaterial(material),
+    [material]
+  )
+
   return useMemo(() => {
     const materialHash = getMaterialHash({
       color: material.defaultColor,
@@ -74,11 +79,11 @@ export const useMaterialHash = (input: {
     const maybeMaterial = hashedMaterials?.[materialHash]
     if (maybeMaterial) return materialHash
 
-    const newMaterial = createMaterial(material)
+    const newMaterial = createNewMaterial()
     hashedMaterials[materialHash] = ref(newMaterial)
 
     return materialHash
-  }, [clippingPlanes, material, visible])
+  }, [clippingPlanes, createNewMaterial, material.defaultColor, visible])
 }
 
 export const useHashedMaterial = (materialHash: string) => {

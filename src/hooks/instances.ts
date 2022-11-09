@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react"
-import { proxy, useSnapshot } from "valtio"
-import { RM, S } from "../utils/functions"
-import { subscribeMapKey } from "../utils/valtio"
+import { proxy, ref, useSnapshot } from "valtio"
 
-type ElementInstanceInput = {
+export type ElementInstanceInput = {
   systemId: string
   houseId: string
   columnIndex: number
   levelIndex: number
   gridGroupIndex: number
-  position: V3
-  scale: V3
+  // position: V3
+  // scale: V3
+  levelY: number
+  columnZ: number
+  moduleZ: number
   elementName: string
   geometryHash: string
   materialHash: string
@@ -69,11 +69,11 @@ export const setInstance = (input: ElementInstanceInput) => {
     // const map = new Map<ElementInstanceKeyHash, ElementInstanceValue>()
     // map.set(elementInstanceKeyHash, input)
     elements[geometryMaterialHash] = {
-      [elementInstanceKeyHash]: input,
+      [elementInstanceKeyHash]: ref(input),
     }
     return
   } else {
-    maybeElements[elementInstanceKeyHash] = input
+    maybeElements[elementInstanceKeyHash] = ref(input)
   }
 }
 
@@ -83,7 +83,7 @@ export const useElementInstancesKeys = () => {
 }
 
 export const useElementInstances = (hash: string) => {
-  const snap = useSnapshot(elements[hash])
+  const snap = useSnapshot(elements[hash]) as typeof elements[""]
   return snap
 }
 

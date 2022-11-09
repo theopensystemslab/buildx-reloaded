@@ -351,7 +351,7 @@ export const useSystemDnaElementMaterials = () => {
       // unique modules
 
       // modified materials
-      console.log(houses)
+      // console.log(houses)
     })
   }, [])
 }
