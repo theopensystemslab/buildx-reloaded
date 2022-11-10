@@ -1,7 +1,14 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
-import { useRef } from "react"
+import { ThreeEvent } from "@react-three/fiber"
+import { useGesture } from "@use-gesture/react"
+import { useEffect, useRef } from "react"
 import { Mesh } from "three"
+import { ref } from "valtio"
+import { subscribeKey } from "valtio/utils"
+import events from "../../hooks/old-events"
+import globals from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
+import { useNewHouseEventsHandlers } from "../../hooks/houses"
 import { useElementInstancePosition } from "../../hooks/transforms"
 import { ModuleProps } from "./DefaultModule"
 
@@ -11,7 +18,7 @@ type Props = ModuleProps & {
 }
 
 const DefaultElement = (props: Props) => {
-  const ref = useRef<Mesh>(null)
+  const meshRef = useRef<Mesh>(null)
   const {
     systemId,
     houseId,
@@ -33,17 +40,60 @@ const DefaultElement = (props: Props) => {
   const geometry = useHashedGeometry(geometryHash)
   const material = useHashedMaterial(materialHash)
 
-  useElementInstancePosition({
-    ref,
-    systemId,
-    houseId,
-    columnIndex,
-    levelIndex,
-    gridGroupIndex,
-    elementName,
-  })
+  // useElementInstancePosition({
+  //   ref: meshRef,
+  //   systemId,
+  //   houseId,
+  //   columnIndex,
+  //   levelIndex,
+  //   gridGroupIndex,
+  //   elementName,
+  // })
 
-  return <mesh ref={ref} material={material} geometry={geometry} />
+  // const bind = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+  //   onDrag: () => {
+  //     if (events.drag === null) {
+  //       events.drag = {
+  //         houseId,
+  //         initialXZ: globals.pointerXZ,
+  //         positionDelta: [0, 0, 0],
+  //       }
+  //     } else {
+  //       const {
+  //         initialXZ,
+  //         initialXZ: [ix, iz],
+  //       } = events.drag
+  //       const [x, z] = globals.pointerXZ
+  //       events.drag = {
+  //         houseId,
+  //         initialXZ,
+  //         positionDelta: [x - ix, 0, z - iz],
+  //       }
+  //     }
+  //   },
+  // })
+
+  useEffect(
+    () =>
+      subscribeKey(events.after, "newHouseTransform", () => {
+        if (events.after.newHouseTransform === null) return
+        const { houseId, positionDelta, rotation } =
+          events.after.newHouseTransform
+      }),
+    []
+  )
+
+  // const bind = useNewHouseEventsHandlers()
+
+  return (
+    <mesh
+      ref={meshRef}
+      material={material}
+      geometry={geometry}
+      userData={props}
+      // {...(bind() as any)}
+    />
+  )
 }
 
 export default DefaultElement

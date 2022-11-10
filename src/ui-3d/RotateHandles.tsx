@@ -1,7 +1,7 @@
 import { useGesture } from "@use-gesture/react"
 import { Fragment, useRef } from "react"
 import { setCameraEnabled } from "../hooks/camera"
-import events from "../hooks/events"
+import events from "../hooks/old-events"
 import globals from "../hooks/globals"
 import houses from "../hooks/houses"
 import HandleMaterial from "../materials/HandleMaterial"

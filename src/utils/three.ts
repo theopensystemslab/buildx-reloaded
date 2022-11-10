@@ -1,5 +1,6 @@
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
+import { useGesture } from "@use-gesture/react"
 import {
   DoubleSide,
   Group,

@@ -1,5 +1,6 @@
 import { identity, pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
+import { useEvents } from "../../hooks/old-events"
 import { useHouses } from "../../hooks/houses"
 import { useSiteCtx } from "../../hooks/siteCtx"
 import { pipeLogWith, RA, RR } from "../../utils/functions"
@@ -10,6 +11,8 @@ const DefaultApp = () => {
   const houses = useHouses()
 
   const { buildingHouseId: buildingId } = useSiteCtx()
+
+  useEvents()
 
   return (
     <Fragment>

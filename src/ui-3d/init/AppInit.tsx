@@ -7,17 +7,21 @@ import RectangularGrid from "@/ui-3d/init/RectangularGrid"
 import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
 import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
+import { ScreenQuad } from "@react-three/drei"
+import { useGesture } from "@use-gesture/react"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import { useKey } from "react-use"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 import GroundPlane from "../GroundPlane"
+import R3FEventsGroup from "./R3FEventsGroup"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
 type Props = PropsWithChildren<{}>
 
-const Common = () => {
+const Common = (props: Props) => {
+  const { children } = props
   const { preload } = useGlobals()
 
   return (
@@ -43,6 +47,7 @@ const Common = () => {
         }}
       />
       {preload && <DataPreload />}
+      <R3FEventsGroup>{children}</R3FEventsGroup>
     </Fragment>
   )
 }
@@ -63,14 +68,12 @@ const AppInit = (props: Props) => {
       <EventDiv>
         {!mapboxEnabled ? (
           <VanillaR3FCanvas>
-            <Common />
-            {children}
+            <Common>{children}</Common>
           </VanillaR3FCanvas>
         ) : (
           <MapboxR3FCanvas>
             <MapboxR3FCanvasProjector>
-              <Common />
-              {children}
+              <Common>{children}</Common>
             </MapboxR3FCanvasProjector>
           </MapboxR3FCanvas>
         )}
