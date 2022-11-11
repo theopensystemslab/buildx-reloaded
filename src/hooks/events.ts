@@ -1,12 +1,20 @@
+import { Vector3 } from "three"
 import { proxy } from "valtio"
 import { ElementIdentifier } from "../data/elements"
 
+type DragEvent = {
+  element: ElementIdentifier
+  point: Vector3
+}
+
 type Events = {
-  hover: ElementIdentifier | null
+  dragStart: DragEvent | null
+  drag: DragEvent | null
 }
 
 const events = proxy<Events>({
-  hover: null,
+  drag: null,
+  dragStart: null,
 })
 
 export default events

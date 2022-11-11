@@ -101,8 +101,6 @@ export const useHouseTransformCollisionDetection = () => {
 export const useEvents = () => {
   const { buildingHouseId, editMode } = useSiteCtx()
 
-  console.log(buildingHouseId, editMode)
-
   useEffect(
     () =>
       subscribeKey(events, "drag", () => {

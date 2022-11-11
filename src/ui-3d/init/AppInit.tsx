@@ -33,7 +33,7 @@ const Common = (props: Props) => {
         z={{ cells: 61, size: 1 }}
         color="#ababab"
       />
-      <GroundPlane
+      {/* <GroundPlane
         onChange={(xz) => void (globals.pointerXZ = xz)}
         onNearClick={() => {
           // menu.open = false
@@ -45,7 +45,7 @@ const Common = (props: Props) => {
           // scope.hovered = null
           // if (scope.selected === null) clearIlluminatedMaterials()
         }}
-      />
+      /> */}
       {preload && <DataPreload />}
       <R3FEventsGroup>{children}</R3FEventsGroup>
     </Fragment>

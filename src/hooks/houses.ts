@@ -11,7 +11,7 @@ import {
   useMemo,
   useRef,
 } from "react"
-import { Group } from "three"
+import { Group, Mesh } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
@@ -218,13 +218,13 @@ export const useHouseEventHandlers = (houseId: string): any => {
 
 export const useMoveRotateSubscription = (
   houseId: string,
-  groupRef: MutableRefObject<Group | null>
+  ref: MutableRefObject<Group | Mesh | null>
 ) => {
   const onPositionUpdate = useCallback(() => {
-    if (!groupRef.current) return
+    if (!ref.current) return
     const [x, y, z] = houses[houseId].position
-    groupRef.current.position.set(x, y, z)
-  }, [groupRef, houseId])
+    ref.current.position.set(x, y, z)
+  }, [ref, houseId])
 
   useEffect(() => {
     onPositionUpdate()
@@ -232,9 +232,9 @@ export const useMoveRotateSubscription = (
   }, [houseId, onPositionUpdate])
 
   const onRotationUpdate = useCallback(() => {
-    if (!groupRef.current) return
-    groupRef.current.rotation.set(0, houses[houseId].rotation, 0)
-  }, [groupRef, houseId])
+    if (!ref.current) return
+    ref.current.rotation.set(0, houses[houseId].rotation, 0)
+  }, [ref, houseId])
 
   useEffect(() => {
     onRotationUpdate()
@@ -272,8 +272,6 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
 
 export const useInsert1000Skylarks = () => {
   const { data: allHouseTypes } = useAllHouseTypes()
-
-  console.log(allHouseTypes)
 
   useKey(
     "x",
@@ -358,7 +356,6 @@ export const useSystemDnaElementMaterials = () => {
       // unique modules
 
       // modified materials
-      // console.log(houses)
     })
   }, [])
 }

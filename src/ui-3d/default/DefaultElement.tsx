@@ -8,9 +8,13 @@ import { subscribeKey } from "valtio/utils"
 import events from "../../hooks/old-events"
 import globals from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import { useNewHouseEventsHandlers } from "../../hooks/houses"
+import {
+  useMoveRotateSubscription,
+  useNewHouseEventsHandlers,
+} from "../../hooks/houses"
 import { useElementInstancePosition } from "../../hooks/transforms"
 import { ModuleProps } from "./DefaultModule"
+import { ElementIdentifier } from "../../data/elements"
 
 type Props = ModuleProps & {
   elementName: string
@@ -73,24 +77,35 @@ const DefaultElement = (props: Props) => {
   //   },
   // })
 
-  useEffect(
-    () =>
-      subscribeKey(events.after, "newHouseTransform", () => {
-        if (events.after.newHouseTransform === null) return
-        const { houseId, positionDelta, rotation } =
-          events.after.newHouseTransform
-      }),
-    []
-  )
+  // useEffect(
+  //   () =>
+  //     subscribeKey(events.after, "newHouseTransform", () => {
+  //       if (events.after.newHouseTransform === null) return
+  //       const { houseId, positionDelta, rotation } =
+  //         events.after.newHouseTransform
+  //     }),
+  //   []
+  // )
 
   // const bind = useNewHouseEventsHandlers()
+
+  useMoveRotateSubscription(houseId, meshRef)
 
   return (
     <mesh
       ref={meshRef}
       material={material}
       geometry={geometry}
-      userData={props}
+      userData={{
+        elementIdentifier: {
+          systemId,
+          houseId,
+          columnIndex,
+          levelIndex,
+          gridGroupIndex,
+          elementName,
+        } as ElementIdentifier,
+      }}
       // {...(bind() as any)}
     />
   )

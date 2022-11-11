@@ -42,7 +42,6 @@ export const useElementInstancePosition = ({
   elementName: string
 }) => {
   const go = useCallback(() => {
-    console.log("go")
     const column = layouts[houseId][columnIndex]
     const gridGroup = column.gridGroups[levelIndex]
     const y = gridGroup.y
