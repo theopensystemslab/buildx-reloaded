@@ -4,9 +4,14 @@ import { useCallback } from "react"
 import { Intersection, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { ElementIdentifier } from "../data/elements"
+import { useSubscribeKey } from "../utils/hooks"
 import { setCameraEnabled } from "./camera"
 import { SiteCtxModeEnum, useSiteCtx, useSiteCtxMode } from "./siteCtx"
-import { setHousePosition, transients } from "./transients"
+import {
+  setHousePosition,
+  transients,
+  updateTransientHousePositionDelta,
+} from "./transients"
 
 type ElementDragEvent = {
   element: ElementIdentifier
@@ -94,6 +99,33 @@ export const useElementDragFunctions = () => {
   )
 
   return { onDragStart, onDragEnd }
+}
+
+export const useDragEvents = () => {
+  return useSubscribeKey(elementDragEvents, "drag", () => {
+    if (
+      elementDragEvents.dragStart === null ||
+      elementDragEvents.drag === null
+    ) {
+      return
+    }
+
+    const {
+      dragStart: {
+        point: { x: x0, z: z0 },
+        element: { houseId },
+      },
+      drag: {
+        point: { x: x1, z: z1 },
+      },
+    } = elementDragEvents
+
+    updateTransientHousePositionDelta(houseId, {
+      dx: x1 - x0,
+      dy: 0,
+      dz: z1 - z0,
+    })
+  })
 }
 
 export default elementDragEvents
