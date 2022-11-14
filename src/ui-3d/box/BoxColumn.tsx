@@ -30,11 +30,7 @@ const BoxColumn = (props: Props) => {
         modules,
         RA.mapWithIndex((groupIndex, { module, z }) => {
           const key = `${houseId}:${columnIndex},${levelIndex},${groupIndex}`
-          const position: V3 = [
-            0,
-            y,
-            mirror ? z + module.length / 2 : z - module.length / 2,
-          ]
+
           return (
             <BoxModule
               key={key}
@@ -44,7 +40,11 @@ const BoxColumn = (props: Props) => {
               levelY={y}
               groupIndex={groupIndex}
               houseId={houseId}
-              position={position}
+              position={[
+                0,
+                y,
+                mirror ? z + module.length / 2 : z - module.length / 2,
+              ]}
               scale={[1, 1, mirror ? 1 : -1]}
               verticalCutPlanes={verticalCutPlanes}
             />

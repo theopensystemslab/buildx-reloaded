@@ -1,23 +1,17 @@
 import { proxy, useSnapshot } from "valtio"
+import houses from "./houses"
 
 export type Transients = {
   housePosition: {
     houseId: string
-    x: number
-    y: number
-    z: number
+    dx: number
+    dy: number
+    dz: number
   } | null
   houseRotation: {
     houseId: string
-    y: number
+    dy: number
   } | null
-  // houseId: string
-  // rotationY: number
-  // position: {
-  //   x: number
-  //   y: number
-  //   z: number
-  // }
 }
 
 export const transients = proxy<Transients>({
@@ -26,3 +20,22 @@ export const transients = proxy<Transients>({
 })
 
 export const useTransients = () => useSnapshot(transients)
+
+export const updateTransientHousePositionDelta = (
+  houseId: string,
+  position: DeltaV3
+) => {
+  transients.housePosition = {
+    houseId,
+    ...position,
+  }
+}
+
+export const setHousePosition = () => {
+  if (transients.housePosition === null) return
+  const { houseId, dx, dy, dz } = transients.housePosition
+  houses[houseId].position.x += dx
+  houses[houseId].position.y += dy
+  houses[houseId].position.z += dz
+  transients.housePosition = null
+}

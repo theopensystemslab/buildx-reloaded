@@ -223,7 +223,7 @@ export const useMoveRotateSubscription = (
       transients.housePosition !== null &&
       transients.housePosition.houseId === houseId
     ) {
-      const { x: tx, y: ty, z: tz } = transients.housePosition
+      const { dx: tx, dy: ty, dz: tz } = transients.housePosition
       x += tx
       y += ty
       z += tz
