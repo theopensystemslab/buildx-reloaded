@@ -47,7 +47,8 @@ const Common = (props: Props) => {
         }}
       /> */}
       {preload && <DataPreload />}
-      <R3FEventsGroup>{children}</R3FEventsGroup>
+      {children}
+      {/* <R3FEventsGroup>{children}</R3FEventsGroup> */}
     </Fragment>
   )
 }

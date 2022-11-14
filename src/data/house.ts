@@ -1,5 +1,4 @@
 import { pipe } from "fp-ts/lib/function"
-import { Vector3 } from "three"
 import * as z from "zod"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 
@@ -15,7 +14,7 @@ export const houseParser = z.object({
     x: z.number(),
     y: z.number(),
     z: z.number(),
-  }), // tuple([z.number(), z.number(), z.number()]),
+  }),
   rotation: z.number(),
 })
 

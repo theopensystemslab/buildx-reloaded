@@ -6,6 +6,7 @@ import {
 } from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
+import { useDimensionsSubscription } from "../../hooks/dimensions"
 import { splitColumns } from "../../hooks/stretch"
 import { RA } from "../../utils/functions"
 import DefaultModule from "./DefaultModule"
@@ -18,9 +19,11 @@ const DefaultHouse = (props: Props) => {
   const { houseId } = props
   const systemId = houses[houseId].systemId
 
-  const { startColumn, midColumns, endColumn } = splitColumns(
-    useColumnLayout(houseId)
-  )
+  const columnLayout = useColumnLayout(houseId)
+
+  const { startColumn, midColumns, endColumn } = splitColumns(columnLayout)
+
+  useDimensionsSubscription(houseId, columnLayout)
 
   const renderColumn = (
     { columnIndex, gridGroups }: PositionedColumn,

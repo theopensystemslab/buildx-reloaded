@@ -1,7 +1,6 @@
 import { useGesture } from "@use-gesture/react"
 import { Fragment, useRef } from "react"
 import { setCameraEnabled } from "../hooks/camera"
-import events from "../hooks/old-events"
 import globals from "../hooks/globals"
 import houses from "../hooks/houses"
 import HandleMaterial from "../materials/HandleMaterial"
@@ -39,11 +38,11 @@ const RotateHandles = (props: Props) => {
       const angle0 = Math.atan2(y0 - hz, x0 - hx)
       const angle = Math.atan2(y - hz, x - hx)
 
-      events.before.newHouseTransform = {
-        houseId,
-        rotation: initialRotation.current - (angle - angle0),
-        positionDelta: [0, 0, 0],
-      }
+      // events.before.newHouseTransform = {
+      //   houseId,
+      //   rotation: initialRotation.current - (angle - angle0),
+      //   positionDelta: [0, 0, 0],
+      // }
 
       if (last) {
         setCameraEnabled(true)

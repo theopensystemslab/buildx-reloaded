@@ -1,32 +1,20 @@
-import { ThreeEvent } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import produce from "immer"
 import { nanoid } from "nanoid"
-import {
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react"
+import { MutableRefObject, useCallback, useEffect, useMemo } from "react"
 import { useKey } from "react-use"
 import { Group, Mesh, Vector3 } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
-import { ElementIdentifier } from "../data/elements"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
 import { useSubscribeKey } from "../utils/hooks"
-import { setCameraEnabled } from "./camera"
-import globals from "./globals"
-import events from "./old-events"
 import { transients } from "./transients"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
@@ -45,7 +33,12 @@ export const useLocallyStoredHouses = () =>
 
 export const useHouses = () => {
   useLocallyStoredHouses()
-  return useSnapshot(houses)
+  return useSnapshot(houses) as typeof houses
+}
+
+export const useHouseKeys = () => {
+  useLocallyStoredHouses()
+  return pipe(useSnapshot(houses) as typeof houses, RR.keys)
 }
 
 export const useHouse = (houseId: string) => {
@@ -115,108 +108,108 @@ export const useHouseRows = (buildingId: string) => {
   return modulesToRows(houseModules)
 }
 
-export const useNewHouseEventsHandlers = () => {
-  const lastPointer = useRef<[number, number]>([0, 0])
+// export const useNewHouseEventsHandlers = () => {
+//   const lastPointer = useRef<[number, number]>([0, 0])
 
-  return useGesture<{ drag: ThreeEvent<PointerEvent> }>({
-    onDrag: ({
-      first,
-      last,
-      event: {
-        object: { userData: elementIdentifier },
-      },
-    }) => {
-      const {
-        systemId,
-        houseId,
-        columnIndex,
-        levelIndex,
-        gridGroupIndex,
-        elementName,
-      } = elementIdentifier as ElementIdentifier
+//   return useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+//     onDrag: ({
+//       first,
+//       last,
+//       event: {
+//         object: { userData: elementIdentifier },
+//       },
+//     }) => {
+//       const {
+//         systemId,
+//         houseId,
+//         columnIndex,
+//         levelIndex,
+//         gridGroupIndex,
+//         elementName,
+//       } = elementIdentifier as ElementIdentifier
 
-      if (first) {
-        setCameraEnabled(false)
-        lastPointer.current = globals.pointerXZ
-      }
+//       if (first) {
+//         setCameraEnabled(false)
+//         lastPointer.current = globals.pointerXZ
+//       }
 
-      const [px0, pz0] = lastPointer.current
-      const [px1, pz1] = globals.pointerXZ
+//       const [px0, pz0] = lastPointer.current
+//       const [px1, pz1] = globals.pointerXZ
 
-      const [dx, dz] = [px1 - px0, pz1 - pz0]
+//       const [dx, dz] = [px1 - px0, pz1 - pz0]
 
-      events.before.newHouseTransform = {
-        houseId,
-        positionDelta: [dx, 0, dz],
-        rotation: 0,
-      }
+//       events.before.newHouseTransform = {
+//         houseId,
+//         positionDelta: [dx, 0, dz],
+//         rotation: 0,
+//       }
 
-      // invalidate()
-      const snapToGrid = (x: number) => {
-        return Math.round(x)
-      }
+//       // invalidate()
+//       const snapToGrid = (x: number) => {
+//         return Math.round(x)
+//       }
 
-      if (last) {
-        setCameraEnabled(true)
-        // const [x, , z] = houses[houseId].position.map(snapToGrid)
-        // houses[houseId].position[0] = x
-        // houses[houseId].position[2] = z
-      }
+//       if (last) {
+//         setCameraEnabled(true)
+//         // const [x, , z] = houses[houseId].position.map(snapToGrid)
+//         // houses[houseId].position[0] = x
+//         // houses[houseId].position[2] = z
+//       }
 
-      lastPointer.current = globals.pointerXZ
-    },
-  })
-}
+//       lastPointer.current = globals.pointerXZ
+//     },
+//   })
+// }
 
-export const useHouseEventHandlers = (houseId: string): any => {
-  // const contextMode = useSiteContextMode()
-  // const { editMode } = useSiteContext()
+// export const useHouseEventHandlers = (houseId: string): any => {
+//   // const contextMode = useSiteContextMode()
+//   // const { editMode } = useSiteContext()
 
-  const lastPointer = useRef<[number, number]>([0, 0])
+//   const lastPointer = useRef<[number, number]>([0, 0])
 
-  return useGesture({
-    onDrag: ({ first, last, event }) => {
-      // if (
-      //   contextMode !== SiteContextModeEnum.Enum.SITE ||
-      //   editMode !== EditModeEnum.Enum.MOVE_ROTATE
-      // ) {
-      //   return
-      // }
+//   return useGesture({
+//     onDrag: ({ first, last, event }) => {
+//       // if (
+//       //   contextMode !== SiteContextModeEnum.Enum.SITE ||
+//       //   editMode !== EditModeEnum.Enum.MOVE_ROTATE
+//       // ) {
+//       //   return
+//       // }
 
-      // if (scope.selected?.buildingId !== houseId) return
+//       // if (scope.selected?.buildingId !== houseId) return
 
-      if (first) {
-        setCameraEnabled(false)
-        lastPointer.current = globals.pointerXZ
-      }
+//       if (first) {
+//         setCameraEnabled(false)
+//         lastPointer.current = globals.pointerXZ
+//       }
 
-      const [px0, pz0] = lastPointer.current
-      const [px1, pz1] = globals.pointerXZ
+//       const [px0, pz0] = lastPointer.current
+//       const [px1, pz1] = globals.pointerXZ
 
-      const [dx, dz] = [px1 - px0, pz1 - pz0]
+//       const [dx, dz] = [px1 - px0, pz1 - pz0]
 
-      events.before.newHouseTransform = {
-        houseId,
-        positionDelta: [dx, 0, dz],
-        rotation: 0,
-      }
+//       events.before.newHouseTransform = {
+//         houseId,
+//         positionDelta: [dx, 0, dz],
+//         rotation: 0,
+//       }
 
-      // invalidate()
-      const snapToGrid = (x: number) => {
-        return Math.round(x)
-      }
+//       // invalidate()
+//       const snapToGrid = (x: number) => {
+//         return Math.round(x)
+//       }
 
-      if (last) {
-        setCameraEnabled(true)
-        // const [x, , z] = houses[houseId].position.map(snapToGrid)
-        // houses[houseId].position[0] = x
-        // houses[houseId].position[2] = z
-      }
+//       if (last) {
+//         setCameraEnabled(true)
+//         // const [x, , z] = houses[houseId].position.map(snapToGrid)
+//         // houses[houseId].position[0] = x
+//         // houses[houseId].position[2] = z
+//       }
 
-      lastPointer.current = globals.pointerXZ
-    },
-  })
-}
+//       lastPointer.current = globals.pointerXZ
+//     },
+//   })
+// }
 
 export const useMoveRotateSubscription = (
   houseId: string,

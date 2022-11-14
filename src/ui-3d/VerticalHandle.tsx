@@ -6,7 +6,6 @@ import { subscribeKey } from "valtio/utils"
 import { RaycasterLayer } from "../constants"
 import { setCameraEnabled } from "../hooks/camera"
 import dimensions from "../hooks/dimensions"
-import events from "../hooks/old-events"
 import globals from "../hooks/globals"
 import houses from "../hooks/houses"
 import CircularHandle from "./CircularHandle"
@@ -43,21 +42,21 @@ const VerticalHandle = (props: Props) => {
   const y0 = useRef(0)
   const dragging = useRef(false)
 
-  useEffect(() =>
-    subscribeKey(events.after, "newHouseTransform", () => {
-      if (
-        !handleRef.current ||
-        events.after.newHouseTransform === null ||
-        events.after.newHouseTransform.houseId !== houseId
-      )
-        return
-      const {
-        positionDelta: [dx, dy, dz],
-        rotation: dr,
-      } = events.after.newHouseTransform
-      handleRef.current.position.y += dy
-    })
-  )
+  // useEffect(() =>
+  //   subscribeKey(events.after, "newHouseTransform", () => {
+  //     if (
+  //       !handleRef.current ||
+  //       events.after.newHouseTransform === null ||
+  //       events.after.newHouseTransform.houseId !== houseId
+  //     )
+  //       return
+  //     const {
+  //       positionDelta: [dx, dy, dz],
+  //       rotation: dr,
+  //     } = events.after.newHouseTransform
+  //     handleRef.current.position.y += dy
+  //   })
+  // )
 
   const bind: any = useGesture<{ drag: ThreeEvent<PointerEvent> }>({
     onDrag: ({
@@ -77,11 +76,11 @@ const VerticalHandle = (props: Props) => {
 
       const dy = globals.pointerY - y0.current
 
-      events.before.newHouseTransform = {
-        houseId,
-        positionDelta: [0, dy, 0],
-        rotation: 0,
-      }
+      // events.before.newHouseTransform = {
+      //   houseId,
+      //   positionDelta: [0, dy, 0],
+      //   rotation: 0,
+      // }
 
       y0.current = globals.pointerY
 

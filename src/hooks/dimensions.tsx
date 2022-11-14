@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react"
 import { Box3, Matrix3, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { proxy, ref } from "valtio"
+import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import houses from "./houses"
 import { ColumnLayout } from "./layouts"
@@ -11,6 +11,13 @@ type Dimensions = {
   width: number
   height: number
   length: number
+}
+
+const defaultDimensions: Dimensions = {
+  height: 0,
+  length: 0,
+  obb: new OBB(),
+  width: 0,
 }
 
 const dimensions = proxy<Record<string, Dimensions>>({})
@@ -73,6 +80,11 @@ export const useDimensionsSubscription = (
       unsubRot()
     }
   }, [houseId, columns, update])
+}
+
+export const useDimensions = (houseId: string) => {
+  const snap = useSnapshot(dimensions)
+  return snap[houseId] ?? defaultDimensions
 }
 
 export default dimensions

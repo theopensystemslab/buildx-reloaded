@@ -1,4 +1,4 @@
-import { GroupProps, ThreeEvent, useThree } from "@react-three/fiber"
+import { ThreeEvent, useThree } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { Fragment, PropsWithChildren, useRef } from "react"
 import { Mesh } from "three"
@@ -11,59 +11,9 @@ import { transients } from "../../hooks/transients"
 import { useSubscribeKey } from "../../utils/hooks"
 import XZPlane from "../XZPlane"
 
-const R3FEventsGroup = (props: PropsWithChildren<GroupProps>) => {
+const R3FEventsGroup = (props: PropsWithChildren<{}>) => {
+  const { children } = props
   const xzPlaneRef = useRef<Mesh>(null!)
-  const raycaster = useThree((t) => t.raycaster)
-
-  const bindElements: any = useGesture<{
-    hover: ThreeEvent<PointerEvent>
-    drag: ThreeEvent<PointerEvent>
-    onPointerDown: ThreeEvent<PointerEvent>
-  }>({
-    onDrag: (state) => {
-      const {
-        first,
-        last,
-        event: {
-          object: { userData },
-          intersections: [{ point }],
-        },
-      } = state
-
-      const elementIdentifier = userData.elementIdentifier as ElementIdentifier
-
-      if (first) {
-        setCameraEnabled(false)
-        xzPlaneRef.current.position.set(0, point.y, 0)
-        xzPlaneRef.current.layers.set(RaycasterLayer.ENABLED)
-        const [ix] = raycaster.intersectObject(xzPlaneRef.current)
-        if (typeof ix === "undefined") return
-        events.dragStart = {
-          element: elementIdentifier,
-          point: ix.point,
-        }
-      } else if (last) {
-        setCameraEnabled(true)
-        xzPlaneRef.current.layers.set(RaycasterLayer.DISABLED)
-        events.dragStart = null
-        if (transients.housePosition?.houseId === elementIdentifier.houseId) {
-          houses[elementIdentifier.houseId].position.x +=
-            transients.housePosition.x
-          houses[elementIdentifier.houseId].position.z +=
-            transients.housePosition.z
-        }
-        transients.housePosition = null
-      } else {
-        if (events.dragStart === null) return
-        const [ix] = raycaster.intersectObject(xzPlaneRef.current)
-        if (typeof ix === "undefined") return
-        events.drag = {
-          element: elementIdentifier,
-          point: ix.point,
-        }
-      }
-    },
-  })
 
   useSubscribeKey(events, "drag", () => {
     if (events.dragStart === null || events.drag === null) return
@@ -77,6 +27,8 @@ const R3FEventsGroup = (props: PropsWithChildren<GroupProps>) => {
       },
     } = events
 
+    console.log({ x1, z1 })
+
     transients.housePosition = {
       x: x1 - x0,
       y: 0,
@@ -85,10 +37,13 @@ const R3FEventsGroup = (props: PropsWithChildren<GroupProps>) => {
     }
   })
 
+  const bindHandles: any = useGesture({})
+
   return (
     <Fragment>
-      <group {...props} {...bindElements()} />
+      {/* <group {...bindElements()}>{children}</group> */}
       <XZPlane ref={xzPlaneRef} />
+      <group {...bindHandles()}>{}</group>
     </Fragment>
   )
 }
