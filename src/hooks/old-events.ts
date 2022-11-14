@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { Matrix4 } from "three"
+import { Matrix4, Vector3 } from "three"
 import { proxy } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { guardNotNullish } from "../utils/functions"
@@ -85,11 +85,12 @@ export const useHouseTransformCollisionDetection = () => {
           return
         }
 
-        if (positionDelta)
-          houses[houseId].position = addV3(
-            houses[houseId].position,
-            positionDelta
+        if (positionDelta) {
+          const { x, y, z } = houses[houseId].position
+          houses[houseId].position = new Vector3(
+            ...addV3([x, y, z], positionDelta)
           )
+        }
         if (rotation) houses[houseId].rotation = rotation
 
         events.after.newHouseTransform = events.before.newHouseTransform

@@ -34,7 +34,7 @@ const RotateHandles = (props: Props) => {
         initialRotation.current = houses[houseId].rotation
       }
       const [x0, y0] = uvAtDragStart.current
-      const [hx, , hz] = houses[houseId].position
+      const { x: hx, z: hz } = houses[houseId].position
       const [x, y] = globals.pointerXZ
       const angle0 = Math.atan2(y0 - hz, x0 - hx)
       const angle = Math.atan2(y - hz, x - hx)

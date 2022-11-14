@@ -27,7 +27,7 @@ const VerticalHandle = (props: Props) => {
   const update = useCallback(() => {
     if (!groupRef.current || !(houseId in dimensions)) return
     const {
-      position: [px, py, pz],
+      position: { x: px, y: py, z: pz },
       rotation,
     } = houses[houseId]
     const { height, length } = dimensions[houseId]

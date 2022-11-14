@@ -18,7 +18,7 @@ export const useVerticalCutPlanes = (
   const house = useSnapshot(houses[houseId])
 
   const {
-    position: [x, z],
+    position: { x, z },
     rotation,
   } = house
 

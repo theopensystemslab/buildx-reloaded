@@ -39,7 +39,7 @@ export const useDimensionsSubscription = (
 
     const length = z1 - z0
 
-    const [px, py, pz] = houses[houseId].position
+    const { x: px, y: py, z: pz } = houses[houseId].position
 
     const center = new Vector3(0, 0, 0)
     const halfSize = new Vector3(width / 2, height / 2, length / 2)

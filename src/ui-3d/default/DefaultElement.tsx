@@ -1,20 +1,10 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
-import { ThreeEvent } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { Mesh } from "three"
-import { ref } from "valtio"
-import { subscribeKey } from "valtio/utils"
-import events from "../../hooks/old-events"
-import globals from "../../hooks/globals"
-import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import {
-  useMoveRotateSubscription,
-  useNewHouseEventsHandlers,
-} from "../../hooks/houses"
-import { useElementInstancePosition } from "../../hooks/transforms"
-import { ModuleProps } from "./DefaultModule"
 import { ElementIdentifier } from "../../data/elements"
+import { useHashedGeometry } from "../../hooks/hashedGeometries"
+import { useMoveRotateSubscription } from "../../hooks/houses"
+import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
   elementName: string
@@ -90,6 +80,17 @@ const DefaultElement = (props: Props) => {
   // const bind = useNewHouseEventsHandlers()
 
   useMoveRotateSubscription(houseId, meshRef)
+
+  // const dontShow =
+  //   columnIndex !== 0 || levelIndex !== 0 || !elementName.includes("Insulation")
+
+  // useEffect(() => {
+  //   if (dontShow || !meshRef.current) return
+
+  //   console.log(elementName, meshRef.current.id)
+  // }, [elementName, dontShow])
+
+  // if (dontShow) return null
 
   return (
     <mesh

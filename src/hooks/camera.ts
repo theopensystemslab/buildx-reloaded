@@ -97,8 +97,8 @@ export default camera
 export const useCameraGroundRaycast = () => {
   const raycaster = useMemo(() => new Raycaster(), [])
 
-  return (): [number, number, number] | null => {
-    return [0, 0, 0]
+  return (): Vector3 | null => {
+    return new Vector3(0, 0, 0)
     // if (!mapboxStore.cameraSync?.camera || !globals.groundMesh) return null
 
     // raycaster.setFromCamera({ x: 0, y: 0 }, mapboxStore.cameraSync.camera)

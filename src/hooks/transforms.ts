@@ -7,9 +7,35 @@ import {
   useRef,
 } from "react"
 import { Matrix4, Mesh, Vector3 } from "three"
+import { proxy } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { ElementInstanceInput } from "./instances"
 import { layouts } from "./layouts"
+
+export type HouseTransforms = {
+  position: {
+    houseId: string
+    x: number
+    y: number
+    z: number
+  } | null
+  rotation: {
+    houseId: string
+    y: number
+  } | null
+  // houseId: string
+  // rotationY: number
+  // position: {
+  //   x: number
+  //   y: number
+  //   z: number
+  // }
+}
+
+export const houseTransforms = proxy<HouseTransforms>({
+  position: null,
+  rotation: null,
+})
 
 export const useRotateVector = (buildingId: string | null) => {
   const rotationMatrix = useRef(new Matrix4())
@@ -48,7 +74,7 @@ export const useElementInstancePosition = ({
     const z = column.z + column.gridGroups[levelIndex].modules[gridGroupIndex].z
     const mirror = columnIndex === layouts[houseId].length - 1
     const { length } = gridGroup.modules[gridGroupIndex].module
-    const [hx, hy, hz] = houses[houseId].position
+    const { x: hx, y: hy, z: hz } = houses[houseId].position
     const [tx, ty, tz] = [
       hx,
       hy + y,

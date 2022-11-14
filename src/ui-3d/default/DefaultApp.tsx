@@ -1,9 +1,9 @@
 import { identity, pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
-import { useEvents } from "../../hooks/old-events"
 import { useHouses } from "../../hooks/houses"
+import { useEvents } from "../../hooks/old-events"
 import { useSiteCtx } from "../../hooks/siteCtx"
-import { pipeLogWith, RA, RR } from "../../utils/functions"
+import { RA, RR } from "../../utils/functions"
 import DefaultHouse from "./DefaultHouse"
 // import ElementInstances from "./ElementInstances"
 
@@ -18,7 +18,6 @@ const DefaultApp = () => {
     <Fragment>
       {pipe(
         RR.keys(houses),
-        pipeLogWith((x) => x.length),
         buildingId ? RA.filter((id) => id === buildingId) : identity,
         RA.map((id) => (
           <Suspense key={id} fallback={null}>

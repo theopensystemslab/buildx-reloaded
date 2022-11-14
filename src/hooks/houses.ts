@@ -3,7 +3,9 @@ import { useGesture } from "@use-gesture/react"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
+import { keys } from "fp-ts/lib/ReadonlyRecord"
 import produce from "immer"
+import { nanoid } from "nanoid"
 import {
   MutableRefObject,
   useCallback,
@@ -11,21 +13,21 @@ import {
   useMemo,
   useRef,
 } from "react"
-import { Group, Mesh } from "three"
+import { useKey } from "react-use"
+import { Group, Mesh, Vector3 } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
+import { ElementIdentifier } from "../data/elements"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
-import { A, pipeLog, R, RA, RNEA, RR, S } from "../utils/functions"
+import { A, R, RA, RNEA, RR, S } from "../utils/functions"
+import { useSubscribeKey } from "../utils/hooks"
 import { setCameraEnabled } from "./camera"
-import events from "./old-events"
 import globals from "./globals"
-import { nanoid } from "nanoid"
-import { useKey } from "react-use"
-import { keys } from "fp-ts/lib/ReadonlyRecord"
-import { ElementIdentifier } from "../data/elements"
+import events from "./old-events"
+import { houseTransforms } from "./transforms"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -222,14 +224,26 @@ export const useMoveRotateSubscription = (
 ) => {
   const onPositionUpdate = useCallback(() => {
     if (!ref.current) return
-    const [x, y, z] = houses[houseId].position
-    ref.current.position.set(x, y, z)
+    let { x, y, z } = { x: 0, y: 0, z: 0 }
+    const { x: px, y: py, z: pz } = houses[houseId].position
+    if (
+      houseTransforms.position !== null &&
+      houseTransforms.position.houseId === houseId
+    ) {
+      const { x: tx, y: ty, z: tz } = houseTransforms.position
+      x += tx
+      y += ty
+      z += tz
+    }
+    ref.current.position.set(x + px, y + py, z + pz)
   }, [ref, houseId])
 
   useEffect(() => {
     onPositionUpdate()
     return subscribeKey(houses[houseId], "position", onPositionUpdate)
   }, [houseId, onPositionUpdate])
+
+  useSubscribeKey(houseTransforms, "position", onPositionUpdate)
 
   const onRotationUpdate = useCallback(() => {
     if (!ref.current) return
@@ -295,7 +309,7 @@ export const useInsert1000Skylarks = () => {
             id,
             houseTypeId,
             systemId: houseType.systemId,
-            position: [x, 0, z],
+            position: new Vector3(x, 0, z),
             rotation: 0,
             dna: houseType.dna as string[],
             modifiedMaterials: {},

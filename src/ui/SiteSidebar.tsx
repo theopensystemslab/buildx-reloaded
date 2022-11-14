@@ -8,6 +8,7 @@ import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
+import { Vector3 } from "three"
 import houses from "../hooks/houses"
 import HouseThumbnail from "./HouseThumbnail"
 // import HouseThumbnail from "./HouseThumbnail"
@@ -74,7 +75,8 @@ const SiteSidebar = ({ open, close }: Props) => {
                       houseType={houseType}
                       onAdd={() => {
                         const id = nanoid()
-                        const position = cameraGroundRaycast() ?? [0, 0, 0]
+                        const position =
+                          cameraGroundRaycast() ?? new Vector3(0, 0, 0)
 
                         houses[id] = {
                           id,
