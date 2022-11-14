@@ -21,7 +21,7 @@ import { pipe } from "fp-ts/lib/function"
 import Checklist from "./Checklist"
 import { R, RR, S } from "../utils/functions"
 import { useInsert1000Skylarks } from "../hooks/houses"
-import { houseTransforms } from "../hooks/transforms"
+import { useTransients } from "../hooks/transients"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -33,12 +33,12 @@ const HtmlUi = () => {
 
   useInsert1000Skylarks()
 
-  const { position: tPos } = useSnapshot(houseTransforms)
+  const transients = useTransients()
 
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0">
-        <pre>{JSON.stringify(tPos, null, 2)}</pre>
+        <pre>{JSON.stringify(transients, null, 2)}</pre>
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>

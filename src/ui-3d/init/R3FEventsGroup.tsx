@@ -7,7 +7,7 @@ import { ElementIdentifier } from "../../data/elements"
 import { setCameraEnabled } from "../../hooks/camera"
 import events from "../../hooks/events"
 import houses from "../../hooks/houses"
-import { houseTransforms } from "../../hooks/transforms"
+import { transients } from "../../hooks/transients"
 import { useSubscribeKey } from "../../utils/hooks"
 import XZPlane from "../XZPlane"
 
@@ -46,13 +46,13 @@ const R3FEventsGroup = (props: PropsWithChildren<GroupProps>) => {
         setCameraEnabled(true)
         xzPlaneRef.current.layers.set(RaycasterLayer.DISABLED)
         events.dragStart = null
-        if (houseTransforms.position?.houseId === elementIdentifier.houseId) {
+        if (transients.housePosition?.houseId === elementIdentifier.houseId) {
           houses[elementIdentifier.houseId].position.x +=
-            houseTransforms.position.x
+            transients.housePosition.x
           houses[elementIdentifier.houseId].position.z +=
-            houseTransforms.position.z
+            transients.housePosition.z
         }
-        houseTransforms.position = null
+        transients.housePosition = null
       } else {
         if (events.dragStart === null) return
         const [ix] = raycaster.intersectObject(xzPlaneRef.current)
@@ -77,7 +77,7 @@ const R3FEventsGroup = (props: PropsWithChildren<GroupProps>) => {
       },
     } = events
 
-    houseTransforms.position = {
+    transients.housePosition = {
       x: x1 - x0,
       y: 0,
       z: z1 - z0,

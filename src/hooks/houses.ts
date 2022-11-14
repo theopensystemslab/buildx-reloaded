@@ -27,7 +27,7 @@ import { useSubscribeKey } from "../utils/hooks"
 import { setCameraEnabled } from "./camera"
 import globals from "./globals"
 import events from "./old-events"
-import { houseTransforms } from "./transforms"
+import { transients } from "./transients"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -227,10 +227,10 @@ export const useMoveRotateSubscription = (
     let { x, y, z } = { x: 0, y: 0, z: 0 }
     const { x: px, y: py, z: pz } = houses[houseId].position
     if (
-      houseTransforms.position !== null &&
-      houseTransforms.position.houseId === houseId
+      transients.housePosition !== null &&
+      transients.housePosition.houseId === houseId
     ) {
-      const { x: tx, y: ty, z: tz } = houseTransforms.position
+      const { x: tx, y: ty, z: tz } = transients.housePosition
       x += tx
       y += ty
       z += tz
@@ -243,7 +243,7 @@ export const useMoveRotateSubscription = (
     return subscribeKey(houses[houseId], "position", onPositionUpdate)
   }, [houseId, onPositionUpdate])
 
-  useSubscribeKey(houseTransforms, "position", onPositionUpdate)
+  useSubscribeKey(transients, "housePosition", onPositionUpdate)
 
   const onRotationUpdate = useCallback(() => {
     if (!ref.current) return

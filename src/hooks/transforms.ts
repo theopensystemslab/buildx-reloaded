@@ -1,41 +1,8 @@
 import houses from "@/hooks/houses"
-import {
-  MutableRefObject,
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react"
+import { RefObject, useCallback, useEffect, useRef } from "react"
 import { Matrix4, Mesh, Vector3 } from "three"
-import { proxy } from "valtio"
 import { subscribeKey } from "valtio/utils"
-import { ElementInstanceInput } from "./instances"
 import { layouts } from "./layouts"
-
-export type HouseTransforms = {
-  position: {
-    houseId: string
-    x: number
-    y: number
-    z: number
-  } | null
-  rotation: {
-    houseId: string
-    y: number
-  } | null
-  // houseId: string
-  // rotationY: number
-  // position: {
-  //   x: number
-  //   y: number
-  //   z: number
-  // }
-}
-
-export const houseTransforms = proxy<HouseTransforms>({
-  position: null,
-  rotation: null,
-})
 
 export const useRotateVector = (buildingId: string | null) => {
   const rotationMatrix = useRef(new Matrix4())
