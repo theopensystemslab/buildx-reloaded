@@ -4,6 +4,7 @@ import { Mesh } from "three"
 import { ElementIdentifier } from "../../data/elements"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { useMoveRotateSubscription } from "../../hooks/houses"
+import { useElementTransforms } from "../../hooks/transients"
 import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
@@ -21,6 +22,11 @@ const DefaultElement = (props: Props) => {
     columnIndex,
     levelIndex,
     gridGroupIndex,
+    columnZ,
+    levelY,
+    mirror,
+    moduleZ,
+    module,
   } = props
 
   const materialHash = useMaterialHash({
@@ -34,7 +40,25 @@ const DefaultElement = (props: Props) => {
   const geometry = useHashedGeometry(geometryHash)
   const material = useHashedMaterial(materialHash)
 
-  useMoveRotateSubscription(houseId, meshRef)
+  // useMoveRotateSubscription(houseId, meshRef)
+
+  const elementIdentifier: ElementIdentifier = {
+    systemId,
+    houseId,
+    columnIndex,
+    levelIndex,
+    gridGroupIndex,
+    elementName,
+  }
+
+  useElementTransforms(meshRef, {
+    elementIdentifier,
+    columnZ,
+    levelY,
+    moduleZ,
+    moduleLength: module.length,
+    mirror,
+  })
 
   return (
     <mesh
@@ -42,16 +66,16 @@ const DefaultElement = (props: Props) => {
       material={material}
       geometry={geometry}
       userData={{
-        elementIdentifier: {
-          systemId,
-          houseId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          elementName,
-        } as ElementIdentifier,
+        elementIdentifier,
       }}
-      // {...(bind() as any)}
+      // position={[
+      //   0,
+      //   levelY,
+      //   mirror
+      //     ? columnZ + moduleZ + module.length / 2
+      //     : columnZ + moduleZ - module.length / 2,
+      // ]}
+      // scale={[1, 1, mirror ? 1 : -1]}
     />
   )
 }

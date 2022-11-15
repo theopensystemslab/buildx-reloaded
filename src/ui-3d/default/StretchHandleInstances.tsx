@@ -6,7 +6,7 @@ type Props = {
   houseId: string
 }
 
-const RotateHandleInstances = (props: Props) => {
+const StretchHandleInstances = (props: Props) => {
   const { houseId } = props
 
   const { width = 0, length = 0 } = useDimensions(houseId) ?? {}
@@ -14,10 +14,7 @@ const RotateHandleInstances = (props: Props) => {
   return (
     <Fragment>
       <Instance rotation-x={-Math.PI / 2} position={[0, 0, -1.5]} />
-      <Instance
-        rotation-x={-Math.PI / 2}
-        position={[-width / 2 - 1.5, 0, length / 2]}
-      />
+      <Instance rotation-x={-Math.PI / 2} position={[0, 0, length + 1.5]} />
     </Fragment>
   )
 
@@ -33,4 +30,4 @@ const RotateHandleInstances = (props: Props) => {
   // />
 }
 
-export default RotateHandleInstances
+export default StretchHandleInstances

@@ -1,5 +1,5 @@
 import { ThreeEvent } from "@react-three/fiber"
-import { FullGestureState } from "@use-gesture/react"
+import { FullGestureState, useGesture } from "@use-gesture/react"
 import { useCallback } from "react"
 import { Intersection, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
@@ -101,8 +101,8 @@ export const useElementDragFunctions = () => {
   return { onDragStart, onDragEnd }
 }
 
-export const useDragEvents = () => {
-  return useSubscribeKey(elementDragEvents, "drag", () => {
+export const useElementDragHandlers = (): any => {
+  useSubscribeKey(elementDragEvents, "drag", () => {
     if (
       elementDragEvents.dragStart === null ||
       elementDragEvents.drag === null
@@ -125,6 +125,27 @@ export const useDragEvents = () => {
       dy: 0,
       dz: z1 - z0,
     })
+  })
+
+  const { onDragStart, onDragEnd } = useElementDragFunctions()
+
+  return useGesture<{
+    hover: ThreeEvent<PointerEvent>
+    drag: ThreeEvent<PointerEvent>
+    onPointerDown: ThreeEvent<PointerEvent>
+  }>({
+    onDrag: (state) => {
+      const {
+        first,
+        last,
+        event: {
+          intersections: [intersection],
+        },
+      } = state
+
+      if (first) onDragStart(intersection)
+      else if (last) onDragEnd(intersection)
+    },
   })
 }
 

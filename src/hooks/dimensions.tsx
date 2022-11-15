@@ -13,13 +13,6 @@ type Dimensions = {
   length: number
 }
 
-const defaultDimensions: Dimensions = {
-  height: 0,
-  length: 0,
-  obb: new OBB(),
-  width: 0,
-}
-
 const dimensions = proxy<Record<string, Dimensions>>({})
 
 export const useDimensionsSubscription = (
@@ -82,9 +75,9 @@ export const useDimensionsSubscription = (
   }, [houseId, columns, update])
 }
 
-export const useDimensions = (houseId: string) => {
-  const snap = useSnapshot(dimensions)
-  return snap[houseId] ?? defaultDimensions
+export const useDimensions = (houseId: string): Dimensions | undefined => {
+  const snap = useSnapshot(dimensions) as typeof dimensions
+  return snap?.[houseId]
 }
 
 export default dimensions

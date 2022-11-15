@@ -8,10 +8,10 @@ import DefaultElement from "./DefaultElement"
 
 export type ModuleProps = ColumnLayoutKeyInput & {
   module: Module
-  // columnZ: number
-  // levelY: number
-  // moduleZ: number
-  // mirror: boolean
+  columnZ: number
+  levelY: number
+  moduleZ: number
+  mirror: boolean
 }
 
 const DefaultModule = (props: ModuleProps) => {
@@ -22,10 +22,10 @@ const DefaultModule = (props: ModuleProps) => {
     levelIndex,
     gridGroupIndex,
     module,
-    // columnZ,
-    // levelY,
-    // moduleZ,
-    // mirror,
+    columnZ,
+    levelY,
+    moduleZ,
+    mirror,
   } = props
 
   const elements = useModuleElements(module)
@@ -52,10 +52,10 @@ const DefaultModule = (props: ModuleProps) => {
             gridGroupIndex,
             elementName,
             geometryHash,
-            // columnZ,
-            // levelY,
-            // moduleZ,
-            // mirror,
+            columnZ,
+            levelY,
+            moduleZ,
+            mirror,
           }}
         />
       )

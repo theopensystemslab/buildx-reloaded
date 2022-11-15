@@ -26,8 +26,11 @@ const DefaultHouse = (props: Props) => {
   useDimensionsSubscription(houseId, columnLayout)
 
   const renderColumn = (
-    { columnIndex, gridGroups }: PositionedColumn,
-    userData: { startColumn?: boolean; endColumn?: boolean } = {
+    { columnIndex, gridGroups, z: columnZ }: PositionedColumn,
+    {
+      startColumn = false,
+      endColumn = false,
+    }: { startColumn?: boolean; endColumn?: boolean } = {
       startColumn: false,
       endColumn: false,
     }
@@ -55,11 +58,12 @@ const DefaultHouse = (props: Props) => {
                     columnIndex,
                     levelIndex,
                     gridGroupIndex,
-                    ...userData,
-                    // columnZ,
-                    // levelY,
-                    // moduleZ,
-                    // mirror: columnIndex === columnLayout.length - 1,
+                    // ...userData,
+                    columnZ,
+                    levelY,
+                    moduleZ,
+                    mirror: endColumn,
+                    //  columnIndex === columnLayout.length - 1,
                   }}
                 />
               )
@@ -72,9 +76,9 @@ const DefaultHouse = (props: Props) => {
 
   return (
     <Fragment>
-      <Fragment>{renderColumn(startColumn, { startColumn: true })}</Fragment>
-      <Fragment>{pipe(midColumns, RA.map(renderColumn))}</Fragment>
-      <Fragment>{renderColumn(endColumn, { endColumn: true })}</Fragment>
+      {renderColumn(startColumn, { startColumn: true })}
+      {pipe(midColumns, RA.map(renderColumn))}
+      {renderColumn(endColumn, { endColumn: true })}
     </Fragment>
   )
 
