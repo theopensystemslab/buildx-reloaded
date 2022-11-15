@@ -1,17 +1,13 @@
 import { ThreeEvent } from "@react-three/fiber"
-import { FullGestureState, useGesture } from "@use-gesture/react"
+import { useGesture } from "@use-gesture/react"
 import { useCallback } from "react"
-import { Intersection, Vector3 } from "three"
+import { Intersection } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { ElementIdentifier } from "../data/elements"
 import { useSubscribeKey } from "../utils/hooks"
 import { setCameraEnabled } from "./camera"
-import { SiteCtxModeEnum, useSiteCtx, useSiteCtxMode } from "./siteCtx"
-import {
-  setHousePosition,
-  transients,
-  updateTransientHousePositionDelta,
-} from "./transients"
+import { SiteCtxModeEnum, useSiteCtxMode } from "./siteCtx"
+import { setTransients, updateTransientHousePositionDelta } from "./transients"
 
 type ElementDragEvent = {
   element: ElementIdentifier
@@ -60,34 +56,15 @@ export const useElementDragFunctions = () => {
     [siteCtxMode]
   )
 
-  // const onDrag = useCallback(
-  //   ({ object: { userData }, point }: Intersection) => {
-  //     switch (siteCtxMode) {
-  //       case SiteCtxModeEnum.Enum.SITE:
-  //         elementDragEvents.drag = {
-  //           element: userData as ElementIdentifier,
-  //           point,
-  //         }
-  //         return
-  //       case SiteCtxModeEnum.Enum.BUILDING:
-  //         return
-  //       case SiteCtxModeEnum.Enum.LEVEL:
-  //         return
-  //     }
-  //   },
-  //   [siteCtxMode]
-  // )
-
   const onDragEnd = useCallback(
-    (intersection: Intersection) => {
+    (_intersection: Intersection) => {
       setCameraEnabled(true)
       switch (siteCtxMode) {
         case SiteCtxModeEnum.Enum.SITE:
+          setTransients()
           elementDragEvents.drag = null
           elementDragEvents.dragStart = null
           elementDragEvents.drop = true
-          setHousePosition()
-          transients.housePosition = null
           return
         case SiteCtxModeEnum.Enum.BUILDING:
           return

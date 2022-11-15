@@ -6,22 +6,17 @@ import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
 
 export type Transients = {
-  housePosition: {
-    houseId: string
-    dx: number
-    dy: number
-    dz: number
-  } | null
-  houseRotation: {
-    houseId: string
-    dy: number
-  } | null
+  [houseId: string]: {
+    position?: {
+      dx: number
+      dy: number
+      dz: number
+    }
+    rotation?: number
+  }
 }
 
-export const transients = proxy<Transients>({
-  housePosition: null,
-  houseRotation: null,
-})
+export const transients = proxy<Transients>({})
 
 export const useTransients = () => useSnapshot(transients)
 
@@ -29,19 +24,23 @@ export const updateTransientHousePositionDelta = (
   houseId: string,
   position: DeltaV3
 ) => {
-  transients.housePosition = {
-    houseId,
-    ...position,
+  transients[houseId] = {
+    position,
   }
 }
 
-export const setHousePosition = () => {
-  if (transients.housePosition === null) return
-  const { houseId, dx, dy, dz } = transients.housePosition
-  houses[houseId].position.x += dx
-  houses[houseId].position.y += dy
-  houses[houseId].position.z += dz
-  transients.housePosition = null
+export const setTransients = () => {
+  for (let houseId of Object.keys(transients)) {
+    const { position } = transients[houseId]
+    if (position) {
+      const { dx, dy, dz } = position
+      console.log([dx, dy, dz])
+      houses[houseId].position.x += dx
+      houses[houseId].position.y += dy
+      houses[houseId].position.z += dz
+      delete transients[houseId].position
+    }
+  }
 }
 
 export const useElementTransforms = (
@@ -68,10 +67,21 @@ export const useElementTransforms = (
 
   const go = () => {
     const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-    let x = 0,
-      y = levelY,
-      z = columnZ + moduleZ + mirrorFix
 
+    let { x, y: hy, z: hz } = houses[houseId].position
+
+    let y = hy + levelY,
+      z = hz + columnZ + moduleZ + mirrorFix
+
+    if (houseId in transients) {
+      const { position, rotation } = transients[houseId]
+
+      if (position) {
+        x += position.dx
+        y += position.dy
+        z += position.dz
+      }
+    }
     ref.current?.position.set(x, y, z)
   }
 
@@ -79,9 +89,7 @@ export const useElementTransforms = (
 
   useSubscribeKey(houses[houseId], "position", go)
   useSubscribeKey(houses[houseId], "rotation", go)
-  useSubscribeKey(transients, "housePosition", go)
-  useSubscribeKey(transients, "houseRotation", go)
+  useSubscribeKey(transients, houseId, go)
 
-  useEffect(go, [columnZ, levelY, mirror, moduleLength, moduleZ, ref])
-  // const hardZ = columnZ + moduleZ +
+  useEffect(go, [columnZ, houseId, levelY, mirror, moduleLength, moduleZ, ref])
 }

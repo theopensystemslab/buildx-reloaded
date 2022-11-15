@@ -211,43 +211,43 @@ export const useHouseRows = (buildingId: string) => {
 //   })
 // }
 
-export const useMoveRotateSubscription = (
-  houseId: string,
-  ref: MutableRefObject<Group | Mesh | null>
-) => {
-  const onPositionUpdate = useCallback(() => {
-    if (!ref.current) return
-    let { x, y, z } = { x: 0, y: 0, z: 0 }
-    const { x: px, y: py, z: pz } = houses[houseId].position
-    if (
-      transients.housePosition !== null &&
-      transients.housePosition.houseId === houseId
-    ) {
-      const { dx: tx, dy: ty, dz: tz } = transients.housePosition
-      x += tx
-      y += ty
-      z += tz
-    }
-    ref.current.position.set(x + px, y + py, z + pz)
-  }, [ref, houseId])
+// export const useMoveRotateSubscription = (
+//   houseId: string,
+//   ref: MutableRefObject<Group | Mesh | null>
+// ) => {
+//   const onPositionUpdate = useCallback(() => {
+//     if (!ref.current) return
+//     let { x, y, z } = { x: 0, y: 0, z: 0 }
+//     const { x: px, y: py, z: pz } = houses[houseId].position
+//     if (
+//       transients.housePosition !== null &&
+//       transients.housePosition.houseId === houseId
+//     ) {
+//       const { dx: tx, dy: ty, dz: tz } = transients.housePosition
+//       x += tx
+//       y += ty
+//       z += tz
+//     }
+//     ref.current.position.set(x + px, y + py, z + pz)
+//   }, [ref, houseId])
 
-  useEffect(() => {
-    onPositionUpdate()
-    return subscribeKey(houses[houseId], "position", onPositionUpdate)
-  }, [houseId, onPositionUpdate])
+//   useEffect(() => {
+//     onPositionUpdate()
+//     return subscribeKey(houses[houseId], "position", onPositionUpdate)
+//   }, [houseId, onPositionUpdate])
 
-  useSubscribeKey(transients, "housePosition", onPositionUpdate)
+//   useSubscribeKey(transients, "housePosition", onPositionUpdate)
 
-  const onRotationUpdate = useCallback(() => {
-    if (!ref.current) return
-    ref.current.rotation.set(0, houses[houseId].rotation, 0)
-  }, [ref, houseId])
+//   const onRotationUpdate = useCallback(() => {
+//     if (!ref.current) return
+//     ref.current.rotation.set(0, houses[houseId].rotation, 0)
+//   }, [ref, houseId])
 
-  useEffect(() => {
-    onRotationUpdate()
-    return subscribeKey(houses[houseId], "rotation", onRotationUpdate)
-  }, [houseId, onRotationUpdate])
-}
+//   useEffect(() => {
+//     onRotationUpdate()
+//     return subscribeKey(houses[houseId], "rotation", onRotationUpdate)
+//   }, [houseId, onRotationUpdate])
+// }
 
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses

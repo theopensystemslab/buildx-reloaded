@@ -3,7 +3,6 @@ import { useRef } from "react"
 import { Mesh } from "three"
 import { ElementIdentifier } from "../../data/elements"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import { useMoveRotateSubscription } from "../../hooks/houses"
 import { useElementTransforms } from "../../hooks/transients"
 import { ModuleProps } from "./DefaultModule"
 
@@ -68,14 +67,6 @@ const DefaultElement = (props: Props) => {
       userData={{
         elementIdentifier,
       }}
-      // position={[
-      //   0,
-      //   levelY,
-      //   mirror
-      //     ? columnZ + moduleZ + module.length / 2
-      //     : columnZ + moduleZ - module.length / 2,
-      // ]}
-      // scale={[1, 1, mirror ? 1 : -1]}
     />
   )
 }

@@ -1,13 +1,7 @@
-import { ThreeEvent, useThree } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { Fragment, PropsWithChildren, useRef } from "react"
 import { Mesh } from "three"
-import { RaycasterLayer } from "../../constants"
-import { ElementIdentifier } from "../../data/elements"
-import { setCameraEnabled } from "../../hooks/camera"
 import elementDragEvents from "../../hooks/dragEvents"
-import houses from "../../hooks/houses"
-import { transients } from "../../hooks/transients"
 import { useSubscribeKey } from "../../utils/hooks"
 import XZPlane from "../XZPlane"
 
@@ -30,12 +24,12 @@ const R3FEventsGroup = (props: PropsWithChildren<{}>) => {
 
     console.log({ x1, z1 })
 
-    transients.housePosition = {
-      dx: x1 - x0,
-      dy: 0,
-      dz: z1 - z0,
-      houseId,
-    }
+    // transients.housePosition = {
+    //   dx: x1 - x0,
+    //   dy: 0,
+    //   dz: z1 - z0,
+    //   houseId,
+    // }
   })
 
   const bindHandles: any = useGesture({})
