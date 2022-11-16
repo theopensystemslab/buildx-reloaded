@@ -4,18 +4,15 @@ import { none, some } from "fp-ts/lib/Option"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import produce from "immer"
 import { nanoid } from "nanoid"
-import { MutableRefObject, useCallback, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useKey } from "react-use"
-import { Group, Mesh, Vector3 } from "three"
+import { Vector3 } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
 import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
-import { useSubscribeKey } from "../utils/hooks"
-import { transients } from "./transients"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -107,147 +104,6 @@ export const useHouseRows = (buildingId: string) => {
   const houseModules = useHouseModules(buildingId)
   return modulesToRows(houseModules)
 }
-
-// export const useNewHouseEventsHandlers = () => {
-//   const lastPointer = useRef<[number, number]>([0, 0])
-
-//   return useGesture<{ drag: ThreeEvent<PointerEvent> }>({
-//     onDrag: ({
-//       first,
-//       last,
-//       event: {
-//         object: { userData: elementIdentifier },
-//       },
-//     }) => {
-//       const {
-//         systemId,
-//         houseId,
-//         columnIndex,
-//         levelIndex,
-//         gridGroupIndex,
-//         elementName,
-//       } = elementIdentifier as ElementIdentifier
-
-//       if (first) {
-//         setCameraEnabled(false)
-//         lastPointer.current = globals.pointerXZ
-//       }
-
-//       const [px0, pz0] = lastPointer.current
-//       const [px1, pz1] = globals.pointerXZ
-
-//       const [dx, dz] = [px1 - px0, pz1 - pz0]
-
-//       events.before.newHouseTransform = {
-//         houseId,
-//         positionDelta: [dx, 0, dz],
-//         rotation: 0,
-//       }
-
-//       // invalidate()
-//       const snapToGrid = (x: number) => {
-//         return Math.round(x)
-//       }
-
-//       if (last) {
-//         setCameraEnabled(true)
-//         // const [x, , z] = houses[houseId].position.map(snapToGrid)
-//         // houses[houseId].position[0] = x
-//         // houses[houseId].position[2] = z
-//       }
-
-//       lastPointer.current = globals.pointerXZ
-//     },
-//   })
-// }
-
-// export const useHouseEventHandlers = (houseId: string): any => {
-//   // const contextMode = useSiteContextMode()
-//   // const { editMode } = useSiteContext()
-
-//   const lastPointer = useRef<[number, number]>([0, 0])
-
-//   return useGesture({
-//     onDrag: ({ first, last, event }) => {
-//       // if (
-//       //   contextMode !== SiteContextModeEnum.Enum.SITE ||
-//       //   editMode !== EditModeEnum.Enum.MOVE_ROTATE
-//       // ) {
-//       //   return
-//       // }
-
-//       // if (scope.selected?.buildingId !== houseId) return
-
-//       if (first) {
-//         setCameraEnabled(false)
-//         lastPointer.current = globals.pointerXZ
-//       }
-
-//       const [px0, pz0] = lastPointer.current
-//       const [px1, pz1] = globals.pointerXZ
-
-//       const [dx, dz] = [px1 - px0, pz1 - pz0]
-
-//       events.before.newHouseTransform = {
-//         houseId,
-//         positionDelta: [dx, 0, dz],
-//         rotation: 0,
-//       }
-
-//       // invalidate()
-//       const snapToGrid = (x: number) => {
-//         return Math.round(x)
-//       }
-
-//       if (last) {
-//         setCameraEnabled(true)
-//         // const [x, , z] = houses[houseId].position.map(snapToGrid)
-//         // houses[houseId].position[0] = x
-//         // houses[houseId].position[2] = z
-//       }
-
-//       lastPointer.current = globals.pointerXZ
-//     },
-//   })
-// }
-
-// export const useMoveRotateSubscription = (
-//   houseId: string,
-//   ref: MutableRefObject<Group | Mesh | null>
-// ) => {
-//   const onPositionUpdate = useCallback(() => {
-//     if (!ref.current) return
-//     let { x, y, z } = { x: 0, y: 0, z: 0 }
-//     const { x: px, y: py, z: pz } = houses[houseId].position
-//     if (
-//       transients.housePosition !== null &&
-//       transients.housePosition.houseId === houseId
-//     ) {
-//       const { dx: tx, dy: ty, dz: tz } = transients.housePosition
-//       x += tx
-//       y += ty
-//       z += tz
-//     }
-//     ref.current.position.set(x + px, y + py, z + pz)
-//   }, [ref, houseId])
-
-//   useEffect(() => {
-//     onPositionUpdate()
-//     return subscribeKey(houses[houseId], "position", onPositionUpdate)
-//   }, [houseId, onPositionUpdate])
-
-//   useSubscribeKey(transients, "housePosition", onPositionUpdate)
-
-//   const onRotationUpdate = useCallback(() => {
-//     if (!ref.current) return
-//     ref.current.rotation.set(0, houses[houseId].rotation, 0)
-//   }, [ref, houseId])
-
-//   useEffect(() => {
-//     onRotationUpdate()
-//     return subscribeKey(houses[houseId], "rotation", onRotationUpdate)
-//   }, [houseId, onRotationUpdate])
-// }
 
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses
