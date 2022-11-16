@@ -1,5 +1,5 @@
 import { RefObject, useEffect } from "react"
-import { Mesh } from "three"
+import { Object3D } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { ElementIdentifier } from "../data/elements"
 import { useSubscribeKey } from "../utils/hooks"
@@ -43,8 +43,51 @@ export const setTransients = () => {
   }
 }
 
+export const useHouseTransforms = (
+  ref: RefObject<Object3D>,
+  houseId: string,
+  constants?: {
+    position?: Partial<DeltaV3>
+    rotation?: Partial<DeltaV3>
+  }
+) => {
+  const {
+    position: { dx: cx = 0, dy: cy = 0, dz: cz = 0 } = {},
+    rotation: { dx: crx = 0, dy: cry = 0, dz: crz = 0 } = {},
+  } = constants ?? {}
+
+  const go = () => {
+    let {
+      position: { x, y, z },
+      rotation,
+    } = houses[houseId]
+
+    if (houseId in transients) {
+      const { position, rotation: deltaRotation } = transients[houseId]
+
+      if (position) {
+        x += position.dx
+        y += position.dy
+        z += position.dz
+      }
+
+      if (deltaRotation) {
+        rotation += deltaRotation + cry // + dr
+      }
+    }
+
+    ref.current?.rotation.set(crx, rotation, crz)
+    ref.current?.position.set(x + cx, y + cy, z + cz)
+  }
+
+  useEffect(go, [crx, cry, crz, cx, cy, cz, houseId, ref])
+  useSubscribeKey(houses[houseId], "position", go)
+  useSubscribeKey(houses[houseId], "rotation", go)
+  useSubscribeKey(transients, houseId, go)
+}
+
 export const useElementTransforms = (
-  ref: RefObject<Mesh>,
+  ref: RefObject<Object3D>,
   {
     elementIdentifier: { houseId },
     columnZ,
@@ -68,28 +111,66 @@ export const useElementTransforms = (
   const go = () => {
     const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
 
-    let { x, y: hy, z: hz } = houses[houseId].position
+    let {
+      position: { x, y: hy, z: hz },
+      rotation,
+    } = houses[houseId]
 
     let y = hy + levelY,
       z = hz + columnZ + moduleZ + mirrorFix
 
     if (houseId in transients) {
-      const { position, rotation } = transients[houseId]
+      const { position, rotation: deltaRotation } = transients[houseId]
 
       if (position) {
         x += position.dx
         y += position.dy
         z += position.dz
       }
+
+      if (deltaRotation) {
+        rotation += deltaRotation
+      }
     }
+    ref.current?.rotation.set(0, rotation, 0)
     ref.current?.position.set(x, y, z)
   }
 
   useEffect(init, [mirror, ref])
+  useEffect(go, [columnZ, houseId, levelY, mirror, moduleLength, moduleZ, ref])
 
   useSubscribeKey(houses[houseId], "position", go)
   useSubscribeKey(houses[houseId], "rotation", go)
   useSubscribeKey(transients, houseId, go)
+}
 
-  useEffect(go, [columnZ, houseId, levelY, mirror, moduleLength, moduleZ, ref])
+export const useStretchHandleTransforms = (
+  houseId: string,
+  frontRef: RefObject<Object3D>,
+  backRef: RefObject<Object3D>
+) => {
+  const go = () => {
+    let {
+      position: { x, y: hy, z: hz },
+      rotation,
+    } = houses[houseId]
+
+    // z = hz + columnZ + moduleZ + mirrorFix
+
+    if (houseId in transients) {
+      const { position, rotation: deltaRotation } = transients[houseId]
+
+      if (position) {
+        x += position.dx
+        // y += position.dy
+        // z += position.dz
+      }
+
+      if (deltaRotation) {
+        rotation += deltaRotation
+      }
+    }
+    // ref.current?.rotation.set(0, rotation, 0)
+    // ref.current?.position.set(x, y, z)
+  }
 }
