@@ -1,21 +1,15 @@
 import { Instance } from "@react-three/drei"
-import React, { Fragment, useRef } from "react"
-import { useDimensions } from "../../hooks/dimensions"
-import {
-  useHouseTransforms,
-  useStretchHandleTransforms,
-} from "../../hooks/transients"
-import * as z from "zod"
+import { Fragment, useRef } from "react"
 import { Object3D } from "three"
+import * as z from "zod"
+import { useDimensions } from "../../hooks/dimensions"
+import { HandleDragEvent, HandleSideEnum } from "../../hooks/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
+import { useHouseTransforms } from "../../hooks/transients"
 
 type Props = {
   houseId: string
 }
-
-export const StretchHandleSideEnum = z.enum(["FRONT", "BACK", "LEFT", "RIGHT"])
-
-export type StrechHandleSide = z.infer<typeof StretchHandleSideEnum>
 
 const StretchHandleInstances = (props: Props) => {
   const { houseId } = props
@@ -41,9 +35,11 @@ const StretchHandleInstances = (props: Props) => {
         rotation-x={-Math.PI / 2}
         position={[0, 0, -1.5]}
         userData={{
-          houseId,
-          editMode: EditModeEnum.Enum.STRETCH,
-          side: StretchHandleSideEnum.Enum.FRONT,
+          handleIdentifier: {
+            houseId,
+            editMode: EditModeEnum.Enum.STRETCH,
+            side: HandleSideEnum.Enum.FRONT,
+          },
         }}
       />
       <Instance
@@ -51,9 +47,11 @@ const StretchHandleInstances = (props: Props) => {
         rotation-x={-Math.PI / 2}
         position={[0, 0, length + 1.5]}
         userData={{
-          houseId,
-          editMode: EditModeEnum.Enum.STRETCH,
-          side: StretchHandleSideEnum.Enum.BACK,
+          handleIdentifier: {
+            houseId,
+            editMode: EditModeEnum.Enum.STRETCH,
+            side: HandleSideEnum.Enum.BACK,
+          },
         }}
       />
     </Fragment>

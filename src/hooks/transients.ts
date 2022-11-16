@@ -86,6 +86,8 @@ export const useHouseTransforms = (
   useSubscribeKey(transients, houseId, go)
 }
 
+// export const useStretchHandleTr
+
 export const useElementTransforms = (
   ref: RefObject<Object3D>,
   {

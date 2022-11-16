@@ -1,10 +1,8 @@
 import { Instances } from "@react-three/drei"
 import { identity, pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
-import {
-  useElementDragHandlers,
-  useHandleDragHandlers,
-} from "../../hooks/dragEvents"
+import { useElementDragHandlers } from "../../hooks/drag/elements"
+import { useHandleDragHandlers } from "../../hooks/drag/handles"
 import { useHouseKeys } from "../../hooks/houses"
 import {
   EditModeEnum,
@@ -27,7 +25,6 @@ const DefaultApp = () => {
   const editMode = useEditMode()
 
   const bindElements = useElementDragHandlers()
-
   const bindHandles = useHandleDragHandlers()
 
   return (

@@ -3,11 +3,11 @@ import { useGesture } from "@use-gesture/react"
 import { useCallback } from "react"
 import { Intersection } from "three"
 import { proxy, useSnapshot } from "valtio"
-import { ElementIdentifier } from "../data/elements"
-import { useSubscribeKey } from "../utils/hooks"
-import { setCameraEnabled } from "./camera"
-import { SiteCtxModeEnum, useSiteCtxMode } from "./siteCtx"
-import { setTransients, updateTransientHousePositionDelta } from "./transients"
+import { ElementIdentifier } from "../../data/elements"
+import { useSubscribeKey } from "../../utils/hooks"
+import { setCameraEnabled } from "../camera"
+import { SiteCtxModeEnum, useSiteCtxMode } from "../siteCtx"
+import { setTransients, updateTransientHousePositionDelta } from "../transients"
 
 type ElementDragEvent = {
   element: ElementIdentifier
@@ -122,27 +122,6 @@ export const useElementDragHandlers = (): any => {
 
       if (first) onDragStart(intersection)
       else if (last) onDragEnd(intersection)
-    },
-  })
-}
-
-export const useHandleDragHandlers = (): any => {
-  return useGesture<{
-    hover: ThreeEvent<PointerEvent>
-    drag: ThreeEvent<PointerEvent>
-    onPointerDown: ThreeEvent<PointerEvent>
-  }>({
-    onDrag: (state) => {
-      const {
-        first,
-        last,
-        event: {
-          intersections: [intersection],
-        },
-      } = state
-
-      // if (first) onDragStart(intersection)
-      // else if (last) onDragEnd(intersection)
     },
   })
 }
