@@ -1,4 +1,4 @@
-import globals, { useGlobals } from "@/hooks/globals"
+import { useGlobals } from "@/hooks/globals"
 import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
 import Lighting from "@/ui-3d/init/Lighting"
 import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
@@ -7,14 +7,10 @@ import RectangularGrid from "@/ui-3d/init/RectangularGrid"
 import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
 import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
-import { ScreenQuad } from "@react-three/drei"
-import { useGesture } from "@use-gesture/react"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import { useKey } from "react-use"
 import FullScreenContainer from "../../ui/FullScreenContainer"
-import GroundPlane from "../GroundPlane"
-import R3FEventsGroup from "./R3FEventsGroup"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -48,7 +44,6 @@ const Common = (props: Props) => {
       /> */}
       {preload && <DataPreload />}
       {children}
-      {/* <R3FEventsGroup>{children}</R3FEventsGroup> */}
     </Fragment>
   )
 }

@@ -126,4 +126,25 @@ export const useElementDragHandlers = (): any => {
   })
 }
 
+export const useHandleDragHandlers = (): any => {
+  return useGesture<{
+    hover: ThreeEvent<PointerEvent>
+    drag: ThreeEvent<PointerEvent>
+    onPointerDown: ThreeEvent<PointerEvent>
+  }>({
+    onDrag: (state) => {
+      const {
+        first,
+        last,
+        event: {
+          intersections: [intersection],
+        },
+      } = state
+
+      // if (first) onDragStart(intersection)
+      // else if (last) onDragEnd(intersection)
+    },
+  })
+}
+
 export default elementDragEvents

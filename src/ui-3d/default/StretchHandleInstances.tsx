@@ -7,6 +7,7 @@ import {
 } from "../../hooks/transients"
 import * as z from "zod"
 import { Object3D } from "three"
+import { EditModeEnum } from "../../hooks/siteCtx"
 
 type Props = {
   houseId: string
@@ -41,6 +42,7 @@ const StretchHandleInstances = (props: Props) => {
         position={[0, 0, -1.5]}
         userData={{
           houseId,
+          editMode: EditModeEnum.Enum.STRETCH,
           side: StretchHandleSideEnum.Enum.FRONT,
         }}
       />
@@ -50,6 +52,7 @@ const StretchHandleInstances = (props: Props) => {
         position={[0, 0, length + 1.5]}
         userData={{
           houseId,
+          editMode: EditModeEnum.Enum.STRETCH,
           side: StretchHandleSideEnum.Enum.BACK,
         }}
       />

@@ -1,13 +1,11 @@
-import { Instance, Instances } from "@react-three/drei"
-import { ThreeEvent } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
+import { Instances } from "@react-three/drei"
 import { identity, pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import {
   useElementDragHandlers,
-  useElementDragFunctions,
+  useHandleDragHandlers,
 } from "../../hooks/dragEvents"
-import houses, { useHouseKeys } from "../../hooks/houses"
+import { useHouseKeys } from "../../hooks/houses"
 import {
   EditModeEnum,
   useEditMode,
@@ -15,7 +13,7 @@ import {
   useSiteCtxMode,
 } from "../../hooks/siteCtx"
 import HandleMaterial from "../../materials/HandleMaterial"
-import { RA, RR } from "../../utils/functions"
+import { RA } from "../../utils/functions"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import DefaultHouse from "./DefaultHouse"
@@ -29,6 +27,8 @@ const DefaultApp = () => {
   const editMode = useEditMode()
 
   const bindElements = useElementDragHandlers()
+
+  const bindHandles = useHandleDragHandlers()
 
   return (
     <Fragment>
@@ -46,8 +46,9 @@ const DefaultApp = () => {
       <XZPlane />
       <YPlane />
       <Instances
-      // range={1000}
-      // limit={1000}
+        // range={1000}
+        // limit={1000}
+        {...bindHandles()}
       >
         <circleBufferGeometry args={[0.5, 10]} />
         <HandleMaterial />

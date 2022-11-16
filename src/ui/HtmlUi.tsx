@@ -22,7 +22,6 @@ import Checklist from "./Checklist"
 import { R, RR, S } from "../utils/functions"
 import { useInsert1000Skylarks } from "../hooks/houses"
 import { useTransients } from "../hooks/transients"
-import { useElementDragEvents } from "../hooks/dragEvents"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
