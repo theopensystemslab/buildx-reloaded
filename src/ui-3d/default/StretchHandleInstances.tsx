@@ -20,12 +20,12 @@ const StretchHandleInstances = (props: Props) => {
   const backRef = useRef<Object3D>(null)
 
   useHouseTransforms(frontRef, houseId, {
-    position: { dz: -1.5 },
-    rotation: { dx: -Math.PI / 2 },
+    position: { z: -1.5 },
+    rotation: { x: -Math.PI / 2 },
   })
   useHouseTransforms(backRef, houseId, {
-    position: { dz: length + 1.5 },
-    rotation: { dx: -Math.PI / 2 },
+    position: { z: length + 1.5 },
+    rotation: { x: -Math.PI / 2 },
   })
 
   return (

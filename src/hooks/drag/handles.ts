@@ -4,9 +4,10 @@ import { useCallback } from "react"
 import { Intersection } from "three"
 import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
+import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
-import { EditMode } from "../siteCtx"
-import { setTransients } from "../transients"
+import { EditMode, EditModeEnum } from "../siteCtx"
+import { setTransients, transients } from "../transients"
 
 export const HandleSideEnum = z.enum(["FRONT", "BACK", "LEFT", "RIGHT"])
 
@@ -40,7 +41,7 @@ export const useHandleDragFunctions = () => {
     ({ object: { userData }, point }: Intersection) => {
       setCameraEnabled(false)
       handleDragEvents.dragStart = {
-        handleIdentifier: userData as HandleIdentifier,
+        handleIdentifier: userData.handleIdentifier as HandleIdentifier,
         point,
       }
       handleDragEvents.drop = false
@@ -60,6 +61,43 @@ export const useHandleDragFunctions = () => {
 }
 
 export const useHandleDragHandlers = (): any => {
+  useSubscribeKey(handleDragEvents, "drag", () => {
+    if (handleDragEvents.dragStart === null || handleDragEvents.drag === null) {
+      return
+    }
+
+    const {
+      dragStart: {
+        point: { x: x0, z: z0 },
+        handleIdentifier: { houseId, editMode },
+        // element: { houseId },
+      },
+      drag: {
+        point: { x: x1, z: z1 },
+      },
+    } = handleDragEvents
+
+    switch (editMode) {
+      case EditModeEnum.Enum.MOVE_ROTATE:
+        const angle0 = Math.atan2(z0, x0)
+        const angle = Math.atan2(z1, x1)
+        transients[houseId] = {
+          rotation: angle - angle0,
+        }
+        return
+      case EditModeEnum.Enum.STRETCH:
+        transients[houseId] = {
+          stretchUnits: z1 - z0,
+        }
+        return
+    }
+
+    // updateTransientHousePositionDelta(houseId, {
+    //   dx: x1 - x0,
+    //   dy: 0,
+    //   dz: z1 - z0,
+    // })
+  })
   const { onDragStart, onDragEnd } = useHandleDragFunctions()
 
   return useGesture<{
