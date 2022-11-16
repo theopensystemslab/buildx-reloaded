@@ -1,15 +1,16 @@
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"
-import { pipe } from "fp-ts/lib/function"
+import { identity, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { proxy, ref } from "valtio"
+import { proxy, ref, useSnapshot } from "valtio"
 import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
-import { Module, usePadColumn } from "../data/modules"
-import { RNEA } from "../utils/functions"
+import { Module, useGetVanillaModule, usePadColumn } from "../data/modules"
+import { errorThrower, O, RNEA } from "../utils/functions"
 import houses, { useHouseRows, useHouses } from "./houses"
+import { splitColumns } from "./stretch"
 
 export type PositionedModule = {
   module: Module
@@ -343,6 +344,39 @@ export const useColumnLayout = (houseId: string) => {
   layouts[houseId] = ref(layout)
 
   return layout
+}
+
+export const useVanillaColumn = (houseId: string) => {
+  const snap = useSnapshot(layouts) as typeof layouts
+  const layout = snap[houseId]
+  const {
+    startColumn: { gridGroups },
+  } = splitColumns(layout)
+  const getVanillaModule = useGetVanillaModule(houses[houseId].systemId)
+  return pipe(
+    gridGroups,
+    RA.map(
+      ({ levelIndex, levelType, y, modules: [{ module }] }): PositionedRow => {
+        const vanillaModule = getVanillaModule(module, {
+          constrainGridType: false,
+          positionType: "MID",
+        })
+        return {
+          modules: [
+            {
+              module: vanillaModule,
+              gridGroupIndex: 0,
+              z: 0,
+            },
+          ],
+          length: vanillaModule.length,
+          y,
+          levelIndex,
+          levelType,
+        }
+      }
+    )
+  )
 }
 
 export const columnLayoutToDNA = (

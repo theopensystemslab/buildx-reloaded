@@ -17,6 +17,7 @@ import YPlane from "../YPlane"
 import DefaultHouse from "./DefaultHouse"
 import RotateHandleInstances from "./RotateHandleInstances"
 import StretchHandleInstances from "./StretchHandleInstances"
+import StretchInstances from "./StretchInstances"
 
 const DefaultApp = () => {
   const houseKeys = useHouseKeys()
@@ -64,6 +65,7 @@ const DefaultApp = () => {
             ))
           )}
       </Instances>
+      <StretchInstances />
     </Fragment>
   )
 }

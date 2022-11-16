@@ -5,7 +5,10 @@ import * as z from "zod"
 import { useDimensions } from "../../hooks/dimensions"
 import { HandleDragEvent, HandleSideEnum } from "../../hooks/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import { useHouseTransforms } from "../../hooks/transients"
+import {
+  useHouseTransforms,
+  useStretchHandleTransform,
+} from "../../hooks/transients"
 
 type Props = {
   houseId: string
@@ -19,11 +22,11 @@ const StretchHandleInstances = (props: Props) => {
   const frontRef = useRef<Object3D>(null)
   const backRef = useRef<Object3D>(null)
 
-  useHouseTransforms(frontRef, houseId, {
+  useStretchHandleTransform(frontRef, houseId, {
     position: { z: -1.5 },
     rotation: { x: -Math.PI / 2 },
   })
-  useHouseTransforms(backRef, houseId, {
+  useStretchHandleTransform(backRef, houseId, {
     position: { z: length + 1.5 },
     rotation: { x: -Math.PI / 2 },
   })

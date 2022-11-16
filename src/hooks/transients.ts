@@ -48,13 +48,13 @@ export const useStretchHandleTransform = (
   ref: RefObject<Object3D>,
   houseId: string,
   constants?: {
-    position?: Partial<DeltaV3>
-    rotation?: Partial<DeltaV3>
+    position?: Partial<V3>
+    rotation?: Partial<V3>
   }
 ) => {
   const {
-    position: { dx: cx = 0, dy: cy = 0, dz: cz = 0 } = {},
-    rotation: { dx: crx = 0, dy: cry = 0, dz: crz = 0 } = {},
+    position: { x: cx = 0, y: cy = 0, z: cz = 0 } = {},
+    rotation: { x: crx = 0, y: cry = 0, z: crz = 0 } = {},
   } = constants ?? {}
 
   const go = () => {
@@ -76,6 +76,8 @@ export const useStretchHandleTransform = (
         rotation += deltaRotation + cry // + dr
       }
     }
+
+    // ++ stretch units...
 
     ref.current?.rotation.set(crx, rotation, crz)
     ref.current?.position.set(x + cx, y + cy, z + cz)

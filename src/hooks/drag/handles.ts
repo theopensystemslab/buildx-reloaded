@@ -121,7 +121,7 @@ export const useHandleDragHandlers = (): any => {
 }
 
 export const useHandleDragStart = () => {
-  const { dragStart } = useSnapshot(handleDragEvents)
+  const { dragStart } = useSnapshot(handleDragEvents) as typeof handleDragEvents
   return dragStart
 }
 
