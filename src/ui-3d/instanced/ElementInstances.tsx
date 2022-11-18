@@ -7,7 +7,7 @@ import {
   splitGeometryMaterialHash,
   useElementInstances,
   useElementInstancesKeys,
-} from "../../hooks/instances"
+} from "../../hooks/elementInstances"
 import { RA, RR } from "../../utils/functions"
 import ElementInstance from "./ElementInstance"
 

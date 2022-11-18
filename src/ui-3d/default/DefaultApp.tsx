@@ -15,9 +15,9 @@ import { RA } from "../../utils/functions"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import DefaultHouse from "./DefaultHouse"
-import RotateHandleInstances from "./RotateHandleInstances"
-import StretchHandleInstances from "./StretchHandleInstances"
-import StretchInstances from "./StretchInstances"
+import RotateHandleInstances from "../handles/RotateHandleInstances"
+import StretchHandleInstances from "../handles/StretchHandleInstances"
+import StretchInstances from "../stretch/StretchInstances"
 
 const DefaultApp = () => {
   const houseKeys = useHouseKeys()

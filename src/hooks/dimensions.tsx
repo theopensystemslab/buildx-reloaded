@@ -4,7 +4,7 @@ import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import houses from "./houses"
-import { ColumnLayout } from "./layouts"
+import { ColumnLayout, useColumnLayout } from "./layouts"
 
 type Dimensions = {
   obb: OBB
@@ -16,9 +16,10 @@ type Dimensions = {
 const dimensions = proxy<Record<string, Dimensions>>({})
 
 export const useDimensionsSubscription = (
-  houseId: string,
-  columns: ColumnLayout
+  houseId: string
+  // columns: ColumnLayout
 ) => {
+  const columns = useColumnLayout(houseId)
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
@@ -75,9 +76,9 @@ export const useDimensionsSubscription = (
   }, [houseId, columns, update])
 }
 
-export const useDimensions = (houseId: string): Dimensions | undefined => {
+export const useDimensions = (houseId: string): Dimensions => {
   const snap = useSnapshot(dimensions) as typeof dimensions
-  return snap?.[houseId]
+  return snap[houseId]
 }
 
 export default dimensions

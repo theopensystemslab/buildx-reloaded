@@ -31,7 +31,7 @@ export type PositionedRow = {
   levelIndex: number
   levelType: string
   y: number
-  modules: Readonly<Array<PositionedModule>>
+  modules: Array<PositionedModule>
   length: number
 }
 
@@ -40,7 +40,7 @@ export type GridGroup = PositionedRow
 export type RowLayout = Array<PositionedRow>
 
 export type PositionedColumn = {
-  gridGroups: Readonly<Array<PositionedRow>>
+  gridGroups: Array<PositionedRow>
   z: number
   columnIndex: number
   length: number
@@ -346,16 +346,21 @@ export const useColumnLayout = (houseId: string) => {
   return layout
 }
 
-export const useVanillaColumn = (houseId: string) => {
+export const useCachedLayout = (houseId: string) => {
   const snap = useSnapshot(layouts) as typeof layouts
-  const layout = snap[houseId]
-  const {
-    startColumn: { gridGroups },
-  } = splitColumns(layout)
+  return snap[houseId]
+}
+
+export const useStretch = (houseId: string) => {
+  const layout = useCachedLayout(houseId)
+
+  const { startColumn, endColumn } = splitColumns(layout)
+
   const getVanillaModule = useGetVanillaModule(houses[houseId].systemId)
-  return pipe(
-    gridGroups,
-    RA.map(
+
+  const vanillaColumn = pipe(
+    startColumn.gridGroups,
+    A.map(
       ({ levelIndex, levelType, y, modules: [{ module }] }): PositionedRow => {
         const vanillaModule = getVanillaModule(module, {
           constrainGridType: false,
@@ -377,6 +382,12 @@ export const useVanillaColumn = (houseId: string) => {
       }
     )
   )
+
+  return {
+    startColumn,
+    endColumn,
+    vanillaColumn,
+  }
 }
 
 export const columnLayoutToDNA = (
@@ -481,3 +492,12 @@ export const indicesToKey = ({
   gridGroupIndex,
 }: ColumnLayoutKeyInput) =>
   `system:${systemId}-house:${houseId}-location:${columnIndex},${levelIndex},${gridGroupIndex}`
+
+export const getVanillaColumnKey = ({
+  systemId,
+  houseId,
+  levelIndex,
+  gridGroupIndex,
+  columnZ,
+}: Omit<ColumnLayoutKeyInput, "columnIndex"> & { columnZ: number }) =>
+  `system:${systemId}-house:${houseId}-location:${columnZ},${levelIndex},${gridGroupIndex}`

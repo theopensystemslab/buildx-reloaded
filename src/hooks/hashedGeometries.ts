@@ -8,7 +8,7 @@ export const hashedGeometries = proxy<Record<GeometryHash, BufferGeometry>>({})
 
 export const useHashedGeometry = (geometryHash: string) => {
   const snap = useSnapshot(hashedGeometries) as typeof hashedGeometries
-  return hashedGeometries[geometryHash]
+  return snap[geometryHash]
 }
 
 export const hashGeometry = (geom: BufferGeometry) => {

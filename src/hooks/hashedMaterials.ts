@@ -55,7 +55,7 @@ export const useMaterialHash = (input: {
   elementName: string
   visible: boolean
   clippingPlanes: Plane[]
-}) => {
+}): string => {
   const { systemId, houseId, elementName, clippingPlanes, visible } = input
   const materials = useSystemMaterials({ systemId })
   const materialName = useMaterialName(houseId, elementName)

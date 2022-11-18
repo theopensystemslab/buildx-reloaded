@@ -12,3 +12,6 @@ export const useSubscribeKey = <T extends object, K extends keyof T>(
   key: K,
   go: { (): void; (value: T[K]): void }
 ) => useEffect(() => subscribeKey<T, K>(proxy, key, go))
+
+export const useUnmountEffect = (unmountEffect: () => void) =>
+  useEffect(() => unmountEffect, [unmountEffect])

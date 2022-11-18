@@ -31,7 +31,7 @@ export const getElementInstanceKeyHash = ({
 >) =>
   `${systemId}:${houseId}:${columnIndex},${levelIndex},${gridGroupIndex}:${elementName}`
 
-type ElementInstanceValue = ElementInstanceInput
+export type ElementInstanceValue = ElementInstanceInput
 
 type GeometryMaterialHash = string
 

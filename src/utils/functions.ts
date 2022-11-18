@@ -62,6 +62,7 @@ export const pipeLogWith =
 export * as A from "fp-ts/Array"
 export * as R from "fp-ts/Record"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
+export * as NEA from "fp-ts/NonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
 export * as RM from "fp-ts/ReadonlyMap"
 export * as M from "fp-ts/Map"

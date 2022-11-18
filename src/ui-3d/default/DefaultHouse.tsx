@@ -1,15 +1,14 @@
 import houses from "@/hooks/houses"
-import {
-  indicesToKey,
-  PositionedColumn,
-  useColumnLayout,
-} from "@/hooks/layouts"
+import { useColumnLayout } from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import { useDimensionsSubscription } from "../../hooks/dimensions"
+import {
+  useDimensions,
+  useDimensionsSubscription,
+} from "../../hooks/dimensions"
 import { splitColumns } from "../../hooks/stretch"
 import { RA } from "../../utils/functions"
-import DefaultModule from "./DefaultModule"
+import DefaultColumn from "./DefaultColumn"
 
 type Props = {
   houseId: string
@@ -23,72 +22,30 @@ const DefaultHouse = (props: Props) => {
 
   const { startColumn, midColumns, endColumn } = splitColumns(columnLayout)
 
-  useDimensionsSubscription(houseId, columnLayout)
-
-  const renderColumn = (
-    { columnIndex, gridGroups, z: columnZ }: PositionedColumn,
-    {
-      startColumn = false,
-      endColumn = false,
-    }: { startColumn?: boolean; endColumn?: boolean } = {
-      startColumn: false,
-      endColumn: false,
-    }
-  ) => (
-    <Fragment key={columnIndex}>
-      {pipe(
-        gridGroups,
-        RA.chain(({ modules, levelIndex, y: levelY }) =>
-          pipe(
-            modules,
-            RA.map(({ module, gridGroupIndex, z: moduleZ }) => {
-              return (
-                <DefaultModule
-                  key={indicesToKey({
-                    systemId,
-                    houseId,
-                    columnIndex,
-                    levelIndex,
-                    gridGroupIndex,
-                  })}
-                  {...{
-                    systemId,
-                    houseId,
-                    module,
-                    columnIndex,
-                    levelIndex,
-                    gridGroupIndex,
-                    // ...userData,
-                    columnZ,
-                    levelY,
-                    moduleZ,
-                    mirror: endColumn,
-                    //  columnIndex === columnLayout.length - 1,
-                  }}
-                />
-              )
-            })
-          )
-        )
-      )}
-    </Fragment>
-  )
+  useDimensionsSubscription(houseId)
 
   return (
     <Fragment>
-      {renderColumn(startColumn, { startColumn: true })}
-      {pipe(midColumns, RA.map(renderColumn))}
-      {renderColumn(endColumn, { endColumn: true })}
+      <DefaultColumn
+        column={startColumn}
+        {...{ systemId, houseId, startColumn: true }}
+      />
+      {pipe(
+        midColumns,
+        RA.map((column) => (
+          <DefaultColumn
+            key={`${houseId}:${column.columnIndex}`}
+            column={column}
+            {...{ systemId, houseId }}
+          />
+        ))
+      )}
+      <DefaultColumn
+        column={endColumn}
+        {...{ systemId, houseId, endColumn: true }}
+      />
     </Fragment>
   )
-
-  // const children = pipe(
-  //   columnLayout,
-  //   RA.chain(({ columnIndex, gridGroups, z: columnZ }) =>
-  //   )
-  // )
-
-  // return <Fragment>{children}</Fragment>
 }
 
 export default DefaultHouse

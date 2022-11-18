@@ -15,7 +15,7 @@ const BoxHouse = (props: Props) => {
   const { id } = props
   const columns = useColumnLayout(id)
 
-  useDimensionsSubscription(id, columns)
+  useDimensionsSubscription(id)
   // useMoveRotateSubscription(id, groupRef)
 
   // const bind = useHouseEventHandlers(id)

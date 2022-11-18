@@ -1,5 +1,5 @@
 import { useMaterialHash } from "@/hooks/hashedMaterials"
-import { setInstance } from "../../hooks/instances"
+import { setInstance } from "../../hooks/elementInstances"
 import { ModuleProps } from "./InstancedModule"
 
 type Props = ModuleProps & {
