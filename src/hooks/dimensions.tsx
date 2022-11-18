@@ -81,4 +81,45 @@ export const useDimensions = (houseId: string): Dimensions => {
   return snap[houseId]
 }
 
+export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {
+  // const thisObb = dimensions[houseId].obb
+
+  // m4.current.makeRotationY(rotation)
+  // m4.current.makeTranslation(dx, dy, dz)
+
+  // thisObb.applyMatrix4(m4.current)
+
+  // try new dimensions
+
+  let collision = false
+
+  for (let [k, v] of Object.entries(dimensions)) {
+    if (houseIdIgnoreList.includes(k)) continue
+    const intersects = v.obb.intersectsOBB(obb)
+    if (intersects) {
+      console.log(v.obb, obb)
+      collision = true
+      break
+    }
+  }
+
+  return collision
+
+  // reset dimensions if not working
+  // if (!allowed) {
+  //   m4.current.invert()
+  //   thisObb.applyMatrix4(m4.current)
+  //   return
+  // }
+
+  // if (positionDelta)
+  //   houses[houseId].position = addV3(
+  //     houses[houseId].position,
+  //     positionDelta
+  //   )
+  // if (rotation) houses[houseId].rotation = rotation
+
+  // events.after.newHouseTransform = events.before.newHouseTransform
+}
+
 export default dimensions

@@ -35,7 +35,6 @@ export const setTransients = () => {
     const { position } = transients[houseId]
     if (position) {
       const { dx, dy, dz } = position
-      console.log([dx, dy, dz])
       houses[houseId].position.x += dx
       houses[houseId].position.y += dy
       houses[houseId].position.z += dz
