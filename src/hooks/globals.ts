@@ -29,7 +29,7 @@ const globals = proxy<GlobalStore>({
   preload: true,
   intersection: null,
   orthographic: false,
-  shadows: true,
+  shadows: false,
   verticalCuts: {
     width: false,
     length: false,

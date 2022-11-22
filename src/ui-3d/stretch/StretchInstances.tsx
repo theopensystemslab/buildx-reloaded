@@ -2,12 +2,12 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import dimensions, { collideOBB, useDimensions } from "../../hooks/dimensions"
+import { collideOBB, useDimensions } from "../../hooks/dimensions"
 import { useHandleDragStart } from "../../hooks/drag/handles"
 import houses, { useHouse } from "../../hooks/houses"
 import { useStretch } from "../../hooks/layouts"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import { NEA, pipeLog, RA } from "../../utils/functions"
+import { NEA, RA } from "../../utils/functions"
 import { floor, max } from "../../utils/math"
 import StretchInstanceColumn from "./StretchInstanceColumn"
 
@@ -24,9 +24,8 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
   } = useDimensions(houseId)
 
   const maxLength = 50
-  const maxCount = floor(max(0, maxLength - houseLength) / vanillaColumnLength)
 
-  // console.log({ maxLength, houseLength, vanillaColumnLength, maxCount })
+  const maxCount = floor(max(0, maxLength - houseLength) / vanillaColumnLength)
 
   const systemId = houses[houseId].systemId
 

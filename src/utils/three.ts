@@ -8,6 +8,7 @@ import {
   MeshStandardMaterial,
   Object3D,
   Scene,
+  Vector3,
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../constants"
 import { Material } from "../data/materials"
@@ -84,4 +85,21 @@ export const createMaterial = (config: Material) => {
     flatShading: false,
     transparent: true,
   })
+}
+
+// obj - your object (THREE.Object3D or derived)
+// point - the point of rotation (THREE.Vector3)
+// axis - the axis of rotation (normalized THREE.Vector3)
+// theta - radian value of rotation
+// pointIsWorld - boolean indicating the point is in world coordinates (default = false)
+export const rotateAboutPoint = (
+  obj: Object3D,
+  point: Vector3,
+  axis: Vector3,
+  theta: number
+) => {
+  obj.position.sub(point) // remove the offset
+  obj.position.applyAxisAngle(axis, theta) // rotate the POSITION
+  obj.position.add(point) // re-add the offset
+  obj.rotateOnAxis(axis, theta) // rotate the OBJECT
 }

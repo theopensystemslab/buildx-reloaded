@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react"
-import { Box3, Matrix3, Matrix4, Vector3 } from "three"
+import { Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import houses from "./houses"
-import { ColumnLayout, useColumnLayout } from "./layouts"
+import { useColumnLayout } from "./layouts"
 
 type Dimensions = {
   obb: OBB
@@ -15,10 +15,7 @@ type Dimensions = {
 
 const dimensions = proxy<Record<string, Dimensions>>({})
 
-export const useDimensionsSubscription = (
-  houseId: string
-  // columns: ColumnLayout
-) => {
+export const useDimensionsSubscription = (houseId: string) => {
   const columns = useColumnLayout(houseId)
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
@@ -28,9 +25,10 @@ export const useDimensionsSubscription = (
     if (columns.length < 1) return
 
     const width = columns[0].gridGroups[0].modules[0].module.width
-    const height = columns[0].gridGroups
-      // .slice(1)
-      .reduce((acc, gg) => acc + gg.modules[0].module.height, 0)
+    const height = columns[0].gridGroups.reduce(
+      (acc, gg) => acc + gg.modules[0].module.height,
+      0
+    )
     const z0 = columns[0].gridGroups[0].modules[0].z
     const lastColumn = columns[columns.length - 1]
     const lastGridGroup =

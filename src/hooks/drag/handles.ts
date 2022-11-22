@@ -82,7 +82,7 @@ export const useHandleDragHandlers = (): any => {
         const angle0 = Math.atan2(z0, x0)
         const angle = Math.atan2(z1, x1)
         transients[houseId] = {
-          rotation: angle - angle0,
+          rotation: -(angle - angle0),
         }
         return
       case EditModeEnum.Enum.STRETCH:
