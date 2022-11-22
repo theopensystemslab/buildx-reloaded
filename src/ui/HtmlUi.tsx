@@ -20,7 +20,7 @@ import elementCategories from "../hooks/elementCategories"
 import { pipe } from "fp-ts/lib/function"
 import Checklist from "./Checklist"
 import { R, RR, S } from "../utils/functions"
-import { useInsert1000Skylarks } from "../hooks/houses"
+import { useHouses, useInsert1000Skylarks } from "../hooks/houses"
 import { useTransients } from "../hooks/transients"
 import { useHandleDragEvents } from "../hooks/drag/handles"
 
@@ -34,15 +34,17 @@ const HtmlUi = () => {
 
   useInsert1000Skylarks()
 
-  // const transients = useTransients()
+  const transients = useTransients()
+  const houses = useHouses()
+
   // const elementDragEvents = useElementDragEvents()
   // const handleDragEvents = useHandleDragEvents()
 
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0">
-        {/* <pre>{JSON.stringify(handleDragEvents, null, 2)}</pre> */}
-        {/* <pre>{JSON.stringify(transients, null, 2)}</pre> */}
+        <pre>{JSON.stringify(houses, null, 2)}</pre>
+        <pre>{JSON.stringify(transients, null, 2)}</pre>
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>

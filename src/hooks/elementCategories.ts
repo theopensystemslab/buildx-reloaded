@@ -5,11 +5,20 @@ import { useSystemElements } from "../data/elements"
 import { O, RA, RR, S } from "../utils/functions"
 
 const elementCategories = proxy<{ [k: string]: boolean }>({
-  Internal: true,
-  External: true,
-  General: true,
-  Services: true,
+  "Internal finishes": false,
+  "External finishes": false,
+  Insulation: false,
+  Services: false,
+  Structure: false,
+  "Windows & doors": false,
+  Foundations: false,
+  Furnishings: false,
 })
+
+export const useElementCategories = () => {
+  const categories = useSnapshot(elementCategories)
+  return categories
+}
 
 export const useGetElementVisible = (systemId: string) => {
   const elements = useSystemElements({ systemId })

@@ -4,14 +4,24 @@ import { subscribeKey } from "valtio/utils"
 
 export const useSubscribe = (
   proxy: Parameters<typeof subscribe>[0],
-  go: Parameters<typeof subscribe>[1]
-) => useEffect(() => subscribe(proxy, go))
+  go: Parameters<typeof subscribe>[1],
+  init: boolean = true
+) =>
+  useEffect(() => {
+    if (init) go
+    return subscribe(proxy, go)
+  }, [go, init, proxy])
 
 export const useSubscribeKey = <T extends object, K extends keyof T>(
   proxy: T,
   key: K,
-  go: { (): void; (value: T[K]): void }
-) => useEffect(() => subscribeKey<T, K>(proxy, key, go))
+  go: { (): void; (value: T[K]): void },
+  init: boolean = true
+) =>
+  useEffect(() => {
+    if (init) go()
+    return subscribeKey<T, K>(proxy, key, go)
+  }, [go, init, key, proxy])
 
 export const useUnmountEffect = (unmountEffect: () => void) =>
   useEffect(() => unmountEffect, [unmountEffect])

@@ -1,9 +1,16 @@
 import { RefObject, useEffect } from "react"
-import { Object3D } from "three"
+import { Object3D, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
+import { subscribeKey } from "valtio/utils"
 import { ElementIdentifier } from "../data/elements"
 import { useSubscribeKey } from "../utils/hooks"
+import { PI } from "../utils/math"
+import { rotateAboutPoint, useRotateAboutCenter } from "../utils/three"
+import dimensions from "./dimensions"
+import elementCategories, { useGetElementVisible } from "./elementCategories"
 import houses from "./houses"
+
+const yAxis = new Vector3(0, 1, 0)
 
 export type Transients = {
   [houseId: string]: {
@@ -96,12 +103,16 @@ export const useHouseTransforms = (
     rotation?: Partial<V3>
   }
 ) => {
+  const rotateAboutCenter = useRotateAboutCenter(houseId)
+
   const {
     position: { x: cx = 0, y: cy = 0, z: cz = 0 } = {},
     rotation: { x: crx = 0, y: cry = 0, z: crz = 0 } = {},
   } = constants ?? {}
 
   const go = () => {
+    if (!ref.current) return
+
     let {
       position: { x, y, z },
       rotation,
@@ -121,11 +132,12 @@ export const useHouseTransforms = (
       }
     }
 
-    ref.current?.rotation.set(crx, rotation, crz)
-    ref.current?.position.set(x + cx, y + cy, z + cz)
+    ref.current.rotation.set(-PI / 2, 0, 0)
+    ref.current.position.set(x + cx, y + cy, z + cz)
+    rotateAboutCenter(ref.current, rotation, false)
   }
 
-  useEffect(go, [crx, cry, crz, cx, cy, cz, houseId, ref])
+  useEffect(go, [crx, cry, crz, cx, cy, cz, houseId, ref, rotateAboutCenter])
   useSubscribeKey(houses[houseId], "position", go)
   useSubscribeKey(houses[houseId], "rotation", go)
   useSubscribeKey(transients, houseId, go)
@@ -134,7 +146,7 @@ export const useHouseTransforms = (
 export const useElementTransforms = (
   ref: RefObject<Object3D>,
   {
-    elementIdentifier: { houseId },
+    elementIdentifier: { systemId, houseId, elementName },
     columnZ,
     levelY,
     moduleZ,
@@ -149,20 +161,84 @@ export const useElementTransforms = (
     mirror: boolean
   }
 ) => {
-  const init = () => {
-    ref.current?.scale.set(1, 1, mirror ? 1 : -1)
-  }
-
-  const go = () => {
-    const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-
+  const computeHousePosition = () => {
     let {
-      position: { x, y: hy, z: hz },
-      rotation,
+      position: { x: hx, y: hy, z: hz },
     } = houses[houseId]
 
-    let y = hy + levelY,
+    let mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+    let x = hx,
+      y = hy + levelY,
       z = hz + columnZ + moduleZ + mirrorFix
+
+    return [x, y, z]
+  }
+
+  const computeTransientPosition = () => {
+    let [x, y, z] = computeHousePosition()
+    if (houseId in transients) {
+      const { position, rotation: deltaRotation } = transients[houseId]
+
+      if (position) {
+        x += position.dx
+        y += position.dy
+        z += position.dz
+      }
+    }
+    return [x, y, z]
+  }
+
+  useSubscribeKey(houses[houseId], "position", () => {
+    ref.current?.scale.set(1, 1, mirror ? 1 : -1)
+    const [x, y, z] = computeHousePosition()
+    ref.current?.position.set(x, y, z)
+  })
+
+  useSubscribeKey(houses[houseId], "rotation", () => {})
+
+  useSubscribeKey(transients, houseId, () => {
+    if (!transients[houseId]) return
+    ref.current?.scale.set(1, 1, mirror ? 1 : -1)
+    const { position, rotation } = transients[houseId]
+    if (position) {
+      const [x, y, z] = computeTransientPosition()
+      ref.current?.position.set(x, y, z)
+    }
+    if (rotation) {
+    }
+  })
+}
+
+export const useOldElementTransforms = (
+  ref: RefObject<Object3D>,
+  {
+    elementIdentifier: { systemId, houseId, elementName },
+    columnZ,
+    levelY,
+    moduleZ,
+    moduleLength,
+    mirror,
+  }: {
+    elementIdentifier: ElementIdentifier
+    columnZ: number
+    levelY: number
+    moduleZ: number
+    moduleLength: number
+    mirror: boolean
+  }
+) => {
+  // const getElementVisible = useGetElementVisible(systemId)
+
+  const rotateAboutCenter = useRotateAboutCenter(houseId)
+
+  const go = () => {
+    if (!ref.current) return
+
+    let {
+      position: { x, y, z },
+      rotation,
+    } = houses[houseId]
 
     if (houseId in transients) {
       const { position, rotation: deltaRotation } = transients[houseId]
@@ -174,15 +250,93 @@ export const useElementTransforms = (
       }
 
       if (deltaRotation) {
-        rotation += deltaRotation
+        rotation += deltaRotation // + cry // + dr
       }
     }
-    ref.current?.rotation.set(0, rotation, 0)
-    ref.current?.position.set(x, y, z)
-  }
 
-  useEffect(init, [mirror, ref])
-  useEffect(go, [columnZ, houseId, levelY, mirror, moduleLength, moduleZ, ref])
+    ref.current.position.set(x, y, z)
+    // rotateAboutCenter(ref.current, delta)
+  }
+  // const init = () => {
+  //   let {
+  //     position: { x: hx, y: hy, z: hz },
+  //   } = houses[houseId]
+
+  //   let mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+  //   let x = hx,
+  //     y = hy + levelY,
+  //     z = hz + columnZ + moduleZ + mirrorFix
+
+  //   ref.current?.scale.set(1, 1, mirror ? 1 : -1)
+  //   ref.current?.position.set(x, y, z)
+
+  //   if (!getElementVisible(elementName)) {
+  //     ref.current?.scale.set(0, 0, 0)
+  //   }
+  // }
+
+  // const go = () => {
+  //   if (!ref.current) return
+
+  //   const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+  //   let {
+  //     position: { x, y: hy, z: hz },
+  //     rotation,
+  //   } = houses[houseId]
+
+  //   let y = hy + levelY,
+  //     z = hz + columnZ + moduleZ + mirrorFix
+
+  //   if (houseId in transients) {
+  //     const { position, rotation: deltaRotation } = transients[houseId]
+
+  //     if (position) {
+  //       x += position.dx
+  //       y += position.dy
+  //       z += position.dz
+  //     }
+
+  //     if (deltaRotation) {
+  //       const {
+  //         obb: { center },
+  //       } = dimensions[houseId]
+
+  //       // rotateAboutPoint(
+  //       //   ref.current,
+  //       //   center,
+  //       //   mirror ? yAxis : yAxis.negate(),
+  //       //   deltaRotation
+  //       //   // rotation - ref.current.rotation.y
+  //       //   // 0
+  //       // )
+  //     }
+  //   }
+  //   ref.current.position.set(x, y, z)
+  // }
+
+  // useEffect(init, [
+  //   columnZ,
+  //   elementName,
+  //   getElementVisible,
+  //   houseId,
+  //   levelY,
+  //   mirror,
+  //   moduleLength,
+  //   moduleZ,
+  //   ref,
+  // ])
+  useEffect(go, [
+    columnZ,
+    houseId,
+    levelY,
+    mirror,
+    moduleLength,
+    moduleZ,
+    ref,
+    rotateAboutCenter,
+  ])
 
   useSubscribeKey(houses[houseId], "position", go)
   useSubscribeKey(houses[houseId], "rotation", go)

@@ -1,8 +1,11 @@
+import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useRef } from "react"
-import { Matrix4, Vector3 } from "three"
+import { Matrix4, Mesh, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
+import { RR } from "../utils/functions"
+import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
 import { useColumnLayout } from "./layouts"
 
@@ -117,7 +120,32 @@ export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {
   //   )
   // if (rotation) houses[houseId].rotation = rotation
 
-  // events.after.newHouseTransform = events.before.newHouseTransform
+  // events.after.newHouseTransform = even =ts.before.newHouseTransform
 }
 
+export const useDimensionsKeys = () => {
+  return pipe(useSnapshot(dimensions) as typeof dimensions, RR.keys)
+}
+
+export const DebugDimensionsCenterPoint = ({
+  houseId,
+}: {
+  houseId: string
+}) => {
+  const ref = useRef<Mesh>(null)
+
+  useSubscribeKey(dimensions, houseId, () => {
+    if (!dimensions[houseId]) return
+    const {
+      obb: { center },
+    } = dimensions[houseId]
+    ref.current?.position.set(...center.toArray())
+  })
+  return (
+    <mesh ref={ref}>
+      <sphereBufferGeometry args={[0.25]} />
+      <meshBasicMaterial color="tomato" />
+    </mesh>
+  )
+}
 export default dimensions

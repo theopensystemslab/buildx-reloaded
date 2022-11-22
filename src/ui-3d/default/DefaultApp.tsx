@@ -18,6 +18,10 @@ import DefaultHouse from "./DefaultHouse"
 import RotateHandleInstances from "../handles/RotateHandleInstances"
 import StretchHandleInstances from "../handles/StretchHandleInstances"
 import StretchInstances from "../stretch/StretchInstances"
+import {
+  DebugDimensionsCenterPoint,
+  useDimensionsKeys,
+} from "../../hooks/dimensions"
 
 const DefaultApp = () => {
   const houseKeys = useHouseKeys()
@@ -66,6 +70,11 @@ const DefaultApp = () => {
           )}
       </Instances>
       <StretchInstances />
+
+      {pipe(
+        houseKeys,
+        RA.map((id) => <DebugDimensionsCenterPoint key={id} houseId={id} />)
+      )}
     </Fragment>
   )
 }

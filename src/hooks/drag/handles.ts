@@ -1,11 +1,12 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { useCallback } from "react"
-import { Intersection } from "three"
+import { Intersection, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
 import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
+import dimensions from "../dimensions"
 import { EditMode, EditModeEnum } from "../siteCtx"
 import { setTransients, transients } from "../transients"
 
@@ -62,6 +63,7 @@ export const useHandleDragFunctions = () => {
 
 export const useHandleDragHandlers = (): any => {
   useSubscribeKey(handleDragEvents, "drag", () => {
+    console.log("drag")
     if (handleDragEvents.dragStart === null || handleDragEvents.drag === null) {
       return
     }
@@ -77,10 +79,12 @@ export const useHandleDragHandlers = (): any => {
       },
     } = handleDragEvents
 
+    const { x: cx, z: cz } = dimensions?.[houseId].obb.center ?? new Vector3()
+
     switch (editMode) {
       case EditModeEnum.Enum.MOVE_ROTATE:
-        const angle0 = Math.atan2(z0, x0)
-        const angle = Math.atan2(z1, x1)
+        const angle0 = Math.atan2(cz - z0, cx - x0)
+        const angle = Math.atan2(cz - z1, cx - x1)
         transients[houseId] = {
           rotation: -(angle - angle0),
         }

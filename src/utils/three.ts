@@ -1,6 +1,7 @@
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
+import { useCallback, useMemo } from "react"
 import {
   DoubleSide,
   Group,
@@ -12,6 +13,7 @@ import {
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../constants"
 import { Material } from "../data/materials"
+import dimensions from "../hooks/dimensions"
 
 export type GltfT = {
   nodes: {
@@ -38,6 +40,8 @@ export const createMaterial = (config: Material) => {
       color: config.defaultColor,
       // transparent: true,
       emissive: "#000",
+      // opacity: 0.6,
+      // depthTest: false,
     })
   }
 
@@ -102,4 +106,22 @@ export const rotateAboutPoint = (
   obj.position.applyAxisAngle(axis, theta) // rotate the POSITION
   obj.position.add(point) // re-add the offset
   obj.rotateOnAxis(axis, theta) // rotate the OBJECT
+}
+
+export const useRotateAboutCenter = (houseId: string) => {
+  const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
+
+  return useCallback(
+    (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
+      const dims = dimensions[houseId]
+      if (!dims) return
+
+      const center = dims.obb.center
+      obj.position.sub(center) // remove the offset
+      obj.position.applyAxisAngle(yAxis, theta) // rotate the POSITION
+      obj.position.add(center) // re-add the offset
+      if (rotateOnAxis) obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
+    },
+    [houseId, yAxis]
+  )
 }
