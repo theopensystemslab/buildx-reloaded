@@ -43,8 +43,8 @@ const HtmlUi = () => {
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0">
-        <pre>{JSON.stringify(houses, null, 2)}</pre>
-        <pre>{JSON.stringify(transients, null, 2)}</pre>
+        {/* <pre>{JSON.stringify(houses, null, 2)}</pre>
+        <pre>{JSON.stringify(transients, null, 2)}</pre> */}
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>

@@ -63,7 +63,6 @@ export const useHandleDragFunctions = () => {
 
 export const useHandleDragHandlers = (): any => {
   useSubscribeKey(handleDragEvents, "drag", () => {
-    console.log("drag")
     if (handleDragEvents.dragStart === null || handleDragEvents.drag === null) {
       return
     }
@@ -72,7 +71,6 @@ export const useHandleDragHandlers = (): any => {
       dragStart: {
         point: { x: x0, z: z0 },
         handleIdentifier: { houseId, editMode },
-        // element: { houseId },
       },
       drag: {
         point: { x: x1, z: z1 },
