@@ -69,6 +69,12 @@ export const systemHouseTypesQuery =
       .table("modules_by_housetype")
       .select()
       .all()
+      .then((x) => {
+        const parsed = z.array(modulesByHouseTypeParser).safeParse(x)
+
+        if (parsed.success) return parsed.data
+        else return []
+      })
       .then(z.array(modulesByHouseTypeParser).parse)
 
     const houseTypes = await pipe(
