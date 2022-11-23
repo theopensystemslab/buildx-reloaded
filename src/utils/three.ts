@@ -14,6 +14,8 @@ import {
 import { CameraLayer, RaycasterLayer } from "../constants"
 import { Material } from "../data/materials"
 import dimensions from "../hooks/dimensions"
+import houses from "../hooks/houses"
+import { transients } from "../hooks/transients"
 
 export type GltfT = {
   nodes: {
@@ -124,4 +126,22 @@ export const useRotateAboutCenter = (houseId: string) => {
     },
     [houseId, yAxis]
   )
+}
+
+export const useSetRotation = (houseId: string) => {
+  const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
+  return (obj: Object3D, targetTheta: number, rotateOnAxis: boolean = true) => {
+    const dims = dimensions[houseId]
+    if (!dims) return
+    const center = dims.obb.center // new Vector3(0, 0, 0)
+
+    const currentTheta =
+      houses[houseId].rotation + (transients?.[houseId]?.rotation ?? 0)
+
+    obj.position.sub(center)
+    obj.position.applyAxisAngle(yAxis, targetTheta - currentTheta)
+    obj.position.add(center)
+
+    if (rotateOnAxis) obj.rotateOnAxis(yAxis, targetTheta) // rotate the OBJECT
+  }
 }

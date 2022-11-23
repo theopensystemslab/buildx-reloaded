@@ -1,13 +1,11 @@
 import { RefObject, useEffect } from "react"
 import { Object3D, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
 import { ElementIdentifier } from "../data/elements"
 import { useSubscribeKey } from "../utils/hooks"
 import { PI } from "../utils/math"
 import { rotateAboutPoint, useRotateAboutCenter } from "../utils/three"
 import dimensions from "./dimensions"
-import elementCategories, { useGetElementVisible } from "./elementCategories"
 import houses from "./houses"
 
 const yAxis = new Vector3(0, 1, 0)
@@ -41,7 +39,6 @@ export const setTransients = () => {
   for (let houseId of Object.keys(transients)) {
     const { position, rotation } = transients[houseId]
     if (position) {
-      console.log("setting position")
       const { x, y, z } = houses[houseId].position
       const { dx, dy, dz } = position
       houses[houseId].position = {
@@ -212,7 +209,8 @@ export const useElementTransforms = (
     mirror: boolean
   }
 ) => {
-  const rotateAboutCenter = useRotateAboutCenter(houseId)
+  // const rotateAboutCenter = useRotateAboutCenter(houseId)
+  // const setRotation = useSetRotation(houseId)
 
   const computeHardPosition = () => {
     let {
@@ -254,6 +252,8 @@ export const useElementTransforms = (
     // rotateAboutCenter(ref.current, houses[houseId].rotation)
   })
 
+  let notSwitched = true
+
   useSubscribeKey(transients, houseId, () => {
     if (!transients[houseId]) return
     ref.current?.scale.set(1, 1, mirror ? 1 : -1)
@@ -263,6 +263,12 @@ export const useElementTransforms = (
       ref.current?.position.set(x, y, z)
     }
     if (rotation) {
+      console.log(rotation)
+      if (rotation > 1 && notSwitched) {
+        notSwitched = false
+        const center = dimensions[houseId].obb.center
+        rotateAboutPoint(ref.current!, center, yAxis, 1)
+      }
     }
   })
 }

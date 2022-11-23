@@ -1,13 +1,12 @@
-import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useRef } from "react"
 import { Matrix4, Mesh, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
-import { RR } from "../utils/functions"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
 import { useColumnLayout } from "./layouts"
+import { transients } from "./transients"
 
 type Dimensions = {
   obb: OBB
@@ -47,9 +46,16 @@ export const useDimensionsSubscription = (houseId: string) => {
     const halfSize = new Vector3(width / 2, height / 2, length / 2)
     const obb = new OBB(center, halfSize)
 
-    preTransM.current.makeTranslation(0, 0, length / 2)
-    rotationMatrix.current.makeRotationY(houses[houseId].rotation)
-    postTransM.current.makeTranslation(px, py, pz)
+    const {
+      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+      rotation: dr = 0,
+    } = transients?.[houseId] ?? {
+      position: { dx: 0, dy: 0, dz: 0 },
+      rotation: 0,
+    }
+
+    rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
+    postTransM.current.makeTranslation(px + dx, py + dy, pz + dz + length / 2)
 
     obb.applyMatrix4(
       postTransM.current.multiply(
@@ -63,6 +69,8 @@ export const useDimensionsSubscription = (houseId: string) => {
       obb: ref(obb),
     }
   }, [columns, houseId])
+
+  useSubscribeKey(transients, houseId, update)
 
   useEffect(() => {
     const unsubPos = subscribeKey(houses[houseId], "position", update)
@@ -83,15 +91,6 @@ export const useDimensions = (houseId: string): Dimensions => {
 }
 
 export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {
-  // const thisObb = dimensions[houseId].obb
-
-  // m4.current.makeRotationY(rotation)
-  // m4.current.makeTranslation(dx, dy, dz)
-
-  // thisObb.applyMatrix4(m4.current)
-
-  // try new dimensions
-
   let collision = false
 
   for (let [k, v] of Object.entries(dimensions)) {
@@ -105,26 +104,6 @@ export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {
   }
 
   return collision
-
-  // reset dimensions if not working
-  // if (!allowed) {
-  //   m4.current.invert()
-  //   thisObb.applyMatrix4(m4.current)
-  //   return
-  // }
-
-  // if (positionDelta)
-  //   houses[houseId].position = addV3(
-  //     houses[houseId].position,
-  //     positionDelta
-  //   )
-  // if (rotation) houses[houseId].rotation = rotation
-
-  // events.after.newHouseTransform = even =ts.before.newHouseTransform
-}
-
-export const useDimensionsKeys = () => {
-  return pipe(useSnapshot(dimensions) as typeof dimensions, RR.keys)
 }
 
 export const DebugDimensionsCenterPoint = ({
@@ -148,4 +127,5 @@ export const DebugDimensionsCenterPoint = ({
     </mesh>
   )
 }
+
 export default dimensions

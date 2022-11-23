@@ -1,11 +1,12 @@
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Material, Plane } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSystemElements } from "../data/elements"
 import { useSystemMaterials } from "../data/materials"
 import { O, RA, someOrError } from "../utils/functions"
 import { createMaterial } from "../utils/three"
+import { useGlobals } from "./globals"
 import { useHouse } from "./houses"
 
 type MaterialKey = {
@@ -59,20 +60,20 @@ export const useMaterialHash = (input: {
   const { systemId, houseId, elementName, clippingPlanes, visible } = input
   const materials = useSystemMaterials({ systemId })
   const materialName = useMaterialName(houseId, elementName)
-  const material = pipe(
+  const ourMaterial = pipe(
     materials,
     RA.findFirst((m) => m.name === materialName),
     someOrError("no material")
   )
 
   const createNewMaterial = useCallback(
-    () => createMaterial(material),
-    [material]
+    () => createMaterial(ourMaterial),
+    [ourMaterial]
   )
 
   return useMemo(() => {
     const materialHash = getMaterialHash({
-      color: material.defaultColor,
+      color: ourMaterial.defaultColor,
       clippingPlanes,
       visible,
     })
@@ -83,7 +84,7 @@ export const useMaterialHash = (input: {
     hashedMaterials[materialHash] = ref(newMaterial)
 
     return materialHash
-  }, [clippingPlanes, createNewMaterial, material.defaultColor, visible])
+  }, [clippingPlanes, createNewMaterial, ourMaterial.defaultColor, visible])
 }
 
 export const useHashedMaterial = (materialHash: string) => {
