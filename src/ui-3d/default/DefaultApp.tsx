@@ -24,8 +24,6 @@ const DefaultApp = () => {
   const bindElements = useElementDragHandlers()
   const bindHandles = useHandleDragHandlers()
 
-  const debugDimensions = true
-
   return (
     <Fragment>
       <group {...bindElements()}>

@@ -1,15 +1,13 @@
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"
-import { identity, pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref, useSnapshot } from "valtio"
-import { derive } from "valtio/utils"
 // import { usePadColumn } from "./modules"
 import { Module, useGetVanillaModule, usePadColumn } from "../data/modules"
-import { errorThrower, O, RNEA } from "../utils/functions"
-import houses, { useHouseRows, useHouses } from "./houses"
+import houses, { useHouseRows } from "./houses"
 import { splitColumns } from "./stretch"
 
 export type PositionedModule = {
