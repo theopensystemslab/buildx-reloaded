@@ -48,10 +48,10 @@ export const useDimensionsSubscription = (houseId: string) => {
 
     const {
       position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-      rotation: { total: dr } = { total: 0 },
+      rotation: dr = 0,
     } = transients?.[houseId] ?? {
       position: { dx: 0, dy: 0, dz: 0 },
-      rotation: { total: 0 },
+      rotation: 0,
     }
 
     rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)

@@ -37,11 +37,7 @@ const handleDragEvents = proxy<HandleDragEvents>({
   drop: true,
 })
 
-export const useHandleDragFunctions = ({
-  onDragEnd: _onDragEnd,
-}: {
-  onDragEnd?: () => void
-} = {}) => {
+export const useHandleDragFunctions = () => {
   const onDragStart = useCallback(
     ({ object: { userData }, point }: Intersection) => {
       setCameraEnabled(false)
@@ -54,24 +50,18 @@ export const useHandleDragFunctions = ({
     []
   )
 
-  const onDragEnd = useCallback(
-    (_intersection: Intersection) => {
-      setCameraEnabled(true)
-      setTransients()
-      handleDragEvents.drag = null
-      handleDragEvents.dragStart = null
-      handleDragEvents.drop = true
-      _onDragEnd?.()
-    },
-    [_onDragEnd]
-  )
+  const onDragEnd = useCallback((_intersection: Intersection) => {
+    setCameraEnabled(true)
+    setTransients()
+    handleDragEvents.drag = null
+    handleDragEvents.dragStart = null
+    handleDragEvents.drop = true
+  }, [])
 
   return { onDragStart, onDragEnd }
 }
 
 export const useHandleDragHandlers = (): any => {
-  const lastTheta = useRef(0)
-
   useSubscribeKey(handleDragEvents, "drag", () => {
     if (handleDragEvents.dragStart === null || handleDragEvents.drag === null) {
       return
@@ -93,16 +83,9 @@ export const useHandleDragHandlers = (): any => {
       case EditModeEnum.Enum.MOVE_ROTATE:
         const angle0 = Math.atan2(cz - z0, cx - x0)
         const angle = Math.atan2(cz - z1, cx - x1)
-        const total = -(angle - angle0)
-        const delta = total - lastTheta.current
-        console.log([total, delta])
         transients[houseId] = {
-          rotation: {
-            total,
-            delta,
-          },
+          rotation: -(angle - angle0),
         }
-        lastTheta.current = total
         return
       case EditModeEnum.Enum.STRETCH:
         transients[houseId] = {
@@ -117,9 +100,7 @@ export const useHandleDragHandlers = (): any => {
     //   dz: z1 - z0,
     // })
   })
-  const { onDragStart, onDragEnd } = useHandleDragFunctions({
-    onDragEnd: () => void (lastTheta.current = 0),
-  })
+  const { onDragStart, onDragEnd } = useHandleDragFunctions()
 
   return useGesture<{
     hover: ThreeEvent<PointerEvent>

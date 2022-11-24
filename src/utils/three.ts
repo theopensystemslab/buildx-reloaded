@@ -16,6 +16,7 @@ import { Material } from "../data/materials"
 import dimensions from "../hooks/dimensions"
 import houses from "../hooks/houses"
 import { transients } from "../hooks/transients"
+import { useSubscribeKey } from "./hooks"
 
 export type GltfT = {
   nodes: {
@@ -130,19 +131,21 @@ export const useRotateAboutCenter = (houseId: string) => {
 
 export const useSetRotation = (houseId: string) => {
   const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
+  const defaultCenter = useMemo(() => new Vector3(0, 0, 0), [])
 
-  return (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
-    const dims = dimensions[houseId]
-    if (!dims) return
-    const center = dims.obb.center // new Vector3(0, 0, 0)
+  return useCallback(
+    (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
+      const center = dimensions?.[houseId]?.obb.center ?? defaultCenter
 
-    obj.position.sub(center)
-    obj.position.applyAxisAngle(yAxis, theta)
-    obj.position.add(center)
+      obj.position.sub(center)
+      obj.position.applyAxisAngle(yAxis, theta)
+      obj.position.add(center)
 
-    if (rotateOnAxis) {
-      obj.rotation.set(0, 0, 0)
-      obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
-    }
-  }
+      if (rotateOnAxis) {
+        obj.rotation.set(0, 0, 0)
+        obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
+      }
+    },
+    [defaultCenter, houseId, yAxis]
+  )
 }
