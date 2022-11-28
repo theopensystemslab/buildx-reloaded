@@ -1,6 +1,7 @@
-import { RefObject, useCallback, useEffect } from "react"
-import { Object3D, Vector3 } from "three"
-import { proxy, useSnapshot } from "valtio"
+import { RefObject, useCallback, useEffect, useRef } from "react"
+import { Matrix4, Object3D, Vector3 } from "three"
+import { OBB } from "three-stdlib"
+import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
 import { PI } from "../utils/math"
 import {
@@ -11,6 +12,7 @@ import {
 import dimensions from "./dimensions"
 import { ElementIdentifier } from "./gestures/drag/elements"
 import houses from "./houses"
+import { layouts } from "./layouts"
 
 const yAxis = new Vector3(0, 1, 0)
 
@@ -23,6 +25,7 @@ export type Transients = {
     }
     rotation?: number
     stretchUnits?: number
+    obb?: OBB
   }
 }
 
@@ -208,4 +211,55 @@ export const useElementTransforms = (
   useSubscribeKey(houses[houseId], "rotation", compute, false)
   useSubscribeKey(transients, houseId, compute, false)
   useSubscribeKey(dimensions, houseId, compute, false)
+}
+
+export const useComputeTransientOBB = (houseId: string) => {
+  const preTransM = useRef(new Matrix4())
+  const postTransM = useRef(new Matrix4())
+  const rotationMatrix = useRef(new Matrix4())
+
+  return () => {
+    const columns = layouts[houseId]
+
+    if (columns.length < 1) return
+
+    const width = columns[0].gridGroups[0].modules[0].module.width
+    const height = columns[0].gridGroups.reduce(
+      (acc, gg) => acc + gg.modules[0].module.height,
+      0
+    )
+    const z0 = columns[0].gridGroups[0].modules[0].z
+    const lastColumn = columns[columns.length - 1]
+    const lastGridGroup =
+      lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
+    const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
+    const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+
+    const length = z1 - z0
+
+    const { x: px, y: py, z: pz } = houses[houseId].position
+
+    const center = new Vector3(0, 0, 0)
+    const halfSize = new Vector3(width / 2, height / 2, length / 2)
+    const obb = new OBB(center, halfSize)
+
+    const {
+      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+      rotation: dr = 0,
+    } = transients?.[houseId] ?? {
+      position: { dx: 0, dy: 0, dz: 0 },
+      rotation: 0,
+    }
+
+    rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
+    postTransM.current.makeTranslation(px + dx, py + dy, pz + dz + length / 2)
+
+    obb.applyMatrix4(
+      postTransM.current.multiply(
+        rotationMatrix.current.multiply(preTransM.current)
+      )
+    )
+
+    transients[houseId].obb = ref(obb)
+  }
 }
