@@ -24,7 +24,6 @@ export const useHandleDragHandlers = (): any => {
       if (last) {
         setCameraEnabled(true)
       }
-      console.log("handle")
     },
   })
 }

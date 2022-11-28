@@ -33,7 +33,8 @@ const RotateHandleInstances = (props: Props) => {
       <Instance
         ref={handle1Ref}
         userData={{
-          handleIdentifier: {
+          identifier: {
+            identifierType: "handle",
             houseId,
             editMode: EditModeEnum.Enum.MOVE_ROTATE,
           },
@@ -42,7 +43,8 @@ const RotateHandleInstances = (props: Props) => {
       <Instance
         ref={handle2Ref}
         userData={{
-          handleIdentifier: {
+          identifier: {
+            identifierType: "handle",
             houseId,
             editMode: EditModeEnum.Enum.MOVE_ROTATE,
           },

@@ -97,7 +97,6 @@ export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {
     if (houseIdIgnoreList.includes(k)) continue
     const intersects = v.obb.intersectsOBB(obb)
     if (intersects) {
-      console.log(v.obb, obb)
       collision = true
       break
     }

@@ -3,11 +3,11 @@ import { useGesture } from "@use-gesture/react"
 import { useCallback } from "react"
 import { Intersection } from "three"
 import { proxy, useSnapshot } from "valtio"
-import { ElementIdentifier } from "../../data/elements"
-import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
+import { ElementIdentifier } from "../gestures/drag/elements"
+import globals from "../globals"
 import { SiteCtxModeEnum, useSiteCtxMode } from "../siteCtx"
-import { setTransients, updateTransientHousePositionDelta } from "../transients"
+import { setTransients } from "../transients"
 
 type ElementDragEvent = {
   element: ElementIdentifier
@@ -33,7 +33,34 @@ export const useElementDragStart = () => {
 
 export const useElementDragEvents = () => useSnapshot(elementDragEvents)
 
-export const useElementDragFunctions = () => {
+export const useElementDragHandlers = (): any => {
+  // useSubscribeKey(elementDragEvents, "drag", () => {
+  //   if (
+  //     elementDragEvents.dragStart === null ||
+  //     elementDragEvents.drag === null
+  //   ) {
+  //     return
+  //   }
+
+  //   const {
+  //     dragStart: {
+  //       point: { x: x0, z: z0 },
+  //       element: { houseId },
+  //     },
+  //     drag: {
+  //       point: { x: x1, z: z1 },
+  //     },
+  //   } = elementDragEvents
+
+  //   updateTransientHousePositionDelta(houseId, {
+  //     dx: x1 - x0,
+  //     dy: 0,
+  //     dz: z1 - z0,
+  //   })
+  // })
+
+  // todo ?
+
   const siteCtxMode = useSiteCtxMode()
 
   const onDragStart = useCallback(
@@ -75,36 +102,29 @@ export const useElementDragFunctions = () => {
     [siteCtxMode]
   )
 
-  return { onDragStart, onDragEnd }
-}
-
-export const useElementDragHandlers = (): any => {
-  useSubscribeKey(elementDragEvents, "drag", () => {
-    if (
-      elementDragEvents.dragStart === null ||
-      elementDragEvents.drag === null
-    ) {
-      return
-    }
-
-    const {
-      dragStart: {
-        point: { x: x0, z: z0 },
-        element: { houseId },
-      },
-      drag: {
-        point: { x: x1, z: z1 },
-      },
-    } = elementDragEvents
-
-    updateTransientHousePositionDelta(houseId, {
-      dx: x1 - x0,
-      dy: 0,
-      dz: z1 - z0,
-    })
-  })
-
-  const { onDragStart, onDragEnd } = useElementDragFunctions()
+  const onDrag = useCallback(
+    ({ object: { userData }, point }: Intersection) => {
+      setCameraEnabled(true)
+      switch (siteCtxMode) {
+        case SiteCtxModeEnum.Enum.SITE:
+          const [x, z] = globals.pointerXZ
+          elementDragEvents.drag = {
+            element: userData.elementIdentifier as ElementIdentifier,
+            point: {
+              x,
+              y: elementDragEvents.dragStart!.point.y,
+              z,
+            },
+          }
+          return
+        case SiteCtxModeEnum.Enum.BUILDING:
+          return
+        case SiteCtxModeEnum.Enum.LEVEL:
+          return
+      }
+    },
+    [siteCtxMode]
+  )
 
   return useGesture<{
     hover: ThreeEvent<PointerEvent>
@@ -122,6 +142,7 @@ export const useElementDragHandlers = (): any => {
 
       if (first) onDragStart(intersection)
       else if (last) onDragEnd(intersection)
+      else onDrag(intersection)
     },
   })
 }

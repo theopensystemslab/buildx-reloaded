@@ -24,15 +24,6 @@ export type Element = {
   category: string
 }
 
-export type ElementIdentifier = {
-  systemId: string
-  houseId: string
-  columnIndex: number
-  levelIndex: number
-  gridGroupIndex: number
-  elementName: string
-}
-
 export const elementParser = z.object({
   id: z.string().min(1),
   fields: z.object({

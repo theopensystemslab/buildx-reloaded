@@ -37,30 +37,6 @@ const handleDragEvents = proxy<HandleDragEvents>({
   drop: true,
 })
 
-export const useHandleDragFunctions = () => {
-  const onDragStart = useCallback(
-    ({ object: { userData }, point }: Intersection) => {
-      setCameraEnabled(false)
-      handleDragEvents.dragStart = {
-        handleIdentifier: userData.handleIdentifier as HandleIdentifier,
-        point,
-      }
-      handleDragEvents.drop = false
-    },
-    []
-  )
-
-  const onDragEnd = useCallback((_intersection: Intersection) => {
-    setCameraEnabled(true)
-    setTransients()
-    handleDragEvents.drag = null
-    handleDragEvents.dragStart = null
-    handleDragEvents.drop = true
-  }, [])
-
-  return { onDragStart, onDragEnd }
-}
-
 export const useHandleDragHandlers = (): any => {
   useSubscribeKey(handleDragEvents, "drag", () => {
     if (handleDragEvents.dragStart === null || handleDragEvents.drag === null) {
@@ -100,7 +76,39 @@ export const useHandleDragHandlers = (): any => {
     //   dz: z1 - z0,
     // })
   })
-  const { onDragStart, onDragEnd } = useHandleDragFunctions()
+  // const { onDragStart, onDragEnd } = useHandleDragFunctions()
+
+  const onDragStart = useCallback(
+    ({ object: { userData }, point }: Intersection) => {
+      setCameraEnabled(false)
+      handleDragEvents.dragStart = {
+        handleIdentifier: userData.handleIdentifier as HandleIdentifier,
+        point,
+      }
+      handleDragEvents.drop = false
+    },
+    []
+  )
+
+  const onDragEnd = useCallback((_intersection: Intersection) => {
+    setCameraEnabled(true)
+    setTransients()
+    handleDragEvents.drag = null
+    handleDragEvents.dragStart = null
+    handleDragEvents.drop = true
+  }, [])
+
+  const onDrag = useCallback(
+    ({ object: { userData }, point }: Intersection) => {
+      setCameraEnabled(false)
+      handleDragEvents.dragStart = {
+        handleIdentifier: userData.handleIdentifier as HandleIdentifier,
+        point,
+      }
+      handleDragEvents.drop = false
+    },
+    []
+  )
 
   return useGesture<{
     hover: ThreeEvent<PointerEvent>

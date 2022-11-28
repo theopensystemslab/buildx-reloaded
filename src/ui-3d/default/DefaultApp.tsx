@@ -4,6 +4,7 @@ import { Fragment, Suspense } from "react"
 import { DebugDimensionsCenterPoint } from "../../hooks/dimensions"
 import { useElementDragHandlers } from "../../hooks/drag/elements"
 import { useHandleDragHandlers } from "../../hooks/drag/handles"
+import { useGestures } from "../../hooks/gestures"
 import { useHouseKeys } from "../../hooks/houses"
 import { EditModeEnum, useEditMode, useSiteCtx } from "../../hooks/siteCtx"
 import HandleMaterial from "../../materials/HandleMaterial"
@@ -21,12 +22,14 @@ const DefaultApp = () => {
 
   const editMode = useEditMode()
 
-  const bindElements = useElementDragHandlers()
-  const bindHandles = useHandleDragHandlers()
+  // const bindElements = useElementDragHandlers()
+  // const bindHandles = useHandleDragHandlers()
+
+  const bindAll = useGestures()
 
   return (
     <Fragment>
-      <group {...bindElements()}>
+      <group {...bindAll()}>
         {pipe(
           houseKeys,
           buildingId ? RA.filter((id) => id === buildingId) : identity,
@@ -36,27 +39,27 @@ const DefaultApp = () => {
             </Suspense>
           ))
         )}
+        <Instances>
+          <circleBufferGeometry args={[0.5, 10]} />
+          <HandleMaterial />
+          {editMode === EditModeEnum.Enum.MOVE_ROTATE &&
+            pipe(
+              houseKeys,
+              RA.map((houseId) => (
+                <RotateHandleInstances key={houseId} houseId={houseId} />
+              ))
+            )}
+          {editMode === EditModeEnum.Enum.STRETCH &&
+            pipe(
+              houseKeys,
+              RA.map((houseId) => (
+                <StretchHandleInstances key={houseId} houseId={houseId} />
+              ))
+            )}
+        </Instances>
       </group>
       <XZPlane />
       <YPlane />
-      <Instances {...bindHandles()}>
-        <circleBufferGeometry args={[0.5, 10]} />
-        <HandleMaterial />
-        {editMode === EditModeEnum.Enum.MOVE_ROTATE &&
-          pipe(
-            houseKeys,
-            RA.map((houseId) => (
-              <RotateHandleInstances key={houseId} houseId={houseId} />
-            ))
-          )}
-        {editMode === EditModeEnum.Enum.STRETCH &&
-          pipe(
-            houseKeys,
-            RA.map((houseId) => (
-              <StretchHandleInstances key={houseId} houseId={houseId} />
-            ))
-          )}
-      </Instances>
       <StretchInstances />
     </Fragment>
   )

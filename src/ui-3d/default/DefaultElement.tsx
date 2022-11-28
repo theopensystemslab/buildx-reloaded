@@ -2,7 +2,7 @@ import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Mesh, MeshStandardMaterial } from "three"
-import { ElementIdentifier } from "../../data/elements"
+import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { useElementTransforms } from "../../hooks/transients"
@@ -45,7 +45,8 @@ const DefaultElement = (props: Props) => {
 
   // useMoveRotateSubscription(houseId, meshRef)
 
-  const elementIdentifier: ElementIdentifier = {
+  const identifier: ElementIdentifier = {
+    identifierType: "element",
     systemId,
     houseId,
     columnIndex,
@@ -55,7 +56,7 @@ const DefaultElement = (props: Props) => {
   }
 
   useElementTransforms(meshRef, {
-    elementIdentifier,
+    identifier,
     columnZ,
     levelY,
     moduleZ,
@@ -88,7 +89,7 @@ const DefaultElement = (props: Props) => {
       material={material}
       geometry={geometry}
       userData={{
-        elementIdentifier,
+        identifier,
       }}
     />
   )

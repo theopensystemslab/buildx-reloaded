@@ -45,7 +45,6 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
       const obb = new OBB(center, halfSize)
 
       const collision = collideOBB(obb, [houseId])
-      console.log(collision)
       return !collision
     }),
     RA.map((columnZ) => (
@@ -74,7 +73,6 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
       const obb = new OBB(center, halfSize)
 
       const collision = collideOBB(obb, [houseId])
-      console.log(collision)
       return !collision
     }),
     RA.map((columnZ) => (

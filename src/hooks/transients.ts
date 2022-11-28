@@ -1,7 +1,6 @@
 import { RefObject, useCallback, useEffect } from "react"
 import { Object3D, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
-import { ElementIdentifier } from "../data/elements"
 import { useSubscribeKey } from "../utils/hooks"
 import { PI } from "../utils/math"
 import {
@@ -10,6 +9,7 @@ import {
   useSetRotation,
 } from "../utils/three"
 import dimensions from "./dimensions"
+import { ElementIdentifier } from "./gestures/drag/elements"
 import houses from "./houses"
 
 const yAxis = new Vector3(0, 1, 0)
@@ -149,14 +149,14 @@ export const useHouseTransforms = (
 export const useElementTransforms = (
   ref: RefObject<Object3D>,
   {
-    elementIdentifier: { houseId },
+    identifier: { houseId },
     columnZ,
     levelY,
     moduleZ,
     moduleLength,
     mirror,
   }: {
-    elementIdentifier: ElementIdentifier
+    identifier: ElementIdentifier
     columnZ: number
     levelY: number
     moduleZ: number
