@@ -59,14 +59,14 @@ export const useHandleDragHandlers = (): any => {
       case EditModeEnum.Enum.MOVE_ROTATE:
         const angle0 = Math.atan2(cz - z0, cx - x0)
         const angle = Math.atan2(cz - z1, cx - x1)
-        transients[houseId] = {
-          rotation: -(angle - angle0),
-        }
+        // transients[houseId] = {
+        //   rotation: -(angle - angle0),
+        // }
         return
       case EditModeEnum.Enum.STRETCH:
-        transients[houseId] = {
-          stretchUnits: z1 - z0,
-        }
+        // transients[houseId] = {
+        //   stretchUnits: z1 - z0,
+        // }
         return
     }
 

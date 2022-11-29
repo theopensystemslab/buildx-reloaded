@@ -5,8 +5,7 @@ import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
-import { useColumnLayout } from "./layouts"
-import { transients } from "./transients"
+import { layouts, useColumnLayout } from "./layouts"
 
 type Dimensions = {
   obb: OBB
@@ -17,13 +16,13 @@ type Dimensions = {
 
 const dimensions = proxy<Record<string, Dimensions>>({})
 
-export const useDimensionsSubscription = (houseId: string) => {
-  const columns = useColumnLayout(houseId)
+export const useUpdateDimensions = (houseId: string) => {
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
-  const update = useCallback(() => {
+  return useCallback(() => {
+    const columns = layouts[houseId]
     if (columns.length < 1) return
 
     const width = columns[0].gridGroups[0].modules[0].module.width
@@ -46,16 +45,8 @@ export const useDimensionsSubscription = (houseId: string) => {
     const halfSize = new Vector3(width / 2, height / 2, length / 2)
     const obb = new OBB(center, halfSize)
 
-    const {
-      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-      rotation: dr = 0,
-    } = transients?.[houseId] ?? {
-      position: { dx: 0, dy: 0, dz: 0 },
-      rotation: 0,
-    }
-
-    rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
-    postTransM.current.makeTranslation(px + dx, py + dy, pz + dz + length / 2)
+    rotationMatrix.current.makeRotationY(houses[houseId].rotation)
+    postTransM.current.makeTranslation(px, py, pz + length / 2)
 
     obb.applyMatrix4(
       postTransM.current.multiply(
@@ -68,21 +59,13 @@ export const useDimensionsSubscription = (houseId: string) => {
       length,
       obb: ref(obb),
     }
-  }, [columns, houseId])
+  }, [houseId])
+}
 
-  useSubscribeKey(transients, houseId, update)
-
-  useEffect(() => {
-    const unsubPos = subscribeKey(houses[houseId], "position", update)
-    const unsubRot = subscribeKey(houses[houseId], "rotation", update)
-
-    update()
-
-    return () => {
-      unsubPos()
-      unsubRot()
-    }
-  }, [houseId, columns, update])
+export const useHouseDimensionsUpdates = (houseId: string) => {
+  const updateDimensions = useUpdateDimensions(houseId)
+  useSubscribeKey(houses[houseId], "position", updateDimensions)
+  useSubscribeKey(houses[houseId], "rotation", updateDimensions)
 }
 
 export const useDimensions = (houseId: string): Dimensions => {

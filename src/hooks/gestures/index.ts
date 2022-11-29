@@ -4,7 +4,8 @@ import { useSnapshot } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
 import globals from "../globals"
-import { setTransients, updateTransientHousePositionDelta } from "../transients"
+import { setTransients } from "../transients"
+import preTransients from "../transients/pre"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
@@ -21,11 +22,14 @@ export const useDragHandler = () => {
     } = dragProxy
     switch (identifierType) {
       case "element":
-        updateTransientHousePositionDelta(houseId, {
-          dx: x1 - x0,
-          dy: 0,
-          dz: z1 - z0,
-        })
+        // preTransients[houseId].position = {
+
+        // }
+        // updateTransientHousePositionDelta(houseId, {
+        //   dx: x1 - x0,
+        //   dy: 0,
+        //   dz: z1 - z0,
+        // })
         return
       case "handle":
     }

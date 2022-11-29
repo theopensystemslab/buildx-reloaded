@@ -1,7 +1,7 @@
 import { useColumnLayout } from "@/hooks/layouts"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
-import { useDimensionsSubscription } from "../../hooks/dimensions"
+import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import RotateHandles from "../RotateHandles"
 import VerticalHandle from "../VerticalHandle"
 import BoxColumn from "./BoxColumn"
@@ -15,7 +15,7 @@ const BoxHouse = (props: Props) => {
   const { id } = props
   const columns = useColumnLayout(id)
 
-  useDimensionsSubscription(id)
+  useHouseDimensionsUpdates(id)
   // useMoveRotateSubscription(id, groupRef)
 
   // const bind = useHouseEventHandlers(id)

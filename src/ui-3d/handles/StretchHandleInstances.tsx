@@ -7,7 +7,7 @@ import { HandleDragEvent, HandleSideEnum } from "../../hooks/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import {
   useHouseTransforms,
-  useStretchHandleTransform,
+  // useStretchHandleTransform,
 } from "../../hooks/transients"
 
 type Props = {
@@ -22,14 +22,14 @@ const StretchHandleInstances = (props: Props) => {
   const frontRef = useRef<Object3D>(null)
   const backRef = useRef<Object3D>(null)
 
-  useStretchHandleTransform(frontRef, houseId, {
-    position: { z: -1.5 },
-    rotation: { x: -Math.PI / 2 },
-  })
-  useStretchHandleTransform(backRef, houseId, {
-    position: { z: length + 1.5 },
-    rotation: { x: -Math.PI / 2 },
-  })
+  // useStretchHandleTransform(frontRef, houseId, {
+  //   position: { z: -1.5 },
+  //   rotation: { x: -Math.PI / 2 },
+  // })
+  // useStretchHandleTransform(backRef, houseId, {
+  //   position: { z: length + 1.5 },
+  //   rotation: { x: -Math.PI / 2 },
+  // })
 
   return (
     <Fragment>

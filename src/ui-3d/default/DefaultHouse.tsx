@@ -2,7 +2,7 @@ import houses from "@/hooks/houses"
 import { useColumnLayout } from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import { useDimensionsSubscription } from "../../hooks/dimensions"
+import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { splitColumns } from "../../hooks/stretch"
 import { RA } from "../../utils/functions"
 import DefaultColumn from "./DefaultColumn"
@@ -19,7 +19,7 @@ const DefaultHouse = (props: Props) => {
 
   const { startColumn, midColumns, endColumn } = splitColumns(columnLayout)
 
-  useDimensionsSubscription(houseId)
+  useHouseDimensionsUpdates(houseId)
 
   return (
     <Fragment>
