@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useRef } from "react"
 import { Matrix4, Mesh, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
-import { layouts, useColumnLayout } from "./layouts"
+import { layouts } from "./layouts"
+import { Transients, TransientsProxy } from "./transients/common"
 
 type Dimensions = {
   obb: OBB
@@ -16,54 +16,73 @@ type Dimensions = {
 
 const dimensions = proxy<Record<string, Dimensions>>({})
 
-export const useUpdateDimensions = (houseId: string) => {
+export const useComputeDimensions = (houseId: string) => {
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
-  return useCallback(() => {
-    const columns = layouts[houseId]
-    if (columns.length < 1) return
+  return useCallback(
+    (transients: Transients = {}) => {
+      const {
+        rotation: dr = 0,
+        position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+        stretchLengthUnits,
+      } = transients
 
-    const width = columns[0].gridGroups[0].modules[0].module.width
-    const height = columns[0].gridGroups.reduce(
-      (acc, gg) => acc + gg.modules[0].module.height,
-      0
-    )
-    const z0 = columns[0].gridGroups[0].modules[0].z
-    const lastColumn = columns[columns.length - 1]
-    const lastGridGroup =
-      lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
-    const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
-    const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+      const columns = layouts[houseId]
 
-    const length = z1 - z0
-
-    const { x: px, y: py, z: pz } = houses[houseId].position
-
-    const center = new Vector3(0, 0, 0)
-    const halfSize = new Vector3(width / 2, height / 2, length / 2)
-    const obb = new OBB(center, halfSize)
-
-    rotationMatrix.current.makeRotationY(houses[houseId].rotation)
-    postTransM.current.makeTranslation(px, py, pz + length / 2)
-
-    obb.applyMatrix4(
-      postTransM.current.multiply(
-        rotationMatrix.current.multiply(preTransM.current)
+      const width = columns[0].gridGroups[0].modules[0].module.width
+      const height = columns[0].gridGroups.reduce(
+        (acc, gg) => acc + gg.modules[0].module.height,
+        0
       )
-    )
-    dimensions[houseId] = {
-      width,
-      height,
-      length,
-      obb: ref(obb),
-    }
-  }, [houseId])
+      const z0 = columns[0].gridGroups[0].modules[0].z
+      const lastColumn = columns[columns.length - 1]
+      const lastGridGroup =
+        lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
+      const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
+      const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+
+      const length = z1 - z0
+
+      const { x: px, y: py, z: pz } = houses[houseId].position
+
+      const center = new Vector3(0, 0, 0)
+      const halfSize = new Vector3(width / 2, height / 2, length / 2)
+      const obb = new OBB(center, halfSize)
+
+      rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
+      postTransM.current.makeTranslation(px + dx, py + dy, pz + dz + length / 2)
+
+      obb.applyMatrix4(
+        postTransM.current.multiply(
+          rotationMatrix.current.multiply(preTransM.current)
+        )
+      )
+
+      return {
+        width,
+        height,
+        length,
+        obb,
+      }
+    },
+    [houseId]
+  )
 }
 
 export const useHouseDimensionsUpdates = (houseId: string) => {
-  const updateDimensions = useUpdateDimensions(houseId)
+  const computeDimensions = useComputeDimensions(houseId)
+  const updateDimensions = () => {
+    const { width, length, height, obb } = computeDimensions()
+    dimensions[houseId] = {
+      width,
+      length,
+      height,
+      obb: ref(obb),
+    }
+  }
+
   useSubscribeKey(houses[houseId], "position", updateDimensions)
   useSubscribeKey(houses[houseId], "rotation", updateDimensions)
 }

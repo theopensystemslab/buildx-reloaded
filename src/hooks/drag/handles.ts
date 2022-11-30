@@ -1,6 +1,6 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
 import { Intersection, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
@@ -8,7 +8,7 @@ import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
 import dimensions from "../dimensions"
 import { EditMode, EditModeEnum } from "../siteCtx"
-import { setTransients, transients } from "../transients"
+import { setTransients } from "../transients"
 
 export const HandleSideEnum = z.enum(["FRONT", "BACK", "LEFT", "RIGHT"])
 

@@ -1,13 +1,10 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useEffect, useRef } from "react"
-import { useKey } from "react-use"
 import { Mesh, MeshStandardMaterial } from "three"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import { useElementTransforms } from "../../hooks/transients"
-import { PI } from "../../utils/math"
-import { useSetRotation } from "../../utils/three"
+import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
@@ -55,25 +52,13 @@ const DefaultElement = (props: Props) => {
     elementName,
   }
 
-  useElementTransforms(meshRef, {
-    identifier,
-    columnZ,
-    levelY,
-    moduleZ,
-    moduleLength: module.length,
-    mirror,
-  })
-
-  // const setRotation = useSetRotation(houseId)
-
-  // useKey("r", () => {
-  //   if (!meshRef.current) return
-  //   setRotation(meshRef.current, PI / 8)
-  // })
-  // useKey("i", () => {
-  //   if (!meshRef.current) return
-  //   setRotation(meshRef.current, 0)
-  // })
+  usePostTransientHouseTransforms(
+    houseId,
+    ({ position: { x, y, z }, rotation }) => {
+      meshRef.current?.position.set(x, y + levelY, z + columnZ + moduleZ)
+      meshRef.current?.rotation.set(0, rotation, 0)
+    }
+  )
 
   const { debug } = useGlobals()
 

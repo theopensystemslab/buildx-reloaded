@@ -1,14 +1,9 @@
-import { RefObject, useCallback, useEffect, useRef } from "react"
+import { RefObject, useCallback, useRef } from "react"
 import { Matrix4, Object3D, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { proxy, ref, useSnapshot } from "valtio"
+import { proxy, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
-import { PI } from "../utils/math"
-import {
-  rotateAboutPoint,
-  useRotateAboutCenter,
-  useSetRotation,
-} from "../utils/three"
+import { useSetRotation } from "../utils/three"
 import dimensions from "./dimensions"
 import { ElementIdentifier } from "./gestures/drag/elements"
 import houses from "./houses"
@@ -32,18 +27,6 @@ export type TransientsProxy = {
 export const transients = proxy<TransientsProxy>({})
 
 export const useTransients = () => useSnapshot(transients)
-
-export const newTransientPosition = (houseId: string, position: DeltaV3) => {
-  transients[houseId].pre = {
-    position,
-  }
-}
-
-export const newTransientRotation = (houseId: string, rotation: number) => {
-  transients[houseId].pre = {
-    rotation,
-  }
-}
 
 export const setTransients = () => {
   for (let houseId of Object.keys(transients)) {

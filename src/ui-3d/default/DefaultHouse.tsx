@@ -4,6 +4,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { splitColumns } from "../../hooks/stretch"
+import { usePreTransient } from "../../hooks/transients/pre"
 import { RA } from "../../utils/functions"
 import DefaultColumn from "./DefaultColumn"
 
@@ -20,6 +21,8 @@ const DefaultHouse = (props: Props) => {
   const { startColumn, midColumns, endColumn } = splitColumns(columnLayout)
 
   useHouseDimensionsUpdates(houseId)
+
+  usePreTransient(houseId)
 
   return (
     <Fragment>
