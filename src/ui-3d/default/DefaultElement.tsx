@@ -5,6 +5,7 @@ import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
+import { useSetRotation } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
@@ -52,11 +53,23 @@ const DefaultElement = (props: Props) => {
     elementName,
   }
 
+  const moduleLength = module.length
+
+  let mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+  const setRotation = useSetRotation(houseId)
+
   usePostTransientHouseTransforms(
     houseId,
     ({ position: { x, y, z }, rotation }) => {
-      meshRef.current?.position.set(x, y + levelY, z + columnZ + moduleZ)
-      meshRef.current?.rotation.set(0, rotation, 0)
+      if (!meshRef.current) return
+      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
+      meshRef.current.position.set(
+        x,
+        y + levelY,
+        z + columnZ + moduleZ + mirrorFix
+      )
+      setRotation(meshRef.current, rotation)
     }
   )
 
