@@ -22,9 +22,6 @@ const DefaultApp = () => {
 
   const editMode = useEditMode()
 
-  // const bindElements = useElementDragHandlers()
-  // const bindHandles = useHandleDragHandlers()
-
   const bindAll = useGestures()
 
   return (

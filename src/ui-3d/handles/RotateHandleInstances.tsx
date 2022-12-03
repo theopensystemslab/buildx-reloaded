@@ -4,6 +4,9 @@ import { Object3D } from "three"
 import { useDimensions } from "../../hooks/dimensions"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import { useHouseTransforms } from "../../hooks/transients"
+import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
+import { PI } from "../../utils/math"
+import { useSetRotation } from "../../utils/three"
 
 type Props = {
   houseId: string
@@ -17,16 +20,20 @@ const RotateHandleInstances = (props: Props) => {
   const handle1Ref = useRef<Object3D>(null)
   const handle2Ref = useRef<Object3D>(null)
 
-  useHouseTransforms(handle1Ref, houseId, {
-    position: { z: -1.5 },
-    rotation: { x: -Math.PI / 2 },
-  })
-  useHouseTransforms(handle2Ref, houseId, {
-    position: { x: -width / 2 - 1.5, y: 0, z: length / 2 },
-    rotation: {
-      x: -Math.PI / 2,
-    },
-  })
+  const setRotation = useSetRotation(houseId)
+
+  usePostTransientHouseTransforms(
+    houseId,
+    ({ position: { x, y, z }, rotation }) => {
+      if (!handle1Ref.current || !handle2Ref.current) return
+      handle1Ref.current.position.set(x, y, z - 1.5)
+      handle1Ref.current.rotation.x = -PI / 2
+      setRotation(handle1Ref.current, rotation, false)
+      handle2Ref.current.position.set(x - width / 2 - 1.5, y, z + length / 2)
+      handle2Ref.current.rotation.x = -PI / 2
+      setRotation(handle2Ref.current, rotation, false)
+    }
+  )
 
   return (
     <Fragment>

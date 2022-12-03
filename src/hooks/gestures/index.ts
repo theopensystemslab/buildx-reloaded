@@ -3,9 +3,12 @@ import { useGesture } from "@use-gesture/react"
 import { useSnapshot } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
 import { setCameraEnabled } from "../camera"
+import dimensions from "../dimensions"
 import globals from "../globals"
+import { EditModeEnum } from "../siteCtx"
 import { setTransients } from "../transients/common"
 import preTransients from "../transients/pre"
+import { HandleIdentifier } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
@@ -13,6 +16,7 @@ export const useDragHandler = () => {
     if (dragProxy.drag === null || dragProxy.start === null) return
     const {
       start: {
+        identifier,
         identifier: { houseId, identifierType },
         point: { x: x0, y: y0, z: z0 },
       },
@@ -31,6 +35,21 @@ export const useDragHandler = () => {
         }
         return
       case "handle":
+        const { editMode, side } = identifier as HandleIdentifier
+        switch (editMode) {
+          case EditModeEnum.Enum.MOVE_ROTATE:
+            const { x: cx, z: cz } = dimensions?.[houseId].obb.center ?? {
+              x: 0,
+              z: 0,
+            }
+            const angle0 = Math.atan2(cz - z0, cx - x0)
+            const angle = Math.atan2(cz - z1, cx - x1)
+            preTransients[houseId] = {
+              rotation: -(angle - angle0),
+            }
+            return
+        }
+        return
       // switch handle type
     }
   })
