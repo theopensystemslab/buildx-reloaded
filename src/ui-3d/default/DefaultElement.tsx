@@ -69,7 +69,7 @@ const DefaultElement = (props: Props) => {
         y + levelY,
         z + columnZ + moduleZ + mirrorFix
       )
-      setRotation(meshRef.current, rotation)
+      // setRotation(meshRef.current, rotation)
     }
   )
 

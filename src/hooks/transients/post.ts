@@ -1,4 +1,3 @@
-import { useCallback } from "react"
 import { proxy } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
 import houses from "../houses"
@@ -15,11 +14,12 @@ export const usePostTransientHouseTransforms = (
   houseId: string,
   f: (t: HouseTransforms) => void
 ) => {
-  const cb = useCallback(() => {
+  const cb = () => {
     const {
       position: { x: hx, y: hy, z: hz },
       rotation: hr,
     } = houses[houseId]
+
     const {
       position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
       rotation: dr = 0,
@@ -28,15 +28,17 @@ export const usePostTransientHouseTransforms = (
       rotation: 0,
     }
 
-    f({
+    const payload = {
       position: {
         x: hx + dx,
         y: hy + dy,
         z: hz + dz,
       },
       rotation: hr + dr,
-    })
-  }, [f, houseId])
+    }
+
+    f(payload)
+  }
 
   useSubscribeKey(postTransients, houseId, cb)
 }

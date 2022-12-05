@@ -16,6 +16,13 @@ type Dimensions = {
 
 const dimensions = proxy<Record<string, Dimensions>>({})
 
+const defaultDimensions: Dimensions = {
+  height: 0,
+  length: 0,
+  width: 0,
+  obb: new OBB(),
+}
+
 export const useComputeDimensions = (houseId: string) => {
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
@@ -47,8 +54,8 @@ export const useComputeDimensions = (houseId: string) => {
 
       const { x: px, y: py, z: pz } = houses[houseId].position
 
-      const center = new Vector3(0, 0, 0)
       const halfSize = new Vector3(width / 2, height / 2, length / 2)
+      const center = new Vector3(0, halfSize.y, halfSize.z)
       const obb = new OBB(center, halfSize)
 
       rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
@@ -89,7 +96,7 @@ export const useHouseDimensionsUpdates = (houseId: string) => {
 
 export const useDimensions = (houseId: string): Dimensions => {
   const snap = useSnapshot(dimensions) as typeof dimensions
-  return snap[houseId]
+  return snap[houseId] ?? defaultDimensions
 }
 
 export const collideOBB = (obb: OBB, houseIdIgnoreList: string[] = []) => {

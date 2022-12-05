@@ -23,6 +23,7 @@ import { R, RR, S } from "../utils/functions"
 import { useHouses, useInsert1000Skylarks } from "../hooks/houses"
 import { useTransients } from "../hooks/transients"
 import { useHandleDragEvents } from "../hooks/drag/handles"
+import postTransients from "../hooks/transients/post"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -34,7 +35,7 @@ const HtmlUi = () => {
 
   useInsert1000Skylarks()
 
-  const transients = useTransients()
+  const transients = useSnapshot(postTransients)
   const houses = useHouses()
 
   // const elementDragEvents = useElementDragEvents()
@@ -42,10 +43,10 @@ const HtmlUi = () => {
 
   return (
     <Fragment>
-      <div className="absolute bottom-0 right-0 pointer-events-none">
+      {/* <div className="absolute bottom-0 right-0 pointer-events-none">
         <pre>{JSON.stringify(houses, null, 2)}</pre>
         <pre>{JSON.stringify(transients, null, 2)}</pre>
-      </div>
+      </div> */}
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>
           <div className="flex items-center justify-center">
