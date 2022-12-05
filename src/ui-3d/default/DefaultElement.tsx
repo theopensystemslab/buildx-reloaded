@@ -1,9 +1,11 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useEffect, useRef } from "react"
-import { Mesh, MeshStandardMaterial } from "three"
+import { Mesh, MeshStandardMaterial, Vector3 } from "three"
+import dimensions, { useDimensions } from "../../hooks/dimensions"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
+import houses from "../../hooks/houses"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { useSetRotation } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
@@ -57,29 +59,49 @@ const DefaultElement = (props: Props) => {
 
   let mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
 
-  const setRotation = useSetRotation(houseId)
+  // const setRotation = useSetRotation(houseId)
+
+  const yAxis = new Vector3(0, 1, 0)
 
   usePostTransientHouseTransforms(
     houseId,
-    ({ position: { x, y, z }, rotation }) => {
+    ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
       if (!meshRef.current) return
+
+      const center = dimensions?.[houseId]?.obb.center ?? new Vector3(0, 0, 0)
+
+      const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+      let x = tx,
+        y = ty + levelY,
+        z = tz + columnZ + moduleZ + mirrorFix
+
       meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
-      meshRef.current.position.set(
-        x,
-        y + levelY,
-        z + columnZ + moduleZ + mirrorFix
+
+      meshRef.current.position.set(x, y, z)
+
+      const lengthVector = new Vector3(
+        0,
+        0,
+        (dimensions[houseId]?.length ?? 0) / 2
       )
-      // setRotation(meshRef.current, rotation)
+
+      meshRef.current.position.sub(lengthVector)
+      meshRef.current.position.applyAxisAngle(yAxis, rotation)
+      meshRef.current.position.add(lengthVector)
+
+      meshRef.current.rotation.set(0, 0, 0)
+      meshRef.current.rotateOnAxis(yAxis, rotation) // rotate the OBJECT
     }
   )
 
-  const { debug } = useGlobals()
+  // const { debug } = useGlobals()
 
-  useEffect(() => {
-    let m = material as MeshStandardMaterial
-    if (debug && !m.wireframe) m.wireframe = true
-    if (!debug && m.wireframe) m.wireframe = false
-  }, [debug, material])
+  // useEffect(() => {
+  //   let m = material as MeshStandardMaterial
+  //   if (debug && !m.wireframe) m.wireframe = true
+  //   if (!debug && m.wireframe) m.wireframe = false
+  // }, [debug, material])
 
   return (
     <mesh
