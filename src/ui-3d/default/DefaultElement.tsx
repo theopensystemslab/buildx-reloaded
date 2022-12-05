@@ -7,6 +7,7 @@ import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import houses from "../../hooks/houses"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
+import { defaultDimensions } from "../../test/dimensions"
 import { useSetRotation } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
 
@@ -68,30 +69,31 @@ const DefaultElement = (props: Props) => {
     ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
       if (!meshRef.current) return
 
-      const center = dimensions?.[houseId]?.obb.center ?? new Vector3(0, 0, 0)
-
       const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
+
+      const center = dimensions?.[houseId]?.obb?.center ?? new Vector3(0, 0, 0)
+
+      const halfHouseLength = (dimensions[houseId]?.length ?? 0) / 2
+
+      // scale
+      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
+      meshRef.current.rotation.set(0, 0, 0)
 
       let x = tx,
         y = ty + levelY,
         z = tz + columnZ + moduleZ + mirrorFix
 
-      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
-
+      meshRef.current.rotateOnAxis(yAxis, rotation)
       meshRef.current.position.set(x, y, z)
 
-      const lengthVector = new Vector3(
-        0,
-        0,
-        (dimensions[houseId]?.length ?? 0) / 2
-      )
+      const offsetVector = new Vector3(center.x, 0, center.z - halfHouseLength)
 
-      meshRef.current.position.sub(lengthVector)
+      // position relative to center and rotate position
+      meshRef.current.position.sub(offsetVector)
       meshRef.current.position.applyAxisAngle(yAxis, rotation)
-      meshRef.current.position.add(lengthVector)
 
-      meshRef.current.rotation.set(0, 0, 0)
-      meshRef.current.rotateOnAxis(yAxis, rotation) // rotate the OBJECT
+      // remove offset needed for rotation
+      meshRef.current.position.add(offsetVector)
     }
   )
 
