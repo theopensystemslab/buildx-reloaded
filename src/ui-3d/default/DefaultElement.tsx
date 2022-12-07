@@ -75,15 +75,14 @@ const DefaultElement = (props: Props) => {
 
       const halfHouseLength = (dimensions[houseId]?.length ?? 0) / 2
 
-      // scale
-      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
       meshRef.current.rotation.set(0, 0, 0)
+      meshRef.current.position.set(0, 0, 0)
+      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
 
       let x = tx,
         y = ty + levelY,
         z = tz + columnZ + moduleZ + mirrorFix
 
-      meshRef.current.rotateOnAxis(yAxis, rotation)
       meshRef.current.position.set(x, y, z)
 
       const offsetVector = new Vector3(center.x, 0, center.z - halfHouseLength)
@@ -94,6 +93,9 @@ const DefaultElement = (props: Props) => {
 
       // remove offset needed for rotation
       meshRef.current.position.add(offsetVector)
+
+      meshRef.current.rotation.set(0, rotation, 0)
+      // meshRef.current.rotateOnAxis(yAxis, rotation)
     }
   )
 

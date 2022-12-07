@@ -38,6 +38,14 @@ export const usePostTransientHouseTransforms = (
     }
 
     f(payload)
+    // f({
+    //   position: {
+    //     x: 0,
+    //     y: 0,
+    //     z: 0,
+    //   },
+    //   rotation: 0,
+    // })
   }
 
   useSubscribeKey(postTransients, houseId, cb)
