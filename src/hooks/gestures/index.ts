@@ -1,10 +1,13 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
+import { Vector2, Vector3 } from "three"
 import { useSnapshot } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
+import { yAxis } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
 import dimensions from "../dimensions"
 import globals from "../globals"
+import houses from "../houses"
 import { EditModeEnum } from "../siteCtx"
 import { setTransients } from "../transients/common"
 import preTransients from "../transients/pre"
@@ -48,6 +51,15 @@ export const useDragHandler = () => {
               rotation: -(angle - angle0),
             }
             return
+          case EditModeEnum.Enum.STRETCH:
+            const v = new Vector3(x1 - x0, 0, z1 - z0)
+            v.applyAxisAngle(yAxis, houses[houseId].rotation)
+
+            preTransients[houseId] = {
+              stretchLengthUnits: v.z,
+            }
+
+            console.log(v.z)
         }
         return
       // switch handle type

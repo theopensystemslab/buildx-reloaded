@@ -149,3 +149,5 @@ export const useSetRotation = (houseId: string) => {
     [defaultCenter, houseId, yAxis]
   )
 }
+
+export const yAxis = new Vector3(0, 1, 0)

@@ -1,14 +1,15 @@
 import { Instance } from "@react-three/drei"
 import { Fragment, useRef } from "react"
-import { Object3D } from "three"
+import { Object3D, Vector3 } from "three"
 import * as z from "zod"
-import { useDimensions } from "../../hooks/dimensions"
+import dimensions, { useDimensions } from "../../hooks/dimensions"
 import { HandleDragEvent, HandleSideEnum } from "../../hooks/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import {
   useHouseTransforms,
   // useStretchHandleTransform,
 } from "../../hooks/transients"
+import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 
 type Props = {
   houseId: string
@@ -31,6 +32,31 @@ const StretchHandleInstances = (props: Props) => {
   //   rotation: { x: -Math.PI / 2 },
   // })
 
+  usePostTransientHouseTransforms(
+    houseId,
+    ({ position: { x, y, z }, rotation }) => {
+      if (!frontRef.current || !backRef.current || !dimensions[houseId]) return
+
+      const {
+        obb: {
+          center: { x: cx, z: cz },
+        },
+      } = dimensions[houseId]
+
+      const offset = 1.5
+      const yAxis = new Vector3(0, 1, 0)
+
+      frontRef.current.position.set(0, 0, -(length / 2) - offset)
+      backRef.current.position.set(0, 0, length / 2 + offset)
+
+      frontRef.current.position.applyAxisAngle(yAxis, rotation)
+      backRef.current.position.applyAxisAngle(yAxis, rotation)
+
+      frontRef.current.position.add(new Vector3(x, y, z + length / 2))
+      backRef.current.position.add(new Vector3(x, y, z + length / 2))
+    }
+  )
+
   return (
     <Fragment>
       <Instance
@@ -38,7 +64,7 @@ const StretchHandleInstances = (props: Props) => {
         rotation-x={-Math.PI / 2}
         position={[0, 0, -1.5]}
         userData={{
-          handleIdentifier: {
+          identifier: {
             houseId,
             editMode: EditModeEnum.Enum.STRETCH,
             side: HandleSideEnum.Enum.FRONT,
@@ -50,7 +76,8 @@ const StretchHandleInstances = (props: Props) => {
         rotation-x={-Math.PI / 2}
         position={[0, 0, length + 1.5]}
         userData={{
-          handleIdentifier: {
+          identifier: {
+            identifierType: "handle",
             houseId,
             editMode: EditModeEnum.Enum.STRETCH,
             side: HandleSideEnum.Enum.BACK,
