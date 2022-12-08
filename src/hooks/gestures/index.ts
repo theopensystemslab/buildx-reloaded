@@ -5,7 +5,7 @@ import { useSnapshot } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
 import { yAxis } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
-import dimensions from "../dimensions"
+import dimensions, { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import houses from "../houses"
 import { EditModeEnum } from "../siteCtx"
@@ -41,10 +41,7 @@ export const useDragHandler = () => {
         const { editMode, side } = identifier as HandleIdentifier
         switch (editMode) {
           case EditModeEnum.Enum.MOVE_ROTATE:
-            const { x: cx, z: cz } = dimensions?.[houseId].obb.center ?? {
-              x: 0,
-              z: 0,
-            }
+            const { x: cx, z: cz } = getHouseCenter(houseId)
             const angle0 = Math.atan2(cz - z0, cx - x0)
             const angle = Math.atan2(cz - z1, cx - x1)
             preTransients[houseId] = {
@@ -52,11 +49,13 @@ export const useDragHandler = () => {
             }
             return
           case EditModeEnum.Enum.STRETCH:
-            const v = new Vector3(x1 - x0, 0, z1 - z0)
-            v.applyAxisAngle(yAxis, -houses[houseId].rotation)
-
             preTransients[houseId] = {
-              stretchLengthUnits: v.z,
+              stretch: {
+                editMode,
+                side,
+                dx: x1 - x0,
+                dz: z1 - z0,
+              },
             }
         }
         return

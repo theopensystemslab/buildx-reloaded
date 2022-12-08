@@ -7,6 +7,7 @@ import produce from "immer"
 import { proxy, ref, useSnapshot } from "valtio"
 // import { usePadColumn } from "./modules"
 import { Module, useGetVanillaModule, usePadColumn } from "../data/modules"
+import { errorThrower, O, someOrError } from "../utils/functions"
 import houses, { useHouseRows } from "./houses"
 import { splitColumns } from "./stretch"
 
@@ -387,6 +388,21 @@ export const useStretch = (houseId: string) => {
     vanillaColumn,
   }
 }
+
+export const useVanillaColumn = (houseId: string) => {
+  const { vanillaColumn } = useStretch(houseId)
+  return vanillaColumn
+}
+
+export const useVanillaColumnLength = (houseId: string) =>
+  pipe(
+    useVanillaColumn(houseId),
+    A.head,
+    O.map((row) => row.length),
+    someOrError(
+      `useVanillaColumnLength column of 0 height; houseId: ${houseId}`
+    )
+  )
 
 export const columnLayoutToDNA = (
   columnLayout: Omit<PositionedColumn, "length" | "z" | "columnIndex">[]

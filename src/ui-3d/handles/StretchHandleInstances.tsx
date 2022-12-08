@@ -2,9 +2,11 @@ import { Instance } from "@react-three/drei"
 import { Fragment, useRef } from "react"
 import { Object3D, Vector3 } from "three"
 import dimensions, { useDimensions } from "../../hooks/dimensions"
-import { HandleSideEnum } from "../../hooks/drag/handles"
+import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
+import stretchProxy from "../../hooks/stretch"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
+import { useSubscribeKey } from "../../utils/hooks"
 
 type Props = {
   houseId: string
@@ -21,13 +23,7 @@ const StretchHandleInstances = (props: Props) => {
   usePostTransientHouseTransforms(
     houseId,
     ({ position: { x, y, z }, rotation }) => {
-      if (!frontRef.current || !backRef.current || !dimensions[houseId]) return
-
-      const {
-        obb: {
-          center: { x: cx, z: cz },
-        },
-      } = dimensions[houseId]
+      if (!frontRef.current || !backRef.current) return
 
       const offset = 1.5
       const yAxis = new Vector3(0, 1, 0)
@@ -42,6 +38,8 @@ const StretchHandleInstances = (props: Props) => {
       backRef.current.position.add(new Vector3(x, y, z + length / 2))
     }
   )
+
+  // useSubscribeKey(stretchProxy,)
 
   return (
     <Fragment>

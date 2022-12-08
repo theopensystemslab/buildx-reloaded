@@ -4,8 +4,8 @@ import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
-import { layouts } from "./layouts"
-import { Transients, TransientsProxy } from "./transients/common"
+import { layouts, useVanillaColumnLength } from "./layouts"
+import { Transients } from "./transients/common"
 
 type Dimensions = {
   obb: OBB
@@ -28,12 +28,13 @@ export const useComputeDimensions = (houseId: string) => {
   const postTransM = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
+  const vanillaColumnLength = useVanillaColumnLength(houseId)
+
   return useCallback(
-    (transients: Transients = {}) => {
+    (transients: Transients = {}): Dimensions => {
       const {
         rotation: dr = 0,
         position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-        stretchLengthUnits,
       } = transients
 
       const columns = layouts[houseId]
@@ -135,5 +136,8 @@ export const DebugDimensionsCenterPoint = ({
     </mesh>
   )
 }
+
+export const getHouseCenter = (houseId: string) =>
+  dimensions?.[houseId]?.obb?.center ?? new Vector3(0, 0, 0)
 
 export default dimensions

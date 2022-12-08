@@ -8,7 +8,6 @@ const postTransients = proxy<TransientsProxy>({})
 export type HouseTransforms = {
   position: V3
   rotation: number
-  stretchLengthUnits: number
 }
 
 export const usePostTransientHouseTransforms = (
@@ -24,11 +23,9 @@ export const usePostTransientHouseTransforms = (
     const {
       position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
       rotation: dr = 0,
-      stretchLengthUnits = 0,
     } = postTransients[houseId] ?? {
       position: { dx: 0, dy: 0, dz: 0 },
       rotation: 0,
-      stretchLengthUnits: 0,
     }
 
     const payload: HouseTransforms = {
@@ -38,7 +35,6 @@ export const usePostTransientHouseTransforms = (
         z: hz + dz,
       },
       rotation: hr + dr,
-      stretchLengthUnits,
     }
 
     f(payload)

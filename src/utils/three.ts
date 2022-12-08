@@ -13,7 +13,7 @@ import {
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../constants"
 import { Material } from "../data/materials"
-import dimensions from "../hooks/dimensions"
+import dimensions, { getHouseCenter } from "../hooks/dimensions"
 import houses from "../hooks/houses"
 import { transients } from "../hooks/transients"
 import { useSubscribeKey } from "./hooks"
@@ -135,7 +135,7 @@ export const useSetRotation = (houseId: string) => {
 
   return useCallback(
     (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
-      const center = dimensions?.[houseId]?.obb.center ?? defaultCenter
+      const center = getHouseCenter(houseId)
 
       obj.position.sub(center)
       obj.position.applyAxisAngle(yAxis, theta)
@@ -146,7 +146,7 @@ export const useSetRotation = (houseId: string) => {
         obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
       }
     },
-    [defaultCenter, houseId, yAxis]
+    [houseId, yAxis]
   )
 }
 

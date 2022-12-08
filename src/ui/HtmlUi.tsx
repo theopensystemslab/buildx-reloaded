@@ -1,31 +1,29 @@
-import React, { Fragment, useState } from "react"
-import IconButton from "./IconButton"
-import SiteSidebar from "./SiteSidebar"
 import { Add, ChoroplethMap, Reset, View } from "@carbon/icons-react"
+import { Fragment, useState } from "react"
 import {
   setOrthographic,
   setShadows,
   setSidebar,
   useGlobals,
 } from "../hooks/globals"
-import UniversalMenu from "./UniversalMenu"
-import { Menu, SectionCuts } from "./icons"
+import IconButton from "./IconButton"
 import IconMenu from "./IconMenu"
+import { Menu, SectionCuts } from "./icons"
+import SiteSidebar from "./SiteSidebar"
+import UniversalMenu from "./UniversalMenu"
 // import Checklist from "./Checklist"
-import Radio from "./Radio"
-import { useCameraReset } from "../hooks/camera"
-import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
-import { useSnapshot } from "valtio"
-import elementCategories from "../hooks/elementCategories"
 import { pipe } from "fp-ts/lib/function"
-import Checklist from "./Checklist"
-import { R, RR, S } from "../utils/functions"
+import { useSnapshot } from "valtio"
+import { useCameraReset } from "../hooks/camera"
+import elementCategories from "../hooks/elementCategories"
 import { useHouses, useInsert1000Skylarks } from "../hooks/houses"
-import { useTransients } from "../hooks/transients"
-import { useHandleDragEvents } from "../hooks/drag/handles"
-import postTransients from "../hooks/transients/post"
+import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
 import { useMenu } from "../hooks/menu"
+import postTransients from "../hooks/transients/post"
+import { R, S } from "../utils/functions"
+import Checklist from "./Checklist"
 import SiteContextMenu from "./menu/SiteContextMenu"
+import Radio from "./Radio"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()

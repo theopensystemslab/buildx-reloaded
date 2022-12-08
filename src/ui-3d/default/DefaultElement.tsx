@@ -5,7 +5,6 @@ import dimensions from "../../hooks/dimensions"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
-import { sign } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
 
@@ -59,7 +58,7 @@ const DefaultElement = (props: Props) => {
 
   usePostTransientHouseTransforms(
     houseId,
-    ({ position: { x: tx, y: ty, z: tz }, rotation, stretchLengthUnits }) => {
+    ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
       if (!meshRef.current) return
       const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
       const halfHouseLength = (dimensions[houseId]?.length ?? 0) / 2
