@@ -9,6 +9,7 @@ import dimensions, { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import houses from "../houses"
 import { EditModeEnum } from "../siteCtx"
+import stretchProxy from "../stretch"
 import { setTransients } from "../transients/common"
 import preTransients from "../transients/pre"
 import { HandleIdentifier } from "./drag/handles"
@@ -49,13 +50,10 @@ export const useDragHandler = () => {
             }
             return
           case EditModeEnum.Enum.STRETCH:
-            preTransients[houseId] = {
-              stretch: {
-                editMode,
-                side,
-                dx: x1 - x0,
-                dz: z1 - z0,
-              },
+            stretchProxy[houseId] = {
+              side,
+              dx: x1 - x0,
+              dz: z1 - z0,
             }
         }
         return

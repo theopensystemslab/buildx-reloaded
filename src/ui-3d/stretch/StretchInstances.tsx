@@ -89,6 +89,8 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
     ))
   )
 
+  return null
+
   return (
     <Fragment>
       {columnsUp}

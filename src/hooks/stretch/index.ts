@@ -1,7 +1,14 @@
 import { proxy } from "valtio"
+import { HandleSide } from "../gestures/drag/handles"
 
 export * from "./length"
 
-const stretchProxy = proxy({})
+type Stretch = {
+  side: HandleSide
+  dx: number
+  dz: number
+}
+
+const stretchProxy = proxy<Record<string, Stretch>>({})
 
 export default stretchProxy

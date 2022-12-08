@@ -7,12 +7,6 @@ import preTransients from "./pre"
 export type Transients = {
   position?: DeltaV3
   rotation?: number
-  stretch?: {
-    editMode: EditMode
-    side: HandleSide
-    dx: number
-    dz: number
-  }
 }
 
 export type TransientsProxy = Record<string, Transients>

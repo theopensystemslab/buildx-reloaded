@@ -7,6 +7,7 @@ import { EditModeEnum } from "../../hooks/siteCtx"
 import stretchProxy from "../../hooks/stretch"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { useSubscribeKey } from "../../utils/hooks"
+import { useRotateV2, useUnrotateV2 } from "../../utils/three"
 
 type Props = {
   houseId: string
@@ -19,6 +20,9 @@ const StretchHandleInstances = (props: Props) => {
 
   const frontRef = useRef<Object3D>(null)
   const backRef = useRef<Object3D>(null)
+
+  const frontPositionVector = useRef(new Vector3())
+  const backPositionVector = useRef(new Vector3())
 
   usePostTransientHouseTransforms(
     houseId,
@@ -36,10 +40,36 @@ const StretchHandleInstances = (props: Props) => {
 
       frontRef.current.position.add(new Vector3(x, y, z + length / 2))
       backRef.current.position.add(new Vector3(x, y, z + length / 2))
+
+      frontPositionVector.current = frontRef.current.position.clone()
+      backPositionVector.current = backRef.current.position.clone()
     }
   )
 
-  // useSubscribeKey(stretchProxy,)
+  const unrotateV2 = useUnrotateV2(houseId)
+  const rotateV2 = useRotateV2(houseId)
+
+  useSubscribeKey(stretchProxy, houseId, () => {
+    if (!stretchProxy[houseId]) return
+    const { side, dx, dz } = stretchProxy[houseId]
+    const [, dzz] = unrotateV2([dx, dz])
+    const [dxx, dzzz] = rotateV2([0, dzz])
+
+    if (side === HandleSideEnum.Enum.FRONT) {
+      frontRef.current?.position.set(
+        frontPositionVector.current.x + dxx,
+        frontPositionVector.current.y,
+        frontPositionVector.current.z + dzzz
+      )
+    }
+    if (side === HandleSideEnum.Enum.BACK) {
+      backRef.current?.position.set(
+        backPositionVector.current.x + dxx,
+        backPositionVector.current.y,
+        backPositionVector.current.z + dzzz
+      )
+    }
+  })
 
   return (
     <Fragment>
