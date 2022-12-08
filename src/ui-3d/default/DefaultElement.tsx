@@ -1,14 +1,12 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
-import { useEffect, useRef } from "react"
-import { Mesh, MeshStandardMaterial, Vector3 } from "three"
-import dimensions, { useDimensions } from "../../hooks/dimensions"
+import { useRef } from "react"
+import { Mesh, Vector3 } from "three"
+import dimensions from "../../hooks/dimensions"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
-import { useGlobals } from "../../hooks/globals"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
-import houses from "../../hooks/houses"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
-import { defaultDimensions } from "../../test/dimensions"
-import { useSetRotation } from "../../utils/three"
+import { sign } from "../../utils/math"
+import { yAxis } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
 
 type Props = ModuleProps & {
@@ -28,9 +26,10 @@ const DefaultElement = (props: Props) => {
     gridGroupIndex,
     columnZ,
     levelY,
-    mirror,
     moduleZ,
     module,
+    startColumn,
+    endColumn,
   } = props
 
   const materialHash = useMaterialHash({
@@ -44,8 +43,6 @@ const DefaultElement = (props: Props) => {
   const geometry = useHashedGeometry(geometryHash)
   const material = useHashedMaterial(materialHash)
 
-  // useMoveRotateSubscription(houseId, meshRef)
-
   const identifier: ElementIdentifier = {
     identifierType: "element",
     systemId,
@@ -58,15 +55,11 @@ const DefaultElement = (props: Props) => {
 
   const moduleLength = module.length
 
-  let mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-
-  // const setRotation = useSetRotation(houseId)
-
-  const yAxis = new Vector3(0, 1, 0)
+  const mirror = endColumn
 
   usePostTransientHouseTransforms(
     houseId,
-    ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
+    ({ position: { x: tx, y: ty, z: tz }, rotation, stretchLengthUnits }) => {
       if (!meshRef.current) return
 
       const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
@@ -96,16 +89,16 @@ const DefaultElement = (props: Props) => {
 
       meshRef.current.rotation.set(0, rotation, 0)
       // meshRef.current.rotateOnAxis(yAxis, rotation)
+
+      if (startColumn && sign(stretchLengthUnits) === -1) {
+        // vector is stretch length units + the rotation
+        // meshRef.current.position.add()
+      }
+
+      if (endColumn && sign(stretchLengthUnits) === 1) {
+      }
     }
   )
-
-  // const { debug } = useGlobals()
-
-  // useEffect(() => {
-  //   let m = material as MeshStandardMaterial
-  //   if (debug && !m.wireframe) m.wireframe = true
-  //   if (!debug && m.wireframe) m.wireframe = false
-  // }, [debug, material])
 
   return (
     <mesh

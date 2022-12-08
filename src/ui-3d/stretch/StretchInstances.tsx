@@ -2,8 +2,9 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
+import { useSnapshot } from "valtio"
 import { collideOBB, useDimensions } from "../../hooks/dimensions"
-import { useHandleDragStart } from "../../hooks/drag/handles"
+import dragProxy from "../../hooks/gestures/drag/proxy"
 import houses, { useHouse } from "../../hooks/houses"
 import { useStretch } from "../../hooks/layouts"
 import { EditModeEnum } from "../../hooks/siteCtx"
@@ -97,12 +98,12 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
 }
 
 const StretchInstances = () => {
-  const handleDragStart = useHandleDragStart()
-  return handleDragStart === null ||
-    handleDragStart.handleIdentifier.editMode !==
-      EditModeEnum.Enum.STRETCH ? null : (
-    <StretchInstancesMain houseId={handleDragStart.handleIdentifier.houseId} />
-  )
+  const { start } = useSnapshot(dragProxy)
+
+  return start?.identifier.identifierType === "handle" &&
+    start.identifier.editMode === EditModeEnum.Enum.STRETCH ? (
+    <StretchInstancesMain houseId={start.identifier.houseId} />
+  ) : null
 }
 
 export default StretchInstances

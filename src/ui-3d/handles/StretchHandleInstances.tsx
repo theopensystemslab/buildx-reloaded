@@ -1,14 +1,9 @@
 import { Instance } from "@react-three/drei"
 import { Fragment, useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import * as z from "zod"
 import dimensions, { useDimensions } from "../../hooks/dimensions"
-import { HandleDragEvent, HandleSideEnum } from "../../hooks/drag/handles"
+import { HandleSideEnum } from "../../hooks/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import {
-  useHouseTransforms,
-  // useStretchHandleTransform,
-} from "../../hooks/transients"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 
 type Props = {
@@ -22,15 +17,6 @@ const StretchHandleInstances = (props: Props) => {
 
   const frontRef = useRef<Object3D>(null)
   const backRef = useRef<Object3D>(null)
-
-  // useStretchHandleTransform(frontRef, houseId, {
-  //   position: { z: -1.5 },
-  //   rotation: { x: -Math.PI / 2 },
-  // })
-  // useStretchHandleTransform(backRef, houseId, {
-  //   position: { z: length + 1.5 },
-  //   rotation: { x: -Math.PI / 2 },
-  // })
 
   usePostTransientHouseTransforms(
     houseId,
@@ -65,6 +51,7 @@ const StretchHandleInstances = (props: Props) => {
         position={[0, 0, -1.5]}
         userData={{
           identifier: {
+            identifierType: "handle",
             houseId,
             editMode: EditModeEnum.Enum.STRETCH,
             side: HandleSideEnum.Enum.FRONT,

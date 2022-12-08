@@ -8,6 +8,7 @@ const postTransients = proxy<TransientsProxy>({})
 export type HouseTransforms = {
   position: V3
   rotation: number
+  stretchLengthUnits: number
 }
 
 export const usePostTransientHouseTransforms = (
@@ -23,29 +24,24 @@ export const usePostTransientHouseTransforms = (
     const {
       position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
       rotation: dr = 0,
+      stretchLengthUnits = 0,
     } = postTransients[houseId] ?? {
       position: { dx: 0, dy: 0, dz: 0 },
       rotation: 0,
+      stretchLengthUnits: 0,
     }
 
-    const payload = {
+    const payload: HouseTransforms = {
       position: {
         x: hx + dx,
         y: hy + dy,
         z: hz + dz,
       },
       rotation: hr + dr,
+      stretchLengthUnits,
     }
 
     f(payload)
-    // f({
-    //   position: {
-    //     x: 0,
-    //     y: 0,
-    //     z: 0,
-    //   },
-    //   rotation: 0,
-    // })
   }
 
   useSubscribeKey(postTransients, houseId, cb)

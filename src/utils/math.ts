@@ -1,4 +1,4 @@
-export const { abs, min, max, floor, PI } = Math
+export const { abs, min, max, floor, PI, sign } = Math
 
 // export { abs, min, max }
 

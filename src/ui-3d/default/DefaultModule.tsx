@@ -11,7 +11,8 @@ export type ModuleProps = ColumnLayoutKeyInput & {
   columnZ: number
   levelY: number
   moduleZ: number
-  mirror: boolean
+  startColumn: boolean
+  endColumn: boolean
 }
 
 const DefaultModule = (props: ModuleProps) => {
@@ -25,7 +26,8 @@ const DefaultModule = (props: ModuleProps) => {
     columnZ,
     levelY,
     moduleZ,
-    mirror,
+    startColumn,
+    endColumn,
   } = props
 
   const elements = useModuleElements(module)
@@ -40,6 +42,7 @@ const DefaultModule = (props: ModuleProps) => {
         levelIndex,
         gridGroupIndex,
       })
+
       return (
         <DefaultElement
           key={`${key}:${elementName}`}
@@ -55,7 +58,8 @@ const DefaultModule = (props: ModuleProps) => {
             columnZ,
             levelY,
             moduleZ,
-            mirror,
+            startColumn,
+            endColumn,
           }}
         />
       )

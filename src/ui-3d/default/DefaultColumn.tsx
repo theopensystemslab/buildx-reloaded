@@ -51,7 +51,8 @@ const DefaultColumn = (props: Props) => {
                     columnZ,
                     levelY,
                     moduleZ,
-                    mirror: endColumn,
+                    startColumn,
+                    endColumn,
                   }}
                 />
               )

@@ -24,6 +24,8 @@ import { useHouses, useInsert1000Skylarks } from "../hooks/houses"
 import { useTransients } from "../hooks/transients"
 import { useHandleDragEvents } from "../hooks/drag/handles"
 import postTransients from "../hooks/transients/post"
+import { useMenu } from "../hooks/menu"
+import SiteContextMenu from "./menu/SiteContextMenu"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -37,6 +39,8 @@ const HtmlUi = () => {
 
   const transients = useSnapshot(postTransients)
   const houses = useHouses()
+
+  const menu = useMenu()
 
   // const elementDragEvents = useElementDragEvents()
   // const handleDragEvents = useHandleDragEvents()
@@ -154,6 +158,7 @@ const HtmlUi = () => {
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
+      {menu.open && <SiteContextMenu {...{ x: menu.x, y: menu.y }} />}
     </Fragment>
   )
 }
