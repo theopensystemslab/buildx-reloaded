@@ -61,42 +61,17 @@ const DefaultElement = (props: Props) => {
     houseId,
     ({ position: { x: tx, y: ty, z: tz }, rotation, stretchLengthUnits }) => {
       if (!meshRef.current) return
-
       const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-
-      const center = dimensions?.[houseId]?.obb?.center ?? new Vector3(0, 0, 0)
-
       const halfHouseLength = (dimensions[houseId]?.length ?? 0) / 2
-
-      meshRef.current.rotation.set(0, 0, 0)
-      meshRef.current.position.set(0, 0, 0)
       meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
-
-      let x = tx,
-        y = ty + levelY,
-        z = tz + columnZ + moduleZ + mirrorFix
-
-      meshRef.current.position.set(x, y, z)
-
-      const offsetVector = new Vector3(center.x, 0, center.z - halfHouseLength)
-
-      // position relative to center and rotate position
-      meshRef.current.position.sub(offsetVector)
+      meshRef.current.position.set(
+        0,
+        levelY,
+        columnZ + moduleZ + mirrorFix - halfHouseLength
+      )
+      meshRef.current.setRotationFromAxisAngle(yAxis, rotation)
       meshRef.current.position.applyAxisAngle(yAxis, rotation)
-
-      // remove offset needed for rotation
-      meshRef.current.position.add(offsetVector)
-
-      meshRef.current.rotation.set(0, rotation, 0)
-      // meshRef.current.rotateOnAxis(yAxis, rotation)
-
-      if (startColumn && sign(stretchLengthUnits) === -1) {
-        // vector is stretch length units + the rotation
-        // meshRef.current.position.add()
-      }
-
-      if (endColumn && sign(stretchLengthUnits) === 1) {
-      }
+      meshRef.current.position.add(new Vector3(tx, ty, tz + halfHouseLength))
     }
   )
 
