@@ -6,6 +6,7 @@ import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import stretchProxy from "../../hooks/stretch"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
+import { clamp } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
 
 type Props = {
@@ -50,6 +51,7 @@ const StretchHandleInstances = (props: Props) => {
     const { side, dx, dz } = stretchProxy[houseId]
 
     if (side === HandleSideEnum.Enum.FRONT) {
+      // const clampedDx = clamp(,0)
       frontRef.current?.position.set(
         frontPositionVector.current.x + dx,
         frontPositionVector.current.y,

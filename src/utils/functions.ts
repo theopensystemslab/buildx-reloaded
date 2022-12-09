@@ -1,6 +1,12 @@
 import { identity } from "fp-ts/lib/function"
 import * as O from "fp-ts/Option"
 import * as RA from "fp-ts/ReadonlyArray"
+import * as Num from "fp-ts/number"
+import { clamp } from "fp-ts/Ord"
+
+const clamp_ = clamp(Num.Ord)
+
+export { clamp_ as clamp }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)

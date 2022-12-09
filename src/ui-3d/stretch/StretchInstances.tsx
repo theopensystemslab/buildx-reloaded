@@ -4,6 +4,7 @@ import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { useSnapshot } from "valtio"
 import { collideOBB, useDimensions } from "../../hooks/dimensions"
+import { HandleSide } from "../../hooks/gestures/drag/handles"
 import dragProxy from "../../hooks/gestures/drag/proxy"
 import houses, { useHouse } from "../../hooks/houses"
 import { useStretch } from "../../hooks/layouts"
@@ -12,7 +13,13 @@ import { NEA, RA } from "../../utils/functions"
 import { floor, max } from "../../utils/math"
 import StretchInstanceColumn from "./StretchInstanceColumn"
 
-const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
+const StretchInstancesMain = ({
+  houseId,
+  side,
+}: {
+  houseId: string
+  side: HandleSide
+}) => {
   const { startColumn, endColumn, vanillaColumn } = useStretch(houseId)
 
   const house = useHouse(houseId)
@@ -26,7 +33,9 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
 
   const maxLength = 50
 
-  const maxCount = floor(max(0, maxLength - houseLength) / vanillaColumnLength)
+  const remainingLength = maxLength - houseLength
+
+  const maxCount = floor(max(0, remainingLength) / vanillaColumnLength)
 
   const systemId = houses[houseId].systemId
 
@@ -48,6 +57,10 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
       const collision = collideOBB(obb, [houseId])
       return !collision
     }),
+    // columnZs => {
+    //   const lastColumnZ = columnZs[columnZs.length - 1]
+    //   return columnZs
+    // },
     RA.map((columnZ) => (
       <StretchInstanceColumn
         key={columnZ}
@@ -56,6 +69,7 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
           systemId,
           houseId,
           columnZ,
+          up: true,
         }}
       />
     ))
@@ -84,6 +98,7 @@ const StretchInstancesMain = ({ houseId }: { houseId: string }) => {
           systemId,
           houseId,
           columnZ,
+          down: true,
         }}
       />
     ))
@@ -104,7 +119,10 @@ const StretchInstances = () => {
 
   return start?.identifier.identifierType === "handle" &&
     start.identifier.editMode === EditModeEnum.Enum.STRETCH ? (
-    <StretchInstancesMain houseId={start.identifier.houseId} />
+    <StretchInstancesMain
+      houseId={start.identifier.houseId}
+      side={start.identifier.side}
+    />
   ) : null
 }
 

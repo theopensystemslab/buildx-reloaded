@@ -10,7 +10,7 @@ import { EditModeEnum } from "../siteCtx"
 import stretchProxy from "../stretch"
 import { setTransients } from "../transients/common"
 import preTransients from "../transients/pre"
-import { HandleIdentifier } from "./drag/handles"
+import { HandleIdentifier, HandleSideEnum } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
@@ -52,6 +52,7 @@ export const useDragHandler = () => {
           case EditModeEnum.Enum.STRETCH:
             const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
             const [dx, dz] = rotateV2(houseId, [0, distance])
+
             stretchProxy[houseId] = {
               side,
               dx,
