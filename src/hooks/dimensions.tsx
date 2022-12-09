@@ -4,7 +4,7 @@ import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
-import { layouts, useVanillaColumnLength } from "./layouts"
+import { layouts } from "./layouts"
 import { Transients } from "./transients/common"
 
 type Dimensions = {
@@ -27,8 +27,6 @@ export const useComputeDimensions = (houseId: string) => {
   const preTransM = useRef(new Matrix4())
   const postTransM = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
-
-  const vanillaColumnLength = useVanillaColumnLength(houseId)
 
   return useCallback(
     (transients: Transients = {}): Dimensions => {

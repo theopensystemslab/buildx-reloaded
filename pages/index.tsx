@@ -13,7 +13,7 @@ const IndexPage = () => {
       <DataInit>
         <AppInit>
           <DefaultApp />
-          {debug && <DebugDimensions />}
+          {/* {debug && <DebugDimensions />} */}
         </AppInit>
       </DataInit>
     </Fragment>

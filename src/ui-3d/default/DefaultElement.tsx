@@ -3,9 +3,13 @@ import { useRef } from "react"
 import { Mesh, Vector3 } from "three"
 import dimensions, { getHalfHouseLength } from "../../hooks/dimensions"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
+import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
+import { useVanillaColumnLength } from "../../hooks/layouts"
+import stretchProxy from "../../hooks/stretch"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
-import { sign } from "../../utils/math"
+import { useSubscribeKey } from "../../utils/hooks"
+import { floor, round, sign } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { ModuleProps } from "./DefaultModule"
 
@@ -57,6 +61,8 @@ const DefaultElement = (props: Props) => {
 
   const mirror = endColumn
 
+  const positionVector = useRef(new Vector3())
+
   usePostTransientHouseTransforms(
     houseId,
     ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
@@ -75,8 +81,26 @@ const DefaultElement = (props: Props) => {
       meshRef.current.position.applyAxisAngle(yAxis, rotation)
       meshRef.current.position.add(new Vector3(tx, ty, tz + halfHouseLength))
       // to here; order of operations super important
+
+      positionVector.current.copy(meshRef.current.position)
     }
   )
+
+  useSubscribeKey(stretchProxy, houseId, () => {
+    if (!meshRef.current) return
+    if (!stretchProxy[houseId]) {
+      meshRef.current.position.copy(positionVector.current)
+      return
+    }
+
+    const { dx, dz, side } = stretchProxy[houseId]
+
+    if (side === HandleSideEnum.Enum.FRONT && !startColumn) return
+    if (side === HandleSideEnum.Enum.BACK && !endColumn) return
+
+    meshRef.current.position.copy(positionVector.current)
+    meshRef.current.position.add(new Vector3(dx, 0, dz))
+  })
 
   return (
     <mesh

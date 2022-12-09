@@ -12,7 +12,7 @@ import stretchProxy from "../../hooks/stretch"
 import { useStretchInstance } from "../../hooks/stretchInstances"
 import { useElementTransforms } from "../../hooks/transients"
 import { useSubscribeKey } from "../../utils/hooks"
-import { round } from "../../utils/math"
+import { ceil, floor, round } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { StretchModuleProps } from "./StretchInstanceModule"
 
@@ -88,8 +88,8 @@ const StretchInstanceElement = (props: Props) => {
       mirrorFix -
         halfHouseLength +
         (side === HandleSideEnum.Enum.FRONT
-          ? -startColumn.length
-          : houseLength - endColumn.length)
+          ? 0
+          : houseLength - endColumn.length - startColumn.length)
     )
     meshRef.current.setRotationFromAxisAngle(yAxis, rotation)
     meshRef.current.position.applyAxisAngle(yAxis, rotation)
@@ -105,20 +105,14 @@ const StretchInstanceElement = (props: Props) => {
     startColumn.length,
   ])
 
-  // const [scale, setScale] = useState(0)
-
   useSubscribeKey(stretchProxy, houseId, () => {
     if (!stretchProxy[houseId]) return
     const { distance } = stretchProxy[houseId]
-    const z = round(distance / vanillaColumnLength)
-    // console.log(z)
+    const f = side === HandleSideEnum.Enum.BACK ? ceil : floor
+    const z = f(distance / vanillaColumnLength)
     meshRef.current?.scale.setZ(-z)
+    // meshRef.current?.scale.setZ(0)
   })
-
-  useEffect(() => {
-    // @ts-ignore
-    material.wireframe = true
-  }, [material])
 
   return <mesh ref={meshRef} material={material} geometry={geometry} />
 }
