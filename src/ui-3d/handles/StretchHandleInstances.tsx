@@ -47,7 +47,20 @@ const StretchHandleInstances = (props: Props) => {
   )
 
   useSubscribeKey(stretchProxy, houseId, () => {
-    if (!stretchProxy[houseId]) return
+    if (!stretchProxy[houseId]) {
+      frontRef.current?.position.set(
+        frontPositionVector.current.x,
+        frontPositionVector.current.y,
+        frontPositionVector.current.z
+      )
+      backRef.current?.position.set(
+        backPositionVector.current.x,
+        backPositionVector.current.y,
+        backPositionVector.current.z
+      )
+      return
+    }
+
     const { side, dx, dz } = stretchProxy[houseId]
 
     if (side === HandleSideEnum.Enum.FRONT) {

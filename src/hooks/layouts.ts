@@ -391,6 +391,7 @@ export const useStretch = (houseId: string) => {
 
 export const useVanillaColumn = (houseId: string) => {
   const { vanillaColumn } = useStretch(houseId)
+
   return vanillaColumn
 }
 

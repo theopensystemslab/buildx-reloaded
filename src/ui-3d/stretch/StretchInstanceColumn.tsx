@@ -7,6 +7,7 @@ import {
 } from "@/hooks/layouts"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
+import { HandleSide } from "../../hooks/gestures/drag/handles"
 import { RA } from "../../utils/functions"
 import StretchInstanceModule from "./StretchInstanceModule"
 
@@ -14,11 +15,11 @@ type Props = {
   systemId: string
   houseId: string
   gridGroups: GridGroup[]
-  columnZ: number
+  side: HandleSide
 }
 
 const StretchInstanceColumn = (props: Props) => {
-  const { systemId, houseId, gridGroups: rows, columnZ } = props
+  const { systemId, houseId, gridGroups: rows, side } = props
 
   return (
     <Fragment>
@@ -30,23 +31,17 @@ const StretchInstanceColumn = (props: Props) => {
             RA.map(({ module, gridGroupIndex, z: moduleZ }) => {
               return (
                 <StretchInstanceModule
-                  key={getVanillaColumnKey({
-                    systemId,
-                    houseId,
-                    levelIndex,
-                    gridGroupIndex,
-                    columnZ,
-                  })}
+                  key={`${side}:${gridGroupIndex}:${module.dna}`}
                   {...{
                     systemId,
                     houseId,
                     module,
                     levelIndex,
                     gridGroupIndex,
-                    columnZ,
                     levelY,
                     moduleZ,
                     mirror: true,
+                    side,
                   }}
                 />
               )

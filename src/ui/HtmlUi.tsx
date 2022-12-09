@@ -24,6 +24,8 @@ import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
 import SiteContextMenu from "./menu/SiteContextMenu"
 import Radio from "./Radio"
+import stretchProxy from "../hooks/stretch"
+import dragProxy from "../hooks/gestures/drag/proxy"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -43,11 +45,14 @@ const HtmlUi = () => {
   // const elementDragEvents = useElementDragEvents()
   // const handleDragEvents = useHandleDragEvents()
 
+  const drag = useSnapshot(dragProxy)
+  const stretch = useSnapshot(stretchProxy)
+
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
-        <pre>{JSON.stringify(houses, null, 2)}</pre>
-        <pre>{JSON.stringify(transients, null, 2)}</pre>
+        <pre>{JSON.stringify(drag, null, 2)}</pre>
+        <pre>{JSON.stringify(stretch, null, 2)}</pre>
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>

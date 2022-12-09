@@ -67,6 +67,8 @@ export const useDragHandler = () => {
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
       setTransients()
+      const houseId = dragProxy.start?.identifier.houseId
+      if (houseId && stretchProxy[houseId]) delete stretchProxy[houseId]
       dragProxy.start = null
       dragProxy.drag = null
     }

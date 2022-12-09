@@ -4,7 +4,7 @@ import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { useSnapshot } from "valtio"
 import { collideOBB, useDimensions } from "../../hooks/dimensions"
-import { HandleSide } from "../../hooks/gestures/drag/handles"
+import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import dragProxy from "../../hooks/gestures/drag/proxy"
 import houses, { useHouse } from "../../hooks/houses"
 import { useStretch } from "../../hooks/layouts"
@@ -39,79 +39,55 @@ const StretchInstancesMain = ({
 
   const systemId = houses[houseId].systemId
 
-  const endZ = house.position.z + houseLength - endColumn.length
-  const startZ = house.position.z + startColumn.length
-
-  const columnsUp = pipe(
-    NEA.range(0, maxCount - 1),
-    RA.map((i) => endZ + i * vanillaColumnLength),
-    RA.takeLeftWhile((columnZ) => {
-      const center = new Vector3(0, 0, columnZ + vanillaColumnLength / 2)
-      const halfSize = new Vector3(
-        houseWidth / 2,
-        houseHeight / 2,
-        vanillaColumnLength / 2
-      )
-      const obb = new OBB(center, halfSize)
-
-      const collision = collideOBB(obb, [houseId])
-      return !collision
-    }),
-    // columnZs => {
-    //   const lastColumnZ = columnZs[columnZs.length - 1]
-    //   return columnZs
-    // },
-    RA.map((columnZ) => (
-      <StretchInstanceColumn
-        key={columnZ}
-        {...{
-          gridGroups: vanillaColumn,
-          systemId,
-          houseId,
-          columnZ,
-          up: true,
-        }}
-      />
-    ))
-  )
-
-  const columnsDown = pipe(
-    NEA.range(0, maxCount - 1),
-    RA.map((i) => startZ - i * vanillaColumnLength),
-    RA.takeLeftWhile((columnZ) => {
-      const center = new Vector3(0, 0, columnZ + vanillaColumnLength / 2)
-      const halfSize = new Vector3(
-        houseWidth / 2,
-        houseHeight / 2,
-        vanillaColumnLength / 2
-      )
-      const obb = new OBB(center, halfSize)
-
-      const collision = collideOBB(obb, [houseId])
-      return !collision
-    }),
-    RA.map((columnZ) => (
-      <StretchInstanceColumn
-        key={-columnZ}
-        {...{
-          gridGroups: vanillaColumn,
-          systemId,
-          houseId,
-          columnZ,
-          down: true,
-        }}
-      />
-    ))
-  )
-
-  // return null
+  // switch sides here?
 
   return (
-    <Fragment>
-      {columnsUp}
-      {columnsDown}
-    </Fragment>
+    <StretchInstanceColumn
+      key={side}
+      {...{
+        gridGroups: vanillaColumn,
+        systemId,
+        houseId,
+        side,
+      }}
+    />
   )
+
+  // const endZ = house.position.z + houseLength - endColumn.length
+  // const startZ = house.position.z + startColumn.length
+
+  // const columnsUp = pipe(
+  //   NEA.range(0, maxCount - 1),
+  //   RA.map((i) => endZ + i * vanillaColumnLength),
+  //   RA.takeLeftWhile((columnZ) => {
+  //     const center = new Vector3(0, 0, columnZ + vanillaColumnLength / 2)
+  //     const halfSize = new Vector3(
+  //       houseWidth / 2,
+  //       houseHeight / 2,
+  //       vanillaColumnLength / 2
+  //     )
+  //     const obb = new OBB(center, halfSize)
+
+  //     const collision = collideOBB(obb, [houseId])
+  //     return !collision
+  //   }),
+  //   // columnZs => {
+  //   //   const lastColumnZ = columnZs[columnZs.length - 1]
+  //   //   return columnZs
+  //   // },
+  //   RA.map((columnZ) => (
+  //     <StretchInstanceColumn
+  //       key={columnZ}
+  //       {...{
+  //         gridGroups: vanillaColumn,
+  //         systemId,
+  //         houseId,
+  //         columnZ,
+  //         up: true,
+  //       }}
+  //     />
+  //   ))
+  // )
 }
 
 const StretchInstances = () => {

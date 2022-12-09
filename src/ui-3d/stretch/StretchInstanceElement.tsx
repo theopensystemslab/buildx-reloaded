@@ -3,13 +3,16 @@ import { Instance } from "@react-three/drei"
 import { createPortal } from "@react-three/fiber"
 import { Fragment, useEffect, useRef, useState } from "react"
 import { Mesh, Vector3 } from "three"
-import { getHalfHouseLength } from "../../hooks/dimensions"
+import { getHalfHouseLength, getHouseLength } from "../../hooks/dimensions"
+import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { useHouse } from "../../hooks/houses"
+import { useStretch, useVanillaColumnLength } from "../../hooks/layouts"
 import stretchProxy from "../../hooks/stretch"
 import { useStretchInstance } from "../../hooks/stretchInstances"
 import { useElementTransforms } from "../../hooks/transients"
 import { useSubscribeKey } from "../../utils/hooks"
+import { round } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { StretchModuleProps } from "./StretchInstanceModule"
 
@@ -26,9 +29,9 @@ const StretchInstanceElement = (props: Props) => {
     geometryHash,
     levelIndex,
     gridGroupIndex,
-    columnZ,
     module,
     levelY,
+    side,
   } = props
 
   const meshRef = useRef<Mesh>(null)
@@ -68,42 +71,56 @@ const StretchInstanceElement = (props: Props) => {
 
   const { position, rotation } = useHouse(houseId)
 
+  const { startColumn, endColumn } = useStretch(houseId)
+  const vanillaColumnLength = useVanillaColumnLength(houseId)
+
   useEffect(() => {
     if (!meshRef.current) return
 
     const { x, y, z } = position
 
     const mirrorFix = module.length / 2
+    const houseLength = getHouseLength(houseId)
     const halfHouseLength = getHalfHouseLength(houseId)
     meshRef.current.position.set(
       0,
       levelY,
-      columnZ + mirrorFix - halfHouseLength
+      mirrorFix -
+        halfHouseLength +
+        (side === HandleSideEnum.Enum.FRONT
+          ? -startColumn.length
+          : houseLength - endColumn.length)
     )
     meshRef.current.setRotationFromAxisAngle(yAxis, rotation)
     meshRef.current.position.applyAxisAngle(yAxis, rotation)
     meshRef.current.position.add(new Vector3(x, y, z + halfHouseLength))
-  }, [columnZ, houseId, levelY, module.length, position, rotation])
+  }, [
+    endColumn.length,
+    houseId,
+    levelY,
+    module.length,
+    position,
+    rotation,
+    side,
+    startColumn.length,
+  ])
 
-  const [scale, setScale] = useState(0)
+  // const [scale, setScale] = useState(0)
 
   useSubscribeKey(stretchProxy, houseId, () => {
     if (!stretchProxy[houseId]) return
     const { distance } = stretchProxy[houseId]
-    // console.log([distance, columnZ, scale])
-
-    if (distance < columnZ && scale === 0) setScale(1)
-    else if (distance > columnZ && scale === 1) setScale(0)
+    const z = round(distance / vanillaColumnLength)
+    // console.log(z)
+    meshRef.current?.scale.setZ(-z)
   })
 
-  return (
-    <mesh
-      ref={meshRef}
-      material={material}
-      geometry={geometry}
-      scale={[scale, scale, scale]}
-    />
-  )
+  useEffect(() => {
+    // @ts-ignore
+    material.wireframe = true
+  }, [material])
+
+  return <mesh ref={meshRef} material={material} geometry={geometry} />
 }
 
 export default StretchInstanceElement

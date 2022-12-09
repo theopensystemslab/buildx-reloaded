@@ -2,6 +2,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useModuleElements } from "../../data/elements"
 import { Module } from "../../data/modules"
+import { HandleSide } from "../../hooks/gestures/drag/handles"
 import {
   ColumnLayoutKeyInput,
   getVanillaColumnKey,
@@ -12,8 +13,8 @@ import StretchInstanceElement from "./StretchInstanceElement"
 
 export type StretchModuleProps = Omit<ColumnLayoutKeyInput, "columnIndex"> & {
   module: Module
-  columnZ: number
   levelY: number
+  side: HandleSide
 }
 
 const StretchInstanceModule = (props: StretchModuleProps) => {
@@ -23,8 +24,8 @@ const StretchInstanceModule = (props: StretchModuleProps) => {
     levelIndex,
     gridGroupIndex,
     module,
-    columnZ,
     levelY,
+    side,
   } = props
 
   const elements = useModuleElements(module)
@@ -32,16 +33,9 @@ const StretchInstanceModule = (props: StretchModuleProps) => {
   const children = pipe(
     elements,
     RM.collect(S.Ord)((elementName, geometryHash) => {
-      const key = getVanillaColumnKey({
-        systemId,
-        houseId,
-        levelIndex,
-        gridGroupIndex,
-        columnZ,
-      })
       return (
         <StretchInstanceElement
-          key={`${key}:${elementName}`}
+          key={`${side}:${elementName}`}
           {...{
             module,
             systemId,
@@ -50,8 +44,8 @@ const StretchInstanceModule = (props: StretchModuleProps) => {
             gridGroupIndex,
             elementName,
             geometryHash,
-            columnZ,
             levelY,
+            side,
           }}
         />
       )

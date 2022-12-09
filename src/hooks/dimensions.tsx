@@ -140,7 +140,10 @@ export const DebugDimensionsCenterPoint = ({
 export const getHouseCenter = (houseId: string) =>
   dimensions?.[houseId]?.obb?.center ?? new Vector3(0, 0, 0)
 
+export const getHouseLength = (houseId: string) =>
+  dimensions?.[houseId]?.length ?? 0
+
 export const getHalfHouseLength = (houseId: string) =>
-  (dimensions?.[houseId]?.length ?? 0) / 2
+  getHouseLength(houseId) / 2
 
 export default dimensions
