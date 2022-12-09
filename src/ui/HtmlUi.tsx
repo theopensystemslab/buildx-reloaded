@@ -16,16 +16,13 @@ import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
 import { useCameraReset } from "../hooks/camera"
 import elementCategories from "../hooks/elementCategories"
-import { useHouses, useInsert1000Skylarks } from "../hooks/houses"
+import { useInsert1000Skylarks } from "../hooks/houses"
 import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
 import { useMenu } from "../hooks/menu"
-import postTransients from "../hooks/transients/post"
 import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
 import SiteContextMenu from "./menu/SiteContextMenu"
 import Radio from "./Radio"
-import stretchProxy from "../hooks/stretch"
-import dragProxy from "../hooks/gestures/drag/proxy"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -37,23 +34,22 @@ const HtmlUi = () => {
 
   useInsert1000Skylarks()
 
-  const transients = useSnapshot(postTransients)
-  const houses = useHouses()
+  // const transients = useSnapshot(postTransients)
+  // const houses = useHouses()
 
   const menu = useMenu()
 
   // const elementDragEvents = useElementDragEvents()
   // const handleDragEvents = useHandleDragEvents()
 
-  const drag = useSnapshot(dragProxy)
-  const stretch = useSnapshot(stretchProxy)
+  // const drag = useSnapshot(dragProxy)
 
   return (
     <Fragment>
-      <div className="absolute bottom-0 right-0 pointer-events-none">
+      {/* <div className="absolute bottom-0 right-0 pointer-events-none">
         <pre>{JSON.stringify(drag, null, 2)}</pre>
         <pre>{JSON.stringify(stretch, null, 2)}</pre>
-      </div>
+      </div> */}
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>
           <div className="flex items-center justify-center">

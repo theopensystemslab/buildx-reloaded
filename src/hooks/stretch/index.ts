@@ -3,7 +3,7 @@ import { HandleSide } from "../gestures/drag/handles"
 
 export * from "./length"
 
-type Stretch = {
+export type Stretch = {
   side: HandleSide
   dx: number
   dz: number

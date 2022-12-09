@@ -1,12 +1,12 @@
-import { HandleSide } from "../gestures/drag/handles"
 import houses from "../houses"
-import { EditMode } from "../siteCtx"
+import { Stretch } from "../stretch"
 import postTransients from "./post"
 import preTransients from "./pre"
 
 export type Transients = {
   position?: DeltaV3
   rotation?: number
+  stretch?: Stretch
 }
 
 export type TransientsProxy = Record<string, Transients>

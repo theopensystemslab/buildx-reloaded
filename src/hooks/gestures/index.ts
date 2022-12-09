@@ -7,7 +7,6 @@ import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { EditModeEnum } from "../siteCtx"
-import stretchProxy from "../stretch"
 import { setTransients } from "../transients/common"
 import preTransients from "../transients/pre"
 import { HandleIdentifier } from "./drag/handles"
@@ -53,11 +52,13 @@ export const useDragHandler = () => {
             const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
             const [dx, dz] = rotateV2(houseId, [0, distance])
 
-            stretchProxy[houseId] = {
-              side,
-              dx,
-              dz,
-              distance,
+            preTransients[houseId] = {
+              stretch: {
+                side,
+                dx,
+                dz,
+                distance,
+              },
             }
         }
         return
@@ -67,8 +68,6 @@ export const useDragHandler = () => {
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
       setTransients()
-      const houseId = dragProxy.start?.identifier.houseId
-      if (houseId && stretchProxy[houseId]) delete stretchProxy[houseId]
       dragProxy.start = null
       dragProxy.drag = null
     }

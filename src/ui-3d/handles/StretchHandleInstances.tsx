@@ -4,9 +4,9 @@ import { Object3D, Vector3 } from "three"
 import { useDimensions } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import stretchProxy from "../../hooks/stretch"
-import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
-import { clamp } from "../../utils/functions"
+import postTransients, {
+  usePostTransientHouseTransforms,
+} from "../../hooks/transients/post"
 import { useSubscribeKey } from "../../utils/hooks"
 
 type Props = {
@@ -46,8 +46,8 @@ const StretchHandleInstances = (props: Props) => {
     }
   )
 
-  useSubscribeKey(stretchProxy, houseId, () => {
-    if (!stretchProxy[houseId]) {
+  useSubscribeKey(postTransients, houseId, () => {
+    if (!postTransients[houseId]?.stretch) {
       frontRef.current?.position.set(
         frontPositionVector.current.x,
         frontPositionVector.current.y,
@@ -61,7 +61,7 @@ const StretchHandleInstances = (props: Props) => {
       return
     }
 
-    const { side, dx, dz } = stretchProxy[houseId]
+    const { side, dx, dz } = postTransients[houseId].stretch!
 
     if (side === HandleSideEnum.Enum.FRONT) {
       // const clampedDx = clamp(,0)

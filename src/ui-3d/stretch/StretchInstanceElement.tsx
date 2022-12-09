@@ -1,18 +1,14 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
-import { Instance } from "@react-three/drei"
-import { createPortal } from "@react-three/fiber"
-import { Fragment, useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Mesh, Vector3 } from "three"
 import { getHalfHouseLength, getHouseLength } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { useHouse } from "../../hooks/houses"
 import { useStretch, useVanillaColumnLength } from "../../hooks/layouts"
-import stretchProxy from "../../hooks/stretch"
-import { useStretchInstance } from "../../hooks/stretchInstances"
-import { useElementTransforms } from "../../hooks/transients"
+import postTransients from "../../hooks/transients/post"
 import { useSubscribeKey } from "../../utils/hooks"
-import { ceil, floor, round } from "../../utils/math"
+import { ceil, floor } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { StretchModuleProps } from "./StretchInstanceModule"
 
@@ -105,9 +101,9 @@ const StretchInstanceElement = (props: Props) => {
     startColumn.length,
   ])
 
-  useSubscribeKey(stretchProxy, houseId, () => {
-    if (!stretchProxy[houseId]) return
-    const { distance } = stretchProxy[houseId]
+  useSubscribeKey(postTransients, houseId, () => {
+    if (!postTransients[houseId]?.stretch) return
+    const { distance } = postTransients[houseId].stretch!
     const f = side === HandleSideEnum.Enum.BACK ? ceil : floor
     const z = f(distance / vanillaColumnLength)
     meshRef.current?.scale.setZ(-z)
