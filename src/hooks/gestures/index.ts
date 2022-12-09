@@ -1,13 +1,11 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
-import { Vector3 } from "three"
 import { useSnapshot } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
-import { yAxis } from "../../utils/three"
+import { useRotations } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
-import dimensions, { getHouseCenter } from "../dimensions"
+import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
-import houses from "../houses"
 import { EditModeEnum } from "../siteCtx"
 import stretchProxy from "../stretch"
 import { setTransients } from "../transients/common"
@@ -16,6 +14,8 @@ import { HandleIdentifier } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
+  const { rotateV2, unrotateV2 } = useRotations()
+
   useSubscribeKey(dragProxy, "drag", () => {
     if (dragProxy.drag === null || dragProxy.start === null) return
     const {
@@ -50,10 +50,13 @@ export const useDragHandler = () => {
             }
             return
           case EditModeEnum.Enum.STRETCH:
+            const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
+            const [dx, dz] = rotateV2(houseId, [0, distance])
             stretchProxy[houseId] = {
               side,
-              dx: x1 - x0,
-              dz: z1 - z0,
+              dx,
+              dz,
+              distance,
             }
         }
         return

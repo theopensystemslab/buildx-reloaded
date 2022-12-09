@@ -153,28 +153,34 @@ export const useSetRotation = (houseId: string) => {
 
 export const yAxis = new Vector3(0, 1, 0)
 
-export const useUnrotateV2 = (houseId: string | null) => {
+export const useRotations = () => {
   const rotationMatrix = useRef(new Matrix4())
 
-  return ([x0, z0]: [number, number]): [number, number] => {
-    const vec = new Vector3(x0, 0, z0)
-    rotationMatrix.current.makeRotationY(
-      -houses?.[houseId ?? ""]?.rotation ?? 0
-    )
-    vec.applyMatrix4(rotationMatrix.current)
-    const [x1, , z1] = vec.toArray()
-    return [x1, z1]
-  }
-}
+  const unrotateV2 = useCallback(
+    (houseId: string, [x0, z0]: [number, number]): [number, number] => {
+      const vec = new Vector3(x0, 0, z0)
+      rotationMatrix.current.makeRotationY(
+        -houses?.[houseId ?? ""]?.rotation ?? 0
+      )
+      vec.applyMatrix4(rotationMatrix.current)
+      const [x1, , z1] = vec.toArray()
+      return [x1, z1]
+    },
+    []
+  )
 
-export const useRotateV2 = (houseId: string | null) => {
-  const rotationMatrix = useRef(new Matrix4())
+  const rotateV2 = useCallback(
+    (houseId: string, [x0, z0]: [number, number]): [number, number] => {
+      const vec = new Vector3(x0, 0, z0)
+      rotationMatrix.current.makeRotationY(
+        houses?.[houseId ?? ""]?.rotation ?? 0
+      )
+      vec.applyMatrix4(rotationMatrix.current)
+      const [x1, , z1] = vec.toArray()
+      return [x1, z1]
+    },
+    []
+  )
 
-  return ([x0, z0]: [number, number]): [number, number] => {
-    const vec = new Vector3(x0, 0, z0)
-    rotationMatrix.current.makeRotationY(houses?.[houseId ?? ""]?.rotation ?? 0)
-    vec.applyMatrix4(rotationMatrix.current)
-    const [x1, , z1] = vec.toArray()
-    return [x1, z1]
-  }
+  return { rotateV2, unrotateV2 }
 }

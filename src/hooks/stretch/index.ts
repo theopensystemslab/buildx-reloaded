@@ -7,6 +7,7 @@ type Stretch = {
   side: HandleSide
   dx: number
   dz: number
+  distance: number
 }
 
 const stretchProxy = proxy<Record<string, Stretch>>({})
