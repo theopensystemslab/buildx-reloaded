@@ -1,7 +1,7 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh, Vector3 } from "three"
-import { getHalfHouseLength } from "../../hooks/dimensions"
+import { useHalfHouseLength } from "../../hooks/dimensions"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
@@ -62,6 +62,8 @@ const DefaultElement = (props: Props) => {
 
   const positionVector = useRef(new Vector3())
 
+  const halfHouseLength = useHalfHouseLength(houseId)
+
   usePostTransientHouseTransforms(
     houseId,
     ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
@@ -69,15 +71,16 @@ const DefaultElement = (props: Props) => {
 
       // this is crazy
       const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-      const halfHouseLength = getHalfHouseLength(houseId)
       meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
       meshRef.current.position.set(
         0,
         levelY,
         columnZ + moduleZ + mirrorFix - halfHouseLength
       )
+
       meshRef.current.setRotationFromAxisAngle(yAxis, rotation)
       meshRef.current.position.applyAxisAngle(yAxis, rotation)
+
       meshRef.current.position.add(new Vector3(tx, ty, tz + halfHouseLength))
       // to here; order of operations super important
 

@@ -1,7 +1,7 @@
 import { Instance } from "@react-three/drei"
 import { Fragment, useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { useDimensions } from "../../hooks/dimensions"
+import { useHouseDimensions } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import postTransients, {
@@ -16,7 +16,7 @@ type Props = {
 const StretchHandleInstances = (props: Props) => {
   const { houseId } = props
 
-  const { length = 0 } = useDimensions(houseId) ?? {}
+  const { length = 0 } = useHouseDimensions(houseId) ?? {}
 
   const frontRef = useRef<Object3D>(null)
   const backRef = useRef<Object3D>(null)

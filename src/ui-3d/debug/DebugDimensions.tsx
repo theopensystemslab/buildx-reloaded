@@ -1,11 +1,10 @@
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef, useState } from "react"
-import { Matrix3, Matrix4, Mesh, Vector3 } from "three"
-import dimensions, { useDimensions } from "../../hooks/dimensions"
-import houses, { useHouseKeys } from "../../hooks/houses"
+import { Fragment, useRef } from "react"
+import { Mesh } from "three"
+import { useHouseDimensions } from "../../hooks/dimensions"
+import { useHouseKeys } from "../../hooks/houses"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
-import { A, RA } from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
+import { RA } from "../../utils/functions"
 
 const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
   const ref = useRef<Mesh>(null)
@@ -18,7 +17,7 @@ const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
       halfSize: { y: halfHeight, z: halfLength },
       center,
     },
-  } = useDimensions(houseId)
+  } = useHouseDimensions(houseId)
 
   usePostTransientHouseTransforms(
     houseId,

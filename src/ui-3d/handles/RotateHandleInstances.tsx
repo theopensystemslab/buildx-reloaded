@@ -1,7 +1,7 @@
 import { Instance } from "@react-three/drei"
 import { Fragment, useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import dimensions, { useDimensions } from "../../hooks/dimensions"
+import dimensions, { useHouseDimensions } from "../../hooks/dimensions"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { PI } from "../../utils/math"
@@ -13,7 +13,7 @@ type Props = {
 const RotateHandleInstances = (props: Props) => {
   const { houseId } = props
 
-  const { width = 0, length = 0 } = useDimensions(houseId) ?? {}
+  const { width = 0, length = 0 } = useHouseDimensions(houseId) ?? {}
 
   const handle1Ref = useRef<Object3D>(null)
   const handle2Ref = useRef<Object3D>(null)

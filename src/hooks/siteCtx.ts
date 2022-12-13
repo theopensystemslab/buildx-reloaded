@@ -20,7 +20,7 @@ type SiteCtx = {
 const defaults = {
   buildingId: null,
   levelIndex: null,
-  editMode: EditModeEnum.Enum.STRETCH,
+  editMode: EditModeEnum.Enum.MOVE_ROTATE,
   projectName: null,
   region: "EU",
 }

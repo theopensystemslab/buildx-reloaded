@@ -3,7 +3,7 @@ import { Fragment } from "react"
 import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { useSnapshot } from "valtio"
-import { collideOBB, useDimensions } from "../../hooks/dimensions"
+import { collideOBB, useHouseDimensions } from "../../hooks/dimensions"
 import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import dragProxy from "../../hooks/gestures/drag/proxy"
 import houses, { useHouse } from "../../hooks/houses"
@@ -29,7 +29,7 @@ const StretchInstancesMain = ({
     length: houseLength,
     width: houseWidth,
     height: houseHeight,
-  } = useDimensions(houseId)
+  } = useHouseDimensions(houseId)
 
   const maxLength = 50
 

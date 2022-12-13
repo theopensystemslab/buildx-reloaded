@@ -100,7 +100,7 @@ export const useHouseDimensionsUpdates = (houseId: string) => {
   useSubscribeKey(houses[houseId], "rotation", updateDimensions)
 }
 
-export const useDimensions = (houseId: string): Dimensions => {
+export const useHouseDimensions = (houseId: string): Dimensions => {
   const snap = useSnapshot(dimensions) as typeof dimensions
   return snap[houseId] ?? defaultDimensions
 }
@@ -145,10 +145,19 @@ export const DebugDimensionsCenterPoint = ({
 export const getHouseCenter = (houseId: string) =>
   dimensions?.[houseId]?.obb?.center ?? new Vector3(0, 0, 0)
 
-export const getHouseLength = (houseId: string) =>
-  dimensions?.[houseId]?.length ?? 0
+export const useHouseCenter = (houseId: string) => {
+  const {
+    obb: { center },
+  } = useHouseDimensions(houseId)
+  return center
+}
 
-export const getHalfHouseLength = (houseId: string) =>
-  getHouseLength(houseId) / 2
+export const useHouseLength = (houseId: string) => {
+  const { length } = useHouseDimensions(houseId)
+  return length
+}
+
+export const useHalfHouseLength = (houseId: string) =>
+  useHouseLength(houseId) / 2
 
 export default dimensions

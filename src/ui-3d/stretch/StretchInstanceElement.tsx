@@ -1,7 +1,7 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
 import { useEffect, useRef } from "react"
 import { Mesh, Vector3 } from "three"
-import { getHalfHouseLength, getHouseLength } from "../../hooks/dimensions"
+import { useHouseLength } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { useHouse } from "../../hooks/houses"
@@ -70,14 +70,15 @@ const StretchInstanceElement = (props: Props) => {
   const { startColumn, endColumn } = useStretch(houseId)
   const vanillaColumnLength = useVanillaColumnLength(houseId)
 
+  const houseLength = useHouseLength(houseId)
+
   useEffect(() => {
     if (!meshRef.current) return
 
     const { x, y, z } = position
 
     const mirrorFix = module.length / 2
-    const houseLength = getHouseLength(houseId)
-    const halfHouseLength = getHalfHouseLength(houseId)
+    const halfHouseLength = houseLength / 2
     meshRef.current.position.set(
       0,
       levelY,
@@ -93,6 +94,7 @@ const StretchInstanceElement = (props: Props) => {
   }, [
     endColumn.length,
     houseId,
+    houseLength,
     levelY,
     module.length,
     position,
