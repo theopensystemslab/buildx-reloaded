@@ -1,6 +1,5 @@
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
 import { useCallback, useMemo, useRef } from "react"
 import {
   DoubleSide,
@@ -16,8 +15,6 @@ import { CameraLayer, RaycasterLayer } from "../constants"
 import { Material } from "../data/materials"
 import dimensions, { getHouseCenter } from "../hooks/dimensions"
 import houses from "../hooks/houses"
-import { transients } from "../hooks/transients"
-import { useSubscribeKey } from "./hooks"
 
 export type GltfT = {
   nodes: {

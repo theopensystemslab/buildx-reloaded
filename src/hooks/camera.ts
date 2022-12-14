@@ -1,11 +1,7 @@
-import { useRotateVector } from "@/hooks/transforms"
 import CameraControls from "camera-controls"
-import { pipe } from "fp-ts/lib/function"
-import { getOrElse } from "fp-ts/lib/Option"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { Raycaster, Vector3 } from "three"
 import { proxy } from "valtio"
-import { useHouses } from "./houses"
 
 type CameraProxy = {
   controls: CameraControls | null
