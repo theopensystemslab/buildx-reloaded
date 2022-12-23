@@ -39,7 +39,7 @@ export const useHouseKeys = () => {
 }
 
 export const useHouse = (houseId: string) => {
-  const housesSnap = useSnapshot(houses)
+  const housesSnap = useSnapshot(houses) as typeof houses
   return housesSnap[houseId]
 }
 

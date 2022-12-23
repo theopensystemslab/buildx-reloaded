@@ -3,6 +3,7 @@ import AppInit from "@/ui-3d/init/AppInit"
 import { Fragment } from "react"
 import DefaultApp from "@/ui-3d/default/DefaultApp"
 import DemoApp from "@/ui-3d/demo/DemoApp"
+import GroupedApp from "../src/ui-3d/grouped/GroupedApp"
 
 const IndexPage = () => {
   // const { debug } = useGlobals()
@@ -13,7 +14,7 @@ const IndexPage = () => {
         <AppInit>
           {/* <DefaultApp /> */}
           {/* {debug && <DebugDimensions />} */}
-          <DemoApp />
+          <GroupedApp />
         </AppInit>
       </DataInit>
     </Fragment>
