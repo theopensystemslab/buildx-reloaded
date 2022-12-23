@@ -93,7 +93,7 @@ const StretchInstancesMain = ({
 const StretchInstances = () => {
   const { start } = useSnapshot(dragProxy)
 
-  return start?.identifier.identifierType === "handle" &&
+  return start?.identifier?.identifierType === "handle" &&
     start.identifier.editMode === EditModeEnum.Enum.STRETCH ? (
     <StretchInstancesMain
       houseId={start.identifier.houseId}

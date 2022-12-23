@@ -58,8 +58,6 @@ const DefaultElement = (props: Props) => {
 
   const moduleLength = module.length
 
-  const mirror = endColumn
-
   const positionVector = useRef(new Vector3())
 
   const halfHouseLength = useHalfHouseLength(houseId)
@@ -69,9 +67,9 @@ const DefaultElement = (props: Props) => {
     ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
       if (!meshRef.current) return
 
-      // this is crazy
-      const mirrorFix = mirror ? moduleLength / 2 : -(moduleLength / 2)
-      meshRef.current.scale.set(1, 1, mirror ? 1 : -1)
+      // module transforms (depending on if )
+      const mirrorFix = endColumn ? moduleLength / 2 : -(moduleLength / 2)
+      meshRef.current.scale.set(1, 1, endColumn ? 1 : -1)
       meshRef.current.position.set(
         0,
         levelY,

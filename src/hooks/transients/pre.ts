@@ -15,6 +15,7 @@ export const usePreTransient = (houseId: string) => {
     () => {
       const { obb } = computeDimensions(preTransients[houseId])
       const collision = collideOBB(obb, [houseId])
+
       if (collision) return
 
       postTransients[houseId] = preTransients[houseId]
