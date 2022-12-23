@@ -6,7 +6,7 @@ import HandleMaterial from "../materials/HandleMaterial"
 const CircularHandle = forwardRef<Mesh, MeshProps>((props, ref) => {
   return (
     <mesh ref={ref} {...props}>
-      <circleBufferGeometry args={[0.5, 10]} />
+      <circleGeometry args={[0.5, 10]} />
       <HandleMaterial />
     </mesh>
   )

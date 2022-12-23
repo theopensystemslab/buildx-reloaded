@@ -34,7 +34,7 @@ const DefaultApp = () => {
           ))
         )}
         <Instances>
-          <circleBufferGeometry args={[0.5, 10]} />
+          <circleGeometry args={[0.5, 10]} />
           <HandleMaterial />
           {editMode === EditModeEnum.Enum.MOVE_ROTATE &&
             pipe(

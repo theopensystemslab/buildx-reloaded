@@ -32,7 +32,7 @@ const YPlane = forwardRef<Mesh, Props>((props, ref) => {
 
   return (
     <mesh layers={layers} {...bind()}>
-      <planeBufferGeometry args={[width, height, 1, 1]} />
+      <planeGeometry args={[width, height, 1, 1]} />
       <meshBasicMaterial
         color={0x248f24}
         visible={false}

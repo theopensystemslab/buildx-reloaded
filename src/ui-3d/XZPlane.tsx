@@ -59,7 +59,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
       }
       {...bind()}
     >
-      <planeBufferGeometry args={[size, size, 1, 1]} />
+      <planeGeometry args={[size, size, 1, 1]} />
       <meshBasicMaterial
         color={0x248f24}
         // visible={false}
