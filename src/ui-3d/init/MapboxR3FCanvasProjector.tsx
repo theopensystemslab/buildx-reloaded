@@ -23,8 +23,13 @@ const MapboxR3FCanvasProjector = (props: Props) => {
     const { width, height } = size
     setSize(width, height)
 
-    mapboxStore.cameraSync = new CameraSync(mapboxMap, camera, worldRef.current)
-    console.log(`camera sync'd`)
+    if (mapboxMap !== null) {
+      mapboxStore.cameraSync = new CameraSync(
+        mapboxMap,
+        camera,
+        worldRef.current
+      )
+    }
   }, [camera, mapboxMap, setSize, size])
 
   const [lat, lng] = DEFAULT_ORIGIN

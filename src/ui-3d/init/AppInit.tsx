@@ -1,5 +1,5 @@
 import { useGlobals } from "@/hooks/globals"
-import mapboxStore, { useMapboxStore } from "@/hooks/mapboxStore"
+import { useMapboxStore } from "@/hooks/mapboxStore"
 import Lighting from "@/ui-3d/init/Lighting"
 import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/init/MapboxR3FCanvasProjector"
@@ -9,7 +9,6 @@ import EventDiv from "@/ui/EventDiv"
 import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
-import { useKey } from "react-use"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
@@ -29,19 +28,6 @@ const Common = (props: Props) => {
         z={{ cells: 61, size: 1 }}
         color="#ababab"
       />
-      {/* <GroundPlane
-        onChange={(xz) => void (globals.pointerXZ = xz)}
-        onNearClick={() => {
-          // menu.open = false
-          // scope.selected = null
-          // clearIlluminatedMaterials()
-        }}
-        onNearHover={() => {
-          // if (menu.open) return
-          // scope.hovered = null
-          // if (scope.selected === null) clearIlluminatedMaterials()
-        }}
-      /> */}
       {preload && <DataPreload />}
       {children}
     </Fragment>
@@ -53,9 +39,9 @@ const AppInit = (props: Props) => {
 
   const { mapboxEnabled } = useMapboxStore()
 
-  useKey("t", () => {
-    mapboxStore.mapboxEnabled = !mapboxStore.mapboxEnabled
-  })
+  // useKey("t", () => {
+  //   mapboxStore.mapboxEnabled = !mapboxStore.mapboxEnabled
+  // })
 
   // useHouseTransformCollisionDetection()
 

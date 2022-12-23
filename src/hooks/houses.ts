@@ -223,4 +223,10 @@ export const useSystemDnaElementMaterials = () => {
   }, [])
 }
 
+export const useHouseSystemId = (houseId: string) => {
+  const houses = useHouses()
+  const { systemId } = houses[houseId]
+  return systemId
+}
+
 export default houses
