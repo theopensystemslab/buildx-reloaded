@@ -1,7 +1,7 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef } from "react"
+import { Fragment, useEffect, useRef } from "react"
 import { Group } from "three"
 import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { useGlobals } from "../../hooks/globals"
@@ -9,8 +9,12 @@ import { useHouse, useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { SiteCtxModeEnum, useSiteCtxMode } from "../../hooks/siteCtx"
 import { splitColumns } from "../../hooks/stretch"
+import postTransients, {
+  usePostTransientHouseTransforms,
+} from "../../hooks/transients/post"
 import { usePreTransient } from "../../hooks/transients/pre"
 import { RA } from "../../utils/functions"
+import { useSubscribeKey } from "../../utils/hooks"
 import { DebugDimensionsBox } from "../debug/DebugDimensions"
 import GroupedColumn from "./GroupedColumn"
 
@@ -33,6 +37,17 @@ const GroupedHouse = (props: Props) => {
   const houseGroupRef = useRef<Group>(null!)
 
   const { debug } = useGlobals()
+
+  useSubscribeKey(postTransients, houseId, () => {
+    if (!postTransients?.[houseId]) return
+    const { position } = postTransients[houseId]
+    if (!position) return
+    houseGroupRef.current.position.set(
+      house.position.x + position.dx,
+      house.position.y + position.dy,
+      house.position.z + position.dz
+    )
+  })
 
   return (
     <Fragment>
