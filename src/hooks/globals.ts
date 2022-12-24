@@ -35,7 +35,7 @@ const globals = proxy<GlobalStore>({
     width: false,
     length: false,
   },
-  debug: true,
+  debug: false,
 })
 
 export const useGlobals = () => useSnapshot(globals)

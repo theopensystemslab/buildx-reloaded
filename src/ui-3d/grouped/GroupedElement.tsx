@@ -1,7 +1,7 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
+import { useGesture } from "@use-gesture/react"
 import { useRef } from "react"
-import { Mesh, Vector3 } from "three"
-import { useHalfHouseLength } from "../../hooks/dimensions"
+import { Mesh } from "three"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
 import { useHashedGeometry } from "../../hooks/hashedGeometries"
 import { ModuleProps } from "./GroupedModule"
@@ -21,11 +21,7 @@ const GroupedElement = (props: Props) => {
     columnIndex,
     levelIndex,
     gridGroupIndex,
-    levelY,
-    moduleZ,
     module,
-    startColumn,
-    endColumn,
   } = props
 
   const materialHash = useMaterialHash({
@@ -49,11 +45,11 @@ const GroupedElement = (props: Props) => {
     elementName,
   }
 
-  const moduleLength = module.length
+  // const moduleLength = module.length
 
-  const positionVector = useRef(new Vector3())
+  // const positionVector = useRef(new Vector3())
 
-  const halfHouseLength = useHalfHouseLength(houseId)
+  // const halfHouseLength = useHalfHouseLength(houseId)
 
   // usePostTransientHouseTransforms(
   //   houseId,

@@ -74,10 +74,8 @@ export const useDragHandler = () => {
   })
 }
 
-export const useGestures = (): any => {
-  useDragHandler()
-
-  return useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+export const useGestures = (): any =>
+  useGesture<{ drag: ThreeEvent<PointerEvent> }>({
     onDrag: ({
       first,
       last,
@@ -114,7 +112,6 @@ export const useGestures = (): any => {
       }
     },
   })
-}
 
 export const useDragStart = () => {
   const { start } = useSnapshot(dragProxy)

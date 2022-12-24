@@ -35,17 +35,6 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     onPointerMove: ({ event: { uv } }) => {
       if (!uv) return
       globals.pointerXZ = [uv.x * size - size / 2, uv.y * size - size / 2]
-      // if (elementDragStart) {
-      //   elementDragEvents.drag = {
-      //     element: elementDragStart.element,
-      //     point: { x, y: elementDragStart.point.y, z },
-      //   }
-      // } else if (handleDragStart) {
-      //   handleDragEvents.drag = {
-      //     handleIdentifier: handleDragStart.handleIdentifier,
-      //     point: { x, y: handleDragStart.point.y, z },
-      //   }
-      // }
     },
   })
 

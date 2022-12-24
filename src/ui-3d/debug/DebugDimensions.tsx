@@ -6,7 +6,7 @@ import { useHouseKeys } from "../../hooks/houses"
 import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { RA } from "../../utils/functions"
 
-const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
+export const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
   const ref = useRef<Mesh>(null)
 
   const {
@@ -31,7 +31,7 @@ const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
   // todo: include central circle
   return (
     <mesh ref={ref} position={center}>
-      <boxBufferGeometry args={[width, height, length]} />
+      <boxGeometry args={[width, height, length]} />
       <meshBasicMaterial color="yellow" />
       {/* {pipe(
         circles,
