@@ -98,6 +98,8 @@ export const useHouseDimensionsUpdates = (houseId: string) => {
 
   useSubscribeKey(houses[houseId], "position", updateDimensions)
   useSubscribeKey(houses[houseId], "rotation", updateDimensions)
+
+  return computeDimensions()
 }
 
 export const useHouseDimensions = (houseId: string): Dimensions => {

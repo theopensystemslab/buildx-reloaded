@@ -16,6 +16,7 @@ const VanillaR3FCanvas = (props: Props) => {
         enabled: true,
         type: BasicShadowMap,
       }}
+      frameloop="demand"
     >
       {children}
       <SiteCamControls />

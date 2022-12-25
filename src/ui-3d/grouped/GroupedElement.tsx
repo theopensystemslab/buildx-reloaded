@@ -1,5 +1,4 @@
 import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
-import { useGesture } from "@use-gesture/react"
 import { useRef } from "react"
 import { Mesh } from "three"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
@@ -44,52 +43,6 @@ const GroupedElement = (props: Props) => {
     gridGroupIndex,
     elementName,
   }
-
-  // const moduleLength = module.length
-
-  // const positionVector = useRef(new Vector3())
-
-  // const halfHouseLength = useHalfHouseLength(houseId)
-
-  // usePostTransientHouseTransforms(
-  //   houseId,
-  //   ({ position: { x: tx, y: ty, z: tz }, rotation }) => {
-  //     if (!meshRef.current) return
-
-  //     // module transforms (depending on if end column)
-  //     const mirrorFix = end ? moduleLength / 2 : -(moduleLength / 2)
-  //     meshRef.current.scale.set(1, 1, end ? 1 : -1)
-  //     meshRef.current.position.set(
-  //       0,
-  //       levelY,
-  //       columnZ + moduleZ + mirrorFix - halfHouseLength
-  //     )
-
-  //     meshRef.current.setRotationFromAxisAngle(yAxis, rotation)
-  //     meshRef.current.position.applyAxisAngle(yAxis, rotation)
-
-  //     meshRef.current.position.add(new Vector3(tx, ty, tz + halfHouseLength))
-  //     // to here; order of operations super important
-
-  //     positionVector.current.copy(meshRef.current.position)
-  //   }
-  // )
-
-  // useSubscribeKey(postTransients, houseId, () => {
-  //   if (!meshRef.current) return
-  //   if (!postTransients[houseId]?.stretch) {
-  //     meshRef.current.position.copy(positionVector.current)
-  //     return
-  //   }
-
-  //   const { dx, dz, side } = postTransients[houseId].stretch!
-
-  //   if (side === HandleSideEnum.Enum.FRONT && !start) return
-  //   if (side === HandleSideEnum.Enum.BACK && !end) return
-
-  //   meshRef.current.position.copy(positionVector.current)
-  //   meshRef.current.position.add(new Vector3(dx, 0, dz))
-  // })
 
   return (
     <mesh
