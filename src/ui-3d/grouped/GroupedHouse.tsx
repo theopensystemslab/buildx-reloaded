@@ -7,6 +7,7 @@ import {
   useHouseDimensions,
   useHouseDimensionsUpdates,
 } from "../../hooks/dimensions"
+import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useGlobals } from "../../hooks/globals"
 import houses, { useHouse, useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
@@ -19,44 +20,22 @@ import { useSubscribeKey } from "../../utils/hooks"
 import { PI } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { DebugDimensionsBox } from "../debug/DebugDimensions"
+import RotateHandles from "../handles/RotateHandles"
+import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
 
 type Props = {
   houseId: string
 }
 
-const RotateHandles = ({ houseId }: { houseId: string }) => {
-  const { length: houseLength, width: houseWidth } = useHouseDimensions(houseId)
-  return (
-    <Fragment>
-      <Instance
-        rotation-x={-PI / 2}
-        position={[0, 0, -1.5]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      />
-      <Instance
-        rotation-x={-PI / 2}
-        position={[-houseWidth / 2 - 1.5, 0, houseLength / 2]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      />
-    </Fragment>
-  )
-}
-
 const GroupedHouse = (props: Props) => {
   const { houseId } = props
+
+  const houseGroupRef = useRef<Group>(null!)
+  const startRef = useRef<Group>(null!)
+  const endRef = useRef<Group>(null!)
+  const tPosV = useRef(new Vector3())
+
   const systemId = useHouseSystemId(houseId)
 
   const columnLayout = useColumnLayout(houseId)
@@ -66,11 +45,7 @@ const GroupedHouse = (props: Props) => {
 
   usePreTransient(houseId)
 
-  const houseGroupRef = useRef<Group>(null!)
-
   const { debug } = useGlobals()
-
-  const tPosV = useRef(new Vector3())
 
   useSubscribeKey(
     postTransients,
@@ -79,7 +54,7 @@ const GroupedHouse = (props: Props) => {
       const house = houses[houseId]
       if (!house) return
 
-      const { position, rotation } = postTransients[houseId] ?? {}
+      const { position, rotation, stretch } = postTransients[houseId] ?? {}
 
       const r = house.rotation + (rotation ?? 0)
       const hx = house.position.x + (position?.dx ?? 0)
@@ -94,6 +69,19 @@ const GroupedHouse = (props: Props) => {
       tPosV.current.set(hx, hy, hz)
       houseGroupRef.current.position.add(tPosV.current)
 
+      if (stretch) {
+        const { dx, dz, side } = stretch
+        console.log(dx, dz)
+        switch (side) {
+          case HandleSideEnum.Enum.FRONT:
+            startRef.current.position.set(dx, 0, dz)
+            break
+          case HandleSideEnum.Enum.BACK:
+            endRef.current.position.set(dx, 0, dz)
+            break
+        }
+      }
+
       invalidate()
     },
     true
@@ -104,11 +92,16 @@ const GroupedHouse = (props: Props) => {
   return (
     <Fragment>
       <group ref={houseGroupRef}>
-        <GroupedColumn
-          key={`${houseId}:${startColumn.columnIndex}`}
-          column={startColumn}
-          {...{ systemId, houseId, start: true }}
-        />
+        <group ref={startRef}>
+          {editMode === EditModeEnum.Enum.STRETCH && (
+            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.FRONT} />
+          )}
+          <GroupedColumn
+            key={`${houseId}:${startColumn.columnIndex}`}
+            column={startColumn}
+            {...{ systemId, houseId, start: true }}
+          />
+        </group>
         {pipe(
           midColumns,
           RA.map((column) => (
@@ -119,11 +112,16 @@ const GroupedHouse = (props: Props) => {
             />
           ))
         )}
-        <GroupedColumn
-          key={`${houseId}:${endColumn.columnIndex}`}
-          column={endColumn}
-          {...{ systemId, houseId, end: true }}
-        />
+        <group ref={endRef}>
+          <GroupedColumn
+            key={`${houseId}:${endColumn.columnIndex}`}
+            column={endColumn}
+            {...{ systemId, houseId, end: true }}
+          />
+          {editMode === EditModeEnum.Enum.STRETCH && (
+            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.BACK} />
+          )}
+        </group>
         {editMode === EditModeEnum.Enum.MOVE_ROTATE && (
           <RotateHandles houseId={houseId} />
         )}

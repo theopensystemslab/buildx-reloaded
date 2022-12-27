@@ -2,7 +2,7 @@ import { useColumnLayout } from "@/hooks/layouts"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
-import RotateHandles from "../RotateHandles"
+// import RotateHandles from "../RotateHandles"
 import VerticalHandle from "../VerticalHandle"
 import BoxColumn from "./BoxColumn"
 
@@ -38,7 +38,7 @@ const BoxHouse = (props: Props) => {
             )
           })}
         </group> */}
-        <RotateHandles houseId={id} houseLength={0} houseWidth={0} />
+        {/* <RotateHandles houseId={id} houseLength={0} houseWidth={0} /> */}
       </group>
       <VerticalHandle houseId={id} />
     </Fragment>
