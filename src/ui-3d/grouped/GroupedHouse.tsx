@@ -22,7 +22,9 @@ import { yAxis } from "../../utils/three"
 import { DebugDimensionsBox } from "../debug/DebugDimensions"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
+import StretchInstances from "../stretch/StretchInstances"
 import GroupedColumn from "./GroupedColumn"
+import GroupedStretchColumns from "./stretch/GroupedStretchColumns"
 
 type Props = {
   houseId: string
@@ -124,6 +126,9 @@ const GroupedHouse = (props: Props) => {
         </group>
         {editMode === EditModeEnum.Enum.MOVE_ROTATE && (
           <RotateHandles houseId={houseId} />
+        )}
+        {editMode === EditModeEnum.Enum.STRETCH && (
+          <GroupedStretchColumns houseId={houseId} />
         )}
       </group>
       {debug && <DebugDimensionsBox houseId={houseId} />}
