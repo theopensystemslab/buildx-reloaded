@@ -14,19 +14,11 @@ import GroupedStretchElement from "./GroupedStretchElement"
 export type StretchModuleProps = Omit<ColumnLayoutKeyInput, "columnIndex"> & {
   module: Module
   levelY: number
-  side: HandleSide
 }
 
 const GroupedStretchModule = (props: StretchModuleProps) => {
-  const {
-    systemId,
-    houseId,
-    levelIndex,
-    gridGroupIndex,
-    module,
-    levelY,
-    side,
-  } = props
+  const { systemId, houseId, levelIndex, gridGroupIndex, module, levelY } =
+    props
 
   const elements = useModuleElements(module)
 
@@ -35,7 +27,7 @@ const GroupedStretchModule = (props: StretchModuleProps) => {
     RM.collect(S.Ord)((elementName, geometryHash) => {
       return (
         <GroupedStretchElement
-          key={`${side}:${elementName}`}
+          key={`${elementName}`}
           {...{
             module,
             systemId,
@@ -45,7 +37,6 @@ const GroupedStretchModule = (props: StretchModuleProps) => {
             elementName,
             geometryHash,
             levelY,
-            side,
           }}
         />
       )

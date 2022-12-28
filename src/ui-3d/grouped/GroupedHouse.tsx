@@ -72,16 +72,17 @@ const GroupedHouse = (props: Props) => {
       houseGroupRef.current.position.add(tPosV.current)
 
       if (stretch) {
-        const { dx, dz, side } = stretch
-        console.log(dx, dz)
+        const { distance, side } = stretch
         switch (side) {
           case HandleSideEnum.Enum.FRONT:
-            startRef.current.position.set(dx, 0, dz)
-            break
+            startRef.current.position.set(0, 0, distance)
           case HandleSideEnum.Enum.BACK:
-            endRef.current.position.set(dx, 0, dz)
+            endRef.current.position.set(0, 0, distance)
             break
         }
+      } else {
+        startRef.current.position.set(0, 0, 0)
+        endRef.current.position.set(0, 0, 0)
       }
 
       invalidate()
