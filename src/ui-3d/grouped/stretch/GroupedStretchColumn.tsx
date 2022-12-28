@@ -20,10 +20,11 @@ type Props = {
   gridGroups: GridGroup[]
   side: HandleSide
   columnZ: number
+  columnLength: number
 }
 
 const GroupedStretchColumn = (props: Props) => {
-  const { systemId, houseId, gridGroups: rows, columnZ } = props
+  const { systemId, houseId, gridGroups: rows, columnZ, columnLength } = props
 
   const groupRef = useRef<Group>(null)
 
@@ -41,9 +42,15 @@ const GroupedStretchColumn = (props: Props) => {
 
       if (side !== props.side) return
 
-      if (side === HandleSideEnum.Enum.BACK && distance > columnZ) {
+      if (
+        side === HandleSideEnum.Enum.BACK &&
+        distance + columnLength / 2 > columnZ
+      ) {
         groupRef.current?.scale.set(1, 1, 1)
-      } else if (side === HandleSideEnum.Enum.FRONT && distance < columnZ) {
+      } else if (
+        side === HandleSideEnum.Enum.FRONT &&
+        distance + columnLength / 2 < columnZ
+      ) {
         groupRef.current?.scale.set(1, 1, 1)
       } else {
         groupRef.current?.scale.set(0, 0, 0)

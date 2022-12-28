@@ -76,6 +76,7 @@ const GroupedHouse = (props: Props) => {
         switch (side) {
           case HandleSideEnum.Enum.FRONT:
             startRef.current.position.set(0, 0, distance)
+            break
           case HandleSideEnum.Enum.BACK:
             endRef.current.position.set(0, 0, distance)
             break

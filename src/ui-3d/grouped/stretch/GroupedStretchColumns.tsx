@@ -32,9 +32,13 @@ const GroupedStretchColumns = ({ houseId }: { houseId: string }) => {
 
   const systemId = houses[houseId].systemId
 
-  const columnsUp = pipe(
+  const columnZs = pipe(
     NEA.range(0, maxCount - 1),
-    RA.map((i) => i * vanillaColumnLength),
+    RA.map((i) => i * vanillaColumnLength)
+  )
+
+  const columnsUp = pipe(
+    columnZs,
     RA.takeLeftWhile((columnZ) => {
       return true
       // TODO: +/- here?
@@ -60,12 +64,47 @@ const GroupedStretchColumns = ({ houseId }: { houseId: string }) => {
             houseId,
             side: HandleSideEnum.Enum.BACK,
             columnZ,
+            columnLength: vanillaColumnLength,
           }}
         />
       </group>
     ))
   )
 
+  const columnsDown = pipe(
+    columnZs,
+    RA.map((x) => -1 * x),
+    RA.takeLeftWhile((columnZ) => {
+      return true
+      // TODO: +/- here?
+      const center = new Vector3(0, 0, columnZ + vanillaColumnLength / 2)
+      const halfSize = new Vector3(
+        houseWidth / 2,
+        houseHeight / 2,
+        vanillaColumnLength / 2
+      )
+      const obb = new OBB(center, halfSize)
+
+      const collision = collideOBB(obb, [houseId])
+      console.log(collision)
+      return !collision
+    }),
+    RA.map((columnZ) => (
+      <group key={columnZ} position={[0, 0, columnZ]}>
+        <GroupedStretchColumn
+          key={columnZ}
+          {...{
+            gridGroups: vanillaColumn,
+            systemId,
+            houseId,
+            side: HandleSideEnum.Enum.FRONT,
+            columnZ,
+            columnLength: vanillaColumnLength,
+          }}
+        />
+      </group>
+    ))
+  )
   // const columnsUp = pipe(
   //   NEA.range(0, maxCount - 1),
   //   RA.map((i) => i * vanillaColumnLength),
@@ -132,9 +171,7 @@ const GroupedStretchColumns = ({ houseId }: { houseId: string }) => {
       <group position={[0, 0, houseLength - endColumn.length]}>
         {columnsUp}
       </group>
-      {/* <group position={[0,0,startColumn.length]}>
-      {columnsDown}
-      </group> */}
+      <group position={[0, 0, startColumn.length]}>{columnsDown}</group>
     </Fragment>
   )
 }
