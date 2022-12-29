@@ -8,7 +8,7 @@ import { useGlobals } from "../../hooks/globals"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
-import { splitColumns } from "../../hooks/transients/stretch"
+import { splitColumns, stretchLength } from "../../hooks/transients/stretch"
 import {
   postTransients,
   usePreTransient,
@@ -40,9 +40,9 @@ const GroupedHouse = (props: Props) => {
 
   const { length: houseLength } = useHouseDimensionsUpdates(houseId)
 
-  usePreTransient(houseId)
+  console.log({ houseLength })
 
-  const { debug } = useGlobals()
+  usePreTransient(houseId)
 
   useSubscribeKey(
     postTransients,
@@ -51,7 +51,7 @@ const GroupedHouse = (props: Props) => {
       const house = houses[houseId]
       if (!house) return
 
-      const { position, rotation, stretch } = postTransients[houseId] ?? {}
+      const { position, rotation } = postTransients[houseId] ?? {}
 
       const r = house.rotation + (rotation ?? 0)
       const hx = house.position.x + (position?.dx ?? 0)
@@ -66,25 +66,28 @@ const GroupedHouse = (props: Props) => {
       tPosV.current.set(hx, hy, hz)
       houseGroupRef.current.position.add(tPosV.current)
 
-      if (stretch) {
-        const { distance, side } = stretch
-        switch (side) {
-          case HandleSideEnum.Enum.FRONT:
-            startRef.current.position.set(0, 0, distance)
-            break
-          case HandleSideEnum.Enum.BACK:
-            endRef.current.position.set(0, 0, distance)
-            break
-        }
-      } else {
-        startRef.current.position.set(0, 0, 0)
-        endRef.current.position.set(0, 0, 0)
-      }
-
       invalidate()
     },
     true
   )
+
+  useSubscribeKey(stretchLength, houseId, () => {
+    if (stretchLength[houseId]) {
+      const { distance, side } = stretchLength[houseId]
+      switch (side) {
+        case HandleSideEnum.Enum.FRONT:
+          startRef.current.position.set(0, 0, distance)
+          break
+        case HandleSideEnum.Enum.BACK:
+          endRef.current.position.set(0, 0, distance)
+          break
+      }
+    } else {
+      startRef.current.position.set(0, 0, 0)
+      endRef.current.position.set(0, 0, 0)
+    }
+    invalidate()
+  })
 
   const editMode = useEditMode()
 

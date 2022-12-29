@@ -1,18 +1,12 @@
-import {
-  ColumnLayoutKeyInput,
-  getVanillaColumnKey,
-  GridGroup,
-  indicesToKey,
-  PositionedColumn,
-} from "@/hooks/layouts"
-import { pipe } from "fp-ts/lib/function"
 import { HandleSide, HandleSideEnum } from "@/hooks/gestures/drag/handles"
+import { GridGroup } from "@/hooks/layouts"
 import { RA } from "@/utils/functions"
-import GroupedStretchModule from "./GroupedStretchModule"
-import { useSubscribeKey } from "../../../utils/hooks"
+import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import { postTransients } from "../../../hooks/transients/transforms"
+import { stretchLength } from "../../../hooks/transients/stretch"
+import { useSubscribeKey } from "../../../utils/hooks"
+import GroupedStretchModule from "./GroupedStretchModule"
 
 type Props = {
   systemId: string
@@ -29,16 +23,15 @@ const GroupedStretchColumn = (props: Props) => {
   const groupRef = useRef<Group>(null)
 
   useSubscribeKey(
-    postTransients,
+    stretchLength,
     houseId,
     () => {
-      const { stretch } = postTransients[houseId] ?? {}
-      if (!stretch) {
+      if (!stretchLength[houseId]) {
         groupRef.current?.scale.set(0, 0, 0)
         return
       }
 
-      const { distance, side } = stretch
+      const { distance, side } = stretchLength[houseId]
 
       if (side !== props.side) return
 
