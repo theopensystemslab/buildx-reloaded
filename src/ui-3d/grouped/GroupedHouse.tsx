@@ -1,15 +1,11 @@
-import { Instance } from "@react-three/drei"
-import { advance, invalidate, useFrame } from "@react-three/fiber"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useRef } from "react"
 import { Group, Vector3 } from "three"
-import {
-  useHouseDimensions,
-  useHouseDimensionsUpdates,
-} from "../../hooks/dimensions"
+import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useGlobals } from "../../hooks/globals"
-import houses, { useHouse, useHouseSystemId } from "../../hooks/houses"
+import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
 import { splitColumns } from "../../hooks/stretch"
@@ -17,12 +13,9 @@ import postTransients from "../../hooks/transients/post"
 import { usePreTransient } from "../../hooks/transients/pre"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { PI } from "../../utils/math"
 import { yAxis } from "../../utils/three"
-import { DebugDimensionsBox } from "../debug/DebugDimensions"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
-import StretchInstances from "../stretch/StretchInstances"
 import GroupedColumn from "./GroupedColumn"
 import GroupedStretchColumns from "./stretch/GroupedStretchColumns"
 
@@ -133,7 +126,6 @@ const GroupedHouse = (props: Props) => {
           <GroupedStretchColumns houseId={houseId} />
         )}
       </group>
-      {debug && <DebugDimensionsBox houseId={houseId} />}
     </Fragment>
   )
 }
