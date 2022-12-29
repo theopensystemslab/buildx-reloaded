@@ -7,10 +7,8 @@ import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { EditModeEnum } from "../siteCtx"
-import stretch from "../stretch"
-import transformsTransients, {
-  setTransformsTransients,
-} from "../transients/transforms"
+import { stretchLength } from "../stretch"
+import { preTransforms, setTransients } from "../transforms"
 import { HandleIdentifier, HandleSideEnum } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
@@ -31,7 +29,7 @@ export const useDragHandler = () => {
     } = dragProxy
     switch (identifierType) {
       case "element":
-        transformsTransients.pre[houseId] = {
+        preTransforms[houseId] = {
           position: {
             dx: x1 - x0,
             dy: 0,
@@ -46,7 +44,7 @@ export const useDragHandler = () => {
             const { x: cx, z: cz } = getHouseCenter(houseId)
             const angle0 = Math.atan2(cz - z0, cx - x0)
             const angle = Math.atan2(cz - z1, cx - x1)
-            transformsTransients.pre[houseId] = {
+            preTransforms[houseId] = {
               rotation: -(angle - angle0),
             }
             return
@@ -58,7 +56,7 @@ export const useDragHandler = () => {
               side === HandleSideEnum.Enum.FRONT ||
               side === HandleSideEnum.Enum.BACK
             )
-              stretch.length[houseId] = {
+              stretchLength[houseId] = {
                 side,
                 dx,
                 dz,
@@ -71,7 +69,7 @@ export const useDragHandler = () => {
 
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
-      setTransformsTransients()
+      setTransients()
       dragProxy.start = null
       dragProxy.drag = null
     }

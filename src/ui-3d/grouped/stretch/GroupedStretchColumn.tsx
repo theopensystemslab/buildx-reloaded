@@ -4,7 +4,7 @@ import { RA } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import stretch from "../../../hooks/stretch"
+import { stretchLength } from "../../../hooks/stretch"
 import { useSubscribeKey } from "../../../utils/hooks"
 import GroupedStretchModule from "./GroupedStretchModule"
 
@@ -23,15 +23,15 @@ const GroupedStretchColumn = (props: Props) => {
   const groupRef = useRef<Group>(null)
 
   useSubscribeKey(
-    stretch.length,
+    stretchLength,
     houseId,
     () => {
-      if (!stretch.length[houseId]) {
+      if (!stretchLength[houseId]) {
         groupRef.current?.scale.set(0, 0, 0)
         return
       }
 
-      const { distance, side } = stretch.length[houseId]
+      const { distance, side } = stretchLength[houseId]
 
       if (side !== props.side) return
 

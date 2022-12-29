@@ -5,7 +5,7 @@ import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
 import houses from "./houses"
 import { layouts } from "./layouts"
-import { TransformsTransients } from "./transients/transforms"
+import { TransformsTransients } from "./transforms"
 
 type Dimensions = {
   obb: OBB
@@ -42,12 +42,6 @@ export const useComputeDimensions = (houseId: string) => {
         (acc, gg) => acc + gg.modules[0].module.height,
         0
       )
-      const z0 = columns[0].gridGroups[0].modules[0].z
-      const lastColumn = columns[columns.length - 1]
-      const lastGridGroup =
-        lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
-      const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
-      const z1 = lastColumn.z + lastModule.z + lastModule.module.length
 
       const { x: px, y: py, z: pz } = houses[houseId].position
 

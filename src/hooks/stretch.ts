@@ -11,13 +11,8 @@ export type Stretch = {
   distance: number
 }
 
-const length = proxy<Record<string, Stretch>>({})
-const width = proxy<Record<string, Stretch>>({})
-
-const stretch = {
-  length,
-  width,
-}
+export const stretchLength = proxy<Record<string, Stretch>>({})
+export const stretchWidth = proxy<Record<string, Stretch>>({})
 
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
@@ -32,5 +27,3 @@ export const splitColumns = (layout: ColumnLayout) =>
       midColumns,
     })
   )
-
-export default stretch

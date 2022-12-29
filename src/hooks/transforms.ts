@@ -1,9 +1,10 @@
 import { useRef } from "react"
 import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
-import { useSubscribeKey } from "../../utils/hooks"
-import { useComputeDimensions, collideOBB } from "../dimensions"
-import houses from "../houses"
+import { useSubscribeKey } from "../utils/hooks"
+import { collideOBB, useComputeDimensions } from "./dimensions"
+import houses from "./houses"
+import { stretchLength } from "./stretch"
 
 export type TransformsTransients = {
   position?: DeltaV3
@@ -12,17 +13,12 @@ export type TransformsTransients = {
 
 export type TransientsProxy = Record<string, TransformsTransients>
 
-const pre = proxy<TransientsProxy>({})
-const post = proxy<TransientsProxy>({})
+export const preTransforms = proxy<TransientsProxy>({})
+export const postTransforms = proxy<TransientsProxy>({})
 
-const transformsTransients = proxy({
-  pre,
-  post,
-})
-
-export const setTransformsTransients = () => {
-  for (let houseId of Object.keys(post)) {
-    const { position, rotation } = post[houseId] ?? {}
+export const setTransients = () => {
+  for (let houseId of Object.keys(postTransforms)) {
+    const { position, rotation } = postTransforms[houseId] ?? {}
     if (position) {
       const { x, y, z } = houses[houseId].position
       const { dx, dy, dz } = position
@@ -35,8 +31,12 @@ export const setTransformsTransients = () => {
     if (rotation) {
       houses[houseId].rotation += rotation
     }
-    delete post[houseId]
-    delete pre[houseId]
+    delete postTransforms[houseId]
+    delete preTransforms[houseId]
+  }
+
+  for (let houseId of Object.keys(stretchLength)) {
+    delete stretchLength[houseId]
   }
 }
 
@@ -45,18 +45,16 @@ export const useSubscribePreTransformsTransients = (houseId: string) => {
   const stretchOBB = useRef(new OBB())
 
   useSubscribeKey(
-    pre,
+    preTransforms,
     houseId,
     () => {
-      const { obb } = computeDimensions(pre[houseId])
+      const { obb } = computeDimensions(preTransforms[houseId])
       const collision = collideOBB(obb, [houseId])
 
       if (collision) return
 
-      post[houseId] = pre[houseId]
+      postTransforms[houseId] = preTransforms[houseId]
     },
     false
   )
 }
-
-export default transformsTransients

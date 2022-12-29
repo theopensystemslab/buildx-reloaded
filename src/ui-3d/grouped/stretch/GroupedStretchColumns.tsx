@@ -98,7 +98,7 @@ const GroupedStretchColumns = ({ houseId }: { houseId: string }) => {
       </group>
     ))
   )
-
+  console.log({ houseLength })
   return (
     <Fragment>
       <group position={[0, 0, houseLength - endColumn.length]}>

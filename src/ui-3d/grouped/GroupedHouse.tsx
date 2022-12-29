@@ -8,10 +8,11 @@ import { useGlobals } from "../../hooks/globals"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
-import stretch, { splitColumns } from "../../hooks/stretch"
-import transformsTransients, {
+import { splitColumns, stretchLength } from "../../hooks/stretch"
+import {
+  postTransforms,
   useSubscribePreTransformsTransients,
-} from "../../hooks/transients/transforms"
+} from "../../hooks/transforms"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
 import { yAxis } from "../../utils/three"
@@ -45,13 +46,13 @@ const GroupedHouse = (props: Props) => {
   const { debug } = useGlobals()
 
   useSubscribeKey(
-    transformsTransients.post,
+    postTransforms,
     houseId,
     () => {
       const house = houses[houseId]
       if (!house) return
 
-      const { position, rotation } = transformsTransients.post[houseId] ?? {}
+      const { position, rotation } = postTransforms[houseId] ?? {}
 
       const r = house.rotation + (rotation ?? 0)
       const hx = house.position.x + (position?.dx ?? 0)
@@ -72,11 +73,11 @@ const GroupedHouse = (props: Props) => {
   )
 
   useSubscribeKey(
-    stretch.length,
+    stretchLength,
     houseId,
     () => {
-      if (stretch.length[houseId]) {
-        const { distance, side } = stretch.length[houseId]
+      if (stretchLength[houseId]) {
+        const { distance, side } = stretchLength[houseId]
         switch (side) {
           case HandleSideEnum.Enum.FRONT:
             startRef.current.position.set(0, 0, distance)
