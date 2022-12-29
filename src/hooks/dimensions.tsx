@@ -3,11 +3,9 @@ import { Matrix4, Mesh, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
-import { abs } from "../utils/math"
-import { HandleSideEnum } from "./gestures/drag/handles"
 import houses from "./houses"
-import { layouts, useVanillaColumnLength } from "./layouts"
-import { Transients } from "./transients/common"
+import { layouts } from "./layouts"
+import { TransformsTransients } from "./transients/transforms"
 
 type Dimensions = {
   obb: OBB
@@ -31,14 +29,10 @@ export const useComputeDimensions = (houseId: string) => {
   const rotationMatrix = useRef(new Matrix4())
 
   return useCallback(
-    (transients: Transients = {}): Dimensions => {
+    (transients: TransformsTransients = {}): Dimensions => {
       const {
         rotation: dr = 0,
         position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-        stretch: { distance, side } = {
-          distance: 0,
-          // side: HandleSideEnum.Enum.FRONT,
-        },
       } = transients
 
       const columns = layouts[houseId]
@@ -54,8 +48,6 @@ export const useComputeDimensions = (houseId: string) => {
         lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
       const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
       const z1 = lastColumn.z + lastModule.z + lastModule.module.length
-
-      const length = z1 - z0 + abs(distance)
 
       const { x: px, y: py, z: pz } = houses[houseId].position
 

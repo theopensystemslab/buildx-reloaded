@@ -7,9 +7,11 @@ import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { EditModeEnum } from "../siteCtx"
-import { setTransients } from "../transients/common"
-import preTransients from "../transients/pre"
-import { HandleIdentifier } from "./drag/handles"
+import stretch from "../stretch"
+import transformsTransients, {
+  setTransformsTransients,
+} from "../transients/transforms"
+import { HandleIdentifier, HandleSideEnum } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
@@ -29,7 +31,7 @@ export const useDragHandler = () => {
     } = dragProxy
     switch (identifierType) {
       case "element":
-        preTransients[houseId] = {
+        transformsTransients.pre[houseId] = {
           position: {
             dx: x1 - x0,
             dy: 0,
@@ -44,7 +46,7 @@ export const useDragHandler = () => {
             const { x: cx, z: cz } = getHouseCenter(houseId)
             const angle0 = Math.atan2(cz - z0, cx - x0)
             const angle = Math.atan2(cz - z1, cx - x1)
-            preTransients[houseId] = {
+            transformsTransients.pre[houseId] = {
               rotation: -(angle - angle0),
             }
             return
@@ -52,14 +54,16 @@ export const useDragHandler = () => {
             const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
             const [dx, dz] = rotateV2(houseId, [0, distance])
 
-            preTransients[houseId] = {
-              stretch: {
+            if (
+              side === HandleSideEnum.Enum.FRONT ||
+              side === HandleSideEnum.Enum.BACK
+            )
+              stretch.length[houseId] = {
                 side,
                 dx,
                 dz,
                 distance,
-              },
-            }
+              }
         }
         return
     }
@@ -67,7 +71,7 @@ export const useDragHandler = () => {
 
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
-      setTransients()
+      setTransformsTransients()
       dragProxy.start = null
       dragProxy.drag = null
     }

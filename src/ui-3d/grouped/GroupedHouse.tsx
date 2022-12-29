@@ -1,28 +1,23 @@
-import { Instance } from "@react-three/drei"
-import { advance, invalidate, useFrame } from "@react-three/fiber"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useRef } from "react"
 import { Group, Vector3 } from "three"
-import {
-  useHouseDimensions,
-  useHouseDimensionsUpdates,
-} from "../../hooks/dimensions"
+import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useGlobals } from "../../hooks/globals"
-import houses, { useHouse, useHouseSystemId } from "../../hooks/houses"
+import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
-import { splitColumns } from "../../hooks/stretch"
-import postTransients from "../../hooks/transients/post"
-import { usePreTransient } from "../../hooks/transients/pre"
+import stretch, { splitColumns } from "../../hooks/stretch"
+import transformsTransients, {
+  useSubscribePreTransformsTransients,
+} from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { PI } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import { DebugDimensionsBox } from "../debug/DebugDimensions"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
-import StretchInstances from "../stretch/StretchInstances"
 import GroupedColumn from "./GroupedColumn"
 import GroupedStretchColumns from "./stretch/GroupedStretchColumns"
 
@@ -45,18 +40,18 @@ const GroupedHouse = (props: Props) => {
 
   const { length: houseLength } = useHouseDimensionsUpdates(houseId)
 
-  usePreTransient(houseId)
+  useSubscribePreTransformsTransients(houseId)
 
   const { debug } = useGlobals()
 
   useSubscribeKey(
-    postTransients,
+    transformsTransients.post,
     houseId,
     () => {
       const house = houses[houseId]
       if (!house) return
 
-      const { position, rotation, stretch } = postTransients[houseId] ?? {}
+      const { position, rotation } = transformsTransients.post[houseId] ?? {}
 
       const r = house.rotation + (rotation ?? 0)
       const hx = house.position.x + (position?.dx ?? 0)
@@ -71,8 +66,17 @@ const GroupedHouse = (props: Props) => {
       tPosV.current.set(hx, hy, hz)
       houseGroupRef.current.position.add(tPosV.current)
 
-      if (stretch) {
-        const { distance, side } = stretch
+      invalidate()
+    },
+    true
+  )
+
+  useSubscribeKey(
+    stretch.length,
+    houseId,
+    () => {
+      if (stretch.length[houseId]) {
+        const { distance, side } = stretch.length[houseId]
         switch (side) {
           case HandleSideEnum.Enum.FRONT:
             startRef.current.position.set(0, 0, distance)
@@ -85,7 +89,6 @@ const GroupedHouse = (props: Props) => {
         startRef.current.position.set(0, 0, 0)
         endRef.current.position.set(0, 0, 0)
       }
-
       invalidate()
     },
     true

@@ -1,8 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { proxy } from "valtio"
-import { RA } from "../../utils/functions"
-import { HandleSide } from "../gestures/drag/handles"
-import { ColumnLayout } from "../layouts"
+import { RA } from "../utils/functions"
+import { HandleSide } from "./gestures/drag/handles"
+import { ColumnLayout } from "./layouts"
 
 export type Stretch = {
   side: HandleSide
@@ -11,7 +11,13 @@ export type Stretch = {
   distance: number
 }
 
-const stretchProxy = proxy<Record<string, Stretch>>({})
+const length = proxy<Record<string, Stretch>>({})
+const width = proxy<Record<string, Stretch>>({})
+
+const stretch = {
+  length,
+  width,
+}
 
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
@@ -26,4 +32,5 @@ export const splitColumns = (layout: ColumnLayout) =>
       midColumns,
     })
   )
-export default stretchProxy
+
+export default stretch

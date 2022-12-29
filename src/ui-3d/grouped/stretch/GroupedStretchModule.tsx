@@ -1,14 +1,9 @@
-import { pipe } from "fp-ts/lib/function"
-import { Fragment } from "react"
 import { useModuleElements } from "@/data/elements"
 import { Module } from "@/data/modules"
-import { HandleSide } from "@/hooks/gestures/drag/handles"
-import {
-  ColumnLayoutKeyInput,
-  getVanillaColumnKey,
-  indicesToKey,
-} from "@/hooks/layouts"
+import { ColumnLayoutKeyInput } from "@/hooks/layouts"
 import { RM, S } from "@/utils/functions"
+import { pipe } from "fp-ts/lib/function"
+import { Fragment } from "react"
 import GroupedStretchElement from "./GroupedStretchElement"
 
 export type StretchModuleProps = Omit<ColumnLayoutKeyInput, "columnIndex"> & {

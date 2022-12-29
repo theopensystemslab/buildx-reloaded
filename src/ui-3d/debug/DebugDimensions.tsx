@@ -3,7 +3,6 @@ import { Fragment, useRef } from "react"
 import { Mesh } from "three"
 import { useHouseDimensions } from "../../hooks/dimensions"
 import { useHouseKeys } from "../../hooks/houses"
-import { usePostTransientHouseTransforms } from "../../hooks/transients/post"
 import { RA } from "../../utils/functions"
 
 export const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
@@ -19,14 +18,14 @@ export const DebugDimensionsBox = ({ houseId }: { houseId: string }) => {
     },
   } = useHouseDimensions(houseId)
 
-  usePostTransientHouseTransforms(
-    houseId,
-    ({ position: { x, y, z }, rotation }) => {
-      if (!ref.current) return
-      ref.current.rotation.y = rotation
-      ref.current.position.set(x, y + halfHeight, z + halfLength)
-    }
-  )
+  // usePostTransientHouseTransforms(
+  //   houseId,
+  //   ({ position: { x, y, z }, rotation }) => {
+  //     if (!ref.current) return
+  //     ref.current.rotation.y = rotation
+  //     ref.current.position.set(x, y + halfHeight, z + halfLength)
+  //   }
+  // )
 
   // todo: include central circle
   return (
