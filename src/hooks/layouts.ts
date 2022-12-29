@@ -9,7 +9,7 @@ import { proxy, ref, useSnapshot } from "valtio"
 import { Module, useGetVanillaModule, usePadColumn } from "../data/modules"
 import { errorThrower, O, someOrError } from "../utils/functions"
 import houses, { useHouseRows } from "./houses"
-import { splitColumns } from "./stretch"
+import { splitColumns } from "./transients/stretch"
 
 export type PositionedModule = {
   module: Module

@@ -1,24 +1,17 @@
+import { collideOBB, useHouseDimensions } from "@/hooks/dimensions"
+import { HandleSideEnum } from "@/hooks/gestures/drag/handles"
+import houses, { useHouse } from "@/hooks/houses"
+import { useStretch } from "@/hooks/layouts"
+import { NEA, RA } from "@/utils/functions"
+import { floor, max } from "@/utils/math"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { useSnapshot } from "valtio"
-import { collideOBB, useHouseDimensions } from "@/hooks/dimensions"
-import { HandleSide, HandleSideEnum } from "@/hooks/gestures/drag/handles"
-import dragProxy from "@/hooks/gestures/drag/proxy"
-import houses, { useHouse } from "@/hooks/houses"
-import { useStretch } from "@/hooks/layouts"
-import { EditModeEnum } from "@/hooks/siteCtx"
-import { NEA, RA } from "@/utils/functions"
-import { floor, max } from "@/utils/math"
 import GroupedStretchColumn from "./GroupedStretchColumn"
-import { useSubscribeKey } from "../../../utils/hooks"
-import postTransients from "../../../hooks/transients/post"
 
 const GroupedStretchColumns = ({ houseId }: { houseId: string }) => {
   const { startColumn, endColumn, vanillaColumn } = useStretch(houseId)
-
-  const house = useHouse(houseId)
 
   const vanillaColumnLength = vanillaColumn[0].length
   const {

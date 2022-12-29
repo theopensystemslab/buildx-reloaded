@@ -23,8 +23,7 @@ import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
 import SiteContextMenu from "./menu/SiteContextMenu"
 import Radio from "./Radio"
-import postTransients from "../hooks/transients/post"
-import preTransients from "../hooks/transients/pre"
+import { postTransients, preTransients } from "../hooks/transients/transforms"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -38,14 +37,8 @@ const HtmlUi = () => {
 
   const preTs = useSnapshot(preTransients)
   const postTs = useSnapshot(postTransients)
-  // const houses = useHouses()
 
   const menu = useMenu()
-
-  // const elementDragEvents = useElementDragEvents()
-  // const handleDragEvents = useHandleDragEvents()
-
-  // const drag = useSnapshot(dragProxy)
 
   return (
     <Fragment>

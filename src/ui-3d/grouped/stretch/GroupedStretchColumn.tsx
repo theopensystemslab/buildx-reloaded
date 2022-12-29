@@ -10,9 +10,9 @@ import { HandleSide, HandleSideEnum } from "@/hooks/gestures/drag/handles"
 import { RA } from "@/utils/functions"
 import GroupedStretchModule from "./GroupedStretchModule"
 import { useSubscribeKey } from "../../../utils/hooks"
-import postTransients from "../../../hooks/transients/post"
 import { useRef } from "react"
 import { Group } from "three"
+import { postTransients } from "../../../hooks/transients/transforms"
 
 type Props = {
   systemId: string

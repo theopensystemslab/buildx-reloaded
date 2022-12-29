@@ -8,9 +8,11 @@ import { useGlobals } from "../../hooks/globals"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
-import { splitColumns } from "../../hooks/stretch"
-import postTransients from "../../hooks/transients/post"
-import { usePreTransient } from "../../hooks/transients/pre"
+import { splitColumns } from "../../hooks/transients/stretch"
+import {
+  postTransients,
+  usePreTransient,
+} from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
 import { yAxis } from "../../utils/three"
