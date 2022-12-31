@@ -350,7 +350,7 @@ export const useCachedLayout = (houseId: string) => {
   return snap[houseId]
 }
 
-export const useStretch = (houseId: string) => {
+export const useStretchColumns = (houseId: string) => {
   const layout = useCachedLayout(houseId)
 
   const { startColumn, endColumn } = splitColumns(layout)
@@ -390,7 +390,7 @@ export const useStretch = (houseId: string) => {
 }
 
 export const useVanillaColumn = (houseId: string) => {
-  const { vanillaColumn } = useStretch(houseId)
+  const { vanillaColumn } = useStretchColumns(houseId)
 
   return vanillaColumn
 }

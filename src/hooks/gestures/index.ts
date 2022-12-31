@@ -9,7 +9,7 @@ import globals from "../globals"
 import { EditModeEnum } from "../siteCtx"
 import { setTransients } from "../transients/common"
 import { stretchLength } from "../transients/stretch"
-import { preTransients } from "../transients/transforms"
+import { preTransformsTransients } from "../transients/transforms"
 import { HandleIdentifier } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
@@ -30,7 +30,7 @@ export const useDragHandler = () => {
     } = dragProxy
     switch (identifierType) {
       case "element":
-        preTransients[houseId] = {
+        preTransformsTransients[houseId] = {
           position: {
             dx: x1 - x0,
             dy: 0,
@@ -45,7 +45,7 @@ export const useDragHandler = () => {
             const { x: cx, z: cz } = getHouseCenter(houseId)
             const angle0 = Math.atan2(cz - z0, cx - x0)
             const angle = Math.atan2(cz - z1, cx - x1)
-            preTransients[houseId] = {
+            preTransformsTransients[houseId] = {
               rotation: -(angle - angle0),
             }
             return

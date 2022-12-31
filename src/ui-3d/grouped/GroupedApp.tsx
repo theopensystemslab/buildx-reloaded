@@ -3,6 +3,7 @@ import { Instances } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import { useDragHandler, useGestures } from "../../hooks/gestures"
+import { useDebug } from "../../hooks/globals"
 import HandleMaterial from "../../materials/HandleMaterial"
 import { RA } from "../../utils/functions"
 import XZPlane from "../XZPlane"
@@ -13,6 +14,7 @@ const GroupedApp = () => {
   const houseKeys = useHouseKeys()
   const bindAll = useGestures()
   useDragHandler()
+
   return (
     <Fragment>
       <group {...bindAll()}>

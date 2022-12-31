@@ -23,7 +23,10 @@ import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
 import SiteContextMenu from "./menu/SiteContextMenu"
 import Radio from "./Radio"
-import { postTransients, preTransients } from "../hooks/transients/transforms"
+import {
+  postTransformsTransients,
+  preTransformsTransients,
+} from "../hooks/transients/transforms"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -35,8 +38,8 @@ const HtmlUi = () => {
 
   useInsert1000Skylarks()
 
-  const preTs = useSnapshot(preTransients)
-  const postTs = useSnapshot(postTransients)
+  const preTs = useSnapshot(preTransformsTransients)
+  const postTs = useSnapshot(postTransformsTransients)
 
   const menu = useMenu()
 

@@ -1,39 +1,32 @@
 import { proxy } from "valtio"
 import { useSubscribeKey } from "../../utils/hooks"
 import { collideOBB, useComputeDimensions } from "../dimensions"
-import houses from "../houses"
-import { stretchLength } from "./stretch"
 
-export type Transients = {
+export type Transforms = {
   position?: DeltaV3
   rotation?: number
 }
 
-export type TransientsProxy = Record<string, Transients>
+export type TransformsTransients = Record<string, Transforms>
 
-export const preTransients = proxy<TransientsProxy>({})
+export const preTransformsTransients = proxy<TransformsTransients>({})
 
 export const usePreTransient = (houseId: string) => {
   const computeDimensions = useComputeDimensions(houseId)
 
   useSubscribeKey(
-    preTransients,
+    preTransformsTransients,
     houseId,
     () => {
-      const { obb } = computeDimensions(preTransients[houseId])
+      const { obb } = computeDimensions(preTransformsTransients[houseId])
       const collision = collideOBB(obb, [houseId])
 
       if (collision) return
 
-      postTransients[houseId] = preTransients[houseId]
+      postTransformsTransients[houseId] = preTransformsTransients[houseId]
     },
     false
   )
 }
 
-export const postTransients = proxy<TransientsProxy>({})
-
-export type HouseTransforms = {
-  position: V3
-  rotation: number
-}
+export const postTransformsTransients = proxy<TransformsTransients>({})

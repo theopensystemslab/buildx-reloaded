@@ -1,11 +1,13 @@
-import { useCallback, useRef } from "react"
-import { Matrix4, Mesh, Vector3 } from "three"
+import { useThree } from "@react-three/fiber"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { BoxGeometry, Matrix4, Mesh, MeshBasicMaterial, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
+import { yAxis } from "../utils/three"
 import houses, { useHouse } from "./houses"
 import { layouts } from "./layouts"
-import { Transients } from "./transients/transforms"
+import { Transforms } from "./transients/transforms"
 
 type Dimensions = {
   obb: OBB
@@ -23,13 +25,49 @@ const defaultDimensions: Dimensions = {
   obb: new OBB(),
 }
 
+export const useRenderOBB = () => {
+  const scene = useThree((t) => t.scene)
+
+  return (obb: OBB, matrix?: Matrix4) => {
+    const size = obb.halfSize.multiplyScalar(2)
+    const geom = new BoxGeometry(size.x, size.y, size.z)
+    const material = new MeshBasicMaterial({ color: "tomato" })
+    const mesh = new Mesh(geom, material)
+    if (matrix) mesh.applyMatrix4(matrix)
+    scene.add(mesh)
+  }
+}
+
+export const useHouseMatrix = (houseId: string) => {
+  const translationMatrix = useRef(new Matrix4())
+  const rotationMatrix = useRef(new Matrix4())
+
+  return (deltas?: { x?: number; y?: number; z?: number; scale?: number }) => {
+    const {
+      position: { x, y, z },
+      rotation,
+    } = houses[houseId]
+    const { x: dx = 0, y: dy = 0, z: dz = 0, scale = 1 } = deltas ?? {}
+
+    rotationMatrix.current.makeRotationY(rotation)
+
+    const v = new Vector3(dx, dy, dz)
+    v.applyAxisAngle(yAxis, rotation)
+
+    v.add(new Vector3(x, y, z))
+    translationMatrix.current.identity()
+    translationMatrix.current.setPosition(v)
+
+    return translationMatrix.current.multiply(rotationMatrix.current)
+  }
+}
+
 export const useComputeDimensions = (houseId: string) => {
-  const preTransM = useRef(new Matrix4())
-  const postTransM = useRef(new Matrix4())
+  const translationMatrix = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
   return useCallback(
-    (transients: Transients = {}): Dimensions => {
+    (transients: Transforms = {}): Dimensions => {
       const {
         rotation: dr = 0,
         position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
@@ -54,16 +92,18 @@ export const useComputeDimensions = (houseId: string) => {
       const { x: px, y: py, z: pz } = houses[houseId].position
 
       const halfSize = new Vector3(width / 2, height / 2, length / 2)
-      const center = new Vector3(0, halfSize.y, halfSize.z)
+      const center = new Vector3(0, 0, 0)
       const obb = new OBB(center, halfSize)
 
       rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
-      postTransM.current.makeTranslation(px + dx, py + dy, pz + dz + length / 2)
+      translationMatrix.current.makeTranslation(
+        px + dx,
+        py + dy + height / 2,
+        pz + dz
+      )
 
       obb.applyMatrix4(
-        postTransM.current.multiply(
-          rotationMatrix.current.multiply(preTransM.current)
-        )
+        translationMatrix.current.multiply(rotationMatrix.current)
       )
 
       return {

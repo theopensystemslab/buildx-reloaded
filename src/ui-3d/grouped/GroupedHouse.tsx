@@ -1,16 +1,16 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef } from "react"
-import { Group, Vector3 } from "three"
+import { Fragment, useEffect, useRef, useState } from "react"
+import { Group, Matrix4, Vector3 } from "three"
 import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
-import { useGlobals } from "../../hooks/globals"
+import { useDebug } from "../../hooks/globals"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
 import { splitColumns, stretchLength } from "../../hooks/transients/stretch"
 import {
-  postTransients,
+  postTransformsTransients,
   usePreTransient,
 } from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
@@ -40,18 +40,16 @@ const GroupedHouse = (props: Props) => {
 
   const { length: houseLength } = useHouseDimensionsUpdates(houseId)
 
-  console.log({ houseLength })
-
   usePreTransient(houseId)
 
   useSubscribeKey(
-    postTransients,
+    postTransformsTransients,
     houseId,
     () => {
       const house = houses[houseId]
       if (!house) return
 
-      const { position, rotation } = postTransients[houseId] ?? {}
+      const { position, rotation } = postTransformsTransients[houseId] ?? {}
 
       const r = house.rotation + (rotation ?? 0)
       const hx = house.position.x + (position?.dx ?? 0)
@@ -91,45 +89,55 @@ const GroupedHouse = (props: Props) => {
 
   const editMode = useEditMode()
 
+  const debug = useDebug()
+
   return (
     <Fragment>
       <group ref={houseGroupRef}>
-        <group ref={startRef}>
-          {editMode === EditModeEnum.Enum.STRETCH && (
-            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.FRONT} />
-          )}
-          <GroupedColumn
-            key={`${houseId}:${startColumn.columnIndex}`}
-            column={startColumn}
-            {...{ systemId, houseId, start: true }}
-          />
-        </group>
-        {pipe(
-          midColumns,
-          RA.map((column) => (
+        <group scale={debug ? [0, 0, 0] : [1, 1, 1]}>
+          <group ref={startRef}>
+            {editMode === EditModeEnum.Enum.STRETCH && (
+              <StretchHandle
+                houseId={houseId}
+                side={HandleSideEnum.Enum.FRONT}
+              />
+            )}
             <GroupedColumn
-              key={`${houseId}:${column.columnIndex}`}
-              column={column}
-              {...{ systemId, houseId }}
+              key={`${houseId}:${startColumn.columnIndex}`}
+              column={startColumn}
+              {...{ systemId, houseId, start: true }}
             />
-          ))
-        )}
-        <group ref={endRef}>
-          <GroupedColumn
-            key={`${houseId}:${endColumn.columnIndex}`}
-            column={endColumn}
-            {...{ systemId, houseId, end: true }}
-          />
+          </group>
+          {pipe(
+            midColumns,
+            RA.map((column) => (
+              <GroupedColumn
+                key={`${houseId}:${column.columnIndex}`}
+                column={column}
+                {...{ systemId, houseId }}
+              />
+            ))
+          )}
+          <group ref={endRef}>
+            <GroupedColumn
+              key={`${houseId}:${endColumn.columnIndex}`}
+              column={endColumn}
+              {...{ systemId, houseId, end: true }}
+            />
+            {editMode === EditModeEnum.Enum.STRETCH && (
+              <StretchHandle
+                houseId={houseId}
+                side={HandleSideEnum.Enum.BACK}
+              />
+            )}
+          </group>
+          {editMode === EditModeEnum.Enum.MOVE_ROTATE && (
+            <RotateHandles houseId={houseId} />
+          )}
           {editMode === EditModeEnum.Enum.STRETCH && (
-            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.BACK} />
+            <GroupedStretchColumns houseId={houseId} />
           )}
         </group>
-        {editMode === EditModeEnum.Enum.MOVE_ROTATE && (
-          <RotateHandles houseId={houseId} />
-        )}
-        {editMode === EditModeEnum.Enum.STRETCH && (
-          <GroupedStretchColumns houseId={houseId} />
-        )}
       </group>
     </Fragment>
   )

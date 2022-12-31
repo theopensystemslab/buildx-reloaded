@@ -1,10 +1,10 @@
 import houses from "../houses"
 import { stretchLength } from "./stretch"
-import { postTransients, preTransients } from "./transforms"
+import { postTransformsTransients, preTransformsTransients } from "./transforms"
 
 export const setTransients = () => {
-  for (let houseId of Object.keys(postTransients)) {
-    const { position, rotation } = postTransients[houseId] ?? {}
+  for (let houseId of Object.keys(postTransformsTransients)) {
+    const { position, rotation } = postTransformsTransients[houseId] ?? {}
     if (position) {
       const { x, y, z } = houses[houseId].position
       const { dx, dy, dz } = position
@@ -17,8 +17,8 @@ export const setTransients = () => {
     if (rotation) {
       houses[houseId].rotation += rotation
     }
-    delete postTransients[houseId]
-    delete preTransients[houseId]
+    delete postTransformsTransients[houseId]
+    delete preTransformsTransients[houseId]
   }
 
   for (let houseId of Object.keys(stretchLength)) {

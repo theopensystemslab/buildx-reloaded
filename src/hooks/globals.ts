@@ -1,3 +1,4 @@
+import { useKey } from "react-use"
 import { RectReadOnly } from "react-use-measure"
 import { Event, Intersection, Mesh, Object3D } from "three"
 import { proxy, useSnapshot } from "valtio"
@@ -39,6 +40,21 @@ const globals = proxy<GlobalStore>({
 })
 
 export const useGlobals = () => useSnapshot(globals)
+
+export const useDebug = () => {
+  const { debug } = useGlobals()
+
+  useKey(
+    "d",
+    () => {
+      globals.debug = !debug
+    },
+    undefined,
+    [debug]
+  )
+
+  return debug
+}
 
 export const setOrthographic = (b: boolean) => {
   globals.orthographic = b
