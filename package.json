@@ -29,6 +29,7 @@
     "js-yaml-loader": "^1.2.2",
     "mapbox-gl": "^2.11.1",
     "next": "12.2.5",
+    "postprocessing": "^6.29.3",
     "react": "18.2.0",
     "react-cool-portal": "^1.2.0",
     "react-dom": "18.2.0",

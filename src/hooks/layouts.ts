@@ -351,9 +351,9 @@ export const useCachedLayout = (houseId: string) => {
 }
 
 export const useStretchColumns = (houseId: string) => {
-  const layout = useCachedLayout(houseId)
+  const layout = useColumnLayout(houseId)
 
-  const { startColumn, endColumn } = splitColumns(layout)
+  const { startColumn, endColumn, midColumns } = splitColumns(layout)
 
   const getVanillaModule = useGetVanillaModule(houses[houseId].systemId)
 
@@ -386,6 +386,7 @@ export const useStretchColumns = (houseId: string) => {
     startColumn,
     endColumn,
     vanillaColumn,
+    midColumns,
   }
 }
 

@@ -6,6 +6,8 @@ import { useRotations } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
+import { openMenu } from "../menu"
+import scope from "../scope"
 import { EditModeEnum } from "../siteCtx"
 import { setTransients } from "../transients/common"
 import { stretchLength } from "../transients/stretch"
@@ -74,10 +76,18 @@ export const useDragHandler = () => {
 }
 
 export const useGestures = (): any =>
-  useGesture<{ drag: ThreeEvent<PointerEvent> }>({
+  useGesture<{
+    drag: ThreeEvent<PointerEvent>
+    hover: ThreeEvent<PointerEvent>
+    onContextMenu: ThreeEvent<PointerEvent> &
+      React.MouseEvent<EventTarget, MouseEvent>
+    onDoubleClick: ThreeEvent<PointerEvent> &
+      React.MouseEvent<EventTarget, MouseEvent>
+  }>({
     onDrag: ({
       first,
       last,
+      event,
       event: {
         intersections: [
           {
@@ -108,6 +118,33 @@ export const useGestures = (): any =>
         setCameraEnabled(true)
       } else {
         dragProxy.drag = drag
+      }
+    },
+    onContextMenu: ({
+      event,
+      event: {
+        intersections: [
+          {
+            object: {
+              userData: { mesh },
+            },
+            point: intersectionPoint,
+          },
+        ],
+        pageX,
+        pageY,
+      },
+    }) => {
+      event.stopPropagation()
+      openMenu(pageX, pageY)
+    },
+    onHover: ({ event: { intersections } }) => {
+      if (intersections.length === 0) return
+      const {
+        object: { userData },
+      } = intersections[0]
+      scope.hovered = {
+        ...userData.identifier,
       }
     },
   })

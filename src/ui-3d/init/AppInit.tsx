@@ -10,6 +10,7 @@ import HtmlUi from "@/ui/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import FullScreenContainer from "../../ui/FullScreenContainer"
+import Effects from "./Effects"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -29,6 +30,7 @@ const Common = (props: Props) => {
         color="#ababab"
       />
       {preload && <DataPreload />}
+      <Effects />
       {children}
     </Fragment>
   )
