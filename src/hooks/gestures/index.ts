@@ -8,7 +8,7 @@ import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
-import { EditModeEnum } from "../siteCtx"
+import siteCtx, { EditModeEnum } from "../siteCtx"
 import { setTransients } from "../transients/common"
 import { stretchLength } from "../transients/stretch"
 import { preTransformsTransients } from "../transients/transforms"
@@ -91,7 +91,9 @@ export const useGestures = (): any =>
       event: {
         intersections: [
           {
-            object: { userData },
+            object: {
+              userData: { identifier },
+            },
             point: intersectionPoint,
           },
         ],
@@ -101,19 +103,28 @@ export const useGestures = (): any =>
       const y = globals.pointerY
 
       const drag: Drag = {
-        identifier: userData.identifier,
+        identifier,
         point: { x, y, z },
       }
 
+      // onClick here
       if (first) {
+        event.stopPropagation()
         setCameraEnabled(false)
         // XZ and Y planes should subscribe here to jump to right place
+
+        if (siteCtx.editMode === null)
+          siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
+        if (siteCtx.houseId !== identifier.houseId)
+          siteCtx.houseId = identifier.houseId
+
         dragProxy.start = {
-          identifier: userData.identifier,
+          identifier,
           point: intersectionPoint,
         }
         dragProxy.end = false
       } else if (last) {
+        event.stopPropagation()
         dragProxy.end = true
         setCameraEnabled(true)
       } else {
@@ -146,6 +157,16 @@ export const useGestures = (): any =>
       scope.hovered = {
         ...userData.identifier,
       }
+    },
+    onDoubleClick: ({ event, event: { intersections } }) => {
+      event.stopPropagation()
+
+      if (intersections.length === 0) return
+      const {
+        object: { userData },
+      } = intersections[0]
+
+      console.log(userData)
     },
   })
 

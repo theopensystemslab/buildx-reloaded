@@ -27,6 +27,7 @@ import {
   postTransformsTransients,
   preTransformsTransients,
 } from "../hooks/transients/transforms"
+import { useSiteCtx, useSiteCtxMode } from "../hooks/siteCtx"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -43,11 +44,14 @@ const HtmlUi = () => {
 
   const menu = useMenu()
 
+  const ctx = useSiteCtx()
+
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
-        <pre>{JSON.stringify(preTs, null, 2)}</pre>
-        <pre>{JSON.stringify(postTs, null, 2)}</pre>
+        {/* <pre>{JSON.stringify(preTs, null, 2)}</pre>
+        <pre>{JSON.stringify(postTs, null, 2)}</pre> */}
+        <pre>{JSON.stringify(ctx, null, 2)}</pre>
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>

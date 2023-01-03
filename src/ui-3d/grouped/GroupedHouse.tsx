@@ -18,7 +18,12 @@ import houses, {
   useHouseSystemId,
 } from "../../hooks/houses"
 import { useStretchColumns } from "../../hooks/layouts"
-import { EditModeEnum, useEditMode } from "../../hooks/siteCtx"
+import {
+  EditModeEnum,
+  useEditMode,
+  useIsMoveRotateable,
+  useIsStretchable,
+} from "../../hooks/siteCtx"
 import { stretchLength } from "../../hooks/transients/stretch"
 import {
   postTransformsTransients,
@@ -204,12 +209,15 @@ const GroupedHouse = (props: Props) => {
 
   useHouseOutline(houseId, houseGroupRef)
 
+  const isStretchable = useIsStretchable(houseId)
+  const isMoveRotateable = useIsMoveRotateable(houseId)
+
   return (
     <Fragment>
       <group ref={houseGroupRef}>
         <group scale={debug ? [0, 0, 0] : [1, 1, 1]}>
           <group ref={startRef}>
-            {editMode === EditModeEnum.Enum.STRETCH && (
+            {isStretchable && (
               <StretchHandle
                 houseId={houseId}
                 side={HandleSideEnum.Enum.FRONT}
@@ -237,17 +245,15 @@ const GroupedHouse = (props: Props) => {
               column={endColumn}
               {...{ systemId, houseId, end: true }}
             />
-            {editMode === EditModeEnum.Enum.STRETCH && (
+            {isStretchable && (
               <StretchHandle
                 houseId={houseId}
                 side={HandleSideEnum.Enum.BACK}
               />
             )}
           </group>
-          {editMode === EditModeEnum.Enum.MOVE_ROTATE && (
-            <RotateHandles houseId={houseId} />
-          )}
-          {editMode === EditModeEnum.Enum.STRETCH && (
+          {isMoveRotateable && <RotateHandles houseId={houseId} />}
+          {isStretchable && (
             <Fragment>
               <group position={[0, 0, houseLength - endColumn.length]}>
                 {pipe(

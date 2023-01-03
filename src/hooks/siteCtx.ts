@@ -9,19 +9,24 @@ import houses from "./houses"
 export const EditModeEnum = z.enum(["MOVE_ROTATE", "STRETCH"])
 export type EditMode = z.infer<typeof EditModeEnum>
 
+export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
+export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
+
 type SiteCtx = {
-  buildingHouseId: string | null
-  levelIndex: number | null
+  mode: SiteCtxMode
   editMode: EditMode | null
+  houseId: string | null
+  levelIndex: number | null
   projectName: string | null
   region: "UK" | "EU"
 }
 
 const defaults = {
-  buildingId: null,
+  houseId: null,
   levelIndex: null,
-  editMode: EditModeEnum.Enum.STRETCH,
+  editMode: null,
   projectName: null,
+  mode: SiteCtxModeEnum.Enum.SITE,
   region: "EU",
 }
 
@@ -38,8 +43,26 @@ const siteCtx = proxy<SiteCtx>(getInitialSiteCtx())
 export const useSiteCtx = () => useSnapshot(siteCtx)
 
 export const useIsBuilding = (houseId: string) => {
-  const { buildingHouseId } = useSiteCtx()
+  const { houseId: buildingHouseId } = useSiteCtx()
   return houseId === buildingHouseId
+}
+
+export const useIsStretchable = (houseId: string) => {
+  const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
+  return (
+    mode === SiteCtxModeEnum.Enum.BUILDING &&
+    editMode === EditModeEnum.Enum.STRETCH &&
+    houseId === ctxHouseId
+  )
+}
+
+export const useIsMoveRotateable = (houseId: string) => {
+  const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
+  return (
+    mode === SiteCtxModeEnum.Enum.SITE &&
+    editMode === EditModeEnum.Enum.MOVE_ROTATE &&
+    houseId === ctxHouseId
+  )
 }
 
 export const useLocallyStoredSiteCtx = () =>
@@ -61,11 +84,8 @@ export const useProjectName = () => {
   else return projectName
 }
 
-export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
-export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
-
 export const useSiteCtxMode = (): SiteCtxMode => {
-  const { buildingHouseId: buildingId, levelIndex } = useSiteCtx()
+  const { houseId: buildingId, levelIndex } = useSiteCtx()
 
   return guardNotNullish(levelIndex)
     ? SiteCtxModeEnum.Enum.LEVEL
@@ -80,8 +100,7 @@ export const useEditMode = (): EditMode | null => {
 }
 
 export const enterBuildingMode = (buildingId: string) => {
-  if (siteCtx.buildingHouseId !== buildingId)
-    siteCtx.buildingHouseId = buildingId
+  if (siteCtx.houseId !== buildingId) siteCtx.houseId = buildingId
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
   if (siteCtx.editMode !== EditModeEnum.Enum.STRETCH)
     siteCtx.editMode = EditModeEnum.Enum.STRETCH
@@ -89,7 +108,7 @@ export const enterBuildingMode = (buildingId: string) => {
 
 export const exitBuildingMode = () => {
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-  if (siteCtx.buildingHouseId !== null) siteCtx.buildingHouseId = null
+  if (siteCtx.houseId !== null) siteCtx.houseId = null
   if (siteCtx.editMode !== null) siteCtx.editMode = null
 }
 
@@ -106,7 +125,7 @@ export const useSiteCurrency = () => {
 }
 
 export const useSystemId = () => {
-  const { buildingHouseId: buildingId } = useSiteCtx()
+  const { houseId: buildingId } = useSiteCtx()
   if (buildingId === null) return null
   return houses[buildingId].systemId
 }
