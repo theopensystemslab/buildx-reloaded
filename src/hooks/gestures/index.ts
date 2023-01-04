@@ -9,7 +9,7 @@ import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { EditModeEnum, enterBuildingMode } from "../siteCtx"
-import { setTransients } from "../transients/common"
+import { setStretch, setTransients } from "../transients/common"
 import { stretchLength } from "../transients/stretch"
 import { preTransformsTransients } from "../transients/transforms"
 import { HandleIdentifier } from "./drag/handles"
@@ -69,6 +69,7 @@ export const useDragHandler = () => {
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
       setTransients()
+      setStretch()
       dragProxy.start = null
       dragProxy.drag = null
     }
@@ -170,8 +171,6 @@ export const useGestures = (): any =>
         if (userData?.identifier?.houseId)
           enterBuildingMode(userData.identifier.houseId)
       }
-
-      console.log(userData)
     },
   })
 

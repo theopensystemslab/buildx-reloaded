@@ -1,14 +1,10 @@
 import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
-import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
-import { toNullable } from "fp-ts/lib/Option"
-import * as Ord from "fp-ts/Ord"
-import * as RA from "fp-ts/ReadonlyArray"
-import * as S from "fp-ts/string"
 import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
-import { all } from "../utils/functions"
+import { useGetVanillaModule } from "../hooks/vanilla"
+import { A } from "../utils/functions"
 import { trpc } from "../utils/trpc"
 import { systemFromId } from "./system"
 
@@ -195,63 +191,6 @@ export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
   return useSystemModules({ systemId })
 }
 
-export const useGetVanillaModule = (systemId: string) => {
-  const systemModules = useSystemModules({ systemId })
-
-  if (!systemModules) throw new Error("No modules")
-
-  return (
-    module: Module,
-    opts: {
-      positionType?: string
-      levelType?: string
-      constrainGridType?: boolean
-      sectionType?: string
-    } = {}
-  ): Module => {
-    const {
-      sectionType,
-      positionType,
-      levelType,
-      constrainGridType = true,
-    } = opts
-
-    const vanillaModule = pipe(
-      systemModules,
-      RA.filter((sysModule) =>
-        all(
-          sectionType
-            ? sysModule.structuredDna.sectionType === sectionType
-            : sysModule.structuredDna.sectionType ===
-                module.structuredDna.sectionType,
-          positionType
-            ? sysModule.structuredDna.positionType === positionType
-            : sysModule.structuredDna.positionType ===
-                module.structuredDna.positionType,
-          levelType
-            ? sysModule.structuredDna.levelType === levelType
-            : sysModule.structuredDna.levelType ===
-                module.structuredDna.levelType,
-          !constrainGridType ||
-            sysModule.structuredDna.gridType === module.structuredDna.gridType
-        )
-      ),
-      RA.sort(
-        pipe(
-          S.Ord,
-          Ord.contramap((m: Module) => m.dna)
-        )
-      ),
-      RA.head,
-      toNullable
-    )
-
-    if (!vanillaModule)
-      throw new Error(`No vanilla module found for ${module.dna}`)
-
-    return vanillaModule
-  }
-}
 export const usePadColumn = (systemId: string) => {
   const getVanillaModule = useGetVanillaModule(systemId)
 

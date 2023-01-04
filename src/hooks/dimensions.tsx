@@ -66,55 +66,50 @@ export const useComputeDimensions = (houseId: string) => {
   const translationMatrix = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
-  return useCallback(
-    (transients: Transforms = {}): Dimensions => {
-      const {
-        rotation: dr = 0,
-        position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-      } = transients
+  return (transients: Transforms = {}): Dimensions => {
+    const {
+      rotation: dr = 0,
+      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+    } = transients
 
-      const columns = layouts[houseId]
+    const columns = layouts[houseId]
 
-      const width = columns[0].gridGroups[0].modules[0].module.width
-      const height = columns[0].gridGroups.reduce(
-        (acc, gg) => acc + gg.modules[0].module.height,
-        0
-      )
-      const z0 = columns[0].gridGroups[0].modules[0].z
-      const lastColumn = columns[columns.length - 1]
-      const lastGridGroup =
-        lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
-      const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
-      const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+    const width = columns[0].gridGroups[0].modules[0].module.width
+    const height = columns[0].gridGroups.reduce(
+      (acc, gg) => acc + gg.modules[0].module.height,
+      0
+    )
+    const z0 = columns[0].gridGroups[0].modules[0].z
+    const lastColumn = columns[columns.length - 1]
+    const lastGridGroup =
+      lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
+    const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
+    const z1 = lastColumn.z + lastModule.z + lastModule.module.length
 
-      const length = z1 - z0
+    const length = z1 - z0
 
-      const { x: px, y: py, z: pz } = houses[houseId].position
+    const { x: px, y: py, z: pz } = houses[houseId].position
 
-      const halfSize = new Vector3(width / 2, height / 2, length / 2)
-      const center = new Vector3(0, 0, 0)
-      const obb = new OBB(center, halfSize)
+    const halfSize = new Vector3(width / 2, height / 2, length / 2)
+    const center = new Vector3(0, 0, 0)
+    const obb = new OBB(center, halfSize)
 
-      rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
-      translationMatrix.current.makeTranslation(
-        px + dx,
-        py + dy + height / 2,
-        pz + dz
-      )
+    rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
+    translationMatrix.current.makeTranslation(
+      px + dx,
+      py + dy + height / 2,
+      pz + dz
+    )
 
-      obb.applyMatrix4(
-        translationMatrix.current.multiply(rotationMatrix.current)
-      )
+    obb.applyMatrix4(translationMatrix.current.multiply(rotationMatrix.current))
 
-      return {
-        width,
-        height,
-        length,
-        obb,
-      }
-    },
-    [houseId]
-  )
+    return {
+      width,
+      height,
+      length,
+      obb,
+    }
+  }
 }
 
 export const useHouseDimensionsUpdates = (houseId: string) => {
@@ -133,6 +128,7 @@ export const useHouseDimensionsUpdates = (houseId: string) => {
 
   useSubscribeKey(houses[houseId], "position", updateDimensions)
   useSubscribeKey(houses[houseId], "rotation", updateDimensions)
+  useSubscribeKey(layouts, houseId, updateDimensions)
 
   return computeDimensions()
 }

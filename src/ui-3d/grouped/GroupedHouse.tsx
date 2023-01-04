@@ -1,24 +1,14 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useMemo, useRef } from "react"
+import { Fragment, useRef } from "react"
 import { Group, Vector3 } from "three"
-import { OBB } from "three-stdlib"
-import dimensions, {
-  collideOBB,
-  useHouseDimensionsUpdates,
-  useHouseMatrix,
-  useRenderOBB,
-} from "../../hooks/dimensions"
+import dimensions from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useDebug } from "../../hooks/globals"
 import { useHouseOutline } from "../../hooks/highlights"
-import houses, {
-  useHouse,
-  useHouses,
-  useHouseSystemId,
-} from "../../hooks/houses"
+import houses, { useHouseSystemId } from "../../hooks/houses"
+import { useColumnLayout } from "../../hooks/layouts"
 import {
-  EditModeEnum,
   useEditMode,
   useIsMoveRotateable,
   useIsStretchable,
@@ -28,14 +18,13 @@ import {
   postTransformsTransients,
   usePreTransient,
 } from "../../hooks/transients/transforms"
-import { NEA, RA } from "../../utils/functions"
-import { useSubscribe, useSubscribeKey } from "../../utils/hooks"
-import { floor, max, min } from "../../utils/math"
+import { RA } from "../../utils/functions"
+import { useSubscribeKey } from "../../utils/hooks"
+import { max, min } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
-import GroupedStretchColumn from "./stretch/GroupedStretchColumn"
 
 type Props = {
   houseId: string
@@ -51,6 +40,8 @@ const GroupedHouse = (props: Props) => {
 
   const systemId = useHouseSystemId(houseId)
 
+  const layout = useColumnLayout(houseId)
+
   const {
     startColumn,
     midColumns,
@@ -59,13 +50,9 @@ const GroupedHouse = (props: Props) => {
     columnsDown,
     maxStretchUp,
     maxStretchDown,
-  } = useStretchLength(houseId)
-
-  console.log({ columnsUp, columnsDown })
+  } = useStretchLength(houseId, layout)
 
   usePreTransient(houseId)
-
-  // const { position, rotation } = useHouse(houseId)
 
   useSubscribeKey(
     postTransformsTransients,

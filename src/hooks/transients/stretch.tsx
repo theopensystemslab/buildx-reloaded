@@ -3,7 +3,6 @@ import { useMemo } from "react"
 import { Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
-import { useGetVanillaModule } from "../../data/modules"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretch/GroupedStretchColumn"
 import { A, NEA, RA } from "../../utils/functions"
 import { floor, max } from "../../utils/math"
@@ -14,7 +13,12 @@ import {
 } from "../dimensions"
 import { HandleSide, HandleSideEnum } from "../gestures/drag/handles"
 import houses, { useHouse } from "../houses"
-import { ColumnLayout, PositionedRow, useColumnLayout } from "../layouts"
+import { ColumnLayout, PositionedRow } from "../layouts"
+import {
+  getVanillaColumnLength,
+  useGetVanillaModule,
+  vanillaColumns,
+} from "../vanilla"
 
 export type Stretch = {
   side: HandleSide
@@ -39,9 +43,7 @@ export const splitColumns = (layout: ColumnLayout) =>
     })
   )
 
-export const useStretchLength = (houseId: string) => {
-  const layout = useColumnLayout(houseId)
-
+export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
   const systemId = houses[houseId].systemId
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
@@ -75,7 +77,9 @@ export const useStretchLength = (houseId: string) => {
     )
   )
 
-  const vanillaColumnLength = vanillaColumn[0].length
+  vanillaColumns[houseId] = vanillaColumn
+
+  const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)
 
   const {
     length: houseLength,
