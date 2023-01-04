@@ -99,11 +99,13 @@ export const useEditMode = (): EditMode | null => {
   return editMode
 }
 
-export const enterBuildingMode = (buildingId: string) => {
-  if (siteCtx.houseId !== buildingId) siteCtx.houseId = buildingId
+export const enterBuildingMode = (houseId: string) => {
+  if (siteCtx.houseId !== houseId) siteCtx.houseId = houseId
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
   if (siteCtx.editMode !== EditModeEnum.Enum.STRETCH)
     siteCtx.editMode = EditModeEnum.Enum.STRETCH
+  if (siteCtx.mode !== SiteCtxModeEnum.Enum.BUILDING)
+    siteCtx.mode = SiteCtxModeEnum.Enum.BUILDING
 }
 
 export const exitBuildingMode = () => {

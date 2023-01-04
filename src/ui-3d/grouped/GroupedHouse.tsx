@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment, useMemo, useRef } from "react"
 import { Group, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import {
+import dimensions, {
   collideOBB,
   useHouseDimensionsUpdates,
   useHouseMatrix,
@@ -17,14 +17,13 @@ import houses, {
   useHouses,
   useHouseSystemId,
 } from "../../hooks/houses"
-import { useStretchColumns } from "../../hooks/layouts"
 import {
   EditModeEnum,
   useEditMode,
   useIsMoveRotateable,
   useIsStretchable,
 } from "../../hooks/siteCtx"
-import { stretchLength } from "../../hooks/transients/stretch"
+import { stretchLength, useStretchLength } from "../../hooks/transients/stretch"
 import {
   postTransformsTransients,
   usePreTransient,
@@ -52,16 +51,17 @@ const GroupedHouse = (props: Props) => {
 
   const systemId = useHouseSystemId(houseId)
 
-  const { startColumn, midColumns, endColumn, vanillaColumn } =
-    useStretchColumns(houseId)
-
-  const vanillaColumnLength = vanillaColumn[0].length
-
   const {
-    length: houseLength,
-    width: houseWidth,
-    height: houseHeight,
-  } = useHouseDimensionsUpdates(houseId)
+    startColumn,
+    midColumns,
+    endColumn,
+    columnsUp,
+    columnsDown,
+    maxStretchUp,
+    maxStretchDown,
+  } = useStretchLength(houseId)
+
+  console.log({ columnsUp, columnsDown })
 
   usePreTransient(houseId)
 
@@ -73,6 +73,8 @@ const GroupedHouse = (props: Props) => {
     () => {
       const house = houses[houseId]
       if (!house) return
+
+      const houseLength = dimensions[houseId].length
 
       const { position, rotation } = postTransformsTransients[houseId] ?? {}
 
@@ -94,106 +96,15 @@ const GroupedHouse = (props: Props) => {
     true
   )
 
-  const computeMatrix = useHouseMatrix(houseId)
-
-  const maxLength = 25
-  const maxCount = floor(max(0, maxLength - houseLength) / vanillaColumnLength)
-  const maxColumnZs = pipe(
-    NEA.range(0, maxCount - 1),
-    RA.map((i) => i * vanillaColumnLength)
-  )
-
-  const renderOBB = useRenderOBB()
-
-  const columnZsUp = useMemo(
-    () =>
-      pipe(
-        maxColumnZs,
-        RA.takeLeftWhile((columnZ) => {
-          const center = new Vector3(0, 0, 0)
-
-          const halfSize = new Vector3(
-            houseWidth / 2,
-            houseHeight / 2,
-            vanillaColumnLength / 2
-          )
-
-          const obb = new OBB(center, halfSize)
-
-          const houseMatrix = computeMatrix({
-            y: houseHeight / 2,
-            z: houseLength / 2 + columnZ,
-          })
-
-          obb.applyMatrix4(houseMatrix)
-
-          const collision = collideOBB(obb, [houseId])
-
-          return !collision
-        })
-      ),
-    [
-      computeMatrix,
-      houseHeight,
-      houseId,
-      houseLength,
-      houseWidth,
-      maxColumnZs,
-      vanillaColumnLength,
-    ]
-  )
-  const maxColumnZUp = columnZsUp?.[columnZsUp.length - 1] ?? 0
-
-  const columnZsDown = useMemo(
-    () =>
-      pipe(
-        maxColumnZs,
-        RA.map((x) => -1 * x),
-        RA.takeLeftWhile((columnZ) => {
-          const center = new Vector3(0, 0, 0)
-
-          const halfSize = new Vector3(
-            houseWidth / 2,
-            houseHeight / 2,
-            vanillaColumnLength / 2
-          )
-
-          const obb = new OBB(center, halfSize)
-
-          const houseMatrix = computeMatrix({
-            y: houseHeight / 2,
-            z: -(houseLength / 2) + columnZ,
-          })
-
-          obb.applyMatrix4(houseMatrix)
-
-          // renderOBB(obb, houseMatrix)
-          const collision = collideOBB(obb, [houseId])
-
-          return !collision
-        })
-      ),
-    [
-      computeMatrix,
-      houseHeight,
-      houseId,
-      houseLength,
-      houseWidth,
-      maxColumnZs,
-      vanillaColumnLength,
-    ]
-  )
-  const maxColumnZDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
-
   useSubscribeKey(stretchLength, houseId, () => {
     if (stretchLength[houseId]) {
       const { distance, side } = stretchLength[houseId]
       switch (side) {
         case HandleSideEnum.Enum.FRONT:
-          startRef.current.position.set(0, 0, max(distance, maxColumnZDown))
+          startRef.current.position.set(0, 0, max(distance, maxStretchDown))
           break
         case HandleSideEnum.Enum.BACK:
-          endRef.current.position.set(0, 0, min(distance, maxColumnZUp))
+          endRef.current.position.set(0, 0, min(distance, maxStretchUp))
           break
       }
     } else {
@@ -255,46 +166,8 @@ const GroupedHouse = (props: Props) => {
           {isMoveRotateable && <RotateHandles houseId={houseId} />}
           {isStretchable && (
             <Fragment>
-              <group position={[0, 0, houseLength - endColumn.length]}>
-                {pipe(
-                  columnZsUp,
-                  RA.map((columnZ) => (
-                    <group key={columnZ} position={[0, 0, columnZ]}>
-                      <GroupedStretchColumn
-                        key={columnZ}
-                        {...{
-                          gridGroups: vanillaColumn,
-                          systemId,
-                          houseId,
-                          side: HandleSideEnum.Enum.BACK,
-                          columnZ,
-                          columnLength: vanillaColumnLength,
-                        }}
-                      />
-                    </group>
-                  ))
-                )}
-              </group>
-              <group position={[0, 0, startColumn.length]}>
-                {pipe(
-                  columnZsDown,
-                  RA.map((columnZ) => (
-                    <group key={columnZ} position={[0, 0, columnZ]}>
-                      <GroupedStretchColumn
-                        key={columnZ}
-                        {...{
-                          gridGroups: vanillaColumn,
-                          systemId,
-                          houseId,
-                          side: HandleSideEnum.Enum.FRONT,
-                          columnZ,
-                          columnLength: vanillaColumnLength,
-                        }}
-                      />
-                    </group>
-                  ))
-                )}
-              </group>
+              {columnsUp}
+              {columnsDown}
             </Fragment>
           )}
         </group>

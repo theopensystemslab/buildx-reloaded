@@ -51,7 +51,7 @@ const HtmlUi = () => {
       <div className="absolute bottom-0 right-0 pointer-events-none">
         {/* <pre>{JSON.stringify(preTs, null, 2)}</pre>
         <pre>{JSON.stringify(postTs, null, 2)}</pre> */}
-        <pre>{JSON.stringify(ctx, null, 2)}</pre>
+        {/* <pre>{JSON.stringify(ctx, null, 2)}</pre> */}
       </div>
       <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
         <IconButton onClick={() => setSidebar(true)}>
@@ -160,7 +160,7 @@ const HtmlUi = () => {
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
-      {menu.open && <SiteContextMenu {...{ x: menu.x, y: menu.y }} />}
+      {/* {menu.open && <SiteContextMenu {...{ x: menu.x, y: menu.y }} />} */}
     </Fragment>
   )
 }

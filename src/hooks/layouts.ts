@@ -6,10 +6,10 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref, useSnapshot } from "valtio"
 // import { usePadColumn } from "./modules"
-import { Module, useGetVanillaModule, usePadColumn } from "../data/modules"
-import { errorThrower, O, someOrError } from "../utils/functions"
-import houses, { useHouseRows } from "./houses"
-import { splitColumns } from "./transients/stretch"
+import { Module, usePadColumn } from "../data/modules"
+import { O, someOrError } from "../utils/functions"
+import { useHouseRows } from "./houses"
+import { useStretchLength } from "./transients/stretch"
 
 export type PositionedModule = {
   module: Module
@@ -350,48 +350,8 @@ export const useCachedLayout = (houseId: string) => {
   return snap[houseId]
 }
 
-export const useStretchColumns = (houseId: string) => {
-  const layout = useColumnLayout(houseId)
-
-  const { startColumn, endColumn, midColumns } = splitColumns(layout)
-
-  const getVanillaModule = useGetVanillaModule(houses[houseId].systemId)
-
-  const vanillaColumn = pipe(
-    startColumn.gridGroups,
-    A.map(
-      ({ levelIndex, levelType, y, modules: [{ module }] }): PositionedRow => {
-        const vanillaModule = getVanillaModule(module, {
-          constrainGridType: false,
-          positionType: "MID",
-        })
-        return {
-          modules: [
-            {
-              module: vanillaModule,
-              gridGroupIndex: 0,
-              z: 0,
-            },
-          ],
-          length: vanillaModule.length,
-          y,
-          levelIndex,
-          levelType,
-        }
-      }
-    )
-  )
-
-  return {
-    startColumn,
-    endColumn,
-    vanillaColumn,
-    midColumns,
-  }
-}
-
 export const useVanillaColumn = (houseId: string) => {
-  const { vanillaColumn } = useStretchColumns(houseId)
+  const { vanillaColumn } = useStretchLength(houseId)
 
   return vanillaColumn
 }
