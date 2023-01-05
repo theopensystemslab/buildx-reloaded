@@ -14,11 +14,12 @@
     "@oieduardorabelo/use-user-agent": "^5.0.1",
     "@react-three/drei": "^9.25.3",
     "@react-three/fiber": "^8.9.1",
-    "@tanstack/react-query": "^4.2.3",
-    "@trpc/client": "^10.0.0-proxy-alpha.63",
-    "@trpc/next": "^10.0.0-proxy-alpha.63",
+    "@tanstack/react-query": "^4.20.9",
+    "@trpc/client": "^10.7.0",
+    "@trpc/next": "^10.7.0",
     "@trpc/react": "^10.0.0-proxy-alpha.63",
-    "@trpc/server": "^10.0.0-proxy-alpha.63",
+    "@trpc/react-query": "^10.7.0",
+    "@trpc/server": "^10.7.0",
     "@use-gesture/react": "^10.2.20",
     "airtable": "^0.11.4",
     "camera-controls": "^1.37.2",
@@ -43,7 +44,7 @@
     "three-stdlib": "^2.17.3",
     "valtio": "^1.7.0",
     "web-ifc-three": "^0.0.121",
-    "zod": "^3.18.0"
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "@types/carbon__icons-react": "^11.8.0",
@@ -59,6 +60,6 @@
     "postcss": "^8.4.16",
     "rimraf": "^3.0.2",
     "tailwindcss": "^3.1.8",
-    "typescript": "^4.8.2"
+    "typescript": "^4.9.4"
   }
 }

@@ -13,8 +13,6 @@ const DataInit = ({ children }: PropsWithChildren<{}>) => {
     true
   )
 
-  console.log({ systemModules, systemElements, systemMaterials, loaded })
-
   return <Fragment>{loaded ? children : null}</Fragment>
 }
 

@@ -368,41 +368,45 @@
   dependencies:
     tslib "^2.4.0"
 
-"@tanstack/query-core@4.2.3":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.2.3.tgz#52d75430c9662cc85c160761c1421de483c7791f"
-  integrity sha512-zdt5lYWs1dZaA3IxJbCgtAfHZJScRZONpiLL7YkeOkrme5MfjQqTpjq7LYbzpyuwPOh2Jx68le0PLl57JFv5hQ==
+"@tanstack/query-core@4.20.9":
+  version "4.20.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.20.9.tgz#62eb14c2fd6688eaa507452881c96a2c8b6d2544"
+  integrity sha512-XTEEvOGy7wlABPTYfmg7U287WYcf2PV8lH15oKWD2I09okqMOHrB23WxyikEVRwJCjYNKcCW0BuYaAY4S2g/jg==
 
-"@tanstack/react-query@^4.2.3":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.2.3.tgz#782fd0f84553ba6219f1137a12ea28ab8cd3a3f3"
-  integrity sha512-JLaMOxoJTkiAu7QpevRCt2uI/0vd3E8K/rSlCuRgWlcW5DeJDFpDS5kfzmLO5MOcD97fgsJRrDbxDORxR1FdJA==
+"@tanstack/react-query@^4.20.9":
+  version "4.20.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.20.9.tgz#0ec2e734085570ce642ae7de8586eb31d562532c"
+  integrity sha512-OqwcmqkxOYgLbVjsMm4Cl8MMZ063VqdRw1GpSWqN8WgppftPiFJTDb6Q1TX5I/ciCbHmRWNPE/D0ayyTesAKug==
   dependencies:
-    "@tanstack/query-core" "4.2.3"
-    "@types/use-sync-external-store" "^0.0.3"
+    "@tanstack/query-core" "4.20.9"
     use-sync-external-store "^1.2.0"
 
-"@trpc/client@^10.0.0-proxy-alpha.63":
-  version "10.0.0-proxy-alpha.63"
-  resolved "https://registry.yarnpkg.com/@trpc/client/-/client-10.0.0-proxy-alpha.63.tgz#03f6fbe0fcee88d049a38e684b5444c10193b2b7"
-  integrity sha512-jlI576DCMG7F4UyDi/25Kz4eZ8GhC+I4jsWVQFFqBUYC0W8MLkaqaZ/KOgc0riTtwOUDJLq4c7lTPll0dH/lSQ==
+"@trpc/client@^10.7.0":
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/@trpc/client/-/client-10.7.0.tgz#73793dfdfd1a0b8d0484c69bfc558dfd28843fe6"
+  integrity sha512-xCPc2hp37REJst6TXMkJvdc85CHvxpVY6YVdZIjl7uCYoQcrstwy8AWi7ElB3x7e19Cweke+9CAaUXKwAE1AKQ==
 
-"@trpc/next@^10.0.0-proxy-alpha.63":
-  version "10.0.0-proxy-alpha.63"
-  resolved "https://registry.yarnpkg.com/@trpc/next/-/next-10.0.0-proxy-alpha.63.tgz#6c0e143931d525e76e46e8d380329d086a8b2e61"
-  integrity sha512-R46/UGWw8zbbDqcejrF9SxUhgvOVpymjMpYjMzQ3zGe3IDDJN6uZDrIHxF3sclKlmzdGZnBXGvdL1TMVL0811Q==
+"@trpc/next@^10.7.0":
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/@trpc/next/-/next-10.7.0.tgz#33ec7d134f9d3093e59cba1170dcb75bc9b914c0"
+  integrity sha512-ZLY4J9IgEHN2op0UM14NCwCDyodRUw8Pmxgnpr62+UMIhDll6uggb2an8Op87l9EeYdKhKe2VavDWphI8vFGgw==
   dependencies:
     react-ssr-prepass "^1.5.0"
+
+"@trpc/react-query@^10.7.0":
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/@trpc/react-query/-/react-query-10.7.0.tgz#37cd9a3ab5db0e9bcf012cfec3669ce0ecc055e1"
+  integrity sha512-dSSmYid6NWocU32QMsH6qWEqnW4mbp7hX01hxsBfAA2mGYD8b4Kgc9ripw4MpPNbsJElJFyWDHfb/UHnhywWbA==
 
 "@trpc/react@^10.0.0-proxy-alpha.63":
   version "10.0.0-proxy-alpha.63"
   resolved "https://registry.yarnpkg.com/@trpc/react/-/react-10.0.0-proxy-alpha.63.tgz#a39dd34b4efb0e8c59bad880cb4267e8ee4e9fe6"
   integrity sha512-D+tIg9a7CVoUOmd8hZTiTuC2hDcpB7surC0eFdcooCbWb2pERE/5xPdiyB6Kze5H5BvzxiRt9ttrKbVQnhvQYw==
 
-"@trpc/server@^10.0.0-proxy-alpha.63":
-  version "10.0.0-proxy-alpha.63"
-  resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.0.0-proxy-alpha.63.tgz#e62d0d23a0a7fc17f198182a3a5ba64d9b5b8391"
-  integrity sha512-uKf0yBtO+thQCCWqB4iesECSsU8FC/pQ96G0W9o//XLxjisk1XQAvN+GqiSCI5DCjR7azbtgrjGG9Ig4wWRY2Q==
+"@trpc/server@^10.7.0":
+  version "10.7.0"
+  resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.7.0.tgz#97c451cb5963c70fba68f4813c56111331baec3c"
+  integrity sha512-kFhlqhzZt5PwVRRDci8oJKMMFGjjq9189stT6bvS9xuuLjRzzwhMShRi99sm/jqhdjWmlXyO3Ncx0rnghUvH+w==
 
 "@types/carbon__icons-react@^11.8.0":
   version "11.8.0"
@@ -509,11 +513,6 @@
   integrity sha512-75AgysUrIvTCB054eQa2pDVFurfeFW8CrMQjpzjt3yHBfuuknoSvvsESd/3EhQxPrz9si3+P0wiDUVsWUlljfA==
   dependencies:
     "@types/webxr" "*"
-
-"@types/use-sync-external-store@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@types/use-sync-external-store/-/use-sync-external-store-0.0.3.tgz#b6725d5f4af24ace33b36fafd295136e75509f43"
-  integrity sha512-EwmlvuaxPNej9+T4v5AuBPJa2x2UOJVdjCtDHgcDqitUeOtjnJKJ+apYjVcAoBEMjKW1VVFGZLUb5+qqa09XFA==
 
 "@types/webxr@*":
   version "0.5.0"
@@ -3034,10 +3033,10 @@ type-fest@^2.12.2:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
-typescript@^4.8.2:
-  version "4.8.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.2.tgz#e3b33d5ccfb5914e4eeab6699cf208adee3fd790"
-  integrity sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==
+typescript@^4.9.4:
+  version "4.9.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.4.tgz#a2a3d2756c079abda241d75f149df9d561091e78"
+  integrity sha512-Uz+dTXYzxXXbsFpM86Wh3dKCxrQqUcVMxwU54orwlJjOpO3ao8L7j5lH+dWfTwgCwIuM9GQ2kvVotzYJMXTBZg==
 
 ua-parser-js@1.0.2:
   version "1.0.2"
@@ -3192,10 +3191,10 @@ yocto-queue@^0.1.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-zod@^3.18.0:
-  version "3.18.0"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.18.0.tgz#2eed58b3cafb8d9a67aa2fee69279702f584f3bc"
-  integrity sha512-gwTm8RfUCe8l9rDwN5r2A17DkAa8Ez4Yl4yXqc5VqeGaXaJahzYYXbTwvhroZi0SNBqTwh/bKm2N0mpCzuw4bA==
+zod@^3.20.2:
+  version "3.20.2"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.20.2.tgz#068606642c8f51b3333981f91c0a8ab37dfc2807"
+  integrity sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==
 
 zstddec@^0.0.2:
   version "0.0.2"
