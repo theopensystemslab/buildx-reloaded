@@ -12,7 +12,7 @@ import { Fragment, PropsWithChildren } from "react"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 import Effects from "./Effects"
 
-const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
+// const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
 type Props = PropsWithChildren<{}>
 
@@ -29,7 +29,7 @@ const Common = (props: Props) => {
         z={{ cells: 61, size: 1 }}
         color="#ababab"
       />
-      {preload && <DataPreload />}
+      {/* {preload && <DataPreload />} */}
       <Effects />
       {children}
     </Fragment>
