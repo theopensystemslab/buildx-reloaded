@@ -101,8 +101,6 @@ const GroupedHouse = (props: Props) => {
     invalidate()
   })
 
-  const editMode = useEditMode()
-
   const debug = useDebug()
 
   useHouseOutline(houseId, houseGroupRef)

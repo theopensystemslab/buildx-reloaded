@@ -9,9 +9,11 @@ import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { EditModeEnum, enterBuildingMode } from "../siteCtx"
-import { setStretch, setTransients } from "../transients/common"
-import { stretchLength } from "../transients/stretch"
-import { preTransformsTransients } from "../transients/transforms"
+import { setStretch, stretchLength } from "../transients/stretch"
+import {
+  preTransformsTransients,
+  setTransforms,
+} from "../transients/transforms"
 import { HandleIdentifier } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
@@ -68,7 +70,7 @@ export const useDragHandler = () => {
 
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
-      setTransients()
+      setTransforms()
       setStretch()
       dragProxy.start = null
       dragProxy.drag = null

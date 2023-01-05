@@ -5,7 +5,7 @@ import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretch/GroupedStretchColumn"
 import { A, NEA, RA } from "../../utils/functions"
-import { floor, max } from "../../utils/math"
+import { floor, max, round } from "../../utils/math"
 import {
   collideOBB,
   useHouseDimensionsUpdates,
@@ -19,6 +19,9 @@ import {
   useGetVanillaModule,
   vanillaColumns,
 } from "../vanilla"
+import { sign } from "../../utils/math"
+import { columnLayoutToDNA, layouts } from "../layouts"
+import { yAxis } from "../../utils/three"
 
 export type Stretch = {
   side: HandleSide
@@ -232,5 +235,99 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
     columnsDown,
     maxStretchDown,
     maxStretchUp,
+  }
+}
+
+export const setStretch = () => {
+  for (let houseId of Object.keys(stretchLength)) {
+    const layout = layouts[houseId]
+    const { startColumn, midColumns, endColumn } = splitColumns(layout)
+    const vanillaColumn = vanillaColumns[houseId]
+    const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)
+    const { side, distance } = stretchLength[houseId]
+
+    const delta = round(distance / vanillaColumnLength)
+
+    const dxdz = new Vector3(0, 0, delta * vanillaColumnLength)
+    dxdz.applyAxisAngle(yAxis, houses[houseId].rotation)
+    const { x: dx, z: dz } = dxdz
+
+    const { x, y, z } = houses[houseId].position
+
+    switch (side) {
+      case HandleSideEnum.Enum.BACK: {
+        if (sign(delta) === 1) {
+          houses[houseId] = {
+            ...houses[houseId],
+            dna: columnLayoutToDNA([
+              startColumn,
+              ...midColumns,
+              ...A.replicate(delta, {
+                gridGroups: vanillaColumn,
+              }),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
+        } else if (sign(delta) === -1) {
+          houses[houseId] = {
+            ...houses[houseId],
+            dna: columnLayoutToDNA([
+              startColumn,
+              ...midColumns.slice(0, midColumns.length + delta),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
+        }
+        break
+      }
+      case HandleSideEnum.Enum.FRONT: {
+        if (sign(delta) === -1) {
+          const { x, y, z } = houses[houseId].position
+          houses[houseId] = {
+            ...houses[houseId],
+            dna: columnLayoutToDNA([
+              startColumn,
+              ...A.replicate(-delta, {
+                gridGroups: vanillaColumn,
+              }),
+              ...midColumns,
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
+        } else if (sign(delta) === 1) {
+          houses[houseId] = {
+            ...houses[houseId],
+            dna: columnLayoutToDNA([
+              startColumn,
+              ...midColumns.slice(0, midColumns.length - delta),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
+        }
+        break
+      }
+    }
+
+    delete stretchLength[houseId]
   }
 }
