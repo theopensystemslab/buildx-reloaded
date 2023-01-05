@@ -1,4 +1,5 @@
 import { Fragment, PropsWithChildren } from "react"
+import Loader from "../ui/Loader"
 import { useInitSystemElements } from "./elements"
 import { useInitSystemMaterials } from "./materials"
 import { useInitSystemModules } from "./modules"
@@ -13,7 +14,7 @@ const DataInit = ({ children }: PropsWithChildren<{}>) => {
     true
   )
 
-  return <Fragment>{loaded ? children : null}</Fragment>
+  return <Fragment>{loaded ? children : <Loader />}</Fragment>
 }
 
 export default DataInit
