@@ -6,11 +6,11 @@ import GroupedApp from "../src/ui-3d/grouped/GroupedApp"
 const IndexPage = () => {
   return (
     <Fragment>
-      <DataInit />
-      <AppInit>
-        <GroupedApp />
-      </AppInit>
-      {/* </DataInit> */}
+      <DataInit>
+        <AppInit>
+          <GroupedApp />
+        </AppInit>
+      </DataInit>
     </Fragment>
   )
 }

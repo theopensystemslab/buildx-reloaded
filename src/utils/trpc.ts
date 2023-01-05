@@ -14,6 +14,12 @@ function getBaseUrl() {
     // reference for render.com
     return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.PORT}`
 
+  if (process.env.SITE_NAME) {
+    const foo = `https://${process.env.SITE_NAME}.netlify.app`
+    console.log(foo)
+    return foo
+  }
+
   // assume localhost
   return `http://localhost:${process.env.PORT ?? 3000}`
 }
@@ -29,7 +35,14 @@ export const trpc = setupTRPC<AppRouter>({
       /**
        * @link https://react-query-v3.tanstack.com/reference/QueryClient
        **/
-      // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            staleTime: 60,
+            cacheTime: typeof window === "undefined" ? -1 : 5 * 60 * 1000,
+          },
+        },
+      },
     }
   },
   /**
