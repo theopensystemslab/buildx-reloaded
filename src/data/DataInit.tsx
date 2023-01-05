@@ -1,7 +1,7 @@
-import { useInitSystemElements, useSystemElements } from "./elements"
-import { useInitSystemModules, useSystemModules } from "./modules"
-import { useInitSystemMaterials } from "./materials"
 import { Fragment, PropsWithChildren } from "react"
+import { useInitSystemElements } from "./elements"
+import { useInitSystemMaterials } from "./materials"
+import { useInitSystemModules } from "./modules"
 
 const DataInit = ({ children }: PropsWithChildren<{}>) => {
   const systemModules = useInitSystemModules({ systemId: "skylark" })
@@ -12,6 +12,8 @@ const DataInit = ({ children }: PropsWithChildren<{}>) => {
     (acc, v) => acc && v.length > 0,
     true
   )
+
+  console.log({ systemModules, systemElements, systemMaterials, loaded })
 
   return <Fragment>{loaded ? children : null}</Fragment>
 }
