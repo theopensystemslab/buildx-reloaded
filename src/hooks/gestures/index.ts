@@ -9,7 +9,7 @@ import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { EditModeEnum, enterBuildingMode } from "../siteCtx"
-import { setStretch, stretchLength } from "../transients/stretch"
+import { setStretch, stretchLengthRaw } from "../transients/stretch"
 import {
   preTransformsTransients,
   setTransforms,
@@ -57,7 +57,7 @@ export const useDragHandler = () => {
             const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
             const [dx, dz] = rotateV2(houseId, [0, distance])
 
-            stretchLength[houseId] = {
+            stretchLengthRaw[houseId] = {
               side,
               dx,
               dz,

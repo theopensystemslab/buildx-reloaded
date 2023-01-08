@@ -13,7 +13,11 @@ import {
   useIsMoveRotateable,
   useIsStretchable,
 } from "../../hooks/siteCtx"
-import { stretchLength, useStretchLength } from "../../hooks/transients/stretch"
+import {
+  stretchLengthClamped,
+  stretchLengthRaw,
+  useStretchLength,
+} from "../../hooks/transients/stretch"
 import {
   postTransformsTransients,
   usePreTransient,
@@ -83,16 +87,36 @@ const GroupedHouse = (props: Props) => {
     true
   )
 
-  useSubscribeKey(stretchLength, houseId, () => {
-    if (stretchLength[houseId]) {
-      const { distance, side } = stretchLength[houseId]
+  useSubscribeKey(stretchLengthRaw, houseId, () => {
+    if (stretchLengthRaw[houseId]) {
+      const { distance, side, dx, dz } = stretchLengthRaw[houseId]
       switch (side) {
-        case HandleSideEnum.Enum.FRONT:
-          startRef.current.position.set(0, 0, max(distance, maxStretchDown))
+        case HandleSideEnum.Enum.FRONT: {
+          const clamped = distance < maxStretchDown
+          if (!clamped) {
+            startRef.current.position.set(0, 0, distance)
+            stretchLengthClamped[houseId] = {
+              distance,
+              side,
+              dx,
+              dz,
+            }
+          }
           break
-        case HandleSideEnum.Enum.BACK:
-          endRef.current.position.set(0, 0, min(distance, maxStretchUp))
+        }
+        case HandleSideEnum.Enum.BACK: {
+          const clamped = distance > maxStretchUp
+          if (!clamped) {
+            endRef.current.position.set(0, 0, distance)
+            stretchLengthClamped[houseId] = {
+              distance,
+              side,
+              dx,
+              dz,
+            }
+          }
           break
+        }
       }
     } else {
       startRef.current.position.set(0, 0, 0)

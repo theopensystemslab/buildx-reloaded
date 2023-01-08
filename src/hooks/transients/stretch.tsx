@@ -30,7 +30,8 @@ export type Stretch = {
   distance: number
 }
 
-export const stretchLength = proxy<Record<string, Stretch>>({})
+export const stretchLengthRaw = proxy<Record<string, Stretch>>({})
+export const stretchLengthClamped = proxy<Record<string, Stretch>>({})
 
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
@@ -239,12 +240,12 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
 }
 
 export const setStretch = () => {
-  for (let houseId of Object.keys(stretchLength)) {
+  for (let houseId of Object.keys(stretchLengthClamped)) {
     const layout = layouts[houseId]
     const { startColumn, midColumns, endColumn } = splitColumns(layout)
     const vanillaColumn = vanillaColumns[houseId]
     const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)
-    const { side, distance } = stretchLength[houseId]
+    const { side, distance } = stretchLengthClamped[houseId]
 
     const delta = round(distance / vanillaColumnLength)
 
@@ -328,6 +329,7 @@ export const setStretch = () => {
       }
     }
 
-    delete stretchLength[houseId]
+    delete stretchLengthRaw[houseId]
+    delete stretchLengthClamped[houseId]
   }
 }
