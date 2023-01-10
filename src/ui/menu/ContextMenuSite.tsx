@@ -66,10 +66,10 @@ const ContextMenuSite = (props: ContextMenuProps) => {
     <ContextMenu {...props}>
       {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
 
-      <ContextMenuButton icon={<Pencil />} text="Edit building" />
-      <ContextMenuButton icon={<TextCursor />} text="Rename" />
-      <ContextMenuButton icon={<Menu />} text="Menu" />
-      <ContextMenuButton icon={<Add size={24} />} text="Add" carbon />
+      <ContextMenuButton icon={<Pencil />} text="Edit building" unpaddedSvg />
+      <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
+      <ContextMenuButton icon={<Menu />} text="Menu" unpaddedSvg />
+      <ContextMenuButton icon={<Add size={24} />} text="Add" />
 
       {/* {!renaming && (
         <Fragment>

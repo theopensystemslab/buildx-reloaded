@@ -1,35 +1,33 @@
-import type { HTMLProps } from "react"
-import { ReactNode } from "react"
-// import { Link } from "wouter";
+import css from "../../styles/ContextMenuButton.module.css"
 import Link from "next/link"
+import type { PropsWithChildren } from "react"
+import { ReactNode } from "react"
 
-export interface Props extends HTMLProps<HTMLElement> {
-  to?: string
+type Props = {
+  href?: string
   icon: ReactNode
   text: string
-  carbon?: boolean
+  unpaddedSvg?: boolean
 }
 
-const styles =
-  "flex items-center py-2 px-3 hover:bg-gray-100 w-full text-left text-sm whitespace-pre"
+const ContextMenuButton = (props: PropsWithChildren<Props>) => {
+  const { href, children, icon, text, unpaddedSvg, ...rest } = props
 
-export default function ContextMenuButton(props: Props) {
-  const { to, children, className, icon, text, carbon = false, ...rest } = props
-  return to ? (
-    <Link
-      href={to}
-      {...(rest as any)}
-      className={[styles, className].join(" ")}
-    >
-      <span className="w-6 h-6">{icon}</span>
+  return href ? (
+    <Link href={href} {...(rest as any)} className={css.root}>
+      <span className={css.icon} data-unpadded-svg={unpaddedSvg}>
+        {icon}
+      </span>
       <span>{text}</span>
     </Link>
   ) : (
-    <button className={[styles, className].join(" ")} {...(rest as any)}>
-      <span className={["w-6 h-6", carbon ? "" : "fix-custom-icon"].join(" ")}>
+    <button className={css.root} {...(rest as any)}>
+      <span className={css.icon} data-unpadded-svg={unpaddedSvg}>
         {icon}
       </span>
       <span>{text}</span>
     </button>
   )
 }
+
+export default ContextMenuButton
