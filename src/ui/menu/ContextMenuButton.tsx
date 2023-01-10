@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react"
 import type { HTMLProps } from "react"
+import { ReactNode } from "react"
 // import { Link } from "wouter";
 import Link from "next/link"
 
@@ -16,11 +16,13 @@ const styles =
 export default function ContextMenuButton(props: Props) {
   const { to, children, className, icon, text, carbon = false, ...rest } = props
   return to ? (
-    <Link href={to} {...(rest as any)}>
-      <a className={[styles, className].join(" ")}>
-        <span className="w-6 h-6">{icon}</span>
-        <span>{text}</span>
-      </a>
+    <Link
+      href={to}
+      {...(rest as any)}
+      className={[styles, className].join(" ")}
+    >
+      <span className="w-6 h-6">{icon}</span>
+      <span>{text}</span>
     </Link>
   ) : (
     <button className={[styles, className].join(" ")} {...(rest as any)}>

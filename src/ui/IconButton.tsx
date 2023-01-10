@@ -1,6 +1,6 @@
-import React, { FC, PropsWithChildren, SyntheticEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import { PropsWithChildren } from "react"
 // import { Link, useLocation } from "react-router-dom";
 
 export interface Props {
@@ -18,13 +18,12 @@ const IconButton = (props: PropsWithChildren<Props>) => {
   if (href) {
     const isActive = router.pathname.startsWith(href)
     return (
-      <Link href={href}>
-        <a
-          className={`${iconButtonStyles} ${isActive ? "" : "opacity-50"}`}
-          {...restProps}
-        >
-          <div>{children}</div>
-        </a>
+      <Link
+        href={href}
+        className={`${iconButtonStyles} ${isActive ? "" : "opacity-50"}`}
+        {...restProps}
+      >
+        <div>{children}</div>
       </Link>
     )
   }
