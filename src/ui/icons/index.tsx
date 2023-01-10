@@ -1,5 +1,38 @@
 import React from "react"
 
+export const Pencil = () => (
+  <svg
+    // width={24}
+    // height={24}
+    viewBox="0 0 13 13"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    // preserveAspectRatio="xMidYMid meet"
+  >
+    <path
+      d="M4.24254 10.8745L1.05588 11.921L2.13067 8.74373L9.94332 1.00019L12.0552 3.13092L4.24254 10.8745Z"
+      stroke="currentColor"
+    />
+  </svg>
+)
+
+export const TextCursor = () => (
+  <svg
+    // width={24}
+    // height={24}
+    viewBox="0 0 7 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    // preserveAspectRatio="xMidYMid meet"
+  >
+    <g stroke="currentColor">
+      <line x1="3.61108" y1="2.81002e-08" x2="3.61108" y2="12" />
+      <line y1="11.5" x2="7" y2="11.5" />
+      <line y1="0.5" x2="7" y2="0.5" />
+    </g>
+  </svg>
+)
+
 export const Bom = () => (
   <svg viewBox="0 0 50 50" fill="none">
     <line
