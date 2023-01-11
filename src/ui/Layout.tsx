@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react"
+import { Analyse, Build, Design, Locate } from "./icons"
 import NavIconButton from "./NavIconButton"
-import { Locate, Design, Data, Files, Analyse } from "./icons"
 
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
@@ -28,9 +28,10 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
           />
           <NavIconButton
             href="/build"
-            icon={<Files />}
+            icon={<Build />}
             order={4}
             label="Build"
+            unpaddedSvg
           />
         </div>
         {children}

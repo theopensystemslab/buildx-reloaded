@@ -106,7 +106,7 @@ export const Design = () => (
     <path
       d="M15.6077 19.5774L25 14.1547L34.3923 19.5774V30.4226L25 35.8453L15.6077 30.4226V19.5774Z"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="3"
     />
   </svg>
 )
@@ -126,6 +126,20 @@ export const Locate = () => (
   <svg viewBox="0 0 50 50" fill="none">
     <path
       d="M25.5 18L13 25.1429L25.5 32.2857L38 25.1429L25.5 18Z"
+      stroke="currentColor"
+      strokeWidth="3"
+    />
+  </svg>
+)
+export const Build = () => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M1 6.57735L10.3923 1.1547L19.7846 6.57735V17.4226L10.3923 22.8453L1 17.4226V6.57735Z"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path
+      d="M1 6L10.5 11M10.5 11V22M10.5 11L19.5 6"
       stroke="currentColor"
       strokeWidth="2"
     />
