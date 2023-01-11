@@ -68,7 +68,7 @@ const ContextMenuSite = (props: ContextMenuProps) => {
 
       <ContextMenuButton icon={<Pencil />} text="Edit building" unpaddedSvg />
       <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
-      <ContextMenuButton icon={<Menu />} text="Menu" unpaddedSvg />
+      <ContextMenuButton icon={<Menu />} text="Menu" />
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
 
       {/* {!renaming && (

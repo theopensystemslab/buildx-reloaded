@@ -1,0 +1,10 @@
+.root {
+  @apply w-12 inline-block h-12;
+  @apply transition-colors duration-200 ease-in-out;
+  @apply hover:bg-grey-20;
+  /* @apply focus:outline-none focus:shadow-grey-50; */
+}
+
+.root[data-active="true"] {
+  @apply bg-grey-90 text-white;
+}
