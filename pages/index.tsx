@@ -1,1 +1,1 @@
-export { default } from "./map/[[...slug]]"
+export { default } from "./locate/[[...slug]]"

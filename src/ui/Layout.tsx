@@ -1,24 +1,37 @@
 import { PropsWithChildren } from "react"
 import NavIconButton from "./NavIconButton"
-import { Site, Build, Data, Files } from "./icons"
+import { Locate, Design, Data, Files, Analyse } from "./icons"
 
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <div className="fixed flex h-full w-full flex-col">
       <div className="relative h-full w-full">
-        <div className="absolute top-0 left-1/2 z-10 flex -translate-x-1/2 transform justify-center bg-white shadow">
-          <NavIconButton href="/map">
-            <Site />
-          </NavIconButton>
-          <NavIconButton href="/site">
-            <Build />
-          </NavIconButton>
-          <NavIconButton href="/dashboard">
-            <Data />
-          </NavIconButton>
-          <NavIconButton href="/download">
-            <Files />
-          </NavIconButton>
+        <div className="absolute w-full top-0 z-10 flex justify-center bg-white shadow">
+          <NavIconButton
+            href="/locate"
+            icon={<Locate />}
+            order={1}
+            label="Locate"
+          />
+          <NavIconButton
+            href="/design"
+            icon={<Design />}
+            order={2}
+            label="Design"
+          />
+          <NavIconButton
+            href="/analyse"
+            icon={<Analyse />}
+            order={3}
+            label="Analyse"
+            unpaddedSvg
+          />
+          <NavIconButton
+            href="/build"
+            icon={<Files />}
+            order={4}
+            label="Build"
+          />
         </div>
         {children}
       </div>
