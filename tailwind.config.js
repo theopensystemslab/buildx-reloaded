@@ -3,6 +3,10 @@ module.exports = {
   content: ["./pages/**/*.{js,ts,jsx,tsx}", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {},
+    fontFamily: {
+      sans: ["'Inter'", "sans-serif"],
+      serif: ["Times", "serif"],
+    },
     colors: {
       primary: "#2A7A6C",
       "primary-dark": "#1F5B51",
