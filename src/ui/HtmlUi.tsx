@@ -22,6 +22,7 @@ import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
+import Breadcrumbs from "./Breadcrumbs"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -149,6 +150,7 @@ const HtmlUi = () => {
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
+      <Breadcrumbs />
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
     </Fragment>
   )
