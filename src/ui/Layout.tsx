@@ -6,7 +6,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <div className="fixed flex h-full w-full flex-col">
       <div className="relative h-full w-full">
-        <div className="absolute w-full top-0 z-10 flex justify-between bg-white shadow">
+        <div className="absolute w-full top-0 z-10 flex justify-between bg-white shadow items-center">
           <div id="headerStart" className="flex-1" />
           <div className="flex flex-none">
             <NavIconButton

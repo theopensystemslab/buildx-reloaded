@@ -76,14 +76,8 @@ const Breadcrumbs = () => {
 
   const [renamingProject, setRenamingProject] = useState(false)
 
-  const { Portal } = usePortal({
-    containerId: "headerStart",
-    autoRemoveContainer: false,
-    internalShowHide: false,
-  })
-
   return (
-    <Portal>
+    <Fragment>
       <Breadcrumb
         path={`/design`}
         label={
@@ -111,7 +105,7 @@ const Breadcrumbs = () => {
         "buildingId" in params && (
           <BreadcrumbsWithParams {...(params as Params)} />
         )}
-    </Portal>
+    </Fragment>
   )
 }
 

@@ -37,6 +37,18 @@ const HtmlUi = () => {
 
   const menu = useMenu()
 
+  const { Portal: HeaderEndPortal } = usePortal({
+    containerId: "headerEnd",
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
+  const { Portal: HeaderStartPortal } = usePortal({
+    containerId: "headerStart",
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
@@ -44,16 +56,18 @@ const HtmlUi = () => {
         <pre>{JSON.stringify(postTs, null, 2)}</pre> */}
         {/* <pre>{JSON.stringify(ctx, null, 2)}</pre> */}
       </div>
-      <div className="absolute top-0 right-0 z-10 flex items-center justify-center">
-        <IconButton onClick={() => setSidebar(true)}>
-          <div className="flex items-center justify-center">
-            <Add size={32} />
-          </div>
-        </IconButton>
-        <IconButton onClick={() => setUniversalMenu(true)}>
-          <Menu />
-        </IconButton>
-      </div>
+      <HeaderEndPortal>
+        <div className="flex items-center justify-end">
+          <IconButton onClick={() => setSidebar(true)}>
+            <div className="flex items-center justify-center">
+              <Add size={32} />
+            </div>
+          </IconButton>
+          <IconButton onClick={() => setUniversalMenu(true)}>
+            <Menu />
+          </IconButton>
+        </div>
+      </HeaderEndPortal>
       <div className="absolute left-0 top-1/2 z-10 flex -translate-y-1/2 transform flex-col justify-center bg-white shadow">
         <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
           <Radio
@@ -151,7 +165,9 @@ const HtmlUi = () => {
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
-      <Breadcrumbs />
+      <HeaderStartPortal>
+        <Breadcrumbs />
+      </HeaderStartPortal>
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
     </Fragment>
   )
