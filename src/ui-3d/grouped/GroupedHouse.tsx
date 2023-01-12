@@ -90,9 +90,11 @@ const GroupedHouse = (props: Props) => {
   useSubscribeKey(stretchLengthRaw, houseId, () => {
     if (stretchLengthRaw[houseId]) {
       const { distance, side, dx, dz } = stretchLengthRaw[houseId]
+      const { length: houseLength } = dimensions[houseId]
+
       switch (side) {
         case HandleSideEnum.Enum.FRONT: {
-          const clamped = distance < maxStretchDown
+          const clamped = distance > houseLength || distance < maxStretchDown
           if (!clamped) {
             startRef.current.position.set(0, 0, distance)
             stretchLengthClamped[houseId] = {
@@ -105,7 +107,7 @@ const GroupedHouse = (props: Props) => {
           break
         }
         case HandleSideEnum.Enum.BACK: {
-          const clamped = distance > maxStretchUp
+          const clamped = -distance > houseLength || distance > maxStretchUp
           if (!clamped) {
             endRef.current.position.set(0, 0, distance)
             stretchLengthClamped[houseId] = {

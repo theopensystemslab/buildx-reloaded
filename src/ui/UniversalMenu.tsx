@@ -55,7 +55,7 @@ const UniversalMenu = ({ open, close }: Props) => {
           <div className="flex items-center justify-end space-x-4">
             <button onClick={() => setDeleteProject(false)}>Cancel</button>
             <button
-              className="bg-gray-800 px-4 py-1 text-white hover:bg-black"
+              className="bg-grey-80 px-4 py-1 text-white hover:bg-black"
               onClick={reallyDelete}
             >
               Delete

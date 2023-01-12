@@ -14,7 +14,6 @@ function getBaseUrl() {
   if (process.env.SITE_NAME) {
     // reference for netlify.app
     const baseUrl = `https://${process.env.SITE_NAME}.netlify.app`
-    console.log(baseUrl)
     return baseUrl
   }
 

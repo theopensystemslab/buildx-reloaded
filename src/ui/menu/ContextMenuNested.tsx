@@ -40,9 +40,7 @@ export default function ContextMenuNested(props: Props) {
       ref={labelRef}
     >
       <div
-        className={`py-2 px-3 text-left text-sm ${
-          hovered ? "bg-gray-100" : ""
-        }`}
+        className={`py-2 px-3 text-left text-sm ${hovered ? "bg-grey-10" : ""}`}
       >
         {props.label}
       </div>
