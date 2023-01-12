@@ -52,7 +52,7 @@ export default function Radio<T>(props: Props<T>) {
           <label
             key={index}
             htmlFor={`radio-${props.id}-${index}`}
-            className="flex w-full cursor-pointer items-center justify-between hover:bg-gray-100"
+            className="flex w-full cursor-pointer items-center justify-between hover:bg-grey-10"
             // onMouseOver={() => {
             //   hoverStream.sendNext(option.value)
             // }}
@@ -83,7 +83,7 @@ export default function Radio<T>(props: Props<T>) {
             <div className="flex h-[36px] w-[36px] items-center justify-center">
               <div
                 className={`h-2.5 w-2.5 rounded-full transition-colors duration-500 ease-in-out ${
-                  checked ? "bg-green-400" : "bg-gray-300"
+                  checked ? "bg-green-400" : "bg-grey-30"
                 }`}
               ></div>
             </div>

@@ -42,7 +42,7 @@ const SiteSidebar = ({ open, close }: Props) => {
           {systems.map((system) => (
             <button
               key={system.id}
-              className="block w-full cursor-pointer px-4 py-2 text-left hover:bg-gray-100"
+              className="block w-full cursor-pointer px-4 py-2 text-left hover:bg-grey-10"
               onClick={() => {
                 setSelectedSystemId(system.id)
               }}
