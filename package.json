@@ -10,7 +10,7 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
-    "@carbon/icons-react": "^11.8.0",
+    "@carbon/icons-react": "^11.14.0",
     "@oieduardorabelo/use-user-agent": "^5.0.1",
     "@react-three/drei": "^9.25.3",
     "@react-three/fiber": "^8.9.1",
@@ -23,6 +23,7 @@
     "@use-gesture/react": "^10.2.20",
     "airtable": "^0.11.4",
     "camera-controls": "^1.37.2",
+    "clsx": "^1.2.1",
     "crypto-js": "^4.1.1",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
@@ -34,6 +35,7 @@
     "react": "18.2.0",
     "react-cool-portal": "^1.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.41.5",
     "react-merge-refs": "^1.1.0",
     "react-use": "^17.4.0",
     "react-use-measure": "^2.1.1",
@@ -42,12 +44,14 @@
     "three": "^0.147.0",
     "three-mesh-bvh": "^0.5.16",
     "three-stdlib": "^2.17.3",
+    "usehooks-ts": "^2.9.1",
     "valtio": "^1.7.0",
     "web-ifc-three": "^0.0.121",
+    "wouter": "^2.8.0-alpha.2",
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@types/carbon__icons-react": "^11.8.0",
+    "@types/carbon__icons-react": "^11.12.0",
     "@types/crypto-js": "^4.1.1",
     "@types/mapbox-gl": "^2.7.10",
     "@types/node": "18.7.14",

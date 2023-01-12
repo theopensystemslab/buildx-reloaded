@@ -16,18 +16,14 @@ import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
 import { useCameraReset } from "../hooks/camera"
 import elementCategories from "../hooks/elementCategories"
-import { useInsert1000Skylarks } from "../hooks/houses"
 import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
 import { useMenu } from "../hooks/menu"
 import { R, S } from "../utils/functions"
 import Checklist from "./Checklist"
-import SiteContextMenu from "./menu/SiteContextMenu"
+import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
-import {
-  postTransformsTransients,
-  preTransformsTransients,
-} from "../hooks/transients/transforms"
-import { useSiteCtx, useSiteCtxMode } from "../hooks/siteCtx"
+import Breadcrumbs from "./Breadcrumbs"
+import usePortal from "react-cool-portal"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -37,14 +33,9 @@ const HtmlUi = () => {
 
   const categories = useSnapshot(elementCategories) as typeof elementCategories
 
-  useInsert1000Skylarks()
-
-  const preTs = useSnapshot(preTransformsTransients)
-  const postTs = useSnapshot(postTransformsTransients)
+  // useInsert1000Skylarks()
 
   const menu = useMenu()
-
-  const ctx = useSiteCtx()
 
   return (
     <Fragment>
@@ -160,7 +151,8 @@ const HtmlUi = () => {
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
-      {/* {menu.open && <SiteContextMenu {...{ x: menu.x, y: menu.y }} />} */}
+      <Breadcrumbs />
+      {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
     </Fragment>
   )
 }

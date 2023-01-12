@@ -1,0 +1,11 @@
+.root {
+  @apply flex items-center p-2 hover:bg-grey-10 w-full text-left text-sm whitespace-pre;
+}
+
+.icon {
+  @apply w-6 h-6 mr-2;
+}
+
+.icon[data-unpadded-svg="true"] svg {
+  @apply w-full h-full p-1;
+}

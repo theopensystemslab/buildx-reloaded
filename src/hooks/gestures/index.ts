@@ -134,22 +134,15 @@ export const useGestures = (): any =>
         dragProxy.drag = drag
       }
     },
-    onContextMenu: ({
-      event,
-      event: {
-        intersections: [
-          {
-            object: {
-              userData: { mesh },
-            },
-            point: intersectionPoint,
-          },
-        ],
-        pageX,
-        pageY,
-      },
-    }) => {
+    onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()
+      if (intersections.length === 0) return
+      const {
+        object: { userData },
+      } = intersections[0]
+      scope.selected = {
+        ...userData.identifier,
+      }
       openMenu(pageX, pageY)
     },
     onHover: ({ event: { intersections } }) => {

@@ -1,0 +1,21 @@
+.root {
+  /* @apply inline-block; */
+  @apply transition-colors duration-200 ease-in-out;
+  @apply hover:bg-grey-20;
+  /* @apply focus:outline-none focus:shadow-grey-50; */
+  @apply text-xs py-2 px-2;
+  @apply flex flex-col items-center;
+  @apply w-16;
+}
+
+.root[data-active="true"] {
+  @apply bg-grey-90 text-white;
+}
+
+.icon {
+  @apply w-10 h-10;
+}
+
+.icon[data-unpadded-svg="true"] {
+  @apply p-2;
+}

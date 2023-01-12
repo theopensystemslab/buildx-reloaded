@@ -1,5 +1,38 @@
 import React from "react"
 
+export const Pencil = () => (
+  <svg
+    // width={24}
+    // height={24}
+    viewBox="0 0 13 13"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    // preserveAspectRatio="xMidYMid meet"
+  >
+    <path
+      d="M4.24254 10.8745L1.05588 11.921L2.13067 8.74373L9.94332 1.00019L12.0552 3.13092L4.24254 10.8745Z"
+      stroke="currentColor"
+    />
+  </svg>
+)
+
+export const TextCursor = () => (
+  <svg
+    // width={24}
+    // height={24}
+    viewBox="0 0 7 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    // preserveAspectRatio="xMidYMid meet"
+  >
+    <g stroke="currentColor">
+      <line x1="3.61108" y1="2.81002e-08" x2="3.61108" y2="12" />
+      <line y1="11.5" x2="7" y2="11.5" />
+      <line y1="0.5" x2="7" y2="0.5" />
+    </g>
+  </svg>
+)
+
 export const Bom = () => (
   <svg viewBox="0 0 50 50" fill="none">
     <line
@@ -68,20 +101,45 @@ export const Data = () => (
   </svg>
 )
 
-export const Build = () => (
+export const Design = () => (
   <svg viewBox="0 0 50 50" fill="none">
     <path
       d="M15.6077 19.5774L25 14.1547L34.3923 19.5774V30.4226L25 35.8453L15.6077 30.4226V19.5774Z"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="3"
     />
   </svg>
 )
 
-export const Site = () => (
+export const Analyse = () => (
+  <svg viewBox="0 0 21 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M3.11769 4.2L7.27461 1.8L7.77461 2.66603L10.3923 1.1547L13.01 2.66603L13.51 1.8L17.6669 4.2L17.1669 5.06603L19.7846 6.57735V9.6H20.7846V14.4H19.7846V17.4226L17.1669 18.934L17.6669 19.8L13.51 22.2L13.01 21.334L10.3923 22.8453L7.77461 21.334L7.27461 22.2L3.11769 19.8L3.61769 18.934L1 17.4226V14.4H0V9.6H1V6.57735L3.61769 5.06603L3.11769 4.2Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeDasharray="6 4"
+    />
+  </svg>
+)
+
+export const Locate = () => (
   <svg viewBox="0 0 50 50" fill="none">
     <path
       d="M25.5 18L13 25.1429L25.5 32.2857L38 25.1429L25.5 18Z"
+      stroke="currentColor"
+      strokeWidth="3"
+    />
+  </svg>
+)
+export const Build = () => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M1 6.57735L10.3923 1.1547L19.7846 6.57735V17.4226L10.3923 22.8453L1 17.4226V6.57735Z"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+    <path
+      d="M1 6L10.5 11M10.5 11V22M10.5 11L19.5 6"
       stroke="currentColor"
       strokeWidth="2"
     />

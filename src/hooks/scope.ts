@@ -18,6 +18,6 @@ const scope = proxy<Scope>({
   selected: null,
 })
 
-export const useScope = () => useSnapshot(scope)
+export const useScope = () => useSnapshot(scope) as typeof scope
 
 export default scope
