@@ -8,6 +8,7 @@ import siteContext, {
 } from "@/hooks/siteCtx"
 import { useRoute } from "@/utils/wouter"
 import { Fragment, useState } from "react"
+import usePortal from "react-cool-portal"
 import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
 
@@ -29,7 +30,7 @@ const BreadcrumbsWithParams = (params: Params) => {
     <Fragment>
       <span>{`/`}</span>
       <Breadcrumb
-        path={`/site?buildingId=${buildingId}`}
+        path={`/design?buildingId=${buildingId}`}
         label={friendlyName}
         onClick={() => {
           switch (mode) {
@@ -55,7 +56,7 @@ const BreadcrumbsWithParams = (params: Params) => {
         <Fragment>
           <span>{`/`}</span>
           <Breadcrumb
-            path={`/site?buildingId=${buildingId}&levelIndex=${levelIndex}`}
+            path={`/design?buildingId=${buildingId}&levelIndex=${levelIndex}`}
             label={`Level ${levelIndex}`}
           />
         </Fragment>
@@ -66,7 +67,7 @@ const BreadcrumbsWithParams = (params: Params) => {
 
 const Breadcrumbs = () => {
   const [, params] = useRoute<{ buildingId: string; levelIndex?: string }>(
-    "/site:rest*"
+    "/design:rest*"
   )
 
   const mode = useSiteCtxMode()
@@ -75,10 +76,16 @@ const Breadcrumbs = () => {
 
   const [renamingProject, setRenamingProject] = useState(false)
 
+  const { Portal } = usePortal({
+    containerId: "headerStart",
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
   return (
-    <div className="absolute top-0 left-0 m-1 z-20">
+    <Portal>
       <Breadcrumb
-        path={`/site`}
+        path={`/design`}
         label={
           projectName === null || projectName.length === 0
             ? `New Project`
@@ -104,7 +111,7 @@ const Breadcrumbs = () => {
         "buildingId" in params && (
           <BreadcrumbsWithParams {...(params as Params)} />
         )}
-    </div>
+    </Portal>
   )
 }
 

@@ -23,6 +23,7 @@ import Checklist from "./Checklist"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
 import Breadcrumbs from "./Breadcrumbs"
+import usePortal from "react-cool-portal"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
