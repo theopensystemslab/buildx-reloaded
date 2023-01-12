@@ -7,6 +7,7 @@ import siteContext, {
   EditModeEnum,
   enterBuildingMode,
   exitBuildingMode,
+  useSiteCtxMode,
 } from "@/hooks/siteCtx"
 // import { exportGLB } from "@/hooks/events"
 import houses, { useHouse } from "@/hooks/houses"
@@ -59,14 +60,18 @@ const ContextMenuSite = (props: ContextMenuProps) => {
     props.onClose?.()
   }
 
-  const foo = Add
-  const bar = Menu
+  const mode = useSiteCtxMode()
 
   return (
     <ContextMenu {...props}>
       {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
 
-      <ContextMenuButton icon={<Pencil />} text="Edit building" unpaddedSvg />
+      <ContextMenuButton
+        icon={<Pencil />}
+        text="Edit building"
+        unpaddedSvg
+        onClick={editBuilding}
+      />
       <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
       <ContextMenuButton icon={<Menu />} text="Menu" />
       <ContextMenuButton icon={<Add size={24} />} text="Add" />

@@ -8,6 +8,7 @@ type Props = {
   icon: ReactNode
   text: string
   unpaddedSvg?: boolean
+  onClick?: () => void
 }
 
 const ContextMenuButton = (props: PropsWithChildren<Props>) => {
