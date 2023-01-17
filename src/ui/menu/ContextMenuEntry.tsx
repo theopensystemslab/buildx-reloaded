@@ -28,6 +28,23 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props?.onClose?.()
   }
 
+  // const {
+  //   options: levelTypeOptions,
+  //   selected: selectedLevelType,
+  //   levelString,
+  // } = useLevelTypeOptions(house.id, columnLayout, {
+  //   columnIndex,
+  //   levelIndex,
+  //   groupIndex,
+  // })
+
+  // const canChangeLevelType = levelTypeOptions.length > 1
+
+  // const changeLevelType = ({ buildingDna }: LevelTypeOpt["value"]) => {
+  //   houses[buildingId].dna = buildingDna
+  //   props.onClose?.()
+  // }
+
   return (
     <ContextMenu {...props}>
       {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
