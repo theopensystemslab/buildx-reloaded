@@ -8,7 +8,7 @@ import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
-import siteCtx, { EditModeEnum, enterBuildingMode } from "../siteCtx"
+import siteCtx, { downMode, EditModeEnum, enterBuildingMode } from "../siteCtx"
 import { setStretch, stretchLengthRaw } from "../transients/stretch"
 import {
   preTransformsTransients,
@@ -163,8 +163,9 @@ export const useGestures = (): any =>
       } = intersections[0]
 
       if (userData) {
-        if (userData?.identifier?.houseId)
-          enterBuildingMode(userData.identifier.houseId)
+        if (userData?.identifier?.houseId) {
+          downMode({ ...userData.identifier })
+        }
       }
     },
   })

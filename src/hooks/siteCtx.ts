@@ -108,16 +108,25 @@ export const exitBuildingMode = () => {
 
 export const enterLevelMode = (levelIndex: number) => {
   if (siteCtx.levelIndex !== levelIndex) siteCtx.levelIndex = levelIndex
+  if (siteCtx.mode !== SiteCtxModeEnum.Enum.LEVEL)
+    siteCtx.mode = SiteCtxModeEnum.Enum.LEVEL
 }
 
 export const upMode = () => {
-  const { levelIndex, houseId, editMode } = siteCtx
-  if (levelIndex !== null && houseId !== null) {
+  const { houseId, mode } = siteCtx
+  if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
     enterBuildingMode(houseId)
-  } else if (houseId !== null) {
+  } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
     exitBuildingMode()
-  } else if (editMode !== null) {
-    siteCtx.editMode = null
+  }
+}
+
+export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
+  const { mode } = siteCtx
+  if (mode === SiteCtxModeEnum.Enum.SITE) {
+    enterBuildingMode(incoming.houseId)
+  } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
+    enterLevelMode(incoming.levelIndex)
   }
 }
 
