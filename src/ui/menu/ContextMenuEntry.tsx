@@ -1,14 +1,15 @@
+import { Add } from "@carbon/icons-react"
+import { House } from "../../data/house"
+import { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
-import { useSiteCtxMode } from "../../hooks/siteCtx"
-import { ContextMenuProps } from "./ContextMenu"
-import ContextMenuSite from "./ContextMenuSite"
+import { enterBuildingMode } from "../../hooks/siteCtx"
+import { Menu, Pencil, TextCursor } from "../icons"
+import ContextMenu, { ContextMenuProps } from "./ContextMenu"
+import ContextMenuButton from "./ContextMenuButton"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
-  // const { buildingId, levelIndex } = useSiteC()
   const { selected } = useScope()
-
-  const mode = useSiteCtxMode()
 
   if (!selected) throw new Error("null selected")
 
@@ -19,26 +20,29 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     selected,
   }
 
-  switch (mode) {
-    case "SITE":
-      return <ContextMenuSite {...props} />
+  const { houseId } = selected
+  const house = useHouse(houseId) as House
+
+  const editBuilding = () => {
+    enterBuildingMode(house.id)
+    props?.onClose?.()
   }
 
-  // return <pre>{JSON.stringify(props, null, 2)}</pre>
+  return (
+    <ContextMenu {...props}>
+      {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
 
-  // return selected === null ? null : (
-  //   <div>
-  //     {!buildingId ? (
-  //       <SiteContextMenu_ {...props} />
-  //     ) : levelIndex === null ? (
-  //       <BuildingContextMenu {...props} />
-  //     ) : (
-  //       <LevelContextMenu {...props} />
-  //     )}
-  //   </div>
-  // )
-
-  return null
+      <ContextMenuButton
+        icon={<Pencil />}
+        text="Edit building"
+        unpaddedSvg
+        onClick={editBuilding}
+      />
+      <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
+      <ContextMenuButton icon={<Menu />} text="Menu" />
+      <ContextMenuButton icon={<Add size={24} />} text="Add" />
+    </ContextMenu>
+  )
 }
 
 export default ContextMenuEntry

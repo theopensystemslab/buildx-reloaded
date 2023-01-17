@@ -4,11 +4,10 @@ import siteContext, {
   exitBuildingMode,
   SiteCtxModeEnum,
   useProjectName,
-  useSiteCtxMode,
+  useSiteCtx,
 } from "@/hooks/siteCtx"
 import { useRoute } from "@/utils/wouter"
 import { Fragment, useState } from "react"
-import usePortal from "react-cool-portal"
 import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
 
@@ -24,7 +23,7 @@ const BreadcrumbsWithParams = (params: Params) => {
 
   const [renamingBuilding, setRenamingBuilding] = useState(false)
 
-  const mode = useSiteCtxMode()
+  const { mode } = useSiteCtx()
 
   return (
     <Fragment>
@@ -70,7 +69,7 @@ const Breadcrumbs = () => {
     "/design:rest*"
   )
 
-  const mode = useSiteCtxMode()
+  const { mode } = useSiteCtx()
 
   const projectName = useProjectName()
 

@@ -1,20 +1,19 @@
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
-import ContextMenuHeading from "./ContextMenuHeading"
 // import { useSystemsData } from "@/contexts/SystemsData"
 import { House } from "@/data/house"
 import siteContext, {
   EditModeEnum,
   enterBuildingMode,
   exitBuildingMode,
-  useSiteCtxMode,
 } from "@/hooks/siteCtx"
 // import { exportGLB } from "@/hooks/events"
 import houses, { useHouse } from "@/hooks/houses"
 import scope from "@/hooks/scope"
-import { Fragment, useState } from "react"
-import { useAllHouseTypes } from "../../data/houseType"
 import { Add } from "@carbon/icons-react"
+import { useState } from "react"
+import { useAllHouseTypes } from "../../data/houseType"
+import ExitMode from "../ExitMode"
 import { Menu, Pencil, TextCursor } from "../icons"
 // import RenameForm from "./RenameForm"
 
@@ -60,10 +59,9 @@ const ContextMenuSite = (props: ContextMenuProps) => {
     props.onClose?.()
   }
 
-  const mode = useSiteCtxMode()
-
   return (
     <ContextMenu {...props}>
+      <ExitMode />
       {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
 
       <ContextMenuButton

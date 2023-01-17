@@ -24,6 +24,7 @@ import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
 import Breadcrumbs from "./Breadcrumbs"
 import usePortal from "react-cool-portal"
+import ExitMode from "./ExitMode"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -169,6 +170,7 @@ const HtmlUi = () => {
         <Breadcrumbs />
       </HeaderStartPortal>
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
+      <ExitMode />
     </Fragment>
   )
 }

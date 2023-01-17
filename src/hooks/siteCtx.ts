@@ -84,16 +84,6 @@ export const useProjectName = () => {
   else return projectName
 }
 
-export const useSiteCtxMode = (): SiteCtxMode => {
-  const { houseId: buildingId, levelIndex } = useSiteCtx()
-
-  return guardNotNullish(levelIndex)
-    ? SiteCtxModeEnum.Enum.LEVEL
-    : guardNotNullish(buildingId)
-    ? SiteCtxModeEnum.Enum.BUILDING
-    : SiteCtxModeEnum.Enum.SITE
-}
-
 export const useEditMode = (): EditMode | null => {
   const { editMode } = useSiteCtx()
   return editMode
@@ -112,10 +102,23 @@ export const exitBuildingMode = () => {
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
   if (siteCtx.houseId !== null) siteCtx.houseId = null
   if (siteCtx.editMode !== null) siteCtx.editMode = null
+  if (siteCtx.mode !== SiteCtxModeEnum.Enum.SITE)
+    siteCtx.mode = SiteCtxModeEnum.Enum.SITE
 }
 
 export const enterLevelMode = (levelIndex: number) => {
   if (siteCtx.levelIndex !== levelIndex) siteCtx.levelIndex = levelIndex
+}
+
+export const upMode = () => {
+  const { levelIndex, houseId, editMode } = siteCtx
+  if (levelIndex !== null && houseId !== null) {
+    enterBuildingMode(houseId)
+  } else if (houseId !== null) {
+    exitBuildingMode()
+  } else if (editMode !== null) {
+    siteCtx.editMode = null
+  }
 }
 
 export const useSiteCurrency = () => {

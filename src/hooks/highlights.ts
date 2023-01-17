@@ -5,7 +5,7 @@ import { proxy, ref } from "valtio"
 import { useSubscribe } from "../utils/hooks"
 import { isMesh } from "../utils/three"
 import scope from "./scope"
-import { SiteCtxModeEnum, useSiteCtx, useSiteCtxMode } from "./siteCtx"
+import { SiteCtxModeEnum, useSiteCtx } from "./siteCtx"
 
 type Highights = {
   outlined: Array<Object3D>
