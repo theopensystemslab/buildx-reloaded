@@ -15,7 +15,7 @@ const ExitMode = () => {
       <div className="absolute left-1/2 top-16 z-50 flex -translate-x-1/2 transform justify-center">
         <button
           onClick={upMode}
-          className="block h-12 w-12 rounded-full bg-white p-2 text-green-500 shadow-lg hover:bg-gray-100"
+          className="block h-12 w-12 rounded-full bg-white p-2 text-green-500 shadow-lg hover:bg-grey-10"
         >
           <span>{`Exit ${mode.toLowerCase()} mode?`}</span>
           <Check />

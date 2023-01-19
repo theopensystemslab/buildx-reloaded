@@ -2,11 +2,14 @@ import type { ReactNode } from "react"
 import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
+import css from "./ContextMenuNested.module.css"
 
 export interface Props {
+  icon: ReactNode
   label: string
   children?: ReactNode
   long?: boolean
+  unpaddedSvg?: boolean
 }
 
 export default function ContextMenuNested(props: Props) {
@@ -30,7 +33,7 @@ export default function ContextMenuNested(props: Props) {
 
   return (
     <div
-      className="relative w-full cursor-pointer select-none"
+      className={css.root}
       onMouseEnter={() => {
         setHovered(true)
       }}
@@ -39,10 +42,14 @@ export default function ContextMenuNested(props: Props) {
       }}
       ref={labelRef}
     >
-      <div
-        className={`py-2 px-3 text-left text-sm ${hovered ? "bg-grey-10" : ""}`}
-      >
-        {props.label}
+      <div className={css.level1}>
+        <span
+          className={css.icon}
+          data-unpadded-svg={props.unpaddedSvg ?? false}
+        >
+          {props.icon}
+        </span>
+        <span>{props.label}</span>
       </div>
       {hovered ? (
         <div

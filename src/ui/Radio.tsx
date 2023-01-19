@@ -83,7 +83,7 @@ export default function Radio<T>(props: Props<T>) {
             <div className="flex h-[36px] w-[36px] items-center justify-center">
               <div
                 className={`h-2.5 w-2.5 rounded-full transition-colors duration-500 ease-in-out ${
-                  checked ? "bg-green-400" : "bg-grey-30"
+                  checked ? "bg-primary" : "bg-grey-30"
                 }`}
               ></div>
             </div>

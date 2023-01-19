@@ -7,7 +7,7 @@ export interface Props {
 
 export default function ContextMenuHeading(props: Props) {
   return (
-    <div className="block w-full select-none whitespace-pre border-b border-gray-200 py-2 px-3 text-left text-sm text-gray-500">
+    <div className="block w-full select-none whitespace-pre border-b border-gray-200 py-2 px-3 text-left text-sm text-grey-50">
       {props.children}
     </div>
   )

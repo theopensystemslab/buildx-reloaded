@@ -55,7 +55,7 @@ const SiteSidebar = ({ open, close }: Props) => {
         <div className="space-y-2">
           {manySystems && (
             <button
-              className="sticky top-2 ml-4 rounded bg-white px-2 py-2 text-xs text-gray-500 hover:text-gray-600"
+              className="sticky top-2 ml-4 rounded bg-white px-2 py-2 text-xs text-grey-50 hover:text-grey-60"
               onClick={() => {
                 setSelectedSystemId(null)
               }}

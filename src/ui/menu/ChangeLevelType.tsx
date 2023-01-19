@@ -1,15 +1,16 @@
-import React from "react"
 import houses from "../../hooks/houses"
 import { LevelTypeOption, useChangeLevelType } from "../../hooks/levels"
+import { Menu } from "../icons"
 import Radio from "../Radio"
 import ContextMenuNested from "./ContextMenuNested"
 
 type Props = {
   houseId: string
+  onChange?: () => void
 }
 
 const ChangeLevelType = (props: Props) => {
-  const { houseId } = props
+  const { houseId, onChange } = props
   const { systemId } = houses[houseId]
 
   const {
@@ -24,10 +25,15 @@ const ChangeLevelType = (props: Props) => {
 
   const changeLevelType = ({ houseDna }: LevelTypeOption["value"]) => {
     houses[houseId].dna = houseDna
+    onChange?.()
   }
 
   return canChangeLevelType ? (
-    <ContextMenuNested long label={`Change ${levelString} type`}>
+    <ContextMenuNested
+      long
+      label={`Change ${levelString} type`}
+      icon={<Menu />}
+    >
       <Radio
         options={levelTypeOptions}
         selected={selectedLevelType}

@@ -1,4 +1,4 @@
-import css from "@/styles/NavIconButton.module.css"
+import css from "./NavIconButton.module.css"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { Fragment, ReactNode } from "react"

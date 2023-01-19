@@ -1,16 +1,13 @@
 import { Add } from "@carbon/icons-react"
 import { House } from "../../data/house"
-import houses, { useHouse } from "../../hooks/houses"
-import { LevelTypeOption, useChangeLevelType } from "../../hooks/levels"
+import { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
 import { enterBuildingMode } from "../../hooks/siteCtx"
 import { Menu, Pencil, TextCursor } from "../icons"
-import Radio from "../Radio"
 import ChangeLevelType from "./ChangeLevelType"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
-import ContextMenuNested from "./ContextMenuNested"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { selected } = useScope()
@@ -20,7 +17,9 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const props: ContextMenuProps = {
     pageX,
     pageY,
-    onClose: closeMenu,
+    onClose: () => {
+      closeMenu()
+    },
     selected,
   }
 
@@ -59,7 +58,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       <ContextMenuButton icon={<Menu />} text="Menu" />
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
 
-      <ChangeLevelType houseId={houseId} />
+      <ChangeLevelType houseId={houseId} onChange={props.onClose} />
 
       {/* {canChangeLevelType && (
         <ContextMenuNested long label={`Change ${levelString} type`}>

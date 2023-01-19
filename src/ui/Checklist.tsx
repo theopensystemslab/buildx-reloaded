@@ -22,7 +22,7 @@ function ChecklistButton(props: ChecklistButtonProps) {
     >
       <div
         className={`h-2.5 w-2.5 flex-none rounded-[2px] transition-colors duration-500 ease-in-out ${
-          props.active ? "bg-green-400" : "bg-grey-30"
+          props.active ? "bg-primary" : "bg-grey-30"
         }`}
       ></div>
     </div>
