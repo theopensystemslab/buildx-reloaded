@@ -367,13 +367,13 @@ export const columnLayoutToDNA = (
 export const columnLayoutToMatrix = (columnLayout: ColumnLayout) => {
   return pipe(
     columnLayout,
-    RA.map((column) =>
+    A.map((column) =>
       pipe(
         column.gridGroups,
-        RA.map((gridGroup) =>
+        A.map((gridGroup) =>
           pipe(
             gridGroup.modules,
-            RA.map(({ module }) => module)
+            A.map(({ module }) => module)
           )
         )
       )

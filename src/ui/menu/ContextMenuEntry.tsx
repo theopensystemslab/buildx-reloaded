@@ -1,12 +1,16 @@
 import { Add } from "@carbon/icons-react"
 import { House } from "../../data/house"
-import { useHouse } from "../../hooks/houses"
+import houses, { useHouse } from "../../hooks/houses"
+import { LevelTypeOption, useChangeLevelType } from "../../hooks/levels"
 import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
 import { enterBuildingMode } from "../../hooks/siteCtx"
 import { Menu, Pencil, TextCursor } from "../icons"
+import Radio from "../Radio"
+import ChangeLevelType from "./ChangeLevelType"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
+import ContextMenuNested from "./ContextMenuNested"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { selected } = useScope()
@@ -32,16 +36,12 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   //   options: levelTypeOptions,
   //   selected: selectedLevelType,
   //   levelString,
-  // } = useLevelTypeOptions(house.id, columnLayout, {
-  //   columnIndex,
-  //   levelIndex,
-  //   groupIndex,
+  // } = useChangeLevelType({
+  //   systemId: house.systemId,
   // })
-
   // const canChangeLevelType = levelTypeOptions.length > 1
-
-  // const changeLevelType = ({ buildingDna }: LevelTypeOpt["value"]) => {
-  //   houses[buildingId].dna = buildingDna
+  // const changeLevelType = ({ houseDna }: LevelTypeOption["value"]) => {
+  //   houses[houseId].dna = houseDna
   //   props.onClose?.()
   // }
 
@@ -58,6 +58,18 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
       <ContextMenuButton icon={<Menu />} text="Menu" />
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
+
+      <ChangeLevelType houseId={houseId} />
+
+      {/* {canChangeLevelType && (
+        <ContextMenuNested long label={`Change ${levelString} type`}>
+          <Radio
+            options={levelTypeOptions}
+            selected={selectedLevelType}
+            onChange={changeLevelType}
+          />
+        </ContextMenuNested>
+      )} */}
     </ContextMenu>
   )
 }

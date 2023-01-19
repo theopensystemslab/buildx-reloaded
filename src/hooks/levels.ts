@@ -1,182 +1,72 @@
-// import { useSystemsData } from "@/contexts/SystemsData"
+import { transpose } from "fp-ts-std/Array"
+import { pipe } from "fp-ts/lib/function"
+import produce from "immer"
+import { ref } from "valtio"
+import { useInitSystemLevelTypes } from "../data/levelTypes"
 import {
+  filterCompatibleModules,
+  keysFilter,
   Module,
-  // useGetStairsModule,
-  // useGetVanillaModule,
+  topCandidateByHamming,
   usePadColumn,
   useSystemModules,
-} from "@/data/modules"
-import houses from "@/hooks/houses"
-import { A, errorThrower, O, S } from "@/utils/functions"
-import { transpose } from "fp-ts-std/Array"
-import { filterMap, findFirstMap, replicate, sort, uniq } from "fp-ts/lib/Array"
-import { identity, pipe } from "fp-ts/lib/function"
-import { getOrElse, match, none, some, toNullable } from "fp-ts/lib/Option"
-import { contramap } from "fp-ts/lib/Ord"
-import produce from "immer"
+} from "../data/modules"
+import { A, O, Ord, S } from "../utils/functions"
+import houses from "./houses"
+import { columnMatrixToDna } from "./layouts"
 import {
-  ColumnLayout,
-  columnLayoutToMatrix,
-  columnMatrixToDna,
-  rowMatrixToDna,
-  useColumnMatrix,
-} from "./layouts"
-import { useGetVanillaModule } from "./vanilla"
+  getSelectedColumnMatrix,
+  getSelectedLevelModules,
+  getSelectedLevelType,
+  getSelectedModule,
+  useScope,
+} from "./scope"
 
-export const useLevelInteractions = (
-  houseId: string,
-  levelIndex: number,
-  onComplete?: () => void
-) => {
-  const columnMatrix = useColumnMatrix(houseId)
-
-  const systemId = houses[houseId].systemId
-
-  const getVanillaModule = useGetVanillaModule(systemId)
-  // const getStairsModule = useGetStairsModule()
-  // const padColumn = usePadColumn()
-
-  const getLevel = (i: number) =>
-    pipe(columnMatrix, transpose, A.lookup(i), O.toNullable)
-
-  const thisLevel = getLevel(levelIndex)
-  const nextLevel = getLevel(levelIndex + 1)
-
-  if (thisLevel === null) throw new Error("thisLevel null")
-
-  const thisLevelLetter = thisLevel[0][0].structuredDna.levelType[0]
-  const nextLevelLetter = nextLevel?.[0][0].structuredDna.levelType[0]
-
-  const targetLevelLetter = nextLevelLetter === "R" ? "T" : "M"
-  const targetLevelType = targetLevelLetter + "1"
-
-  const canAddFloorAbove =
-    nextLevel !== null && ["R", "M", "T"].includes(targetLevelLetter)
-
-  const canRemoveFloor = ["M", "T"].includes(thisLevelLetter)
-
-  const addFloorAbove = () => {
-    if (!canAddFloorAbove) return
-
-    houses[houseId].dna = pipe(
-      columnMatrix,
-      transpose,
-      (rows) => [
-        ...rows.slice(0, levelIndex + 1),
-        pipe(
-          rows[levelIndex],
-          A.map((group) =>
-            pipe(
-              group,
-              A.map((m) => {
-                const vanillaModule = pipe(
-                  getVanillaModule(m, {
-                    levelType: targetLevelType,
-                  }),
-                  match(
-                    errorThrower(`no vanilla module found for ${m.dna}`),
-                    identity
-                  )
-                )
-
-                if (m.structuredDna.stairsType === "ST0")
-                  return replicate(
-                    m.structuredDna.gridUnits /
-                      vanillaModule.structuredDna.gridUnits,
-                    vanillaModule
-                  )
-                const stairsModule = pipe(
-                  getStairsModule(m, {
-                    levelType: targetLevelType,
-                  }),
-                  errorThrower(
-                    `No stairs module found for ${m.dna} level ${targetLevelLetter}`
-                  )
-                )
-                return [stairsModule]
-              }),
-              flattenA
-            )
-          )
-        ),
-        ...rows.slice(levelIndex + 1),
-      ],
-      transposeA,
-      mapA(padColumn),
-      columnMatrixToDna
-    )
-    onComplete?.()
-  }
-  const removeFloor = () => {
-    if (!canRemoveFloor) return
-
-    houses[houseId].dna = pipe(
-      columnMatrix,
-      transposeA,
-      (rows) => [...rows.slice(0, levelIndex), ...rows.slice(levelIndex + 1)],
-      mapA(flattenA),
-      rowMatrixToDna
-    )
-    onComplete?.()
-  }
-
-  return {
-    addFloorAbove,
-    removeFloor,
-    canAddFloorAbove,
-    canRemoveFloor,
-  }
-}
-
-export type LevelTypeOpt = {
+export type LevelTypeOption = {
   label: string
-  value: { levelType: string; buildingDna: string[] }
+  value: { levelType: string; houseDna: string[] }
 }
 
-export const useLevelTypeOptions = (
-  buildingId: string,
-  columnLayout: ColumnLayout,
-  { columnIndex, levelIndex, groupIndex }: ColumnModuleKey
-): {
-  options: LevelTypeOpt[]
-  selected: LevelTypeOpt["value"]
-  levelString: string
-} => {
-  const systemModules = useSystemModules(houses[buildingId].systemId)
+export const useChangeLevelType = ({ systemId }: { systemId: string }) => {
+  const { selected } = useScope()
+  if (selected === null) throw new Error("null selected")
 
-  const padColumn = usePadColumn()
+  const padColumn = usePadColumn(systemId)
 
-  const columnMatrix = columnLayoutToMatrix<BareModule>(columnLayout)
+  const systemModules = useSystemModules({ systemId })
 
-  const rowMatrix = transposeA(columnMatrix)
+  const { houseId, levelIndex } = selected
 
-  const thisLevel = rowMatrix[levelIndex]
-
-  const thisModule =
-    columnLayout[columnIndex].gridGroups[levelIndex].modules[groupIndex].module
-
-  const thisLevelType = thisModule.structuredDna.levelType
-
-  const { levelTypes: systemLevelTypes } = useSystemsData()
+  const systemLevelTypes = useInitSystemLevelTypes({ systemId })
 
   const levelTypes = pipe(
     systemLevelTypes,
-    filterA((lt) => lt.systemId === thisModule.systemId)
+    A.filter((lt) => lt.systemId === systemId)
   )
 
   const getDescription = (levelType: string) =>
     pipe(
       levelTypes,
-      findFirstMap((lt) =>
-        lt.code === levelType ? some(lt.description) : none
+      A.findFirstMap((lt) =>
+        lt.code === levelType ? O.some(lt.description) : O.none
       ),
-      getOrElse(() => "")
+      O.getOrElse(() => "")
     )
 
-  const selectedOption: LevelTypeOpt = {
+  const thisModule = getSelectedModule()
+  const thisLevelType = getSelectedLevelType()
+  const thisLevel = getSelectedLevelModules()
+  const columnMatrix = getSelectedColumnMatrix()
+
+  if (!thisModule || !thisLevelType || !thisLevel || !columnMatrix)
+    throw new Error("yargh")
+
+  const rowMatrix = transpose(columnMatrix)
+
+  const selectedOption: LevelTypeOption = {
     label: getDescription(thisLevelType),
     value: {
-      buildingDna: columnMatrixToDna(columnMatrix),
+      houseDna: houses[houseId].dna,
       levelType: thisLevelType,
     },
   }
@@ -186,22 +76,22 @@ export const useLevelTypeOptions = (
     filterCompatibleModules(["sectionType", "positionType", "level"])(
       thisModule
     ),
-    mapA((x) => x.structuredDna.levelType),
-    uniq(StrEq),
-    filterMap((levelType) => {
-      if (levelType === thisLevelType) return none
+    A.map((x) => x.structuredDna.levelType),
+    A.uniq(S.Eq),
+    A.filterMap((levelType) => {
+      if (levelType === thisLevelType) return O.none
 
       let fail = false
 
       const newLevel = pipe(
         thisLevel,
-        mapA((gridGroup) =>
+        A.map((gridGroup) =>
           pipe(
             gridGroup,
-            mapA((module) =>
+            A.map((module) =>
               pipe(
-                systemModules as BareModule[],
-                filterA(
+                systemModules,
+                A.filter(
                   keysFilter(
                     ["sectionType", "positionType", "levelType", "gridType"],
                     produce(module, (draft) => {
@@ -212,7 +102,7 @@ export const useLevelTypeOptions = (
                 (modules) => {
                   const candidate = pipe(
                     topCandidateByHamming(module)(modules),
-                    toNullable
+                    O.toNullable
                   )
                   if (candidate === null) {
                     fail = true
@@ -225,9 +115,9 @@ export const useLevelTypeOptions = (
         )
       )
 
-      if (fail) return none
+      if (fail) return O.none
 
-      return some(
+      return O.some(
         pipe(
           produce(rowMatrix, (draft) => {
             draft[levelIndex] = newLevel
@@ -239,25 +129,27 @@ export const useLevelTypeOptions = (
             ({
               label: getDescription(levelType),
               value: {
-                buildingDna,
+                houseDna: buildingDna,
                 levelType,
               },
-            } as LevelTypeOpt)
+            } as LevelTypeOption)
         )
       )
     })
   )
 
-  return {
-    options: pipe(
-      [selectedOption, ...otherOptions],
-      sort(
-        pipe(
-          S.Ord,
-          contramap((opt: LevelTypeOpt) => opt.label)
-        )
+  const options = pipe(
+    [selectedOption, ...otherOptions],
+    A.sort(
+      pipe(
+        S.Ord,
+        Ord.contramap((opt: LevelTypeOption) => opt.label)
       )
-    ),
+    )
+  )
+
+  return {
+    options,
     selected: selectedOption.value,
     levelString: (() => {
       switch (thisLevelType?.[0]) {
