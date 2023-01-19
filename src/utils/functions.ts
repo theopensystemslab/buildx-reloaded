@@ -74,6 +74,7 @@ export * as RM from "fp-ts/ReadonlyMap"
 export * as M from "fp-ts/Map"
 export * as Ord from "fp-ts/Ord"
 export * as S from "fp-ts/string"
+export * as SG from "fp-ts/Semigroup"
 export * as N from "fp-ts/number"
 
 export { O, RA }

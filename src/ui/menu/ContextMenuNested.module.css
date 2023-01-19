@@ -1,0 +1,11 @@
+.root {
+  @apply relative w-full cursor-pointer select-none;
+}
+
+.level1 {
+  @apply flex items-center p-2 hover:bg-grey-10 w-full text-left text-sm whitespace-pre;
+}
+
+.icon {
+  composes: icon from "./ContextMenuButton.module.css";
+}

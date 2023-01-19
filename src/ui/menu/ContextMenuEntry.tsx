@@ -5,6 +5,7 @@ import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
 import { enterBuildingMode } from "../../hooks/siteCtx"
 import { Menu, Pencil, TextCursor } from "../icons"
+import ChangeLevelType from "./ChangeLevelType"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
 
@@ -16,7 +17,9 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const props: ContextMenuProps = {
     pageX,
     pageY,
-    onClose: closeMenu,
+    onClose: () => {
+      closeMenu()
+    },
     selected,
   }
 
@@ -30,8 +33,6 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
   return (
     <ContextMenu {...props}>
-      {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
-
       <ContextMenuButton
         icon={<Pencil />}
         text="Edit building"
@@ -41,6 +42,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
       <ContextMenuButton icon={<Menu />} text="Menu" />
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
+
+      <ChangeLevelType houseId={houseId} onChange={props.onClose} />
     </ContextMenu>
   )
 }

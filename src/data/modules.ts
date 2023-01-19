@@ -1,10 +1,14 @@
 import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
+import { sum } from "fp-ts-std/Array"
+import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { proxy, useSnapshot } from "valtio"
+import { first } from "fp-ts/lib/Semigroup"
+import { proxy, ref, useSnapshot } from "valtio"
 import * as z from "zod"
 import { useGetVanillaModule } from "../hooks/vanilla"
-import { A } from "../utils/functions"
+import { A, N, O, Ord, R, SG } from "../utils/functions"
+import { abs, hamming } from "../utils/math"
 import { trpc } from "../utils/trpc"
 import { systemFromId } from "./system"
 
@@ -181,7 +185,7 @@ export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
     },
     {
       onSuccess: (data) => {
-        systemModules[systemId] = data
+        systemModules[systemId] = ref(data)
       },
       refetchOnMount: true,
       refetchOnWindowFocus: false,
@@ -222,4 +226,92 @@ export const usePadColumn = (systemId: string) => {
   }
 }
 
+export const filterCompatibleModules =
+  (
+    ks: Array<keyof StructuredDna> = [
+      "sectionType",
+      "positionType",
+      "levelType",
+      "gridType",
+    ]
+  ) =>
+  (module: Module) =>
+    A.filter((m: Module) =>
+      ks.reduce(
+        (acc: boolean, k) =>
+          acc && m.structuredDna[k] === module.structuredDna[k],
+        true
+      )
+    )
+
+export const keysFilter =
+  (ks: Array<keyof StructuredDna>, targetModule: Module) => (m: Module) =>
+    ks.reduce(
+      (acc: boolean, k) =>
+        acc && m.structuredDna[k] === targetModule.structuredDna[k],
+      true
+    )
+
+export const keysHamming =
+  (ks: Array<keyof StructuredDna>) => (a: Module, b: Module) =>
+    pipe(
+      ks,
+      A.map((k): [string, number] => {
+        switch (typeof a.structuredDna[k]) {
+          case "string":
+            return [
+              k,
+              hamming(
+                a.structuredDna[k] as string,
+                b.structuredDna[k] as string
+              ),
+            ]
+          case "number":
+            return [
+              k,
+              abs(
+                (a.structuredDna[k] as number) - (b.structuredDna[k] as number)
+              ),
+            ]
+          default:
+            throw new Error(
+              `structuredDna key ${k} type ${typeof a.structuredDna[k]} `
+            )
+        }
+      }),
+      R.fromFoldable(SG.first<number>(), A.Foldable)
+    )
+export const keysHammingTotal =
+  (ks: Array<keyof StructuredDna>) => (a: Module, b: Module) =>
+    pipe(keysHamming(ks)(a, b), values, sum)
+
+export const topCandidateByHamming =
+  (
+    targetModule: Module,
+    ks: Array<keyof StructuredDna> = [
+      "gridUnits",
+      "internalLayoutType",
+      "stairsType",
+      "windowTypeEnd",
+      "windowTypeSide1",
+      "windowTypeSide2",
+      "windowTypeTop",
+    ]
+  ) =>
+  (candidateModules: Module[]): O.Option<Module> =>
+    pipe(
+      candidateModules,
+      A.map((m): [Module, number] => [
+        m,
+        keysHammingTotal(ks)(targetModule, m),
+      ]),
+      A.sort(
+        pipe(
+          N.Ord,
+          Ord.contramap(([, n]: [Module, number]) => n)
+        )
+      ),
+      A.head,
+      O.map(([m]) => m)
+    )
 export default systemModules

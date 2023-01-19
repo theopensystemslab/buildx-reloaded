@@ -1,4 +1,4 @@
-import css from "../../styles/ContextMenuButton.module.css"
+import css from "./ContextMenuButton.module.css"
 import Link from "next/link"
 import type { PropsWithChildren } from "react"
 import { ReactNode } from "react"
