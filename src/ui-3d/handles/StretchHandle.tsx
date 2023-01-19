@@ -1,8 +1,7 @@
-import { Instance } from "@react-three/drei"
+import { Line } from "@react-three/drei"
 import { useHouseDimensions } from "../../hooks/dimensions"
 import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import { PI } from "../../utils/math"
 
 const StretchHandle = ({
   houseId,
@@ -11,7 +10,7 @@ const StretchHandle = ({
   houseId: string
   side: HandleSide
 }) => {
-  const OFFSET = 1.5
+  const OFFSET = 0.25
 
   const { length: houseLength, width: houseWidth } = useHouseDimensions(houseId)
 
@@ -31,18 +30,27 @@ const StretchHandle = ({
   const offset = getOffset()
 
   return (
-    <Instance
-      rotation-x={-PI / 2}
-      position={[0, 0, offset]}
-      userData={{
-        identifier: {
-          identifierType: "handle",
-          houseId,
-          editMode: EditModeEnum.Enum.STRETCH,
-          side,
-        },
-      }}
-    />
+    <group
+      // rotation-y={-PI / 2}
+      position={[0, 0.1, offset]}
+    >
+      <Line
+        points={[
+          [-houseWidth / 3, 0, 0],
+          [houseWidth / 3, 0, 0],
+        ]}
+        // color="red"
+        lineWidth={3}
+        userData={{
+          identifier: {
+            identifierType: "handle",
+            houseId,
+            editMode: EditModeEnum.Enum.STRETCH,
+            side,
+          },
+        }}
+      />
+    </group>
   )
 }
 
