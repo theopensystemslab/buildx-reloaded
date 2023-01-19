@@ -31,23 +31,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props?.onClose?.()
   }
 
-  // const {
-  //   options: levelTypeOptions,
-  //   selected: selectedLevelType,
-  //   levelString,
-  // } = useChangeLevelType({
-  //   systemId: house.systemId,
-  // })
-  // const canChangeLevelType = levelTypeOptions.length > 1
-  // const changeLevelType = ({ houseDna }: LevelTypeOption["value"]) => {
-  //   houses[houseId].dna = houseDna
-  //   props.onClose?.()
-  // }
-
   return (
     <ContextMenu {...props}>
-      {/* <ContextMenuHeading>{house.friendlyName}</ContextMenuHeading> */}
-
       <ContextMenuButton
         icon={<Pencil />}
         text="Edit building"
@@ -59,16 +44,6 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
 
       <ChangeLevelType houseId={houseId} onChange={props.onClose} />
-
-      {/* {canChangeLevelType && (
-        <ContextMenuNested long label={`Change ${levelString} type`}>
-          <Radio
-            options={levelTypeOptions}
-            selected={selectedLevelType}
-            onChange={changeLevelType}
-          />
-        </ContextMenuNested>
-      )} */}
     </ContextMenu>
   )
 }

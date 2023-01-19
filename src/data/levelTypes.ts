@@ -10,7 +10,6 @@ export interface LevelType {
   systemId: string
   code: string
   description: string
-  // imageUrl: string
 }
 
 export const levelTypeParser = z.object({
