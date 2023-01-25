@@ -1,6 +1,7 @@
-import { Line } from "@react-three/drei"
+import { RoundedBox } from "@react-three/drei"
 import { useHouseDimensions } from "../../hooks/dimensions"
 import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
+import { useHandleMaterial } from "../../hooks/handleMaterial"
 import { EditModeEnum } from "../../hooks/siteCtx"
 
 const StretchHandle = ({
@@ -29,18 +30,16 @@ const StretchHandle = ({
 
   const offset = getOffset()
 
+  const handleMaterial = useHandleMaterial()
   return (
-    <group
-      // rotation-y={-PI / 2}
-      position={[0, 0.1, offset]}
-    >
-      <Line
-        points={[
-          [-houseWidth / 3, 0, 0],
-          [houseWidth / 3, 0, 0],
-        ]}
-        // color="red"
-        lineWidth={3}
+    <group position={[0, 0.1, offset]}>
+      <RoundedBox
+        args={[houseWidth * 2, 1, 1]}
+        radius={0.2}
+        scale-x={0.3}
+        scale-y={0.001}
+        scale-z={0.2}
+        material={handleMaterial}
         userData={{
           identifier: {
             identifierType: "handle",

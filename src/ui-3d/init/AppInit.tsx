@@ -11,6 +11,8 @@ import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import FullScreenContainer from "../../ui/FullScreenContainer"
 import Effects from "./Effects"
+import GroundCircle from "./GroundCircle"
+import ShadowPlane from "./ShadowPlane"
 
 const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
 
@@ -18,18 +20,24 @@ type Props = PropsWithChildren<{}>
 
 const Common = (props: Props) => {
   const { children } = props
-  const { preload } = useGlobals()
+  const { preload, shadows } = useGlobals()
 
   return (
     <Fragment>
+      {preload && <DataPreload />}
       <axesHelper />
+      {shadows && (
+        <>
+          <GroundCircle />
+          <ShadowPlane />
+        </>
+      )}
       <Lighting />
       <RectangularGrid
         x={{ cells: 61, size: 1 }}
         z={{ cells: 61, size: 1 }}
         color="#ababab"
       />
-      {preload && <DataPreload />}
       <Effects />
       {children}
     </Fragment>

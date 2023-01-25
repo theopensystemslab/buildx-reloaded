@@ -1,13 +1,13 @@
 import { MeshProps } from "@react-three/fiber"
-import React, { forwardRef } from "react"
+import { forwardRef } from "react"
 import { Mesh } from "three"
-import HandleMaterial from "../materials/HandleMaterial"
+import { useHandleMaterial } from "../hooks/handleMaterial"
 
 const CircularHandle = forwardRef<Mesh, MeshProps>((props, ref) => {
+  const material = useHandleMaterial()
   return (
-    <mesh ref={ref} {...props}>
+    <mesh ref={ref} material={material} {...props}>
       <circleGeometry args={[0.5, 10]} />
-      <HandleMaterial />
     </mesh>
   )
 })
