@@ -1,12 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { Material, Plane } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSystemElements } from "../data/elements"
 import { useSystemMaterials } from "../data/materials"
 import { O, RA, someOrError } from "../utils/functions"
 import { createMaterial } from "../utils/three"
-import { useGlobals } from "./globals"
 import { useHouse } from "./houses"
 
 type MaterialKey = {

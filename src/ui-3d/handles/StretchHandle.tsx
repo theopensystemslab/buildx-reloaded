@@ -1,8 +1,8 @@
-import { Instance } from "@react-three/drei"
+import { RoundedBox } from "@react-three/drei"
 import { useHouseDimensions } from "../../hooks/dimensions"
 import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
+import { useHandleMaterial } from "../../hooks/handleMaterial"
 import { EditModeEnum } from "../../hooks/siteCtx"
-import { PI } from "../../utils/math"
 
 const StretchHandle = ({
   houseId,
@@ -11,7 +11,7 @@ const StretchHandle = ({
   houseId: string
   side: HandleSide
 }) => {
-  const OFFSET = 1.5
+  const OFFSET = 0.5
 
   const { length: houseLength, width: houseWidth } = useHouseDimensions(houseId)
 
@@ -30,19 +30,26 @@ const StretchHandle = ({
 
   const offset = getOffset()
 
+  const handleMaterial = useHandleMaterial()
   return (
-    <Instance
-      rotation-x={-PI / 2}
-      position={[0, 0, offset]}
-      userData={{
-        identifier: {
-          identifierType: "handle",
-          houseId,
-          editMode: EditModeEnum.Enum.STRETCH,
-          side,
-        },
-      }}
-    />
+    <group position={[0, 0.1, offset]}>
+      <RoundedBox
+        args={[(houseWidth * 2) / 1.5, 1, 1]}
+        radius={0.5}
+        scale-x={0.4}
+        scale-y={0.001}
+        scale-z={0.4}
+        material={handleMaterial}
+        userData={{
+          identifier: {
+            identifierType: "handle",
+            houseId,
+            editMode: EditModeEnum.Enum.STRETCH,
+            side,
+          },
+        }}
+      />
+    </group>
   )
 }
 
