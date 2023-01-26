@@ -1,5 +1,5 @@
 import { invalidate } from "@react-three/fiber"
-import { MutableRefObject } from "react"
+import { MutableRefObject, useEffect } from "react"
 import { Group, Object3D } from "three"
 import { proxy, ref } from "valtio"
 import { useSubscribe } from "../utils/hooks"
@@ -25,7 +25,11 @@ export const outlineGroup = (
 
   let changed = false
   groupRef.current.traverse((o3) => {
-    if (isMesh(o3)) {
+    if (
+      isMesh(o3) &&
+      // TODO: tmp fix, FIXME
+      o3.userData.identifier.identifierType !== "handle"
+    ) {
       const next = ref(o3)
       objs.push(next)
       if (highlights.outlined.indexOf(next) === -1) changed = true

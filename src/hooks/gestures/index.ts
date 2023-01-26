@@ -145,13 +145,19 @@ export const useGestures = (): any =>
       }
       openMenu(pageX, pageY)
     },
-    onHover: ({ event: { intersections } }) => {
-      if (intersections.length === 0) return
+    onHover: ({ event: { intersections }, hovering }) => {
+      if (intersections.length === 0) {
+        document.body.style.cursor = ""
+        return
+      }
       const {
         object: { userData },
       } = intersections[0]
       scope.hovered = {
         ...userData.identifier,
+      }
+      if (hovering) {
+        document.body.style.cursor = "grab"
       }
     },
     onDoubleClick: ({ event, event: { intersections } }) => {
