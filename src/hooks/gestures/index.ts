@@ -148,6 +148,7 @@ export const useGestures = (): any =>
     onHover: ({ event: { intersections }, hovering }) => {
       if (intersections.length === 0) {
         document.body.style.cursor = ""
+        scope.hovered = null
         return
       }
       const {

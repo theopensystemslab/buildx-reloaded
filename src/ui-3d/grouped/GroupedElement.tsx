@@ -11,7 +11,6 @@ type Props = ModuleProps & {
 }
 
 const GroupedElement = (props: Props) => {
-  const meshRef = useRef<Mesh>(null)
   const {
     systemId,
     houseId,
@@ -22,6 +21,8 @@ const GroupedElement = (props: Props) => {
     gridGroupIndex,
     module,
   } = props
+
+  const meshRef = useRef<Mesh>(null!)
 
   const materialHash = useMaterialHash({
     systemId,

@@ -5,14 +5,10 @@ import { Group, Vector3 } from "three"
 import dimensions from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useDebug } from "../../hooks/globals"
-import { useHouseOutline } from "../../hooks/highlights"
+import { useHouseElementOutline, useHouseOutline } from "../../hooks/highlights"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
-import {
-  useEditMode,
-  useIsMoveRotateable,
-  useIsStretchable,
-} from "../../hooks/siteCtx"
+import { useIsMoveRotateable, useIsStretchable } from "../../hooks/siteCtx"
 import {
   stretchLengthClamped,
   stretchLengthRaw,
@@ -24,7 +20,6 @@ import {
 } from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { max, min } from "../../utils/math"
 import { yAxis } from "../../utils/three"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
@@ -130,6 +125,7 @@ const GroupedHouse = (props: Props) => {
   const debug = useDebug()
 
   useHouseOutline(houseId, houseGroupRef)
+  useHouseElementOutline(houseId, houseGroupRef)
 
   const isStretchable = useIsStretchable(houseId)
   const isMoveRotateable = useIsMoveRotateable(houseId)
