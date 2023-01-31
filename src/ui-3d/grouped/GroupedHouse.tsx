@@ -5,7 +5,7 @@ import { Group, Vector3 } from "three"
 import dimensions from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useDebug } from "../../hooks/globals"
-import { useHouseElementOutline, useHouseOutline } from "../../hooks/highlights"
+import { useHouseElementOutline } from "../../hooks/highlights"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
 import { useIsMoveRotateable, useIsStretchable } from "../../hooks/siteCtx"
@@ -124,7 +124,6 @@ const GroupedHouse = (props: Props) => {
 
   const debug = useDebug()
 
-  // useHouseOutline(houseId, houseGroupRef)
   useHouseElementOutline(houseId, houseGroupRef)
 
   const isStretchable = useIsStretchable(houseId)

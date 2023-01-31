@@ -116,6 +116,10 @@ export const useGestures = (): any =>
         setCameraEnabled(false)
         // XZ and Y planes should subscribe here to jump to right place
 
+        scope.selected = {
+          ...identifier,
+        }
+
         if (siteCtx.editMode === null)
           siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
         if (siteCtx.houseId !== identifier.houseId)

@@ -58,6 +58,7 @@ export const useIsStretchable = (houseId: string) => {
 
 export const useIsMoveRotateable = (houseId: string) => {
   const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
+  console.log({ mode })
   return (
     mode === SiteCtxModeEnum.Enum.SITE &&
     editMode === EditModeEnum.Enum.MOVE_ROTATE &&

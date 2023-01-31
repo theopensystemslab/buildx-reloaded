@@ -86,7 +86,7 @@ const Effects = () => {
       outlineEffect.selection.clear()
     }
     invalidate()
-  }, 50)
+  }, 0)
 
   subscribeKey(highlights, "outlined", outline, true)
 
