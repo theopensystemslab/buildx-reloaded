@@ -1,6 +1,6 @@
 import highlights from "@/hooks/highlights"
 import { useFBO } from "@react-three/drei"
-import { useFrame, useThree } from "@react-three/fiber"
+import { invalidate, useFrame, useThree } from "@react-three/fiber"
 import {
   EffectComposer,
   EffectPass,
@@ -8,6 +8,7 @@ import {
   RenderPass,
 } from "postprocessing"
 import { useEffect, useMemo } from "react"
+import { useDebouncedCallback } from "use-debounce"
 import { subscribeKey } from "valtio/utils"
 
 export type UseOutlineEffectParams = ConstructorParameters<
@@ -78,11 +79,16 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  subscribeKey(highlights, "outlined", () => {
-    if (highlights.outlined.length > 0)
+  const outline = useDebouncedCallback(() => {
+    if (highlights.outlined.length > 0) {
       outlineEffect.selection.set(highlights.outlined)
-    else outlineEffect.selection.clear()
-  })
+    } else {
+      outlineEffect.selection.clear()
+    }
+    invalidate()
+  }, 50)
+
+  subscribeKey(highlights, "outlined", outline, true)
 
   // subscribeKey(highlights, "illuminated", () => {
   //   if (highlights.illuminated.length > 0) {

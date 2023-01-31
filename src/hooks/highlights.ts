@@ -1,13 +1,13 @@
 import { invalidate } from "@react-three/fiber"
-import { modifyAt, upsertAt } from "fp-ts/lib/Record"
-import { MutableRefObject, RefObject, useEffect, useRef } from "react"
-import { Group, Mesh, Object3D } from "three"
+import { MutableRefObject, useEffect, useRef } from "react"
+import { Group, Object3D } from "three"
 import { proxy, ref } from "valtio"
 import { useSubscribe } from "../utils/hooks"
 import { isMesh } from "../utils/three"
 import { ElementIdentifier } from "./gestures/drag/elements"
+import { useHouse } from "./houses"
 import scope from "./scope"
-import siteCtx, { SiteCtxModeEnum, useSiteCtx } from "./siteCtx"
+import siteCtx, { SiteCtxModeEnum } from "./siteCtx"
 
 type Highights = {
   outlined: Array<Object3D>
@@ -57,29 +57,27 @@ export const useHouseElementOutline = (
 ) => {
   const elementObjects = useRef<Record<string, Object3D[]>>({})
   const allObjects = useRef<Object3D[]>([])
+  const { dna } = useHouse(houseId)
 
   useEffect(() => {
     elementObjects.current = {}
     allObjects.current = []
 
     groupRef.current.traverse((o3) => {
-      if (
-        isMesh(o3) &&
-        // TODO: tmp fix, FIXME
-        o3.userData.identifier.identifierType !== "handle"
-      ) {
-        const { elementName } = o3.userData.identifier as ElementIdentifier
+      if (!isMesh(o3) || o3.userData.identifier?.identifierType !== "element")
+        return
 
-        if (!(elementName in elementObjects.current)) {
-          elementObjects.current[elementName] = [o3]
-        } else {
-          if (
-            elementObjects.current[elementName].findIndex(
-              (x) => x.id === o3.id
-            ) === -1
-          ) {
-            elementObjects.current[elementName].push(o3)
-          }
+      const { elementName } = o3.userData.identifier as ElementIdentifier
+
+      if (!(elementName in elementObjects.current)) {
+        elementObjects.current[elementName] = [o3]
+      } else {
+        if (
+          elementObjects.current[elementName].findIndex(
+            (x) => x.id === o3.id
+          ) === -1
+        ) {
+          elementObjects.current[elementName].push(o3)
         }
       }
     })
@@ -90,7 +88,7 @@ export const useHouseElementOutline = (
       elementObjects.current = {}
       allObjects.current = []
     }
-  }, [groupRef])
+  }, [groupRef, dna])
 
   useSubscribe(
     scope,
@@ -114,8 +112,14 @@ export const useHouseElementOutline = (
           break
         case SiteCtxModeEnum.Enum.BUILDING:
           if (!scope.hovered) return
-          const { houseId, elementName } = scope.hovered
-          highlights.outlined = elementObjects.current[elementName]
+          const { houseId: hoveredHouseId, elementName } = scope.hovered
+          if (
+            hoveredHouseId === houseId &&
+            elementName in elementObjects.current &&
+            elementObjects.current[elementName].length > 0
+          ) {
+            highlights.outlined = ref(elementObjects.current[elementName])
+          }
           break
       }
     },
@@ -146,24 +150,6 @@ export const useHouseOutline = (
   }
 
   useSubscribe(scope, go, true)
-}
-
-export const useElementOutline = (meshRef: RefObject<Mesh>) => {
-  const { mode } = useSiteCtx()
-
-  useSubscribe(
-    scope,
-    () => {
-      if (mode !== SiteCtxModeEnum.Enum.SITE) return
-
-      // outlineGroup(groupRef, {
-      //   remove:
-      //     scope.hovered?.houseId !== houseId &&
-      //     scope.selected?.houseId !== houseId,
-      // })
-    },
-    true
-  )
 }
 
 export default highlights

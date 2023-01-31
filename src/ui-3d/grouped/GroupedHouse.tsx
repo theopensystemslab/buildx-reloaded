@@ -124,7 +124,7 @@ const GroupedHouse = (props: Props) => {
 
   const debug = useDebug()
 
-  useHouseOutline(houseId, houseGroupRef)
+  // useHouseOutline(houseId, houseGroupRef)
   useHouseElementOutline(houseId, houseGroupRef)
 
   const isStretchable = useIsStretchable(houseId)

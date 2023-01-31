@@ -3,13 +3,14 @@ import { House } from "../../data/house"
 import { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
-import { enterBuildingMode } from "../../hooks/siteCtx"
+import { enterBuildingMode, useSiteCtx } from "../../hooks/siteCtx"
 import { Menu, Pencil, TextCursor } from "../icons"
 import ChangeLevelType from "./ChangeLevelType"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
+  const { mode } = useSiteCtx()
   const { selected } = useScope()
 
   if (!selected) throw new Error("null selected")
@@ -44,6 +45,10 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       <ContextMenuButton icon={<Add size={24} />} text="Add" />
 
       <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+      <div>{`mode: ${mode}`}</div>
+      <div>
+        <pre>{JSON.stringify(selected, null, 2)}</pre>
+      </div>
     </ContextMenu>
   )
 }
