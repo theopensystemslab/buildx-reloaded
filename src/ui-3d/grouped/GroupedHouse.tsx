@@ -1,10 +1,11 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef } from "react"
-import { Group, Vector3 } from "three"
+import { Fragment, useEffect, useMemo, useRef } from "react"
+import { Group, Plane, Vector3 } from "three"
 import dimensions from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useDebug } from "../../hooks/globals"
+import { useHouseMaterialOps } from "../../hooks/hashedMaterials"
 import { useHouseElementOutline } from "../../hooks/highlights"
 import houses, { useHouseSystemId } from "../../hooks/houses"
 import { useColumnLayout } from "../../hooks/layouts"
@@ -20,7 +21,7 @@ import {
 } from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { yAxis } from "../../utils/three"
+import { isMesh, yAxis } from "../../utils/three"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -128,6 +129,8 @@ const GroupedHouse = (props: Props) => {
 
   const isStretchable = useIsStretchable(houseId)
   const isMoveRotateable = useIsMoveRotateable(houseId)
+
+  useHouseMaterialOps(systemId, houseGroupRef)
 
   return (
     <Fragment>

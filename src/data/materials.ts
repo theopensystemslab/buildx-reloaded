@@ -117,24 +117,3 @@ export const useInitSystemMaterials = ({ systemId }: { systemId: string }) => {
   )
   return useSystemMaterials({ systemId })
 }
-
-export const useGetMaterial = (houseId: string) => {
-  const { systemId } = useHouse(houseId)
-
-  const elements = useSystemElements({ systemId })
-
-  const materials = useSystemMaterials({ systemId })
-
-  return (elementName: string) =>
-    pipe(
-      elements,
-      RA.findFirst((element) => element.name === elementName),
-      O.match(errorThrower(`no element ${elementName}`), (element) =>
-        pipe(
-          materials,
-          RA.findFirst((material) => material.name === element.defaultMaterial),
-          someOrError(`no material found for ${element.defaultMaterial}`)
-        )
-      )
-    ).threeMaterial
-}

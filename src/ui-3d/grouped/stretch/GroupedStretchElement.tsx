@@ -1,7 +1,8 @@
-import { useHashedGeometry } from "@/hooks/hashedGeometries"
-import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
+import { useGeometry } from "@/hooks/hashedGeometries"
+import { useMaterial } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
+import { ElementIdentifier } from "../../../hooks/gestures/drag/elements"
 import { StretchModuleProps } from "./GroupedStretchModule"
 
 type Props = StretchModuleProps & {
@@ -14,18 +15,25 @@ const GroupedStretchElement = (props: Props) => {
 
   const meshRef = useRef<Mesh>(null)
 
-  const materialHash = useMaterialHash({
+  const geometry = useGeometry(geometryHash)
+  const material = useMaterial({ systemId, houseId, elementName })
+
+  const identifier: Partial<ElementIdentifier> = {
+    identifierType: "element",
     systemId,
     houseId,
     elementName,
-    visible: true,
-    clippingPlanes: [],
-  })
-
-  const geometry = useHashedGeometry(geometryHash)
-  const material = useHashedMaterial(materialHash)
-
-  return <mesh ref={meshRef} material={material} geometry={geometry} />
+  }
+  return (
+    <mesh
+      ref={meshRef}
+      material={material}
+      geometry={geometry}
+      userData={{
+        identifier,
+      }}
+    />
+  )
 }
 
 export default GroupedStretchElement

@@ -44,14 +44,14 @@ export const useGlobals = () => useSnapshot(globals)
 export const useDebug = () => {
   const { debug } = useGlobals()
 
-  useKey(
-    "d",
-    () => {
-      globals.debug = !debug
-    },
-    undefined,
-    [debug]
-  )
+  // useKey(
+  //   "d",
+  //   () => {
+  //     globals.debug = !debug
+  //   },
+  //   undefined,
+  //   [debug]
+  // )
 
   return debug
 }
