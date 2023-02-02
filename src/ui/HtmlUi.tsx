@@ -70,7 +70,7 @@ const HtmlUi = () => {
         </div>
       </HeaderEndPortal>
       <div className="absolute left-0 top-1/2 z-10 flex -translate-y-1/2 transform flex-col justify-center bg-white shadow">
-        <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
+        {/* <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
           <Radio
             id="map"
             label="Map"
@@ -87,7 +87,7 @@ const HtmlUi = () => {
             selected={mapboxEnabled}
             onChange={setMapboxEnabled}
           />
-        </IconMenu>
+        </IconMenu> */}
         <IconMenu icon={() => <View size={24} className="m-auto" />}>
           <Radio
             id="camera"
@@ -110,30 +110,32 @@ const HtmlUi = () => {
           </IconButton>
         </IconMenu>
         <IconMenu icon={SectionCuts}>
-          <Checklist
-            label="Layers"
-            options={pipe(
-              categories,
-              R.collect(S.Ord)((label, value) => ({ label, value: label }))
-            )}
-            selected={pipe(
-              categories,
-              R.filter((x) => x),
-              R.collect(S.Ord)((value) => value)
-            )}
-            onChange={(selectedCategories) =>
-              pipe(
-                elementCategories,
-                R.collect(S.Ord)((k, b) => {
-                  if (selectedCategories.includes(k)) {
-                    if (!elementCategories[k]) elementCategories[k] = true
-                  } else {
-                    if (elementCategories[k]) elementCategories[k] = false
-                  }
-                })
-              )
-            }
-          />
+          {Object.keys(categories).length > 0 && (
+            <Checklist
+              label="Layers"
+              options={pipe(
+                categories,
+                R.collect(S.Ord)((label, value) => ({ label, value: label }))
+              )}
+              selected={pipe(
+                categories,
+                R.filter((x) => x),
+                R.collect(S.Ord)((value) => value)
+              )}
+              onChange={(selectedCategories) =>
+                pipe(
+                  elementCategories,
+                  R.collect(S.Ord)((k, b) => {
+                    if (selectedCategories.includes(k)) {
+                      if (!elementCategories[k]) elementCategories[k] = true
+                    } else {
+                      if (elementCategories[k]) elementCategories[k] = false
+                    }
+                  })
+                )
+              }
+            />
+          )}
           {/* <Checklist
             label="Vertical cuts"
             options={[
