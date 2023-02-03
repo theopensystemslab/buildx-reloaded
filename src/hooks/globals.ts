@@ -44,14 +44,14 @@ export const useGlobals = () => useSnapshot(globals)
 export const useDebug = () => {
   const { debug } = useGlobals()
 
-  useKey(
-    "d",
-    () => {
-      globals.debug = !debug
-    },
-    undefined,
-    [debug]
-  )
+  // useKey(
+  //   "d",
+  //   () => {
+  //     globals.debug = !debug
+  //   },
+  //   undefined,
+  //   [debug]
+  // )
 
   return debug
 }
@@ -75,7 +75,7 @@ export const setVerticalCuts = (input: string[]) => {
 }
 
 export const useVerticalCuts = () => {
-  const { verticalCuts } = useGlobals()
+  const { verticalCuts } = useGlobals() as typeof globals
   return [verticalCuts, setVerticalCuts] as const
 }
 

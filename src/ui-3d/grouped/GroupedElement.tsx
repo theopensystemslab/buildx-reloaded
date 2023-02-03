@@ -1,8 +1,8 @@
-import { useHashedMaterial, useMaterialHash } from "@/hooks/hashedMaterials"
+import { useMaterial } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
 import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
-import { useHashedGeometry } from "../../hooks/hashedGeometries"
+import { useGeometry } from "../../hooks/hashedGeometries"
 import { ModuleProps } from "./GroupedModule"
 
 type Props = ModuleProps & {
@@ -11,7 +11,6 @@ type Props = ModuleProps & {
 }
 
 const GroupedElement = (props: Props) => {
-  const meshRef = useRef<Mesh>(null)
   const {
     systemId,
     houseId,
@@ -20,19 +19,12 @@ const GroupedElement = (props: Props) => {
     columnIndex,
     levelIndex,
     gridGroupIndex,
-    module,
   } = props
 
-  const materialHash = useMaterialHash({
-    systemId,
-    houseId,
-    elementName,
-    visible: true,
-    clippingPlanes: [],
-  })
+  const meshRef = useRef<Mesh>(null!)
 
-  const geometry = useHashedGeometry(geometryHash)
-  const material = useHashedMaterial(materialHash)
+  const geometry = useGeometry(geometryHash)
+  const material = useMaterial({ systemId, houseId, elementName })
 
   const identifier: ElementIdentifier = {
     identifierType: "element",

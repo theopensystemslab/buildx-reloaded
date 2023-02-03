@@ -116,6 +116,10 @@ export const useGestures = (): any =>
         setCameraEnabled(false)
         // XZ and Y planes should subscribe here to jump to right place
 
+        scope.selected = {
+          ...identifier,
+        }
+
         if (siteCtx.editMode === null)
           siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
         if (siteCtx.houseId !== identifier.houseId)
@@ -148,6 +152,7 @@ export const useGestures = (): any =>
     onHover: ({ event: { intersections }, hovering }) => {
       if (intersections.length === 0) {
         document.body.style.cursor = ""
+        scope.hovered = null
         return
       }
       const {

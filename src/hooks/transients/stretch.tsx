@@ -5,23 +5,26 @@ import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretch/GroupedStretchColumn"
 import { A, NEA, RA } from "../../utils/functions"
-import { floor, max, round } from "../../utils/math"
+import { floor, max, round, sign } from "../../utils/math"
+import { yAxis } from "../../utils/three"
 import {
   collideOBB,
   useHouseDimensionsUpdates,
-  useHouseMatrix,
+  usePostTransMatrix,
 } from "../dimensions"
 import { HandleSide, HandleSideEnum } from "../gestures/drag/handles"
 import houses, { useHouse } from "../houses"
-import { ColumnLayout, PositionedRow } from "../layouts"
+import {
+  ColumnLayout,
+  columnLayoutToDNA,
+  layouts,
+  PositionedRow,
+} from "../layouts"
 import {
   getVanillaColumnLength,
   useGetVanillaModule,
   vanillaColumns,
 } from "../vanilla"
-import { sign } from "../../utils/math"
-import { columnLayoutToDNA, layouts } from "../layouts"
-import { yAxis } from "../../utils/three"
 
 export type Stretch = {
   side: HandleSide
@@ -91,7 +94,7 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
     height: houseHeight,
   } = useHouseDimensionsUpdates(houseId)
 
-  const computeMatrix = useHouseMatrix(houseId)
+  const computeMatrix = usePostTransMatrix(houseId)
 
   const maxLength = 25
   const maxCount = floor(max(0, maxLength - houseLength) / vanillaColumnLength)

@@ -1,10 +1,11 @@
-import { Add, ChoroplethMap, Reset, View } from "@carbon/icons-react"
+import { Add, Reset, View } from "@carbon/icons-react"
 import { Fragment, useState } from "react"
 import {
   setOrthographic,
   setShadows,
   setSidebar,
   useGlobals,
+  useVerticalCuts,
 } from "../hooks/globals"
 import IconButton from "./IconButton"
 import IconMenu from "./IconMenu"
@@ -13,18 +14,19 @@ import SiteSidebar from "./SiteSidebar"
 import UniversalMenu from "./UniversalMenu"
 // import Checklist from "./Checklist"
 import { pipe } from "fp-ts/lib/function"
+import usePortal from "react-cool-portal"
 import { useSnapshot } from "valtio"
 import { useCameraReset } from "../hooks/camera"
 import elementCategories from "../hooks/elementCategories"
-import { setMapboxEnabled, useMapboxStore } from "../hooks/mapboxStore"
+import { useMapboxStore } from "../hooks/mapboxStore"
 import { useMenu } from "../hooks/menu"
 import { R, S } from "../utils/functions"
+import Breadcrumbs from "./Breadcrumbs"
 import Checklist from "./Checklist"
+import ExitMode from "./ExitMode"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
-import Breadcrumbs from "./Breadcrumbs"
-import usePortal from "react-cool-portal"
-import ExitMode from "./ExitMode"
+import { keys } from "fp-ts/lib/Record"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -34,6 +36,7 @@ const HtmlUi = () => {
 
   const categories = useSnapshot(elementCategories) as typeof elementCategories
 
+  const [verticalCuts, setVerticalCuts] = useVerticalCuts()
   // useInsert1000Skylarks()
 
   const menu = useMenu()
@@ -70,7 +73,7 @@ const HtmlUi = () => {
         </div>
       </HeaderEndPortal>
       <div className="absolute left-0 top-1/2 z-10 flex -translate-y-1/2 transform flex-col justify-center bg-white shadow">
-        <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
+        {/* <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
           <Radio
             id="map"
             label="Map"
@@ -87,7 +90,7 @@ const HtmlUi = () => {
             selected={mapboxEnabled}
             onChange={setMapboxEnabled}
           />
-        </IconMenu>
+        </IconMenu> */}
         <IconMenu icon={() => <View size={24} className="m-auto" />}>
           <Radio
             id="camera"
@@ -110,31 +113,33 @@ const HtmlUi = () => {
           </IconButton>
         </IconMenu>
         <IconMenu icon={SectionCuts}>
+          {Object.keys(categories).length > 0 && (
+            <Checklist
+              label="Layers"
+              options={pipe(
+                categories,
+                R.collect(S.Ord)((label, value) => ({ label, value: label }))
+              )}
+              selected={pipe(
+                categories,
+                R.filter((x) => x),
+                R.collect(S.Ord)((value) => value)
+              )}
+              onChange={(selectedCategories) =>
+                pipe(
+                  elementCategories,
+                  R.collect(S.Ord)((k, b) => {
+                    if (selectedCategories.includes(k)) {
+                      if (!elementCategories[k]) elementCategories[k] = true
+                    } else {
+                      if (elementCategories[k]) elementCategories[k] = false
+                    }
+                  })
+                )
+              }
+            />
+          )}
           <Checklist
-            label="Layers"
-            options={pipe(
-              categories,
-              R.collect(S.Ord)((label, value) => ({ label, value: label }))
-            )}
-            selected={pipe(
-              categories,
-              R.filter((x) => x),
-              R.collect(S.Ord)((value) => value)
-            )}
-            onChange={(selectedCategories) =>
-              pipe(
-                elementCategories,
-                R.collect(S.Ord)((k, b) => {
-                  if (selectedCategories.includes(k)) {
-                    if (!elementCategories[k]) elementCategories[k] = true
-                  } else {
-                    if (elementCategories[k]) elementCategories[k] = false
-                  }
-                })
-              )
-            }
-          />
-          {/* <Checklist
             label="Vertical cuts"
             options={[
               { value: "width", label: "Width" },
@@ -142,11 +147,11 @@ const HtmlUi = () => {
             ]}
             selected={pipe(
               verticalCuts,
-              filterR((x) => x),
+              R.filter((x) => x),
               keys
             )}
             onChange={setVerticalCuts}
-          /> */}
+          />
           <Radio
             id="ground-plane"
             label="Ground Plane"

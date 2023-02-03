@@ -1,6 +1,6 @@
 import highlights from "@/hooks/highlights"
 import { useFBO } from "@react-three/drei"
-import { useFrame, useThree } from "@react-three/fiber"
+import { invalidate, useFrame, useThree } from "@react-three/fiber"
 import {
   EffectComposer,
   EffectPass,
@@ -78,11 +78,16 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  subscribeKey(highlights, "outlined", () => {
-    if (highlights.outlined.length > 0)
+  const outline = () => {
+    if (highlights.outlined.length > 0) {
       outlineEffect.selection.set(highlights.outlined)
-    else outlineEffect.selection.clear()
-  })
+    } else {
+      outlineEffect.selection.clear()
+    }
+    invalidate()
+  }
+
+  subscribeKey(highlights, "outlined", outline, true)
 
   // subscribeKey(highlights, "illuminated", () => {
   //   if (highlights.illuminated.length > 0) {

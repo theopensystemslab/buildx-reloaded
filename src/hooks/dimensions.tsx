@@ -1,13 +1,13 @@
 import { useThree } from "@react-three/fiber"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef } from "react"
 import { BoxGeometry, Matrix4, Mesh, MeshBasicMaterial, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "../utils/hooks"
 import { yAxis } from "../utils/three"
-import houses, { useHouse } from "./houses"
+import houses from "./houses"
 import { layouts } from "./layouts"
-import { Transforms } from "./transients/transforms"
+import { postTransformsTransients, Transforms } from "./transients/transforms"
 
 type Dimensions = {
   obb: OBB
@@ -38,20 +38,26 @@ export const useRenderOBB = () => {
   }
 }
 
-export const useHouseMatrix = (houseId: string) => {
+export const usePostTransMatrix = (houseId: string) => {
   const translationMatrix = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
-  return (deltas?: { x?: number; y?: number; z?: number; scale?: number }) => {
+  return (deltas?: { x?: number; y?: number; z?: number }) => {
+    const {
+      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+      rotation: dr = 0,
+    } = postTransformsTransients[houseId] ?? {}
+
     const {
       position: { x, y, z },
       rotation,
     } = houses[houseId]
-    const { x: dx = 0, y: dy = 0, z: dz = 0, scale = 1 } = deltas ?? {}
 
-    rotationMatrix.current.makeRotationY(rotation)
+    const { x: ddx = 0, y: ddy = 0, z: ddz = 0 } = deltas ?? {}
 
-    const v = new Vector3(dx, dy, dz)
+    rotationMatrix.current.makeRotationY(rotation + dr)
+
+    const v = new Vector3(dx + ddx, dy + ddy, dz + ddz)
     v.applyAxisAngle(yAxis, rotation)
 
     v.add(new Vector3(x, y, z))
