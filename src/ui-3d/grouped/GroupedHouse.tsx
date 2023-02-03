@@ -130,7 +130,7 @@ const GroupedHouse = (props: Props) => {
   const isStretchable = useIsStretchable(houseId)
   const isMoveRotateable = useIsMoveRotateable(houseId)
 
-  useHouseMaterialOps(systemId, houseGroupRef)
+  useHouseMaterialOps(houseId, houseGroupRef)
 
   return (
     <Fragment>

@@ -23,13 +23,6 @@ const GroupedElement = (props: Props) => {
 
   const meshRef = useRef<Mesh>(null!)
 
-  // const materialHash = useMaterialHash({
-  //   systemId,
-  //   houseId,
-  //   elementName,
-  //   clippingPlanes: [],
-  // })
-
   const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 

@@ -1,15 +1,6 @@
 import { proxy, useSnapshot } from "valtio"
 
-const elementCategories = proxy<{ [k: string]: boolean }>({
-  // "Internal finishes": false,
-  // "External finishes": false,
-  // Insulation: false,
-  // Services: false,
-  // Structure: false,
-  // "Windows & doors": false,
-  // Foundations: false,
-  // Furnishings: false,
-})
+const elementCategories = proxy<{ [k: string]: boolean }>({})
 
 export const useElementCategories = () => {
   const categories = useSnapshot(elementCategories)

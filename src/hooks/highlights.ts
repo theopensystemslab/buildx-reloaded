@@ -85,23 +85,10 @@ export const useHouseElementOutline = (
     () => {
       const { mode } = siteCtx
 
-      // const validModes: SiteCtxMode[] = [
-      //   SiteCtxModeEnum.Enum.SITE,
-      //   SiteCtxModeEnum.Enum.BUILDING,
-      // ]
-
-      // if (!validModes.includes(mode)) return
-
       if (scope.hovered === null && scope.selected === null) {
         highlights.outlined = []
         return
       }
-
-      // const {} = scope.hovered
-
-      // scope.hovered and scope.selected
-
-      // just hovered first
 
       let o3s: Object3D[] = []
 

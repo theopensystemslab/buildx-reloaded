@@ -8,7 +8,6 @@ import {
   RenderPass,
 } from "postprocessing"
 import { useEffect, useMemo } from "react"
-import { useDebouncedCallback } from "use-debounce"
 import { subscribeKey } from "valtio/utils"
 
 export type UseOutlineEffectParams = ConstructorParameters<
@@ -79,14 +78,14 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  const outline = useDebouncedCallback(() => {
+  const outline = () => {
     if (highlights.outlined.length > 0) {
       outlineEffect.selection.set(highlights.outlined)
     } else {
       outlineEffect.selection.clear()
     }
     invalidate()
-  }, 0)
+  }
 
   subscribeKey(highlights, "outlined", outline, true)
 
