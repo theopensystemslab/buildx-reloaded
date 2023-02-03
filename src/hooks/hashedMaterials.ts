@@ -11,6 +11,7 @@ import { createMaterial, isMesh } from "../utils/three"
 import elementCategories from "./elementCategories"
 import globals from "./globals"
 import houses, { useHouse } from "./houses"
+import { layouts } from "./layouts"
 import siteCtx from "./siteCtx"
 import { postTransformsTransients } from "./transients/transforms"
 
@@ -133,15 +134,23 @@ export const useHouseMaterialOps = (
   const clippingPlaneZ = useMemo(() => new Plane(), [])
 
   const xAxis = useMemo(() => new Vector3(1, 0, 0), [])
-  const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
+  const yAxis = useMemo(() => new Vector3(0, -1, 0), [])
   const zAxis = useMemo(() => new Vector3(0, 0, 1), [])
+
+  const levelHeight =
+    siteCtx.levelIndex === null
+      ? Infinity
+      : layouts[houseId][0].gridGroups[siteCtx.levelIndex].y +
+        layouts[houseId][0].gridGroups[siteCtx.levelIndex].modules[0].module
+          .height /
+          2
 
   const updateMatrices = () => {
     const planeMatrix = getPlaneMatrix()
 
     clippingPlaneX.set(xAxis, 0)
     clippingPlaneX.applyMatrix4(planeMatrix)
-    clippingPlaneY.set(yAxis, 0)
+    clippingPlaneY.set(yAxis, levelHeight)
     clippingPlaneY.applyMatrix4(planeMatrix)
     clippingPlaneZ.set(zAxis, 0)
     clippingPlaneZ.applyMatrix4(planeMatrix)
