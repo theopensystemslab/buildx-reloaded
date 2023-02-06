@@ -18,12 +18,12 @@ import { postTransformsTransients } from "./transients/transforms"
 const getMaterialHash = ({
   systemId,
   houseId,
-  elementName,
+  materialName,
 }: {
   systemId: string
   houseId: string
-  elementName: string
-}) => `${systemId}:${houseId}:${elementName}`
+  materialName: string
+}) => `${systemId}:${houseId}:${materialName}`
 
 const hashedMaterials = proxy<Record<string, Material>>({})
 
@@ -71,17 +71,21 @@ export const useMaterial = ({
 
   const systemMaterials = useSystemMaterials({ systemId })
 
-  const materialData = pipe(
-    systemMaterials,
-    RA.findFirst((m) => m.name === materialName),
-    someOrError("no material")
+  const materialData = useMemo(
+    () =>
+      pipe(
+        systemMaterials,
+        RA.findFirst((m) => m.name === materialName),
+        someOrError("no material")
+      ),
+    [materialName, systemMaterials]
   )
 
   return useMemo(() => {
     const materialHash = getMaterialHash({
       systemId,
       houseId,
-      elementName,
+      materialName,
     })
     const maybeMaterial = hashedMaterials?.[materialHash]
     if (maybeMaterial) return maybeMaterial
@@ -91,7 +95,7 @@ export const useMaterial = ({
     hashedMaterials[materialHash] = ref(newMaterial)
 
     return newMaterial
-  }, [elementName, houseId, materialData, systemId])
+  }, [houseId, materialData, materialName, systemId])
 }
 
 const usePlaneMatrix = (houseId: string) => {

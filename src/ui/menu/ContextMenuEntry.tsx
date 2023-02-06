@@ -1,11 +1,18 @@
-import { Add } from "@carbon/icons-react"
+import { invalidate } from "@react-three/fiber"
+import { Fragment } from "react"
 import { House } from "../../data/house"
 import { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
-import { enterBuildingMode, useSiteCtx } from "../../hooks/siteCtx"
-import { Menu, Pencil, TextCursor } from "../icons"
+import {
+  enterBuildingMode,
+  SiteCtxMode,
+  SiteCtxModeEnum,
+  useSiteCtx,
+} from "../../hooks/siteCtx"
+import { Pencil, TextCursor } from "../icons"
 import ChangeLevelType from "./ChangeLevelType"
+import ChangeMaterials from "./ChangeMaterials"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
 
@@ -20,11 +27,12 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     pageY,
     onClose: () => {
       closeMenu()
+      invalidate()
     },
     selected,
   }
 
-  const { houseId } = selected
+  const { houseId, elementName } = selected
   const house = useHouse(houseId) as House
 
   const editBuilding = () => {
@@ -34,21 +42,40 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
   return (
     <ContextMenu {...props}>
-      <ContextMenuButton
-        icon={<Pencil />}
-        text="Edit building"
-        unpaddedSvg
-        onClick={editBuilding}
-      />
-      <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
-      <ContextMenuButton icon={<Menu />} text="Menu" />
-      <ContextMenuButton icon={<Add size={24} />} text="Add" />
+      {mode === SiteCtxModeEnum.Enum.SITE && (
+        <Fragment>
+          <ContextMenuButton
+            icon={<Pencil />}
+            text="Edit building"
+            unpaddedSvg
+            onClick={editBuilding}
+          />
+          <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
+          {/* <ContextMenuButton icon={<Menu />} text="Menu" />
+      <ContextMenuButton icon={<Add size={24} />} text="Add" /> */}
+        </Fragment>
+      )}
 
-      <ChangeLevelType houseId={houseId} onChange={props.onClose} />
-      <div>{`mode: ${mode}`}</div>
-      <div>
-        <pre>{JSON.stringify(selected, null, 2)}</pre>
-      </div>
+      {mode === SiteCtxModeEnum.Enum.BUILDING && (
+        <Fragment>
+          <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+        </Fragment>
+      )}
+
+      {(
+        [
+          SiteCtxModeEnum.Enum.BUILDING,
+          SiteCtxModeEnum.Enum.LEVEL,
+        ] as SiteCtxMode[]
+      ).includes(mode) && (
+        <Fragment>
+          <ChangeMaterials
+            houseId={houseId}
+            elementName={elementName}
+            onComplete={props.onClose}
+          />
+        </Fragment>
+      )}
     </ContextMenu>
   )
 }

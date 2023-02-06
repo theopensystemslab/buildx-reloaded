@@ -1,14 +1,16 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
+import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
+import { A, O } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { useRotations } from "../../utils/three"
+import { isMesh, useRotations } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
-import siteCtx, { downMode, EditModeEnum, enterBuildingMode } from "../siteCtx"
+import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
 import { setStretch, stretchLengthRaw } from "../transients/stretch"
 import {
   preTransformsTransients,
@@ -140,14 +142,22 @@ export const useGestures = (): any =>
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()
-      if (intersections.length === 0) return
-      const {
-        object: { userData },
-      } = intersections[0]
-      scope.selected = {
-        ...userData.identifier,
-      }
-      openMenu(pageX, pageY)
+      pipe(
+        intersections,
+        A.findFirst((x) => {
+          return (
+            isMesh(x.object) &&
+            !Array.isArray(x.object.material) &&
+            x.object.material.visible
+          )
+        }),
+        O.map(({ object: { userData } }) => {
+          scope.selected = {
+            ...userData.identifier,
+          }
+          openMenu(pageX, pageY)
+        })
+      )
     },
     onHover: ({ event: { intersections }, hovering }) => {
       if (intersections.length === 0) {
