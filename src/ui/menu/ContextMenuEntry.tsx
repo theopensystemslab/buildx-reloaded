@@ -1,3 +1,4 @@
+import { invalidate } from "@react-three/fiber"
 import { Fragment } from "react"
 import { House } from "../../data/house"
 import { useHouse } from "../../hooks/houses"
@@ -5,6 +6,7 @@ import { closeMenu } from "../../hooks/menu"
 import { useScope } from "../../hooks/scope"
 import {
   enterBuildingMode,
+  SiteCtxMode,
   SiteCtxModeEnum,
   useSiteCtx,
 } from "../../hooks/siteCtx"
@@ -25,6 +27,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     pageY,
     onClose: () => {
       closeMenu()
+      invalidate()
     },
     selected,
   }
@@ -56,6 +59,16 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       {mode === SiteCtxModeEnum.Enum.BUILDING && (
         <Fragment>
           <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+        </Fragment>
+      )}
+
+      {(
+        [
+          SiteCtxModeEnum.Enum.BUILDING,
+          SiteCtxModeEnum.Enum.LEVEL,
+        ] as SiteCtxMode[]
+      ).includes(mode) && (
+        <Fragment>
           <ChangeMaterials
             houseId={houseId}
             elementName={elementName}
