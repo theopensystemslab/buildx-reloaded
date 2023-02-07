@@ -13,6 +13,7 @@ import {
 import { Pencil, TextCursor } from "../icons"
 import ChangeLevelType from "./ChangeLevelType"
 import ChangeMaterials from "./ChangeMaterials"
+import ChangeWindows from "./ChangeWindows"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
 
@@ -32,7 +33,9 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     selected,
   }
 
-  const { houseId, elementName } = selected
+  const { houseId, columnIndex, levelIndex, gridGroupIndex, elementName } =
+    selected
+
   const house = useHouse(houseId) as House
 
   const editBuilding = () => {
@@ -76,6 +79,15 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
           />
         </Fragment>
       )}
+
+      <ChangeWindows
+        {...{
+          houseId,
+          columnIndex,
+          levelIndex,
+          gridGroupIndex,
+        }}
+      />
     </ContextMenu>
   )
 }

@@ -5,7 +5,7 @@ import { trpc } from "../utils/trpc"
 import { systemFromId } from "./system"
 import { proxy, useSnapshot } from "valtio"
 
-export interface SectionType {
+export type SectionType = {
   id: string
   systemId: string
   code: string
@@ -60,7 +60,11 @@ export const useSystemSectionTypes = ({ systemId }: { systemId: string }) => {
   return snap?.[systemId] ?? []
 }
 
-export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
+export const useInitSystemSectionTypes = ({
+  systemId,
+}: {
+  systemId: string
+}) => {
   trpc.sectionTypes.useQuery(
     {
       systemId: systemId,
