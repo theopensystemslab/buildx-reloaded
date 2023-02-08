@@ -1,8 +1,7 @@
 import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { ref } from "valtio"
-import { useInitSystemLevelTypes } from "../data/levelTypes"
+import { useInitSystemLevelTypes } from "../../data/levelTypes"
 import {
   filterCompatibleModules,
   keysFilter,
@@ -10,17 +9,17 @@ import {
   topCandidateByHamming,
   usePadColumn,
   useSystemModules,
-} from "../data/modules"
-import { A, O, Ord, S } from "../utils/functions"
-import houses from "./houses"
-import { columnMatrixToDna } from "./layouts"
+} from "../../data/modules"
+import { A, O, Ord, S } from "../../utils/functions"
+import houses from "../houses"
+import { columnMatrixToDna } from "../layouts"
 import {
   getSelectedColumnMatrix,
   getSelectedLevelModules,
   getSelectedLevelType,
   getSelectedModule,
   useScope,
-} from "./scope"
+} from "../scope"
 
 export type LevelTypeOption = {
   label: string

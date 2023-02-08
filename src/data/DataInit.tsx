@@ -5,6 +5,7 @@ import { useInitSystemLevelTypes } from "./levelTypes"
 import { useInitSystemMaterials } from "./materials"
 import { useInitSystemModules } from "./modules"
 import { useInitSystemSectionTypes } from "./sectionTypes"
+import { useInitSystemStairTypes } from "./stairTypes"
 import { useInitSystemWindowTypes } from "./windowTypes"
 
 const DataInit = ({ children }: PropsWithChildren<{}>) => {
@@ -14,6 +15,7 @@ const DataInit = ({ children }: PropsWithChildren<{}>) => {
   const systemLevelTypes = useInitSystemLevelTypes({ systemId: "skylark" })
   const sectionTypes = useInitSystemSectionTypes({ systemId: "skylark" })
   const windowTypes = useInitSystemWindowTypes({ systemId: "skylark" })
+  const stairTypes = useInitSystemStairTypes({ systemId: "skylark" })
 
   const loaded = [
     systemModules,
@@ -22,6 +24,7 @@ const DataInit = ({ children }: PropsWithChildren<{}>) => {
     systemLevelTypes,
     sectionTypes,
     windowTypes,
+    stairTypes,
   ].reduce((acc, v) => acc && v.length > 0, true)
 
   return <Fragment>{loaded ? children : <Loader />}</Fragment>

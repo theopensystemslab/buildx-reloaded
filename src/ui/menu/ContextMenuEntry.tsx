@@ -11,6 +11,7 @@ import {
   useSiteCtx,
 } from "../../hooks/siteCtx"
 import { Pencil, TextCursor } from "../icons"
+import AddRemoveLevels from "./AddRemoveLevels"
 import ChangeLevelType from "./ChangeLevelType"
 import ChangeMaterials from "./ChangeMaterials"
 import ChangeWindows from "./ChangeWindows"
@@ -43,6 +44,12 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props?.onClose?.()
   }
 
+  const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+
+  const buildingOrLevelMode = (
+    [SiteCtxModeEnum.Enum.BUILDING, SiteCtxModeEnum.Enum.LEVEL] as SiteCtxMode[]
+  ).includes(mode)
+
   return (
     <ContextMenu {...props}>
       {mode === SiteCtxModeEnum.Enum.SITE && (
@@ -59,18 +66,22 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
         </Fragment>
       )}
 
-      {mode === SiteCtxModeEnum.Enum.BUILDING && (
+      {buildingMode && (
         <Fragment>
           <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+          <AddRemoveLevels
+            {...{
+              houseId,
+              columnIndex,
+              levelIndex,
+              gridGroupIndex,
+              onComplete: props.onClose,
+            }}
+          />
         </Fragment>
       )}
 
-      {(
-        [
-          SiteCtxModeEnum.Enum.BUILDING,
-          SiteCtxModeEnum.Enum.LEVEL,
-        ] as SiteCtxMode[]
-      ).includes(mode) && (
+      {buildingOrLevelMode && (
         <Fragment>
           <ChangeMaterials
             houseId={houseId}

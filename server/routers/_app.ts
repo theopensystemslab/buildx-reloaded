@@ -8,6 +8,7 @@ import Airtable from "airtable"
 import { levelTypesQuery } from "@/data/levelTypes"
 import { windowTypesQuery } from "@/data/windowTypes"
 import { procedure, router } from "../trpc"
+import { stairTypesQuery } from "@/data/stairTypes"
 
 Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
 const airtable = new Airtable()
@@ -31,6 +32,7 @@ export const appRouter = router({
   windowTypes: procedure
     .input(systemIdParser)
     .query(windowTypesQuery(airtable)),
+  stairTypes: procedure.input(systemIdParser).query(stairTypesQuery(airtable)),
 })
 
 // export type definition of API
