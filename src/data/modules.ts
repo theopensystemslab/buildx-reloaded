@@ -3,13 +3,13 @@ import { QueryParams } from "airtable/lib/query_params"
 import { sum } from "fp-ts-std/Array"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { first } from "fp-ts/lib/Semigroup"
 import { proxy, ref, useSnapshot } from "valtio"
 import * as z from "zod"
 import { useGetVanillaModule } from "../hooks/vanilla"
 import { A, N, O, Ord, R, SG } from "../utils/functions"
 import { abs, hamming } from "../utils/math"
 import { trpc } from "../utils/trpc"
+import { StairType } from "./stairTypes"
 import { systemFromId } from "./system"
 
 export const moduleSelector: QueryParams<any> = {
@@ -222,6 +222,45 @@ export const usePadColumn = (systemId: string) => {
           ...A.replicate(target - levelLength, getVanillaModule(level[0])),
         ]
       })
+    )
+  }
+}
+
+export const useGetStairsModule = (systemId: string) => {
+  // const { modules: allModules } = useSystemsData()
+  const systemModules = useSystemModules({ systemId })
+
+  return (
+    oldModule: Module,
+    opts: {
+      stairsType?: StairType["code"]
+      levelType?: string
+    } = {}
+  ) => {
+    const { stairsType, levelType } = opts
+    const constraints = keysFilter(
+      ["sectionType", "positionType", "gridType"],
+      oldModule
+    )
+
+    return pipe(
+      systemModules as unknown as Module[],
+      A.filter(constraints),
+      A.filter(
+        (x) =>
+          x.structuredDna.stairsType ===
+            (stairsType ?? oldModule.structuredDna.stairsType) &&
+          (!levelType
+            ? x.structuredDna.levelType === oldModule.structuredDna.levelType
+            : x.structuredDna.levelType === levelType)
+      ),
+      topCandidateByHamming(oldModule, [
+        "internalLayoutType",
+        "windowTypeSide1",
+        "windowTypeSide2",
+        "windowTypeEnd",
+        "windowTypeTop",
+      ])
     )
   }
 }

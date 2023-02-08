@@ -1,5 +1,8 @@
 import houses from "../../hooks/houses"
-import { LevelTypeOption, useChangeLevelType } from "../../hooks/levels"
+import {
+  LevelTypeOption,
+  useChangeLevelType,
+} from "../../hooks/interactions/levels"
 import { Menu } from "../icons"
 import Radio from "../Radio"
 import ContextMenuNested from "./ContextMenuNested"

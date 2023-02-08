@@ -314,3 +314,28 @@ export const Opening = () => (
     <path d="M0.5 10.6396V0.693713L7 2.86038V12.8063L0.5 10.6396Z" />
   </svg>
 )
+
+export const AddLevel = () => (
+  <svg
+    viewBox="0 0 12 15"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+  >
+    <rect x="0.5" y="8.5" width="11" height="6" />
+    <line x1="5.5" y1="-2.18557e-08" x2="5.5" y2="7" />
+    <line x1="9" y1="3.5" x2="2" y2="3.5" />
+  </svg>
+)
+
+export const RemoveLevel = () => (
+  <svg
+    viewBox="0 0 12 12"
+    fill="none"
+    stroke="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <line x1="9" y1="0.5" x2="2" y2="0.499999" />
+    <rect x="0.5" y="5.5" width="11" height="6" />
+  </svg>
+)
