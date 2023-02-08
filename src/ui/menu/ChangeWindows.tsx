@@ -1,15 +1,12 @@
-import React from "react"
 import houses from "../../hooks/houses"
 import { useWindowOptions, WindowOpt } from "../../hooks/interactions/windows"
 import { HouseModuleIdentifier } from "../../hooks/layouts"
-import scope from "../../hooks/scope"
 import { Opening } from "../icons"
 import Radio from "../Radio"
-import ContextMenuHeading from "./ContextMenuHeading"
 import ContextMenuNested from "./ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {
-  onClose?: () => void
+  onComplete?: () => void
 }
 
 const ChangeWindows = (props: Props) => {
@@ -34,33 +31,18 @@ const ChangeWindows = (props: Props) => {
 
   const changeWindow = ({ buildingDna }: WindowOpt["value"]) => {
     houses[houseId].dna = buildingDna
-    props.onClose?.()
+    props.onComplete?.()
   }
 
-  return (
+  return canChangeWindow ? (
     <ContextMenuNested icon={<Opening />} label={`Change windows`} unpaddedSvg>
-      Hi
       <Radio
         options={windowOpts}
         selected={selectedWindowOpt}
         onChange={changeWindow}
       />
-      {/* <ContextMenuHeading>{elementName}</ContextMenuHeading>
-      <Radio
-        options={options}
-        selected={
-          house.modifiedMaterials?.[element.name] ?? element.defaultMaterial
-        }
-        onChange={(newMaterial) => {
-          houses[houseId].modifiedMaterials = {
-            ...(house.modifiedMaterials ?? {}),
-            [element.name]: newMaterial,
-          }
-          onComplete?.()
-        }}
-      /> */}
     </ContextMenuNested>
-  )
+  ) : null
 }
 
 export default ChangeWindows

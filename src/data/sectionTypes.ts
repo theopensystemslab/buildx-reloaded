@@ -17,7 +17,7 @@ export const sectionTypeParser = z.object({
   id: z.string().min(1),
   fields: z.object({
     section_code: z.string().min(1),
-    description: z.string().min(1),
+    description: z.string().default(""),
     section_width: z.number(),
   }),
 })

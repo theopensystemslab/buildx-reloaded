@@ -86,6 +86,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
           columnIndex,
           levelIndex,
           gridGroupIndex,
+          onComplete: props.onClose,
         }}
       />
     </ContextMenu>

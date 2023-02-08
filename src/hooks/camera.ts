@@ -23,24 +23,18 @@ export const setCameraEnabled = (b: boolean) => {
 
 export type Side = "LEFT" | "RIGHT"
 
-export const useSide = (houseId: string) => {
-  const { rotation } = useSnapshot(houses[houseId])
-
-  const houseDirection = useMemo(() => {
-    const vec = new Vector3(0, 0, -1)
-    const rotationMatrix = new Matrix4().makeRotationY(rotation)
-    vec.applyMatrix4(rotationMatrix)
-    return vec
-  }, [rotation])
+export const getSide = (houseId: string) => {
+  const houseDirection = new Vector3(0, 0, -1)
+  const rotationMatrix = new Matrix4().makeRotationY(houses[houseId].rotation)
+  houseDirection.applyMatrix4(rotationMatrix)
 
   const cameraDirection = new Vector3()
+  camera.controls?.camera.getWorldDirection(cameraDirection)
 
-  return (): Side => {
-    camera.controls?.camera.getWorldDirection(cameraDirection)
-    const v = new Vector3()
-    v.crossVectors(houseDirection, cameraDirection)
-    return v.y < 0 ? "LEFT" : "RIGHT"
-  }
+  const v = new Vector3()
+  v.crossVectors(houseDirection, cameraDirection)
+
+  return v.y < 0 ? "LEFT" : "RIGHT"
 }
 
 // export const useCameraFocus = () => {

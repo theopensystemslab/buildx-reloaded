@@ -1,20 +1,9 @@
-// import {
-//   keysFilter,
-//   useChangeModuleLayout,
-// } from "@/data/modules"
-// import { WindowType } from "@/data/windowType"
-// import siteContext from "@/hooks/context"
-// import { pipe } from "fp-ts/lib/function"
-// import { getOrElse, none, Option, some } from "fp-ts/lib/Option"
-// import { ColumnLayout, columnLayoutToDNA, layouts } from "../layouts"
-// import { useSide } from "../side"
-
 import { pipe } from "fp-ts/lib/function"
 import { Option } from "fp-ts/lib/Option"
 import { keysFilter, Module, useSystemModules } from "../../data/modules"
 import { useSystemWindowTypes, WindowType } from "../../data/windowTypes"
 import { A, O, S } from "../../utils/functions"
-import { useSide } from "../camera"
+import { getSide, Side } from "../camera"
 import {
   columnLayoutToDNA,
   HouseModuleIdentifier,
@@ -44,7 +33,7 @@ export const useWindowOptions = ({
 
   const { systemId } = m
 
-  const side = useSide(siteCtx.houseId!)()
+  const side: Side = siteCtx.houseId ? getSide(siteCtx.houseId) : "RIGHT"
 
   const systemModules = useSystemModules({ systemId })
   const windowTypes = useSystemWindowTypes({ systemId })
