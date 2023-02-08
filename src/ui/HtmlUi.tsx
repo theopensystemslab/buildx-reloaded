@@ -1,4 +1,4 @@
-import { Add, Reset, View } from "@carbon/icons-react"
+import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
 import { Fragment, useState } from "react"
 import {
   setOrthographic,
@@ -14,6 +14,7 @@ import SiteSidebar from "./SiteSidebar"
 import UniversalMenu from "./UniversalMenu"
 // import Checklist from "./Checklist"
 import { pipe } from "fp-ts/lib/function"
+import { keys } from "fp-ts/lib/Record"
 import usePortal from "react-cool-portal"
 import { useSnapshot } from "valtio"
 import { useCameraReset } from "../hooks/camera"
@@ -26,7 +27,6 @@ import Checklist from "./Checklist"
 import ExitMode from "./ExitMode"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
-import { keys } from "fp-ts/lib/Record"
 
 const HtmlUi = () => {
   const { sidebar, shadows, orthographic } = useGlobals()
@@ -112,33 +112,8 @@ const HtmlUi = () => {
             <Reset size={24} className="m-auto" />
           </IconButton>
         </IconMenu>
+
         <IconMenu icon={SectionCuts}>
-          {Object.keys(categories).length > 0 && (
-            <Checklist
-              label="Layers"
-              options={pipe(
-                categories,
-                R.collect(S.Ord)((label, value) => ({ label, value: label }))
-              )}
-              selected={pipe(
-                categories,
-                R.filter((x) => x),
-                R.collect(S.Ord)((value) => value)
-              )}
-              onChange={(selectedCategories) =>
-                pipe(
-                  elementCategories,
-                  R.collect(S.Ord)((k, b) => {
-                    if (selectedCategories.includes(k)) {
-                      if (!elementCategories[k]) elementCategories[k] = true
-                    } else {
-                      if (elementCategories[k]) elementCategories[k] = false
-                    }
-                  })
-                )
-              }
-            />
-          )}
           <Checklist
             label="Vertical cuts"
             options={[
@@ -163,6 +138,34 @@ const HtmlUi = () => {
             onChange={(newValue) => {
               setShadows(newValue)
             }}
+          />
+        </IconMenu>
+        <IconMenu
+          icon={() => <WatsonHealthSubVolume size={24} className="m-auto" />}
+        >
+          <Checklist
+            label="Building elements"
+            options={pipe(
+              categories,
+              R.collect(S.Ord)((label, value) => ({ label, value: label }))
+            )}
+            selected={pipe(
+              categories,
+              R.filter((x) => x),
+              R.collect(S.Ord)((value) => value)
+            )}
+            onChange={(selectedCategories) =>
+              pipe(
+                elementCategories,
+                R.collect(S.Ord)((k, b) => {
+                  if (selectedCategories.includes(k)) {
+                    if (!elementCategories[k]) elementCategories[k] = true
+                  } else {
+                    if (elementCategories[k]) elementCategories[k] = false
+                  }
+                })
+              )
+            }
           />
         </IconMenu>
       </div>
