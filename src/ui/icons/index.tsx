@@ -305,8 +305,6 @@ export const Crosshair = () => (
 
 export const Opening = () => (
   <svg
-    // width="9"
-    // height="14"
     viewBox="0 0 9 14"
     fill="none"
     stroke="currentColor"
