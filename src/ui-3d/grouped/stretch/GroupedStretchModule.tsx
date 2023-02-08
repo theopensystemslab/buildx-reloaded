@@ -1,12 +1,15 @@
 import { useModuleElements } from "@/data/elements"
 import { Module } from "@/data/modules"
-import { ColumnLayoutKeyInput } from "@/hooks/layouts"
 import { RM, S } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
+import { SystemHouseModuleIdentifier } from "../../../hooks/layouts"
 import GroupedStretchElement from "./GroupedStretchElement"
 
-export type StretchModuleProps = Omit<ColumnLayoutKeyInput, "columnIndex"> & {
+export type StretchModuleProps = Omit<
+  SystemHouseModuleIdentifier,
+  "columnIndex"
+> & {
   module: Module
   levelY: number
 }

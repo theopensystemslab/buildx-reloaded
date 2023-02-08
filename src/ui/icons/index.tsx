@@ -302,3 +302,15 @@ export const Crosshair = () => (
     <line x1="12" y1="22" x2="12" y2="18"></line>
   </svg>
 )
+
+export const Opening = () => (
+  <svg
+    viewBox="0 0 9 14"
+    fill="none"
+    stroke="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="0.5" y="0.5" width="8" height="10" />
+    <path d="M0.5 10.6396V0.693713L7 2.86038V12.8063L0.5 10.6396Z" />
+  </svg>
+)

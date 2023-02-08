@@ -68,7 +68,6 @@ const GroupedColumn = (props: Props) => {
               return (
                 <GroupedModule
                   key={indicesToKey({
-                    systemId,
                     houseId,
                     columnIndex,
                     levelIndex,

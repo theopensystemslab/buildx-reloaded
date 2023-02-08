@@ -1,7 +1,8 @@
 import CameraControls from "camera-controls"
 import { useMemo } from "react"
-import { Raycaster, Vector3 } from "three"
-import { proxy } from "valtio"
+import { Matrix4, Raycaster, Vector3 } from "three"
+import { proxy, useSnapshot } from "valtio"
+import houses from "./houses"
 
 type CameraProxy = {
   controls: CameraControls | null
@@ -18,6 +19,22 @@ const camera = proxy<CameraProxy>({
 
 export const setCameraEnabled = (b: boolean) => {
   if (camera.controls) camera.controls.enabled = b
+}
+
+export type Side = "LEFT" | "RIGHT"
+
+export const getSide = (houseId: string) => {
+  const houseDirection = new Vector3(0, 0, -1)
+  const rotationMatrix = new Matrix4().makeRotationY(houses[houseId].rotation)
+  houseDirection.applyMatrix4(rotationMatrix)
+
+  const cameraDirection = new Vector3()
+  camera.controls?.camera.getWorldDirection(cameraDirection)
+
+  const v = new Vector3()
+  v.crossVectors(houseDirection, cameraDirection)
+
+  return v.y < 0 ? "LEFT" : "RIGHT"
 }
 
 // export const useCameraFocus = () => {

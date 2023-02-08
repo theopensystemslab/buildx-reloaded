@@ -1,11 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
 import { useModuleElements } from "../../data/elements"
 import { Module } from "../../data/modules"
-import { ColumnLayoutKeyInput, indicesToKey } from "../../hooks/layouts"
+import { indicesToKey, SystemHouseModuleIdentifier } from "../../hooks/layouts"
 import { RM, S } from "../../utils/functions"
 import GroupedElement from "./GroupedElement"
 
-export type ModuleProps = ColumnLayoutKeyInput & {
+export type ModuleProps = SystemHouseModuleIdentifier & {
   module: Module
   levelY: number
   moduleZ: number
@@ -33,7 +33,6 @@ const GroupedModule = (props: ModuleProps) => {
     elements,
     RM.collect(S.Ord)((elementName, geometryHash) => {
       const key = indicesToKey({
-        systemId,
         houseId,
         columnIndex,
         levelIndex,

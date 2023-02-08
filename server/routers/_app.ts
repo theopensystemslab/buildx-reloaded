@@ -5,7 +5,8 @@ import { modulesQuery } from "@/data/modules"
 import { sectionTypesQuery } from "@/data/sectionTypes"
 import { systemIdParser } from "@/data/system"
 import Airtable from "airtable"
-import { levelTypesQuery } from "../../src/data/levelTypes"
+import { levelTypesQuery } from "@/data/levelTypes"
+import { windowTypesQuery } from "@/data/windowTypes"
 import { procedure, router } from "../trpc"
 
 Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
@@ -27,6 +28,9 @@ export const appRouter = router({
     .input(systemIdParser)
     .query(sectionTypesQuery(airtable)),
   levelTypes: procedure.input(systemIdParser).query(levelTypesQuery(airtable)),
+  windowTypes: procedure
+    .input(systemIdParser)
+    .query(windowTypesQuery(airtable)),
 })
 
 // export type definition of API
