@@ -6,7 +6,7 @@ import { pipe } from "fp-ts/lib/function"
 import { proxy, ref, useSnapshot } from "valtio"
 import * as z from "zod"
 import { useGetVanillaModule } from "../hooks/vanilla"
-import { A, N, O, Ord, R, SG } from "../utils/functions"
+import { A, Num, O, Ord, R, SG } from "../utils/functions"
 import { abs, hamming } from "../utils/math"
 import { trpc } from "../utils/trpc"
 import { StairType } from "./stairTypes"
@@ -346,7 +346,7 @@ export const topCandidateByHamming =
       ]),
       A.sort(
         pipe(
-          N.Ord,
+          Num.Ord,
           Ord.contramap(([, n]: [Module, number]) => n)
         )
       ),

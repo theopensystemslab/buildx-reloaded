@@ -1,15 +1,24 @@
-import { flow, identity } from "fp-ts/lib/function"
-import * as O from "fp-ts/Option"
-import * as RA from "fp-ts/ReadonlyArray"
-import * as Num from "fp-ts/number"
 import * as A from "fp-ts/Array"
-import * as S from "fp-ts/string"
-import * as M from "fp-ts/Monoid"
+import { flow, identity, pipe } from "fp-ts/lib/function"
+import * as Mon from "fp-ts/Monoid"
+import * as Num from "fp-ts/number"
+import * as O from "fp-ts/Option"
 import { clamp } from "fp-ts/Ord"
+import * as RA from "fp-ts/ReadonlyArray"
+import * as R from "fp-ts/Record"
+import * as S from "fp-ts/string"
 
 const clamp_ = clamp(Num.Ord)
 
+export * as M from "fp-ts/Map"
+export * as NEA from "fp-ts/NonEmptyArray"
+export * as Ord from "fp-ts/Ord"
+export * as RM from "fp-ts/ReadonlyMap"
+export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
+export * as RR from "fp-ts/ReadonlyRecord"
+export * as SG from "fp-ts/Semigroup"
 export { clamp_ as clamp }
+export { A, Num, O, R, RA, S }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)
@@ -71,19 +80,11 @@ export const pipeLogWith =
 export const upperFirst = flow(
   S.split(""),
   RA.modifyAt(0, S.toUpperCase),
-  O.map(M.concatAll(S.Monoid))
+  O.map(Mon.concatAll(S.Monoid))
 )
 
-export * as A from "fp-ts/Array"
-export * as R from "fp-ts/Record"
-export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
-export * as NEA from "fp-ts/NonEmptyArray"
-export * as RR from "fp-ts/ReadonlyRecord"
-export * as RM from "fp-ts/ReadonlyMap"
-export * as M from "fp-ts/Map"
-export * as Ord from "fp-ts/Ord"
-export * as S from "fp-ts/string"
-export * as SG from "fp-ts/Semigroup"
-export * as N from "fp-ts/number"
-
-export { O, RA }
+export const objComp = (a: Record<string, any>, b: Record<string, any>) =>
+  pipe(
+    R.keys(a),
+    A.reduce(true, (acc, k) => acc && a[k] === b[k])
+  )
