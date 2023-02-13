@@ -12,6 +12,7 @@ import {
 } from "../../hooks/siteCtx"
 import { Pencil, TextCursor } from "../icons"
 import AddRemoveLevels from "./AddRemoveLevels"
+import ChangeLayouts from "./ChangeLayouts"
 import ChangeLevelType from "./ChangeLevelType"
 import ChangeMaterials from "./ChangeMaterials"
 import ChangeWindows from "./ChangeWindows"
@@ -45,6 +46,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   }
 
   const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+
+  const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
 
   const buildingOrLevelMode = (
     [SiteCtxModeEnum.Enum.BUILDING, SiteCtxModeEnum.Enum.LEVEL] as SiteCtxMode[]
@@ -88,18 +91,29 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
             elementName={elementName}
             onComplete={props.onClose}
           />
+          <ChangeWindows
+            {...{
+              houseId,
+              columnIndex,
+              levelIndex,
+              gridGroupIndex,
+              onComplete: props.onClose,
+            }}
+          />
         </Fragment>
       )}
 
-      <ChangeWindows
-        {...{
-          houseId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          onComplete: props.onClose,
-        }}
-      />
+      {levelMode && (
+        <ChangeLayouts
+          {...{
+            houseId,
+            columnIndex,
+            levelIndex,
+            gridGroupIndex,
+            onComplete: props.onClose,
+          }}
+        />
+      )}
     </ContextMenu>
   )
 }

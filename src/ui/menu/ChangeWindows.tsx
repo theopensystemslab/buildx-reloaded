@@ -29,8 +29,8 @@ const ChangeWindows = (props: Props) => {
 
   const canChangeWindow = windowOpts.length > 1 && windowTypeCount > 0
 
-  const changeWindow = ({ buildingDna }: WindowOpt["value"]) => {
-    houses[houseId].dna = buildingDna
+  const changeWindow = ({ houseDna }: WindowOpt["value"]) => {
+    houses[houseId].dna = houseDna
     props.onComplete?.()
   }
 

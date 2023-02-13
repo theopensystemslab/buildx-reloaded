@@ -1,7 +1,10 @@
-import { identity } from "fp-ts/lib/function"
+import { flow, identity } from "fp-ts/lib/function"
 import * as O from "fp-ts/Option"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as Num from "fp-ts/number"
+import * as A from "fp-ts/Array"
+import * as S from "fp-ts/string"
+import * as M from "fp-ts/Monoid"
 import { clamp } from "fp-ts/Ord"
 
 const clamp_ = clamp(Num.Ord)
@@ -64,6 +67,12 @@ export const pipeLogWith =
     console.log(f(t))
     return t
   }
+
+export const upperFirst = flow(
+  S.split(""),
+  RA.modifyAt(0, S.toUpperCase),
+  O.map(M.concatAll(S.Monoid))
+)
 
 export * as A from "fp-ts/Array"
 export * as R from "fp-ts/Record"

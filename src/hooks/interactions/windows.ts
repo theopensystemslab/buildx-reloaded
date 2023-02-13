@@ -4,17 +4,13 @@ import { keysFilter, Module, useSystemModules } from "../../data/modules"
 import { useSystemWindowTypes, WindowType } from "../../data/windowTypes"
 import { A, O, S } from "../../utils/functions"
 import { getSide, Side } from "../camera"
-import {
-  columnLayoutToDNA,
-  HouseModuleIdentifier,
-  layouts,
-  useChangeModuleLayout,
-} from "../layouts"
+import { columnLayoutToDNA, HouseModuleIdentifier, layouts } from "../layouts"
 import siteCtx from "../siteCtx"
+import { useChangeModuleLayout } from "./layouts"
 
 export type WindowOpt = {
   label: string
-  value: { windowType: string; buildingDna: string[] }
+  value: { windowType: string; houseDna: string[] }
   thumbnail?: string
 }
 
@@ -93,7 +89,7 @@ export const useWindowOptions = ({
     A.map(([m, wt]): WindowOpt => {
       return {
         label: wt.description,
-        value: { buildingDna: changeModule(m), windowType: wt.code },
+        value: { houseDna: changeModule(m), windowType: wt.code },
         thumbnail: wt.imageUrl,
       }
     })
@@ -104,8 +100,8 @@ export const useWindowOptions = ({
   const selected = pipe(
     options,
     A.findFirstMap(({ value }) => {
-      const buildingDna = columnLayoutToDNA(layouts[houseId])
-      return eq.equals(value.buildingDna, buildingDna) ? O.some(value) : O.none
+      const houseDna = columnLayoutToDNA(layouts[houseId])
+      return eq.equals(value.houseDna, houseDna) ? O.some(value) : O.none
     }),
     O.getOrElse(() => {
       throw new Error("Selected window option not found in options")
