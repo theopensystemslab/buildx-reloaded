@@ -7,8 +7,8 @@ import { useGlobals } from "./globals"
 const cache = proxy<Record<string, LineMaterial>>({})
 
 export const useHandleMaterial = () => {
-  const { shadows } = useGlobals()
-  const color = shadows ? "white" : "black"
+  const { groundPlane } = useGlobals()
+  const color = groundPlane ? "white" : "black"
 
   return useMemo(() => {
     if (!cache[color]) {

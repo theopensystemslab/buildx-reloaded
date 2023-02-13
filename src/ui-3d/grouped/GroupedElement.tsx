@@ -44,6 +44,7 @@ const GroupedElement = (props: Props) => {
       userData={{
         identifier,
       }}
+      castShadow
     />
   )
 }

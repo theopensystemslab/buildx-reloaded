@@ -2,7 +2,7 @@ import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
 import { Fragment, useState } from "react"
 import {
   setOrthographic,
-  setShadows,
+  setGroundPlane,
   setSidebar,
   useGlobals,
   useVerticalCuts,
@@ -29,8 +29,10 @@ import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Radio from "./Radio"
 
 const HtmlUi = () => {
-  const { sidebar, shadows, orthographic } = useGlobals()
-  const { mapboxEnabled } = useMapboxStore()
+  const { sidebar, groundPlane, orthographic } = useGlobals()
+
+  // const { mapboxEnabled } = useMapboxStore()
+
   const [universalMenu, setUniversalMenu] = useState(false)
   const cameraReset = useCameraReset()
 
@@ -134,9 +136,9 @@ const HtmlUi = () => {
               { value: false, label: "None" },
               { value: true, label: "Regular" },
             ]}
-            selected={shadows}
+            selected={groundPlane}
             onChange={(newValue) => {
-              setShadows(newValue)
+              setGroundPlane(newValue)
             }}
           />
         </IconMenu>
