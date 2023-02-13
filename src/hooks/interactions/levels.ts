@@ -124,11 +124,11 @@ export const useChangeLevelType = ({ systemId }: { systemId: string }) => {
           transpose,
           A.map(padColumn),
           columnMatrixToDna,
-          (buildingDna) =>
+          (houseDna) =>
             ({
               label: getDescription(levelType),
               value: {
-                houseDna: buildingDna,
+                houseDna,
                 levelType,
               },
             } as LevelTypeOption)

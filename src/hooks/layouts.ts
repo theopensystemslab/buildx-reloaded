@@ -5,11 +5,8 @@ import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
-// import { usePadColumn } from "./modules"
 import { Module, usePadColumn } from "../data/modules"
-import { NEA } from "../utils/functions"
-import houses, { useHouseRows } from "./houses"
-import { useGetVanillaModule } from "./vanilla"
+import { useHouseRows } from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -452,108 +449,3 @@ export const indicesToKey = ({
   gridGroupIndex,
 }: HouseModuleIdentifier) =>
   `${houseId}:${columnIndex},${levelIndex},${gridGroupIndex}`
-
-export const useChangeModuleLayout = ({
-  houseId,
-  columnIndex,
-  levelIndex,
-  gridGroupIndex,
-}: HouseModuleIdentifier) => {
-  const systemId = houses[houseId].systemId
-  const getVanillaModule = useGetVanillaModule(systemId)
-
-  const columnLayout = layouts[houseId]
-
-  const oldModule =
-    columnLayout[columnIndex].gridGroups[levelIndex].modules[gridGroupIndex]
-      .module
-
-  return (newModule: Module): string[] => {
-    const gridUnitDiff =
-      newModule.structuredDna.gridUnits - oldModule.structuredDna.gridUnits
-
-    const { sign } = Math
-
-    const roofIndex = columnLayout[columnIndex].gridGroups.length - 1
-
-    switch (true) {
-      case sign(gridUnitDiff) < 0: {
-        // for this level index vanilla the gridUnitDiff
-        const vanillaModule = getVanillaModule(newModule)
-
-        return pipe(vanillaModule, (vanillaModule) =>
-          pipe(
-            columnLayout,
-            produce((draft: ColumnLayout) => {
-              draft[columnIndex].gridGroups[levelIndex].modules[
-                gridGroupIndex
-              ].module.dna = newModule.dna
-              draft[columnIndex].gridGroups[levelIndex].modules = [
-                ...draft[columnIndex].gridGroups[levelIndex].modules,
-                ...pipe(
-                  A.replicate(-gridUnitDiff, vanillaModule),
-                  A.mapWithIndex(
-                    (i, module): PositionedModule => ({
-                      module,
-                      z: 0,
-                      gridGroupIndex: gridGroupIndex + i + 1,
-                    })
-                  )
-                ),
-              ]
-            }),
-            columnLayoutToDNA
-          )
-        )
-      }
-
-      case sign(gridUnitDiff) > 0: {
-        // new module is bigger
-        // for this level vanilla all other levels
-        return pipe(
-          columnLayout,
-          produce((draft) => {
-            draft[columnIndex].gridGroups[levelIndex].modules[
-              gridGroupIndex
-            ].module.dna = newModule.dna
-            pipe(
-              NEA.range(0, roofIndex),
-              A.filter((x) => x !== levelIndex)
-            ).forEach((i) => {
-              const m0 =
-                columnLayout[columnIndex].gridGroups[i].modules[0].module
-              const vanillaModule = getVanillaModule(m0)
-
-              pipe(vanillaModule, (vanillaModule) => {
-                draft[columnIndex].gridGroups[i].modules = [
-                  ...draft[columnIndex].gridGroups[i].modules,
-                  ...pipe(
-                    A.replicate(
-                      gridUnitDiff / vanillaModule.structuredDna.gridUnits,
-                      vanillaModule
-                    ),
-                    A.map((module) => ({ module, z: 0 }))
-                  ),
-                ]
-              })
-            })
-          }),
-          columnLayoutToDNA
-        )
-      }
-
-      case sign(gridUnitDiff) === 0:
-      default:
-        // just swap the module
-        return pipe(
-          columnLayout,
-          produce((draft) => {
-            draft[columnIndex].gridGroups[levelIndex].modules[
-              gridGroupIndex
-            ].module.dna = newModule.dna
-          }),
-          columnLayoutToDNA
-        ) as string[]
-    }
-  }
-}
