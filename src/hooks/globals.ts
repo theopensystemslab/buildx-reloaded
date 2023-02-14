@@ -1,4 +1,3 @@
-import { useKey } from "react-use"
 import { RectReadOnly } from "react-use-measure"
 import { Event, Intersection, Mesh, Object3D } from "three"
 import { proxy, useSnapshot } from "valtio"
@@ -13,7 +12,7 @@ type GlobalStore = {
   preload: boolean
   intersection: Intersection<Object3D<Event>> | null
   orthographic: boolean
-  shadows: boolean
+  groundPlane: boolean
   verticalCuts: {
     width: boolean
     length: boolean
@@ -31,7 +30,7 @@ const globals = proxy<GlobalStore>({
   preload: true,
   intersection: null,
   orthographic: false,
-  shadows: true,
+  groundPlane: true,
   verticalCuts: {
     width: false,
     length: false,
@@ -60,8 +59,8 @@ export const setOrthographic = (b: boolean) => {
   globals.orthographic = b
 }
 
-export const setShadows = (b: boolean) => {
-  globals.shadows = b
+export const setGroundPlane = (b: boolean) => {
+  globals.groundPlane = b
 }
 
 export const setSidebar = (b: boolean) => {

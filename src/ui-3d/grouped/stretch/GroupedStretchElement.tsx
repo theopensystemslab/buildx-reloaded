@@ -32,6 +32,7 @@ const GroupedStretchElement = (props: Props) => {
       userData={{
         identifier,
       }}
+      castShadow
     />
   )
 }

@@ -20,13 +20,13 @@ type Props = PropsWithChildren<{}>
 
 const Common = (props: Props) => {
   const { children } = props
-  const { preload, shadows } = useGlobals()
+  const { preload, groundPlane } = useGlobals()
 
   return (
     <Fragment>
       {preload && <DataPreload />}
       <axesHelper />
-      {shadows && (
+      {groundPlane && (
         <>
           <GroundCircle />
           <ShadowPlane />

@@ -9,7 +9,7 @@ import { ref } from "valtio"
 import { useGlobals } from "@/hooks/globals"
 
 const SiteCamControls = () => {
-  const { orthographic, shadows } = useGlobals()
+  const { orthographic, groundPlane } = useGlobals()
   const size = useThree(({ size }) => size)
   const ratio = 10
   const userAgent = useUserAgent()
@@ -36,7 +36,7 @@ const SiteCamControls = () => {
       />
       <CamControls
         {...{
-          maxPolarAngle: shadows ? Math.PI / 2 : Math.PI,
+          maxPolarAngle: groundPlane ? Math.PI / 2 : Math.PI,
           maxDistance: 100,
           minZoom: 0.2,
           dollySpeed:
