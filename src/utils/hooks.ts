@@ -8,7 +8,7 @@ export const useSubscribe = (
   init: boolean = true
 ) =>
   useEffect(() => {
-    if (init) go
+    if (init) go([])
     return subscribe(proxy, go)
   }, [go, init, proxy])
 

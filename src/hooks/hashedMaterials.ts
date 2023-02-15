@@ -12,6 +12,7 @@ import elementCategories from "./elementCategories"
 import globals from "./globals"
 import houses, { useHouse } from "./houses"
 import { layouts } from "./layouts"
+import { useHousePreviews } from "./previews"
 import siteCtx from "./siteCtx"
 import { postTransformsTransients } from "./transients/transforms"
 
@@ -28,8 +29,10 @@ const getMaterialHash = ({
 const hashedMaterials = proxy<Record<string, Material>>({})
 
 export const useMaterialName = (houseId: string, elementName: string) => {
-  const { modifiedMaterials, modifiedMaterialsPreview, systemId } =
-    useHouse(houseId)
+  const { modifiedMaterials, systemId } = useHouse(houseId)
+
+  const { materials: materialsPreviews } = useHousePreviews(houseId)
+
   const elements = useSystemElements({ systemId })
 
   const defaultMaterialName = pipe(
@@ -45,17 +48,11 @@ export const useMaterialName = (houseId: string, elementName: string) => {
   )
 
   return useMemo(() => {
-    if (elementName in modifiedMaterialsPreview)
-      return modifiedMaterialsPreview[elementName]
+    if (elementName in materialsPreviews) return materialsPreviews[elementName]
     else if (elementName in modifiedMaterials)
       return modifiedMaterials[elementName]
     else return defaultMaterialName
-  }, [
-    defaultMaterialName,
-    elementName,
-    modifiedMaterials,
-    modifiedMaterialsPreview,
-  ])
+  }, [defaultMaterialName, elementName, materialsPreviews, modifiedMaterials])
 }
 
 export const useMaterial = ({

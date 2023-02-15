@@ -10,6 +10,7 @@ import houses, { useHouse } from "../../hooks/houses"
 import { O } from "../../utils/functions"
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
 import Radio from "../Radio"
+import previews from "../../hooks/previews"
 
 const ChangeMaterials = ({
   houseId,
@@ -74,16 +75,14 @@ const ChangeMaterials = ({
             onHoverChange={(hoveredMaterial) => {
               if (
                 hoveredMaterial &&
-                !(hoveredMaterial in houses[houseId].modifiedMaterialsPreview)
+                !(hoveredMaterial in previews[houseId].materials)
               ) {
-                houses[houseId].modifiedMaterialsPreview[element.name] =
-                  hoveredMaterial
+                previews[houseId].materials[element.name] = hoveredMaterial
               } else if (
                 hoveredMaterial === null &&
-                Object.keys(houses[houseId].modifiedMaterialsPreview).length !==
-                  0
+                Object.keys(previews[houseId].materials).length !== 0
               ) {
-                houses[houseId].modifiedMaterialsPreview = {}
+                previews[houseId].materials = {}
               }
             }}
           />
