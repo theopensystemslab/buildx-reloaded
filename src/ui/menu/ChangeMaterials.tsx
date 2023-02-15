@@ -71,6 +71,21 @@ const ChangeMaterials = ({
               }
               onComplete?.()
             }}
+            onHoverChange={(hoveredMaterial) => {
+              if (
+                hoveredMaterial &&
+                !(hoveredMaterial in houses[houseId].modifiedMaterialsPreview)
+              ) {
+                houses[houseId].modifiedMaterialsPreview[element.name] =
+                  hoveredMaterial
+              } else if (
+                hoveredMaterial === null &&
+                Object.keys(houses[houseId].modifiedMaterialsPreview).length !==
+                  0
+              ) {
+                houses[houseId].modifiedMaterialsPreview = {}
+              }
+            }}
           />
         </ContextMenuNested>
       )

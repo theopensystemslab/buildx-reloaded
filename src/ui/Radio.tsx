@@ -1,5 +1,6 @@
-import type { ReactElement } from "react"
+import { ReactElement, useRef } from "react"
 import React from "react"
+import { useDebounce, useDebouncedCallback } from "use-debounce"
 
 interface Props<T> {
   selected: T
@@ -21,22 +22,13 @@ export default function Radio<T>(props: Props<T>) {
     false
   )
 
-  // const hoverStream = useStream<T | null>()
+  const lastT = useRef<T | null>(null)
 
-  // useEffect(() => {
-  //   const hoverStreamProcessed = hoverStream.stream
-  //     .compose(debounce(100))
-  //     .compose(dropRepeats((x, y) => x === y))
-  //   const streamListener: Partial<Listener<T | null>> = {
-  //     next: (newHovered) => {
-  //       props.onHoverChange && props.onHoverChange(newHovered)
-  //     },
-  //   }
-  //   hoverStreamProcessed.addListener(streamListener)
-  //   return () => {
-  //     hoverStreamProcessed.removeListener(streamListener)
-  //   }
-  // }, [hoverStream.stream])
+  const newT = useDebouncedCallback((maybeT: T | null) => {
+    if (maybeT === lastT.current) return
+    lastT.current = maybeT
+    props.onHoverChange?.(maybeT)
+  }, 100)
 
   return (
     <div>
@@ -53,12 +45,12 @@ export default function Radio<T>(props: Props<T>) {
             key={index}
             htmlFor={`radio-${props.id}-${index}`}
             className="flex w-full cursor-pointer items-center justify-between hover:bg-grey-10"
-            // onMouseOver={() => {
-            //   hoverStream.sendNext(option.value)
-            // }}
-            // onMouseOut={() => {
-            //   hoverStream.sendNext(null)
-            // }}
+            onMouseOver={() => {
+              newT(option.value)
+            }}
+            onMouseOut={() => {
+              newT(null)
+            }}
           >
             <input
               type="radio"
