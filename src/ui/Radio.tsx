@@ -1,6 +1,6 @@
 import { ReactElement, useRef } from "react"
-import React from "react"
-import { useDebounce, useDebouncedCallback } from "use-debounce"
+import { useDebouncedCallback } from "use-debounce"
+import { useUnmountEffect } from "../utils/hooks"
 
 interface Props<T> {
   selected: T
@@ -24,11 +24,19 @@ export default function Radio<T>(props: Props<T>) {
 
   const lastT = useRef<T | null>(null)
 
-  const newT = useDebouncedCallback((maybeT: T | null) => {
-    if (maybeT === lastT.current) return
-    lastT.current = maybeT
-    props.onHoverChange?.(maybeT)
-  }, 100)
+  const newT = useDebouncedCallback(
+    (maybeT: T | null) => {
+      if (maybeT === lastT.current) return
+      lastT.current = maybeT
+      props.onHoverChange?.(maybeT)
+    },
+    100,
+    { leading: true }
+  )
+
+  useUnmountEffect(() => {
+    props.onHoverChange?.(null)
+  })
 
   return (
     <div>
