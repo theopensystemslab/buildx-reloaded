@@ -162,7 +162,6 @@ export const useInsert1000Skylarks = () => {
             rotation: 0,
             dna: houseType.dna as string[],
             modifiedMaterials: {},
-            modifiedMaterialsPreview: {},
             friendlyName: `Building ${keys(houses).length + 1}`,
           }
         }

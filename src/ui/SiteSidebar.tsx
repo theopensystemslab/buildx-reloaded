@@ -86,7 +86,6 @@ const SiteSidebar = ({ open, close }: Props) => {
                           rotation: 0,
                           dna: houseType.dna as string[],
                           modifiedMaterials: {},
-                          modifiedMaterialsPreview: {},
                           friendlyName: `Building ${keys(houses).length + 1}`,
                         }
 
