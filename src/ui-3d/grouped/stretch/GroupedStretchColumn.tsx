@@ -7,7 +7,7 @@ import { Group } from "three"
 import {
   stretchLengthClamped,
   stretchLengthRaw,
-} from "../../../hooks/transients/stretch"
+} from "../../../hooks/transients/stretchLength"
 import { useSubscribeKey } from "../../../utils/hooks"
 import GroupedStretchModule from "./GroupedStretchModule"
 
@@ -34,7 +34,7 @@ const GroupedStretchColumn = (props: Props) => {
         return
       }
 
-      const { distance, side } = stretchLengthClamped[houseId]
+      const { distanceZ: distance, side } = stretchLengthClamped[houseId]
 
       if (side !== props.side) return
 

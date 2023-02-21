@@ -30,7 +30,8 @@ export type Stretch = {
   side: HandleSide
   dx: number
   dz: number
-  distance: number
+  distanceX: number
+  distanceZ: number
 }
 
 export const stretchLengthRaw = proxy<Record<string, Stretch>>({})
@@ -143,7 +144,7 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
       rotation,
     ]
   )
-  const maxStretchUp = columnZsUp?.[columnZsUp.length - 1] ?? 0
+  const maxStretchLengthUp = columnZsUp?.[columnZsUp.length - 1] ?? 0
 
   const columnZsDown = useMemo(
     () =>
@@ -187,7 +188,7 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
       rotation,
     ]
   )
-  const maxStretchDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
+  const maxStretchLengthDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
 
   const columnsUp = pipe(
     columnZsUp,
@@ -237,8 +238,8 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
     midColumns,
     columnsUp,
     columnsDown,
-    maxStretchDown,
-    maxStretchUp,
+    maxStretchLengthDown,
+    maxStretchLengthUp,
   }
 }
 
@@ -248,7 +249,7 @@ export const setStretch = () => {
     const { startColumn, midColumns, endColumn } = splitColumns(layout)
     const vanillaColumn = vanillaColumns[houseId]
     const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)
-    const { side, distance } = stretchLengthClamped[houseId]
+    const { side, distanceZ: distance } = stretchLengthClamped[houseId]
 
     const delta = round(distance / vanillaColumnLength)
 

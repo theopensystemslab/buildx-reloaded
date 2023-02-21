@@ -11,7 +11,7 @@ import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
-import { setStretch, stretchLengthRaw } from "../transients/stretch"
+import { setStretch, stretchLengthRaw } from "../transients/stretchLength"
 import {
   preTransformsTransients,
   setTransforms,
@@ -56,14 +56,18 @@ export const useDragHandler = () => {
             }
             return
           case EditModeEnum.Enum.STRETCH:
-            const [, distance] = unrotateV2(houseId, [x1 - x0, z1 - z0])
-            const [dx, dz] = rotateV2(houseId, [0, distance])
+            const [distanceX, distanceZ] = unrotateV2(houseId, [
+              x1 - x0,
+              z1 - z0,
+            ])
+            const [dx, dz] = rotateV2(houseId, [0, distanceZ])
 
             stretchLengthRaw[houseId] = {
               side,
               dx,
               dz,
-              distance,
+              distanceX,
+              distanceZ,
             }
         }
         return

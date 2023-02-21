@@ -1,15 +1,17 @@
 import { indicesToKey, PositionedColumn } from "@/hooks/layouts"
+import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useRef } from "react"
+import { forwardRef, useRef } from "react"
+import mergeRefs from "react-merge-refs"
 import { Group } from "three"
 import dimensions from "../../hooks/dimensions"
 import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
-import { stretchLengthClamped } from "../../hooks/transients/stretch"
+import { stretchLengthClamped } from "../../hooks/transients/stretchLength"
 import { RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
 import GroupedModule from "./GroupedModule"
 
-type Props = {
+type Props = GroupProps & {
   systemId: string
   houseId: string
   column: PositionedColumn
@@ -17,7 +19,7 @@ type Props = {
   end?: boolean
 }
 
-const GroupedColumn = (props: Props) => {
+const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
   const {
     systemId,
     houseId,
@@ -37,7 +39,7 @@ const GroupedColumn = (props: Props) => {
         return
       }
 
-      const { distance, side } = stretchLengthClamped[houseId]
+      const { distanceZ: distance, side } = stretchLengthClamped[houseId]
 
       const { length: houseLength } = dimensions[houseId]
 
@@ -57,8 +59,11 @@ const GroupedColumn = (props: Props) => {
     },
     true
   )
+
+  const mergedRef = mergeRefs([ref, groupRef])
+
   return (
-    <group ref={groupRef} key={columnIndex} position-z={columnZ}>
+    <group ref={mergedRef} key={columnIndex} position-z={columnZ}>
       {pipe(
         gridGroups,
         RA.chain(({ modules, levelIndex, y: levelY }) =>
@@ -94,6 +99,6 @@ const GroupedColumn = (props: Props) => {
       )}
     </group>
   )
-}
+})
 
 export default GroupedColumn
