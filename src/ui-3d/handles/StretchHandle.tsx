@@ -11,10 +11,11 @@ type Props = GroupProps & {
   houseId: string
   axis: "x" | "z"
   direction: 1 | -1
+  disable?: boolean
 }
 
 const StretchHandle = forwardRef<Group, Props>(
-  ({ houseId, axis, direction, ...groupProps }, ref) => {
+  ({ houseId, axis, direction, disable = false, ...groupProps }, ref) => {
     const OFFSET_XZ = 0.5
     const OFFSET_Y = 0.1
 
@@ -36,11 +37,11 @@ const StretchHandle = forwardRef<Group, Props>(
     const handleMaterial = useHandleMaterial()
 
     return (
-      <group ref={ref} {...groupProps}>
+      <group ref={ref} scale={disable ? [0, 0, 0] : [1, 1, 1]} {...groupProps}>
         <RoundedBox
           position={position}
           rotation={rotation}
-          args={[(houseWidth * 2) / 0.5, 1, 1]}
+          args={[((axis === "z" ? houseWidth : houseLength) * 2) / 1.5, 1, 1]}
           radius={0.5}
           scale-x={0.4}
           scale-y={0.001}

@@ -88,9 +88,12 @@ const GroupedHouse = (props: Props) => {
       <group ref={houseGroupRef}>
         <PhonyHouse houseId={houseId} />
         <group ref={startRef}>
-          {isStretchable && (
-            <StretchHandle houseId={houseId} axis="z" direction={-1} />
-          )}
+          <StretchHandle
+            houseId={houseId}
+            axis="z"
+            direction={-1}
+            disable={!isStretchable}
+          />
           <GroupedColumn
             ref={startColumnRef}
             key={`${houseId}:${startColumn.columnIndex}`}
@@ -117,33 +120,34 @@ const GroupedHouse = (props: Props) => {
             column={endColumn}
             {...{ systemId, houseId, end: true }}
           />
-          {isStretchable && (
-            <StretchHandle houseId={houseId} axis="z" direction={1} />
-          )}
+          <StretchHandle
+            houseId={houseId}
+            axis="z"
+            direction={1}
+            disable={!isStretchable}
+          />
         </group>
         {isMoveRotateable && <RotateHandles houseId={houseId} />}
-        {isStretchable && (
-          <Fragment>
-            {columnsUp}
-            {columnsDown}
-          </Fragment>
-        )}
-        <Fragment>
-          <StretchHandle
-            ref={leftHandleRef}
-            houseId={houseId}
-            visible={isStretchable && canStretchWidth}
-            axis="x"
-            direction={1}
-          />
-          <StretchHandle
-            ref={rightHandleRef}
-            houseId={houseId}
-            axis="x"
-            direction={-1}
-            visible={isStretchable && canStretchWidth}
-          />
-        </Fragment>
+
+        <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
+          {columnsUp}
+          {columnsDown}
+        </group>
+
+        <StretchHandle
+          ref={leftHandleRef}
+          houseId={houseId}
+          disable={!isStretchable || !canStretchWidth}
+          axis="x"
+          direction={1}
+        />
+        <StretchHandle
+          ref={rightHandleRef}
+          houseId={houseId}
+          axis="x"
+          direction={-1}
+          disable={!isStretchable || !canStretchWidth}
+        />
       </group>
     </Fragment>
   )
