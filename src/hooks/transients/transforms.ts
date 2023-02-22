@@ -1,7 +1,11 @@
 import { proxy } from "valtio"
 import houses from "../houses"
 import { useSubscribeKey } from "../../utils/hooks"
-import { collideOBB, useComputeDimensions } from "../dimensions"
+import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
+import { MutableRefObject, useRef } from "react"
+import { Group, Vector3 } from "three"
+import { yAxis } from "../../utils/three"
+import { invalidate } from "@react-three/fiber"
 
 export type Transforms = {
   position?: DeltaV3
@@ -12,7 +16,7 @@ export type TransformsTransients = Record<string, Transforms>
 
 export const preTransformsTransients = proxy<TransformsTransients>({})
 
-export const usePreTransient = (houseId: string) => {
+export const usePreTransformsTransients = (houseId: string) => {
   const computeDimensions = useComputeDimensions(houseId)
 
   useSubscribeKey(
@@ -50,4 +54,40 @@ export const setTransforms = () => {
     delete postTransformsTransients[houseId]
     delete preTransformsTransients[houseId]
   }
+}
+
+export const usePostTransformsTransients = (
+  houseId: string,
+  houseGroupRef: MutableRefObject<Group>
+) => {
+  const tPosV = useRef(new Vector3())
+
+  useSubscribeKey(
+    postTransformsTransients,
+    houseId,
+    () => {
+      const house = houses[houseId]
+      if (!house) return
+
+      const houseLength = dimensions[houseId].length
+
+      const { position, rotation } = postTransformsTransients[houseId] ?? {}
+
+      const r = house.rotation + (rotation ?? 0)
+      const hx = house.position.x + (position?.dx ?? 0)
+      const hy = house.position.y + (position?.dy ?? 0)
+      const hz = house.position.z + (position?.dz ?? 0)
+
+      houseGroupRef.current.position.set(0, 0, -houseLength / 2)
+
+      houseGroupRef.current.setRotationFromAxisAngle(yAxis, r)
+      houseGroupRef.current.position.applyAxisAngle(yAxis, r)
+
+      tPosV.current.set(hx, hy, hz)
+      houseGroupRef.current.position.add(tPosV.current)
+
+      invalidate()
+    },
+    true
+  )
 }

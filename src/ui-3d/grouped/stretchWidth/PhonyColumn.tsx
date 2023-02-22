@@ -1,9 +1,5 @@
-import dimensions from "@/hooks/dimensions"
-import { HandleSideEnum } from "@/hooks/gestures/drag/handles"
 import { indicesToKey, PositionedColumn } from "@/hooks/layouts"
-import { stretchLengthClamped } from "@/hooks/transients/stretchLength"
 import { RA } from "@/utils/functions"
-import { useSubscribeKey } from "@/utils/hooks"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"
@@ -23,42 +19,12 @@ const PhonyColumn = forwardRef<Group, Props>((props, ref) => {
   const {
     systemId,
     houseId,
-    column: { gridGroups, columnIndex, z: columnZ, length: columnLength },
+    column: { gridGroups, columnIndex, z: columnZ },
     start = false,
     end = false,
   } = props
 
   const groupRef = useRef<Group>(null)
-
-  useSubscribeKey(
-    stretchLengthClamped,
-    houseId,
-    () => {
-      if (!stretchLengthClamped[houseId] || start || end) {
-        groupRef.current?.scale.set(1, 1, 1)
-        return
-      }
-
-      const { distanceZ: distance, side } = stretchLengthClamped[houseId]
-
-      const { length: houseLength } = dimensions[houseId]
-
-      if (
-        side === HandleSideEnum.Enum.BACK &&
-        houseLength + distance < columnZ
-      ) {
-        groupRef.current?.scale.set(0, 0, 0)
-      } else if (
-        side === HandleSideEnum.Enum.FRONT &&
-        distance + columnLength > columnZ
-      ) {
-        groupRef.current?.scale.set(0, 0, 0)
-      } else {
-        groupRef.current?.scale.set(1, 1, 1)
-      }
-    },
-    true
-  )
 
   const mergedRef = mergeRefs([ref, groupRef])
 

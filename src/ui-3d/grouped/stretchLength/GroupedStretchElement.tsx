@@ -19,11 +19,11 @@ const GroupedStretchElement = (props: Props) => {
   const material = useMaterial({ systemId, houseId, elementName })
 
   const identifier: Partial<ElementIdentifier> = {
-    identifierType: "element",
     systemId,
     houseId,
     elementName,
   }
+
   return (
     <mesh
       ref={meshRef}

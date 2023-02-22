@@ -10,40 +10,29 @@ import { PI } from "../../utils/math"
 
 type Props = GroupProps & {
   houseId: string
-  side: HandleSide
+  axis: "x" | "z"
+  direction: 1 | -1
 }
 
 const StretchHandle = forwardRef<Group, Props>(
-  ({ houseId, side, ...groupProps }, ref) => {
+  ({ houseId, axis, direction, ...groupProps }, ref) => {
     const OFFSET_XZ = 0.5
     const OFFSET_Y = 0.1
 
     const { length: houseLength, width: houseWidth } =
       useHouseDimensions(houseId)
 
-    const position: [number, number, number] = (() => {
-      switch (side) {
-        case HandleSideEnum.Enum.FRONT:
-          return [0, OFFSET_Y, -OFFSET_XZ]
-        case HandleSideEnum.Enum.BACK:
-          return [0, OFFSET_Y, houseLength + OFFSET_XZ]
-        case HandleSideEnum.Enum.LEFT:
-          return [houseWidth / 2 + OFFSET_XZ, OFFSET_Y, houseLength / 2]
-        case HandleSideEnum.Enum.RIGHT:
-          return [-(houseWidth / 2 + OFFSET_XZ), OFFSET_Y, houseLength / 2]
-      }
-    })()
+    const position: [number, number, number] =
+      axis === "z"
+        ? direction === 1
+          ? [0, OFFSET_Y, houseLength + OFFSET_XZ]
+          : [0, OFFSET_Y, -OFFSET_XZ]
+        : direction === 1
+        ? [houseWidth / 2 + OFFSET_XZ, OFFSET_Y, houseLength / 2]
+        : [-(houseWidth / 2 + OFFSET_XZ), OFFSET_Y, houseLength / 2]
 
-    const rotation: [number, number, number] = (() => {
-      switch (side) {
-        case HandleSideEnum.Enum.FRONT:
-        case HandleSideEnum.Enum.BACK:
-          return [0, 0, 0]
-        case HandleSideEnum.Enum.LEFT:
-        case HandleSideEnum.Enum.RIGHT:
-          return [0, PI / 2, 0]
-      }
-    })()
+    const rotation: [number, number, number] =
+      axis === "x" ? [0, PI / 2, 0] : [0, 0, 0]
 
     const handleMaterial = useHandleMaterial()
 
@@ -73,3 +62,32 @@ const StretchHandle = forwardRef<Group, Props>(
 )
 
 export default StretchHandle
+
+// case "handle":
+//       const { editMode, side } = identifier as HandleIdentifier
+//       switch (editMode) {
+//         case EditModeEnum.Enum.MOVE_ROTATE:
+//           const { x: cx, z: cz } = getHouseCenter(houseId)
+//           const angle0 = Math.atan2(cz - z0, cx - x0)
+//           const angle = Math.atan2(cz - z1, cx - x1)
+//           preTransformsTransients[houseId] = {
+//             rotation: -(angle - angle0),
+//           }
+//           return
+//         case EditModeEnum.Enum.STRETCH:
+//           const [distanceX, distanceZ] = unrotateV2(houseId, [
+//             x1 - x0,
+//             z1 - z0,
+//           ])
+//           const [dx, dz] = rotateV2(houseId, [0, distanceZ])
+
+//           stretchLengthRaw[houseId] = {
+//             side,
+//             dx,
+//             dz,
+//             distanceX,
+//             distanceZ,
+//           }
+//       }
+//       return
+//   }
