@@ -9,7 +9,7 @@ import { useDebug } from "../../hooks/globals"
 import { useHouseMaterialOps } from "../../hooks/hashedMaterials"
 import { useHouseElementOutline } from "../../hooks/highlights"
 import houses, { useHouseSystemId } from "../../hooks/houses"
-import { useColumnLayout } from "../../hooks/layouts"
+import { useHouseColumnLayout } from "../../hooks/layouts"
 import { useIsMoveRotateable, useIsStretchable } from "../../hooks/siteCtx"
 import {
   stretchLengthClamped,
@@ -28,6 +28,7 @@ import { isMesh, yAxis } from "../../utils/three"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
+import PhonyHouse from "./stretchWidth/PhonyHouse"
 
 type Props = {
   houseId: string
@@ -43,7 +44,7 @@ const GroupedHouse = (props: Props) => {
 
   const systemId = useHouseSystemId(houseId)
 
-  const layout = useColumnLayout(houseId)
+  const layout = useHouseColumnLayout(houseId)
 
   const {
     startColumn,
@@ -70,14 +71,10 @@ const GroupedHouse = (props: Props) => {
     canStretchWidth,
     minWidth,
     maxWidth,
-    gateLineX,
-    sendWidthDrag,
-    sendWidthDrop,
-  } = useStretchWidth(houseId, layout, [
-    startColumnRef,
-    midColumnsRef,
-    endColumnRef,
-  ])
+    sendStretchWidthDragDistance,
+    // gateLineX,
+    // sendWidthDrop,
+  } = useStretchWidth(houseId, layout)
 
   const rightHandleRef = useRef<Group>(null!)
   const leftHandleRef = useRef<Group>(null!)
@@ -168,10 +165,9 @@ const GroupedHouse = (props: Props) => {
           const clampDown =
             sign(distanceX) === -1 && distanceX < -(houseWidth - minWidth)
 
-          console.log({ clampUp, clampDown })
-
           if (clampUp) {
             setHouseVisible(false)
+            sendStretchWidthDragDistance(distanceX)
           } else {
             setHouseVisible(true)
           }
@@ -210,7 +206,6 @@ const GroupedHouse = (props: Props) => {
         }
       }
     } else {
-      console.log("else")
       startRef.current.position.set(0, 0, 0)
       endRef.current.position.set(0, 0, 0)
       rightHandleRef.current.position.set(0, 0, 0)
@@ -229,6 +224,7 @@ const GroupedHouse = (props: Props) => {
   return (
     <Fragment>
       <group ref={houseGroupRef}>
+        <PhonyHouse houseId={houseId} />
         <group ref={startRef}>
           {isStretchable && (
             <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.FRONT} />
@@ -270,79 +266,80 @@ const GroupedHouse = (props: Props) => {
             {columnsDown}
           </Fragment>
         )}
-        {isStretchable && canStretchWidth && (
-          <Fragment>
-            <StretchHandle
-              ref={leftHandleRef}
-              houseId={houseId}
-              side={HandleSideEnum.Enum.LEFT}
-              // onHover={widthStretchHoverHandler}
-              // onDrag={({ first, last }) => {
-              //   if (!leftHandleRef.current) return
+        <Fragment>
+          <StretchHandle
+            ref={leftHandleRef}
+            houseId={houseId}
+            side={HandleSideEnum.Enum.LEFT}
+            visible={isStretchable && canStretchWidth}
+            // onHover={widthStretchHoverHandler}
+            // onDrag={({ first, last }) => {
+            //   if (!leftHandleRef.current) return
 
-              //   if (first) {
-              //     widthHandleDragging = true
-              //   }
+            //   if (first) {
+            //     widthHandleDragging = true
+            //   }
 
-              //   const [px] = rotateVector(pointer.xz)
-              //   const [bx] = rotateVector([buildingX, buildingZ])
+            //   const [px] = rotateVector(pointer.xz)
+            //   const [bx] = rotateVector([buildingX, buildingZ])
 
-              //   const leftClamp = clamp(
-              //     minWidth / 2 + handleOffset,
-              //     maxWidth / 2 + handleOffset
-              //   )
+            //   const leftClamp = clamp(
+            //     minWidth / 2 + handleOffset,
+            //     maxWidth / 2 + handleOffset
+            //   )
 
-              //   const x = pipe(px - bx, leftClamp)
+            //   const x = pipe(px - bx, leftClamp)
 
-              //   leftHandleRef.current.position.x = x
-              //   sendWidthDrag(x - handleOffset)
+            //   leftHandleRef.current.position.x = x
+            //   sendWidthDrag(x - handleOffset)
 
-              //   if (last) {
-              //     widthHandleDragging = false
-              //     leftHandleRef.current.position.x =
-              //       houseWidth / 2 + handleOffset
-              //     sendWidthDrop()
-              //   }
-              // }}
-              // position={[houseWidth / 2 + handleOffset, 0, houseLength / 2]}
-            />
-            <StretchHandle
-              ref={rightHandleRef}
-              houseId={houseId}
-              side={HandleSideEnum.Enum.RIGHT}
-              // onHover={widthStretchHoverHandler}
-              // onDrag={({ first, last }) => {
-              //   if (!rightHandleRef.current) return
+            //   if (last) {
+            //     widthHandleDragging = false
+            //     leftHandleRef.current.position.x =
+            //       houseWidth / 2 + handleOffset
+            //     sendWidthDrop()
+            //   }
+            // }}
+            // position={[houseWidth / 2 + handleOffset, 0, houseLength / 2]}
+          />
+          <StretchHandle
+            ref={rightHandleRef}
+            houseId={houseId}
+            side={HandleSideEnum.Enum.RIGHT}
+            visible={isStretchable && canStretchWidth}
+            // onHover={widthStretchHoverHandler}
+            // onDrag={({ first, last }) => {
+            //   if (!rightHandleRef.current) return
 
-              //   if (first) {
-              //     widthHandleDragging = true
-              //   }
+            //   if (first) {
+            //     widthHandleDragging = true
+            //   }
 
-              //   const [px] = rotateVector(pointer.xz)
-              //   const [bx] = rotateVector([buildingX, buildingZ])
+            //   const [px] = rotateVector(pointer.xz)
+            //   const [bx] = rotateVector([buildingX, buildingZ])
 
-              //   const rightClamp = clamp(
-              //     -(maxWidth / 2 + handleOffset),
-              //     -(minWidth / 2 + handleOffset)
-              //   )
+            //   const rightClamp = clamp(
+            //     -(maxWidth / 2 + handleOffset),
+            //     -(minWidth / 2 + handleOffset)
+            //   )
 
-              //   const x = pipe(px - bx, rightClamp)
+            //   const x = pipe(px - bx, rightClamp)
 
-              //   rightHandleRef.current.position.x = x
-              //   sendWidthDrag(x + handleOffset)
+            //   rightHandleRef.current.position.x = x
+            //   sendWidthDrag(x + handleOffset)
 
-              //   if (last) {
-              //     widthHandleDragging = false
-              //     rightHandleRef.current.position.x = -(
-              //       houseWidth / 2 +
-              //       handleOffset
-              //     )
-              //     sendWidthDrop()
-              //   }
-              // }}
-              // position={[-(houseWidth / 2 + handleOffset), 0, houseLength / 2]}
-            />
-            {/* {widthGatesEnabled && (
+            //   if (last) {
+            //     widthHandleDragging = false
+            //     rightHandleRef.current.position.x = -(
+            //       houseWidth / 2 +
+            //       handleOffset
+            //     )
+            //     sendWidthDrop()
+            //   }
+            // }}
+            // position={[-(houseWidth / 2 + handleOffset), 0, houseLength / 2]}
+          />
+          {/* {widthGatesEnabled && (
               <group position={[0, 0, houseLength / 2]}>
                 {[gateLineX, -gateLineX].map((x) => {
                   return (
@@ -354,8 +351,7 @@ const GroupedHouse = (props: Props) => {
                 })}
               </group>
             )} */}
-          </Fragment>
-        )}
+        </Fragment>
       </group>
     </Fragment>
   )

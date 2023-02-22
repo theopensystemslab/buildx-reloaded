@@ -13,6 +13,7 @@ import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
+import { useSystemId } from "./siteCtx"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -52,15 +53,15 @@ export const useHouseType = (houseId: string) => {
   return houseType
 }
 
-export const useHouseModules = (houseId: string) => {
+export const useHouseModules = (houseId: string, dnaOverride?: string[]) => {
   const { systemId, dna } = useHouse(houseId)
   const systemModules = useSystemModules({ systemId })
 
   return useMemo(
     () =>
       pipe(
-        dna,
-        RA.filterMap((dna) =>
+        dnaOverride ?? dna,
+        A.filterMap((dna) =>
           pipe(
             systemModules,
             RA.findFirst(
@@ -70,7 +71,7 @@ export const useHouseModules = (houseId: string) => {
           )
         )
       ),
-    [dna, systemId, systemModules]
+    [dna, dnaOverride, systemId, systemModules]
   )
 }
 
@@ -100,10 +101,11 @@ export const modulesToRows = (
     )
   )
 }
-export const useHouseRows = (buildingId: string) => {
-  const houseModules = useHouseModules(buildingId)
-  return modulesToRows(houseModules)
-}
+
+// export const useHouseRows = (buildingId: string) => {
+//   const houseModules = useHouseModules(buildingId)
+//   return modulesToRows(houseModules)
+// }
 
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses

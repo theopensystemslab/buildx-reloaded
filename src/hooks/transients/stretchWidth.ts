@@ -1,42 +1,5 @@
-// import { useSystemData } from "@/contexts/SystemsData"
-// import {
-//   filterCompatibleModules,
-//   StructuredDnaModule,
-//   topCandidateByHamming,
-// } from "@/data/module"
-// import { SectionType } from "@/data/sectionType"
-// import {
-//   ColumnLayout,
-//   columnLayoutToDNA,
-//   GridGroup,
-//   PositionedColumn,
-//   PositionedModule,
-// } from "@/hooks/layouts"
-// import { useGetVanillaModule } from "@/hooks/modules"
-// import {
-//   filterA,
-//   filterMapA,
-//   flattenO,
-//   mapO,
-//   mapToOption,
-//   notNullish,
-//   NumOrd,
-//   reduceA,
-//   reduceToOption,
-// } from "@/utils"
-// import { Foldable, isNonEmpty, replicate, sort } from "fp-ts/lib/Array"
-// import { pipe } from "fp-ts/lib/function"
-// import { head, NonEmptyArray } from "fp-ts/lib/NonEmptyArray"
-// import { none, Option, some, toNullable } from "fp-ts/lib/Option"
-// import { contramap } from "fp-ts/lib/Ord"
-// import { last } from "fp-ts/lib/ReadonlyNonEmptyArray"
-// import { fromFoldable, keys } from "fp-ts/lib/Record"
-// import { first } from "fp-ts/lib/Semigroup"
-// import { useMemo, useState } from "react"
-// import houses from "../houses"
-
 import { pipe } from "fp-ts/lib/function"
-import { RefObject, useMemo, useState } from "react"
+import { RefObject, useEffect, useState } from "react"
 import { Group } from "three"
 import {
   filterCompatibleModules,
@@ -47,7 +10,6 @@ import {
 import { SectionType, useSystemSectionTypes } from "../../data/sectionTypes"
 import {
   A,
-  guardNotNullish,
   mapToOption,
   NEA,
   Num,
@@ -66,15 +28,13 @@ import {
   PositionedColumn,
   PositionedModule,
 } from "../layouts"
+import previews from "../previews"
 import { useGetVanillaModule } from "../vanilla"
 
 export const useStretchWidth = (
   houseId: string,
-  columnLayout: ColumnLayout,
-  houseRefs: Array<RefObject<Group>>
+  columnLayout: ColumnLayout
 ) => {
-  // const { sectionTypes, modules: systemModules } = useSystemData()
-
   const systemId = "skylark"
 
   const systemModules = useSystemModules({ systemId })
@@ -227,8 +187,6 @@ export const useStretchWidth = (
     R.fromFoldable(SG.first<string[]>(), A.Foldable)
   )
 
-  console.log(dnaChangeOptions)
-
   const canStretchWidth = true // todo
 
   const sortedSTs: NEA.NonEmptyArray<SectionType> = pipe(
@@ -252,12 +210,25 @@ export const useStretchWidth = (
 
   const [stIndex, setSTIndex] = useState(-1)
 
-  const gateLineX = useMemo(() => {
-    if (stIndex === -1) return current.width / 2
-    return sortedSTs[stIndex].width / 2
-  }, [stIndex])
+  // const gateLineX = useMemo(() => {
+  //   if (stIndex === -1) return current.width / 2
+  //   return sortedSTs[stIndex].width / 2
+  // }, [stIndex])
 
-  const sendWidthDrag = (x: number) => {
+  useEffect(() => {
+    console.log("hi")
+    if (stIndex === -1) return
+
+    const stCode = sortedSTs[stIndex].code
+
+    if (stCode !== current.code) {
+      previews[houseId].dna = dnaChangeOptions[stCode]
+    } else {
+      previews[houseId].dna = null
+    }
+  }, [current.code, dnaChangeOptions, houseId, sortedSTs, stIndex])
+
+  const sendStretchWidthDragDistance = (x: number) => {
     const absX = abs(x)
 
     let distance = Infinity,
@@ -285,8 +256,8 @@ export const useStretchWidth = (
     canStretchWidth,
     minWidth,
     maxWidth,
-    gateLineX,
-    sendWidthDrag,
-    sendWidthDrop,
+    // gateLineX,
+    sendStretchWidthDragDistance,
+    // sendWidthDrop,
   }
 }
