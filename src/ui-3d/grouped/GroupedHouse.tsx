@@ -1,30 +1,20 @@
-import { invalidate, ThreeEvent } from "@react-three/fiber"
+import { ThreeEvent } from "@react-three/fiber"
 import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useEffect, useMemo, useRef, useState } from "react"
-import { Group, Mesh, Plane, Vector3 } from "three"
-import dimensions from "../../hooks/dimensions"
-import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
-import { useDebug } from "../../hooks/globals"
+import { Fragment, useRef, useState } from "react"
+import { Group } from "three"
 import { useHouseMaterialOps } from "../../hooks/hashedMaterials"
 import { useHouseElementOutline } from "../../hooks/highlights"
-import houses, { useHouseSystemId } from "../../hooks/houses"
+import { useHouseSystemId } from "../../hooks/houses"
 import { useHouseColumnLayout } from "../../hooks/layouts"
 import { useIsMoveRotateable, useIsStretchable } from "../../hooks/siteCtx"
-import {
-  stretchLengthClamped,
-  stretchLengthRaw,
-  useStretchLength,
-} from "../../hooks/transients/stretchLength"
+import { useStretchLength } from "../../hooks/transients/stretchLength"
 import { useStretchWidth } from "../../hooks/transients/stretchWidth"
 import {
-  postTransformsTransients,
-  usePreTransient,
+  usePostTransformsTransients,
+  usePreTransformsTransients,
 } from "../../hooks/transients/transforms"
 import { RA } from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
-import { max, min, sign } from "../../utils/math"
-import { isMesh, yAxis } from "../../utils/three"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -40,38 +30,30 @@ const GroupedHouse = (props: Props) => {
   const houseGroupRef = useRef<Group>(null!)
   const startRef = useRef<Group>(null!)
   const endRef = useRef<Group>(null!)
-  const tPosV = useRef(new Vector3())
 
   const systemId = useHouseSystemId(houseId)
 
   const layout = useHouseColumnLayout(houseId)
 
-  const {
-    startColumn,
-    midColumns,
-    endColumn,
-    columnsUp,
-    columnsDown,
-    maxStretchLengthUp,
-    maxStretchLengthDown,
-  } = useStretchLength(houseId, layout)
+  const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
+    useStretchLength({ houseId, layout, startRef, endRef })
 
   const startColumnRef = useRef<Group>(null)
   const midColumnsRef = useRef<Group>(null)
   const endColumnRef = useRef<Group>(null)
   const houseRefs = [startColumnRef, midColumnsRef, endColumnRef]
 
-  const setHouseVisible = (b: boolean) => {
-    for (let ref of houseRefs) {
-      if (ref.current) ref.current.visible = b
-    }
-  }
+  // const setHouseVisible = (b: boolean) => {
+  //   for (let ref of houseRefs) {
+  //     if (ref.current) ref.current.visible = b
+  //   }
+  // }
 
   const {
     canStretchWidth,
-    minWidth,
-    maxWidth,
-    sendStretchWidthDragDistance,
+    // minWidth,
+    // maxWidth,
+    // sendStretchWidthDragDistance,
     // gateLineX,
     // sendWidthDrop,
   } = useStretchWidth(houseId, layout)
@@ -91,128 +73,8 @@ const GroupedHouse = (props: Props) => {
     if (widthGatesEnabled && !hovering) setWidthGatesEnabled(false)
   }
 
-  usePreTransient(houseId)
-
-  useSubscribeKey(
-    postTransformsTransients,
-    houseId,
-    () => {
-      const house = houses[houseId]
-      if (!house) return
-
-      const houseLength = dimensions[houseId].length
-
-      const { position, rotation } = postTransformsTransients[houseId] ?? {}
-
-      const r = house.rotation + (rotation ?? 0)
-      const hx = house.position.x + (position?.dx ?? 0)
-      const hy = house.position.y + (position?.dy ?? 0)
-      const hz = house.position.z + (position?.dz ?? 0)
-
-      houseGroupRef.current.position.set(0, 0, -houseLength / 2)
-
-      houseGroupRef.current.setRotationFromAxisAngle(yAxis, r)
-      houseGroupRef.current.position.applyAxisAngle(yAxis, r)
-
-      tPosV.current.set(hx, hy, hz)
-      houseGroupRef.current.position.add(tPosV.current)
-
-      invalidate()
-    },
-    true
-  )
-
-  useSubscribeKey(stretchLengthRaw, houseId, () => {
-    if (stretchLengthRaw[houseId]) {
-      const { distanceX, distanceZ, side, dx, dz } = stretchLengthRaw[houseId]
-
-      const { length: houseLength, width: houseWidth } = dimensions[houseId]
-
-      switch (side) {
-        case HandleSideEnum.Enum.FRONT: {
-          const clamped =
-            distanceZ > houseLength || distanceZ < maxStretchLengthDown
-          if (!clamped) {
-            startRef.current.position.set(0, 0, distanceZ)
-            stretchLengthClamped[houseId] = {
-              distanceX,
-              distanceZ,
-              side,
-              dx,
-              dz,
-            }
-          }
-          break
-        }
-        case HandleSideEnum.Enum.BACK: {
-          const clamped =
-            -distanceZ > houseLength || distanceZ > maxStretchLengthUp
-          if (!clamped) {
-            endRef.current.position.set(0, 0, distanceZ)
-            stretchLengthClamped[houseId] = {
-              distanceX,
-              distanceZ,
-              side,
-              dx,
-              dz,
-            }
-          }
-          break
-        }
-
-        case HandleSideEnum.Enum.LEFT: {
-          const clampUp = distanceX > maxWidth - houseWidth
-          const clampDown =
-            sign(distanceX) === -1 && distanceX < -(houseWidth - minWidth)
-
-          if (clampUp) {
-            setHouseVisible(false)
-            sendStretchWidthDragDistance(distanceX)
-          } else {
-            setHouseVisible(true)
-          }
-
-          const clampedDistanceX =
-            sign(distanceX) === -1
-              ? max(distanceX, -(houseWidth - minWidth))
-              : min(distanceX, maxWidth - houseWidth)
-
-          leftHandleRef.current?.position.set(clampedDistanceX, 0, 0)
-          stretchLengthClamped[houseId] = {
-            distanceX: clampedDistanceX,
-            distanceZ,
-            side,
-            dx,
-            dz,
-          }
-          break
-        }
-
-        case HandleSideEnum.Enum.RIGHT: {
-          const clampedDistanceX =
-            sign(distanceX) === -1
-              ? max(distanceX, -(maxWidth - houseWidth))
-              : min(distanceX, houseWidth - minWidth)
-
-          rightHandleRef.current?.position.set(clampedDistanceX, 0, 0)
-          stretchLengthClamped[houseId] = {
-            distanceX: clampedDistanceX,
-            distanceZ,
-            side,
-            dx,
-            dz,
-          }
-          break
-        }
-      }
-    } else {
-      startRef.current.position.set(0, 0, 0)
-      endRef.current.position.set(0, 0, 0)
-      rightHandleRef.current.position.set(0, 0, 0)
-      leftHandleRef.current.position.set(0, 0, 0)
-    }
-    invalidate()
-  })
+  usePreTransformsTransients(houseId)
+  usePostTransformsTransients(houseId, houseGroupRef)
 
   useHouseElementOutline(houseId, houseGroupRef)
 
@@ -227,7 +89,7 @@ const GroupedHouse = (props: Props) => {
         <PhonyHouse houseId={houseId} />
         <group ref={startRef}>
           {isStretchable && (
-            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.FRONT} />
+            <StretchHandle houseId={houseId} axis="z" direction={-1} />
           )}
           <GroupedColumn
             ref={startColumnRef}
@@ -256,7 +118,7 @@ const GroupedHouse = (props: Props) => {
             {...{ systemId, houseId, end: true }}
           />
           {isStretchable && (
-            <StretchHandle houseId={houseId} side={HandleSideEnum.Enum.BACK} />
+            <StretchHandle houseId={houseId} axis="z" direction={1} />
           )}
         </group>
         {isMoveRotateable && <RotateHandles houseId={houseId} />}
@@ -270,13 +132,15 @@ const GroupedHouse = (props: Props) => {
           <StretchHandle
             ref={leftHandleRef}
             houseId={houseId}
-            side={HandleSideEnum.Enum.LEFT}
             visible={isStretchable && canStretchWidth}
+            axis="x"
+            direction={1}
           />
           <StretchHandle
             ref={rightHandleRef}
             houseId={houseId}
-            side={HandleSideEnum.Enum.RIGHT}
+            axis="x"
+            direction={-1}
             visible={isStretchable && canStretchWidth}
           />
         </Fragment>

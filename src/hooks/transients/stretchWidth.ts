@@ -1,5 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useState } from "react"
+import { proxy } from "valtio"
 import {
   filterCompatibleModules,
   Module,
@@ -29,6 +30,16 @@ import {
 } from "../layouts"
 import previews from "../previews"
 import { useGetVanillaModule } from "../vanilla"
+
+export type StretchWidth = {
+  direction: 1 | -1
+  dx: number
+  dz: number
+  distance: number
+}
+
+export const stretchWidthRaw = proxy<Record<string, StretchWidth>>({})
+export const stretchWidthClamped = proxy<Record<string, StretchWidth>>({})
 
 export const useStretchWidth = (
   houseId: string,

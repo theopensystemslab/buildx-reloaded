@@ -4,11 +4,8 @@ import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
-import dimensions from "../../hooks/dimensions"
-import { HandleSideEnum } from "../../hooks/gestures/drag/handles"
-import { stretchLengthClamped } from "../../hooks/transients/stretchLength"
+import { useStretchLengthStartEndColumn } from "../../hooks/transients/stretchLength"
 import { RA } from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
 import GroupedModule from "./GroupedModule"
 
 type Props = GroupProps & {
@@ -28,39 +25,18 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
     end = false,
   } = props
 
-  const groupRef = useRef<Group>(null)
+  const columnGroupRef = useRef<Group>(null!)
 
-  useSubscribeKey(
-    stretchLengthClamped,
+  useStretchLengthStartEndColumn({
     houseId,
-    () => {
-      if (!stretchLengthClamped[houseId] || start || end) {
-        groupRef.current?.scale.set(1, 1, 1)
-        return
-      }
+    columnGroupRef,
+    columnZ,
+    columnLength,
+    start,
+    end,
+  })
 
-      const { distanceZ: distance, side } = stretchLengthClamped[houseId]
-
-      const { length: houseLength } = dimensions[houseId]
-
-      if (
-        side === HandleSideEnum.Enum.BACK &&
-        houseLength + distance < columnZ
-      ) {
-        groupRef.current?.scale.set(0, 0, 0)
-      } else if (
-        side === HandleSideEnum.Enum.FRONT &&
-        distance + columnLength > columnZ
-      ) {
-        groupRef.current?.scale.set(0, 0, 0)
-      } else {
-        groupRef.current?.scale.set(1, 1, 1)
-      }
-    },
-    true
-  )
-
-  const mergedRef = mergeRefs([ref, groupRef])
+  const mergedRef = mergeRefs([ref, columnGroupRef])
 
   return (
     <group ref={mergedRef} key={columnIndex} position-z={columnZ}>

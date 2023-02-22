@@ -4,73 +4,38 @@ import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
 import { A, O } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { isMesh, useRotations } from "../../utils/three"
+import { isMesh } from "../../utils/three"
 import { setCameraEnabled } from "../camera"
-import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
-import { setStretch, stretchLengthRaw } from "../transients/stretchLength"
+import { setStretch } from "../transients/stretchLength"
 import {
   preTransformsTransients,
   setTransforms,
 } from "../transients/transforms"
-import { HandleIdentifier } from "./drag/handles"
 import dragProxy, { Drag } from "./drag/proxy"
 
 export const useDragHandler = () => {
-  const { rotateV2, unrotateV2 } = useRotations()
-
   useSubscribeKey(dragProxy, "drag", () => {
     if (dragProxy.drag === null || dragProxy.start === null) return
     const {
       start: {
-        identifier,
-        identifier: { houseId, identifierType },
+        identifier: { houseId },
         point: { x: x0, y: y0, z: z0 },
       },
       drag: {
         point: { x: x1, y: y1, z: z1 },
       },
     } = dragProxy
-    switch (identifierType) {
-      case "element":
-        preTransformsTransients[houseId] = {
-          position: {
-            dx: x1 - x0,
-            dy: 0,
-            dz: z1 - z0,
-          },
-        }
-        return
-      case "handle":
-        const { editMode, side } = identifier as HandleIdentifier
-        switch (editMode) {
-          case EditModeEnum.Enum.MOVE_ROTATE:
-            const { x: cx, z: cz } = getHouseCenter(houseId)
-            const angle0 = Math.atan2(cz - z0, cx - x0)
-            const angle = Math.atan2(cz - z1, cx - x1)
-            preTransformsTransients[houseId] = {
-              rotation: -(angle - angle0),
-            }
-            return
-          case EditModeEnum.Enum.STRETCH:
-            const [distanceX, distanceZ] = unrotateV2(houseId, [
-              x1 - x0,
-              z1 - z0,
-            ])
-            const [dx, dz] = rotateV2(houseId, [0, distanceZ])
 
-            stretchLengthRaw[houseId] = {
-              side,
-              dx,
-              dz,
-              distanceX,
-              distanceZ,
-            }
-        }
-        return
+    preTransformsTransients[houseId] = {
+      position: {
+        dx: x1 - x0,
+        dy: 0,
+        dz: z1 - z0,
+      },
     }
   })
 

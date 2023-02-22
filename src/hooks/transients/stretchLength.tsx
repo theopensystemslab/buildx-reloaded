@@ -1,18 +1,19 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
-import { Vector3 } from "three"
+import { MutableRefObject, useMemo } from "react"
+import { Group, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretchLength/GroupedStretchColumn"
 import { A, NEA, RA } from "../../utils/functions"
+import { useSubscribeKey } from "../../utils/hooks"
 import { floor, max, round, sign } from "../../utils/math"
 import { yAxis } from "../../utils/three"
-import {
+import dimensions, {
   collideOBB,
   useHouseDimensionsUpdates,
   usePostTransMatrix,
 } from "../dimensions"
-import { HandleSide, HandleSideEnum } from "../gestures/drag/handles"
 import houses, { useHouse } from "../houses"
 import {
   ColumnLayout,
@@ -26,16 +27,15 @@ import {
   vanillaColumns,
 } from "../vanilla"
 
-export type Stretch = {
-  side: HandleSide
+export type StretchLength = {
+  direction: 1 | -1
   dx: number
   dz: number
-  distanceX: number
-  distanceZ: number
+  distance: number
 }
 
-export const stretchLengthRaw = proxy<Record<string, Stretch>>({})
-export const stretchLengthClamped = proxy<Record<string, Stretch>>({})
+export const stretchLengthRaw = proxy<Record<string, StretchLength>>({})
+export const stretchLengthClamped = proxy<Record<string, StretchLength>>({})
 
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
@@ -51,7 +51,17 @@ export const splitColumns = (layout: ColumnLayout) =>
     })
   )
 
-export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
+export const useStretchLength = ({
+  houseId,
+  layout,
+  startRef,
+  endRef,
+}: {
+  houseId: string
+  layout: ColumnLayout
+  startRef: MutableRefObject<Group>
+  endRef: MutableRefObject<Group>
+}) => {
   const systemId = houses[houseId].systemId
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
@@ -200,7 +210,7 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
             gridGroups: vanillaColumn,
             systemId,
             houseId,
-            side: HandleSideEnum.Enum.BACK,
+            direction: 1,
             columnZ,
             columnLength: vanillaColumnLength,
           }}
@@ -222,7 +232,7 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
             gridGroups: vanillaColumn,
             systemId,
             houseId,
-            side: HandleSideEnum.Enum.FRONT,
+            direction: -1,
             columnZ,
             columnLength: vanillaColumnLength,
           }}
@@ -231,6 +241,98 @@ export const useStretchLength = (houseId: string, layout: ColumnLayout) => {
     )),
     (columns) => <group position={[0, 0, startColumn.length]}>{columns}</group>
   )
+
+  useSubscribeKey(stretchLengthRaw, houseId, () => {
+    if (stretchLengthRaw[houseId]) {
+      const { distance, direction, dx, dz } = stretchLengthRaw[houseId]
+
+      const { length: houseLength, width: houseWidth } = dimensions[houseId]
+
+      switch (direction) {
+        case 1: {
+          const clamped =
+            -distance > houseLength || distance > maxStretchLengthUp
+          if (!clamped) {
+            endRef.current.position.set(0, 0, distance)
+            stretchLengthClamped[houseId] = {
+              direction,
+              distance,
+              dx,
+              dz,
+            }
+          }
+          break
+        }
+
+        case -1: {
+          const clamped =
+            distance > houseLength || distance < maxStretchLengthDown
+          if (!clamped) {
+            startRef.current.position.set(0, 0, distance)
+            stretchLengthClamped[houseId] = {
+              direction,
+              distance,
+              dx,
+              dz,
+            }
+          }
+          break
+        }
+
+        // case HandleSideEnum.Enum.LEFT: {
+        //   const clampUp = distanceX > maxWidth - houseWidth
+        //   const clampDown =
+        //     sign(distanceX) === -1 && distanceX < -(houseWidth - minWidth)
+
+        //   if (clampUp) {
+        //     setHouseVisible(false)
+        //     sendStretchWidthDragDistance(distanceX)
+        //   } else {
+        //     setHouseVisible(true)
+        //   }
+
+        //   const clampedDistanceX =
+        //     sign(distanceX) === -1
+        //       ? max(distanceX, -(houseWidth - minWidth))
+        //       : min(distanceX, maxWidth - houseWidth)
+
+        //   leftHandleRef.current?.position.set(clampedDistanceX, 0, 0)
+        //   stretchLengthClamped[houseId] = {
+        //     distanceX: clampedDistanceX,
+        //     distanceZ,
+        //     side,
+        //     dx,
+        //     dz,
+        //   }
+        //   break
+        // }
+
+        // case HandleSideEnum.Enum.RIGHT: {
+        //   const clampedDistanceX =
+        //     sign(distanceX) === -1
+        //       ? max(distanceX, -(maxWidth - houseWidth))
+        //       : min(distanceX, houseWidth - minWidth)
+
+        //   rightHandleRef.current?.position.set(clampedDistanceX, 0, 0)
+        //   stretchLengthClamped[houseId] = {
+        //     distanceX: clampedDistanceX,
+        //     distanceZ,
+        //     side,
+        //     dx,
+        //     dz,
+        //   }
+        //   break
+        // }
+      }
+    } else {
+      startRef.current.position.set(0, 0, 0)
+      endRef.current.position.set(0, 0, 0)
+      // rightHandleRef.current.position.set(0, 0, 0)
+      // leftHandleRef.current.position.set(0, 0, 0)
+    }
+    invalidate()
+  })
+
   return {
     startColumn,
     endColumn,
@@ -249,7 +351,7 @@ export const setStretch = () => {
     const { startColumn, midColumns, endColumn } = splitColumns(layout)
     const vanillaColumn = vanillaColumns[houseId]
     const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)
-    const { side, distanceZ: distance } = stretchLengthClamped[houseId]
+    const { direction, distance } = stretchLengthClamped[houseId]
 
     const delta = round(distance / vanillaColumnLength)
 
@@ -259,8 +361,8 @@ export const setStretch = () => {
 
     const { x, y, z } = houses[houseId].position
 
-    switch (side) {
-      case HandleSideEnum.Enum.BACK: {
+    switch (direction) {
+      case 1: {
         if (sign(delta) === 1) {
           houses[houseId] = {
             ...houses[houseId],
@@ -295,7 +397,7 @@ export const setStretch = () => {
         }
         break
       }
-      case HandleSideEnum.Enum.FRONT: {
+      case -1: {
         if (sign(delta) === -1) {
           const { x, y, z } = houses[houseId].position
           houses[houseId] = {
@@ -336,4 +438,44 @@ export const setStretch = () => {
     delete stretchLengthRaw[houseId]
     delete stretchLengthClamped[houseId]
   }
+}
+
+export const useStretchLengthStartEndColumn = ({
+  houseId,
+  columnGroupRef,
+  start,
+  end,
+  columnZ,
+  columnLength,
+}: {
+  houseId: string
+  columnGroupRef: MutableRefObject<Group>
+  start: boolean
+  end: boolean
+  columnZ: number
+  columnLength: number
+}) => {
+  useSubscribeKey(
+    stretchLengthClamped,
+    houseId,
+    () => {
+      if (!stretchLengthClamped[houseId] || start || end) {
+        columnGroupRef.current?.scale.set(1, 1, 1)
+        return
+      }
+
+      const { distance, direction } = stretchLengthClamped[houseId]
+
+      const { length: houseLength } = dimensions[houseId]
+
+      if (direction === 1 && houseLength + distance < columnZ) {
+        columnGroupRef.current?.scale.set(0, 0, 0)
+      } else if (direction === -1 && distance + columnLength > columnZ) {
+        columnGroupRef.current?.scale.set(0, 0, 0)
+      } else {
+        columnGroupRef.current?.scale.set(1, 1, 1)
+      }
+    },
+    true
+  )
 }

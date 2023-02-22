@@ -1,5 +1,4 @@
 export type ElementIdentifier = {
-  identifierType: "element"
   systemId: string
   houseId: string
   columnIndex: number
