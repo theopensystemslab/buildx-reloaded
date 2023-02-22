@@ -17,8 +17,6 @@ const PhonyHouse = (props: Props) => {
   const dna = housePreviews.dna ?? []
   const layout = useDnaColumnLayout(houseId, dna)
 
-  console.log(dna.toString())
-
   return (
     <Fragment>
       {pipe(

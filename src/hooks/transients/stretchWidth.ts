@@ -1,6 +1,5 @@
 import { pipe } from "fp-ts/lib/function"
-import { RefObject, useEffect, useState } from "react"
-import { Group } from "three"
+import { useEffect, useState } from "react"
 import {
   filterCompatibleModules,
   Module,
@@ -246,11 +245,17 @@ export const useStretchWidth = (
     setSTIndex(index)
   }
 
-  const sendWidthDrop = () => {
+  const sendStretchWidthDrop = () => {
     const st = sortedSTs[stIndex]
     const dnaChange = dnaChangeOptions[st.code]
     if (dnaChange !== houses[houseId].dna) houses[houseId].dna = dnaChange
   }
+
+  // return dnaChangeOptions
+
+  // active ST (like dragging in motion preview)
+
+  // what's going on on drop?
 
   return {
     canStretchWidth,

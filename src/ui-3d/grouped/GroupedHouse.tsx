@@ -272,85 +272,13 @@ const GroupedHouse = (props: Props) => {
             houseId={houseId}
             side={HandleSideEnum.Enum.LEFT}
             visible={isStretchable && canStretchWidth}
-            // onHover={widthStretchHoverHandler}
-            // onDrag={({ first, last }) => {
-            //   if (!leftHandleRef.current) return
-
-            //   if (first) {
-            //     widthHandleDragging = true
-            //   }
-
-            //   const [px] = rotateVector(pointer.xz)
-            //   const [bx] = rotateVector([buildingX, buildingZ])
-
-            //   const leftClamp = clamp(
-            //     minWidth / 2 + handleOffset,
-            //     maxWidth / 2 + handleOffset
-            //   )
-
-            //   const x = pipe(px - bx, leftClamp)
-
-            //   leftHandleRef.current.position.x = x
-            //   sendWidthDrag(x - handleOffset)
-
-            //   if (last) {
-            //     widthHandleDragging = false
-            //     leftHandleRef.current.position.x =
-            //       houseWidth / 2 + handleOffset
-            //     sendWidthDrop()
-            //   }
-            // }}
-            // position={[houseWidth / 2 + handleOffset, 0, houseLength / 2]}
           />
           <StretchHandle
             ref={rightHandleRef}
             houseId={houseId}
             side={HandleSideEnum.Enum.RIGHT}
             visible={isStretchable && canStretchWidth}
-            // onHover={widthStretchHoverHandler}
-            // onDrag={({ first, last }) => {
-            //   if (!rightHandleRef.current) return
-
-            //   if (first) {
-            //     widthHandleDragging = true
-            //   }
-
-            //   const [px] = rotateVector(pointer.xz)
-            //   const [bx] = rotateVector([buildingX, buildingZ])
-
-            //   const rightClamp = clamp(
-            //     -(maxWidth / 2 + handleOffset),
-            //     -(minWidth / 2 + handleOffset)
-            //   )
-
-            //   const x = pipe(px - bx, rightClamp)
-
-            //   rightHandleRef.current.position.x = x
-            //   sendWidthDrag(x + handleOffset)
-
-            //   if (last) {
-            //     widthHandleDragging = false
-            //     rightHandleRef.current.position.x = -(
-            //       houseWidth / 2 +
-            //       handleOffset
-            //     )
-            //     sendWidthDrop()
-            //   }
-            // }}
-            // position={[-(houseWidth / 2 + handleOffset), 0, houseLength / 2]}
           />
-          {/* {widthGatesEnabled && (
-              <group position={[0, 0, houseLength / 2]}>
-                {[gateLineX, -gateLineX].map((x) => {
-                  return (
-                    <mesh key={x} position={[x, 0, 0]} rotation-x={Math.PI / 2}>
-                      <planeBufferGeometry args={[0.15, houseLength + 10]} />
-                      <meshBasicMaterial color="white" side={DoubleSide} />
-                    </mesh>
-                  )
-                })}
-              </group>
-            )} */}
         </Fragment>
       </group>
     </Fragment>
