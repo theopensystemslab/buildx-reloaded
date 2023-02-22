@@ -3,7 +3,6 @@ import { GroupProps } from "@react-three/fiber"
 import { forwardRef } from "react"
 import { Group } from "three"
 import { useHouseDimensions } from "../../hooks/dimensions"
-import { HandleSide, HandleSideEnum } from "../../hooks/gestures/drag/handles"
 import { useHandleMaterial } from "../../hooks/handleMaterial"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import { PI } from "../../utils/math"
@@ -52,7 +51,7 @@ const StretchHandle = forwardRef<Group, Props>(
               identifierType: "handle",
               houseId,
               editMode: EditModeEnum.Enum.STRETCH,
-              side,
+              direction,
             },
           }}
         />

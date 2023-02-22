@@ -27,6 +27,7 @@ const GroupedElement = (props: Props) => {
   const material = useMaterial({ systemId, houseId, elementName })
 
   const identifier: ElementIdentifier = {
+    identifierType: "element",
     systemId,
     houseId,
     columnIndex,

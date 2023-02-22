@@ -45,7 +45,7 @@ export const useDragHandler = () => {
         }
         return
       case "handle":
-        const { editMode, side } = identifier as HandleIdentifier
+        const { editMode, direction = 1 } = identifier as HandleIdentifier
         switch (editMode) {
           case EditModeEnum.Enum.MOVE_ROTATE:
             const { x: cx, z: cz } = getHouseCenter(houseId)
@@ -63,11 +63,10 @@ export const useDragHandler = () => {
             const [dx, dz] = rotateV2(houseId, [0, distanceZ])
 
             stretchLengthRaw[houseId] = {
-              side,
+              direction,
+              distance: distanceZ,
               dx,
               dz,
-              distanceX,
-              distanceZ,
             }
         }
         return
