@@ -13,7 +13,6 @@ import { getHousesFromLocalStorage, House, Houses } from "../data/house"
 import { useAllHouseTypes } from "../data/houseType"
 import { Module, useSystemModules } from "../data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
-import { useSystemId } from "./siteCtx"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -53,14 +52,14 @@ export const useHouseType = (houseId: string) => {
   return houseType
 }
 
-export const useHouseModules = (houseId: string, dnaOverride?: string[]) => {
+export const useHouseModules = (houseId: string) => {
   const { systemId, dna } = useHouse(houseId)
   const systemModules = useSystemModules({ systemId })
 
   return useMemo(
     () =>
       pipe(
-        dnaOverride ?? dna,
+        dna,
         A.filterMap((dna) =>
           pipe(
             systemModules,
@@ -71,7 +70,28 @@ export const useHouseModules = (houseId: string, dnaOverride?: string[]) => {
           )
         )
       ),
-    [dna, dnaOverride, systemId, systemModules]
+    [dna, systemId, systemModules]
+  )
+}
+
+export const useDnaModules = (systemId: string, dna: string[]) => {
+  const systemModules = useSystemModules({ systemId })
+
+  return useMemo(
+    () =>
+      pipe(
+        dna,
+        A.filterMap((dna) =>
+          pipe(
+            systemModules,
+            RA.findFirst(
+              (systemModule: Module) =>
+                systemModule.systemId === systemId && systemModule.dna === dna
+            )
+          )
+        )
+      ),
+    [dna, systemId, systemModules]
   )
 }
 

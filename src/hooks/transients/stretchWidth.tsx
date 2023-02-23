@@ -8,6 +8,8 @@ import {
   useSystemModules,
 } from "../../data/modules"
 import { SectionType, useSystemSectionTypes } from "../../data/sectionTypes"
+import PhonyDnaHouse from "../../ui-3d/grouped/stretchWidth/PhonyDnaHouse"
+import PhonyHouse from "../../ui-3d/grouped/stretchWidth/PhonyHouse"
 import {
   A,
   mapToOption,
@@ -266,9 +268,18 @@ export const useStretchWidth = (
 
   // what's going on on drop?
 
-  const sectionTypeDnaOptions = pipe(
+  const phonyChildren = pipe(
     dnaChangeOptions,
-    R.filterWithIndex((k) => k !== current.code)
+    R.filterWithIndex((k) => k !== current.code),
+    R.toArray,
+    A.map(([k, dna]) => {
+      console.log([k, dna])
+      return (
+        <group key={k} scale={true ? [1, 1, 1] : [0, 0, 0]}>
+          <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
+        </group>
+      )
+    })
   )
 
   // map each option to a phony house, scale 0 if not it
@@ -283,11 +294,11 @@ export const useStretchWidth = (
 
   return {
     canStretchWidth,
-    minWidth,
-    maxWidth,
-    sectionTypeDnaOptions,
+    // minWidth,
+    // maxWidth,
+    phonyChildren,
     // gateLineX,
-    sendStretchWidthDragDistance,
+    // sendStretchWidthDragDistance,
     // sendWidthDrop,
   }
 }

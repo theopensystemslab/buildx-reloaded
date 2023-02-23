@@ -6,7 +6,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
 import { Module, usePadColumn } from "../data/modules"
-import { modulesToRows, useHouseModules } from "./houses"
+import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -359,8 +359,8 @@ export const useHouseColumnLayout = (houseId: string) => {
   return columnLayout
 }
 
-export const useDnaColumnLayout = (houseId: string, dna: string[]) => {
-  const houseModules = useHouseModules(houseId, dna)
+export const useDnaColumnLayout = (systemId: string, dna: string[]) => {
+  const houseModules = useDnaModules(systemId, dna)
   const columnLayout = modulesToColumnLayout(houseModules)
   return columnLayout
 }

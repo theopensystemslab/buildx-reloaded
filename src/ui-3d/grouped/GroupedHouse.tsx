@@ -51,6 +51,7 @@ const GroupedHouse = (props: Props) => {
 
   const {
     canStretchWidth,
+    phonyChildren,
     // minWidth,
     // maxWidth,
     // sendStretchWidthDragDistance,
@@ -148,6 +149,8 @@ const GroupedHouse = (props: Props) => {
           direction={-1}
           disable={!isStretchable || !canStretchWidth}
         />
+
+        {phonyChildren}
       </group>
     </Fragment>
   )
