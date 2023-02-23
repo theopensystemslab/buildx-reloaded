@@ -345,7 +345,7 @@ export const useStretchLength = ({
   }
 }
 
-export const setStretch = () => {
+export const setStretchLength = () => {
   for (let houseId of Object.keys(stretchLengthClamped)) {
     const layout = layouts[houseId]
     const { startColumn, midColumns, endColumn } = splitColumns(layout)

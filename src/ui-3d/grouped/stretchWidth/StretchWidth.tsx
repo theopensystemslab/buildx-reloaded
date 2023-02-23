@@ -1,16 +1,20 @@
-import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
-import { PropsWithChildren, useEffect, useRef, useState } from "react"
-import { Group } from "three"
-import { proxy } from "valtio"
 import {
   filterCompatibleModules,
   Module,
   topCandidateByHamming,
   useSystemModules,
-} from "../../data/modules"
-import { SectionType, useSystemSectionTypes } from "../../data/sectionTypes"
-import PhonyDnaHouse from "../../ui-3d/grouped/stretchWidth/PhonyDnaHouse"
+} from "@/data/modules"
+import { SectionType, useSystemSectionTypes } from "@/data/sectionTypes"
+import dimensions, { useHouseDimensionsUpdates } from "@/hooks/dimensions"
+import {
+  ColumnLayout,
+  columnLayoutToDNA,
+  GridGroup,
+  PositionedColumn,
+  PositionedModule,
+} from "@/hooks/layouts"
+import { useGetVanillaModule } from "@/hooks/vanilla"
+import PhonyDnaHouse from "@/ui-3d/grouped/stretchWidth/PhonyDnaHouse"
 import {
   A,
   mapToOption,
@@ -21,20 +25,16 @@ import {
   R,
   reduceToOption,
   SG,
-} from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
-import { abs, max, min, sign } from "../../utils/math"
-import dimensions, { useHouseDimensionsUpdates } from "../dimensions"
-import houses from "../houses"
-import {
-  ColumnLayout,
-  columnLayoutToDNA,
-  GridGroup,
-  PositionedColumn,
-  PositionedModule,
-} from "../layouts"
-import previews from "../previews"
-import { useGetVanillaModule } from "../vanilla"
+} from "@/utils/functions"
+import { useSubscribeKey } from "@/utils/hooks"
+import { max, min, sign } from "@/utils/math"
+import { GroupProps, invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
+import { forwardRef, PropsWithChildren, useRef } from "react"
+import { Group } from "three"
+import { proxy } from "valtio"
+import { useIsStretchable } from "../../../hooks/siteCtx"
+import StretchHandle from "../../handles/StretchHandle"
 
 export type StretchWidth = {
   direction: 1 | -1
@@ -46,7 +46,7 @@ export type StretchWidth = {
 export const stretchWidthRaw = proxy<Record<string, StretchWidth>>({})
 export const stretchWidthClamped = proxy<Record<string, StretchWidth>>({})
 
-const WidthShowHider = ({
+const StretchWidthShowHider = ({
   houseId,
   showDistance,
   children,
@@ -78,10 +78,20 @@ const WidthShowHider = ({
   )
 }
 
-export const useStretchWidth = (
-  houseId: string,
+type Props = GroupProps & {
+  houseId: string
+  setHouseVisible: (b: boolean) => void
   columnLayout: ColumnLayout
-) => {
+}
+
+const StretchWidth = forwardRef<Group, Props>((props, ref) => {
+  const { houseId, columnLayout, setHouseVisible, ...groupProps } = props
+
+  const rightHandleRef = useRef<Group>(null!)
+  const leftHandleRef = useRef<Group>(null!)
+
+  const isStretchable = useIsStretchable(houseId)
+
   const systemId = "skylark"
 
   const systemModules = useSystemModules({ systemId })
@@ -238,7 +248,7 @@ export const useStretchWidth = (
     R.fromFoldable(SG.first<string[]>(), A.Foldable)
   )
 
-  const canStretchWidth = true // todo
+  const canStretchWidth = options.length > 0
 
   const sortedSTs: NEA.NonEmptyArray<SectionType> = pipe(
     sectionTypes,
@@ -259,89 +269,9 @@ export const useStretchWidth = (
 
   const minWidth = pipe(sortedSTs, NEA.head, (x) => x.width)
 
-  const [stIndex, setSTIndex] = useState(-1)
+  const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
 
-  // const gateLineX = useMemo(() => {
-  //   if (stIndex === -1) return current.width / 2
-  //   return sortedSTs[stIndex].width / 2
-  // }, [stIndex])
-
-  useEffect(() => {
-    if (stIndex === -1) return
-
-    const stCode = sortedSTs[stIndex].code
-
-    if (stCode !== current.code) {
-      previews[houseId].dna = dnaChangeOptions[stCode]
-    } else {
-      previews[houseId].dna = null
-    }
-  }, [current.code, dnaChangeOptions, houseId, sortedSTs, stIndex])
-
-  const sendStretchWidthDragDistance = (x: number) => {
-    const absX = abs(x)
-
-    let distance = Infinity,
-      index = -1
-
-    for (let i = 0; i < sortedSTs.length; i++) {
-      const st = sortedSTs[i]
-      const d = abs(st.width / 2 - absX)
-      if (d < distance) {
-        distance = d
-        index = i
-      }
-    }
-
-    setSTIndex(index)
-  }
-
-  const sendStretchWidthDrop = () => {
-    const st = sortedSTs[stIndex]
-    const dnaChange = dnaChangeOptions[st.code]
-    if (dnaChange !== houses[houseId].dna) houses[houseId].dna = dnaChange
-  }
-
-  // return dnaChangeOptions
-
-  // active ST (like dragging in motion preview)
-
-  // what's going on on drop?
-
-  const {
-    length: houseLength,
-    width: houseWidth,
-    height: houseHeight,
-  } = useHouseDimensionsUpdates(houseId)
-
-  const phonyChildren = pipe(
-    dnaChangeOptions,
-    R.filterWithIndex((k) => k !== current.code),
-    R.toArray,
-    A.map(([k, dna]) => {
-      return (
-        <WidthShowHider
-          key={k}
-          houseId={houseId}
-          showDistance={(sectionTypesByCode[k].width - houseWidth) / 2}
-        >
-          <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
-        </WidthShowHider>
-      )
-    })
-  )
-
-  // map each option to a phony house, scale 0 if not it
-
-  // how will you track "it"?
-
-  // maybe subscribe to the drag here?
-
-  // remember there's the raw/intent and there's the clamped/validated
-
-  // useSubscribeKey(stretchWidthRaw)
-
-  useSubscribeKey(stretchWidthRaw, houseId, () => {
+  const phonyChildren = useSubscribeKey(stretchWidthRaw, houseId, () => {
     if (!stretchWidthRaw[houseId]) return
 
     const { dx, dz, direction, distance } = stretchWidthRaw[houseId]
@@ -362,8 +292,42 @@ export const useStretchWidth = (
     }
   })
 
-  return {
-    canStretchWidth,
-    phonyChildren,
-  }
-}
+  return (
+    <group
+      ref={ref}
+      scale={isStretchable && canStretchWidth ? [1, 1, 1] : [0, 0, 0]}
+      {...groupProps}
+    >
+      <StretchHandle
+        ref={leftHandleRef}
+        houseId={houseId}
+        axis="x"
+        direction={1}
+      />
+      <StretchHandle
+        ref={rightHandleRef}
+        houseId={houseId}
+        axis="x"
+        direction={-1}
+      />
+      {pipe(
+        dnaChangeOptions,
+        R.filterWithIndex((k) => k !== current.code),
+        R.toArray,
+        A.map(([k, dna]) => {
+          return (
+            <StretchWidthShowHider
+              key={k}
+              houseId={houseId}
+              showDistance={(sectionTypesByCode[k].width - houseWidth) / 2}
+            >
+              <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
+            </StretchWidthShowHider>
+          )
+        })
+      )}
+    </group>
+  )
+})
+
+export default StretchWidth

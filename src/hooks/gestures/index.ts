@@ -2,17 +2,17 @@ import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
-import { A, O } from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
-import { isMesh, useRotations } from "../../utils/three"
+import { stretchWidthRaw } from "@/ui-3d/grouped/stretchWidth/StretchWidth"
+import { A, O } from "@/utils/functions"
+import { useSubscribeKey } from "@/utils/hooks"
+import { isMesh, useRotations } from "@/utils/three"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
-import { setStretch, stretchLengthRaw } from "../transients/stretchLength"
-import { stretchWidthRaw } from "../transients/stretchWidth"
+import { setStretchLength, stretchLengthRaw } from "../transients/stretchLength"
 import {
   preTransformsTransients,
   setTransforms,
@@ -84,7 +84,7 @@ export const useDragHandler = () => {
   useSubscribeKey(dragProxy, "end", () => {
     if (dragProxy.end) {
       setTransforms()
-      setStretch()
+      setStretchLength()
       dragProxy.start = null
       dragProxy.drag = null
     }
