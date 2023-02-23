@@ -2,7 +2,7 @@ import { useGeometry } from "@/hooks/hashedGeometries"
 import { useMaterial } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
-import { ElementIdentifier } from "../../../hooks/gestures/drag/elements"
+import { HouseElementIdentifier } from "../../../hooks/gestures/drag"
 import { StretchModuleProps } from "./GroupedStretchModule"
 
 type Props = StretchModuleProps & {
@@ -18,7 +18,7 @@ const GroupedStretchElement = (props: Props) => {
   const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 
-  const identifier: Partial<ElementIdentifier> = {
+  const identifier: Partial<HouseElementIdentifier> = {
     systemId,
     houseId,
     elementName,

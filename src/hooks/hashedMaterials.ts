@@ -165,7 +165,7 @@ export const useHouseMaterialOps = (
       if (
         !isMesh(o3) ||
         Array.isArray(o3.material) ||
-        o3.userData.identifier?.identifierType !== "element" ||
+        o3.userData.identifier?.identifierType !== "HOUSE_ELEMENT" ||
         o3.userData.identifier?.elementName in elementMaterials.current
       ) {
         return

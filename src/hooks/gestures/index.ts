@@ -12,12 +12,12 @@ import { openMenu } from "../menu"
 import scope from "../scope"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
 import { setStretch, stretchLengthRaw } from "../transients/stretchLength"
+import { stretchWidthRaw } from "../transients/stretchWidth"
 import {
   preTransformsTransients,
   setTransforms,
 } from "../transients/transforms"
-import { HandleIdentifier } from "./drag/handles"
-import dragProxy, { Drag } from "./drag/proxy"
+import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
 
 export const useDragHandler = () => {
   const { rotateV2, unrotateV2 } = useRotations()
@@ -35,7 +35,7 @@ export const useDragHandler = () => {
       },
     } = dragProxy
     switch (identifierType) {
-      case "element":
+      case "HOUSE_ELEMENT": {
         preTransformsTransients[houseId] = {
           position: {
             dx: x1 - x0,
@@ -44,32 +44,40 @@ export const useDragHandler = () => {
           },
         }
         return
-      case "handle":
-        const { editMode, direction = 1 } = identifier as HandleIdentifier
-        switch (editMode) {
-          case EditModeEnum.Enum.MOVE_ROTATE:
-            const { x: cx, z: cz } = getHouseCenter(houseId)
-            const angle0 = Math.atan2(cz - z0, cx - x0)
-            const angle = Math.atan2(cz - z1, cx - x1)
-            preTransformsTransients[houseId] = {
-              rotation: -(angle - angle0),
-            }
-            return
-          case EditModeEnum.Enum.STRETCH:
-            const [distanceX, distanceZ] = unrotateV2(houseId, [
-              x1 - x0,
-              z1 - z0,
-            ])
-            const [dx, dz] = rotateV2(houseId, [0, distanceZ])
-
-            stretchLengthRaw[houseId] = {
-              direction,
-              distance: distanceZ,
-              dx,
-              dz,
-            }
+      }
+      case "ROTATE_HANDLE": {
+        const { x: cx, z: cz } = getHouseCenter(houseId)
+        const angle0 = Math.atan2(cz - z0, cx - x0)
+        const angle = Math.atan2(cz - z1, cx - x1)
+        preTransformsTransients[houseId] = {
+          rotation: -(angle - angle0),
         }
         return
+      }
+      case "STRETCH_HANDLE": {
+        const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
+        const [dx, dz] = rotateV2(houseId, [0, distanceZ])
+
+        const { direction = 1, axis } = identifier as StretchHandleIdentifier
+
+        if (axis === "z") {
+          stretchLengthRaw[houseId] = {
+            direction,
+            distance: distanceZ,
+            dx,
+            dz,
+          }
+        }
+
+        if (axis === "x") {
+          stretchWidthRaw[houseId] = {
+            direction,
+            distance: distanceX,
+            dx,
+            dz,
+          }
+        }
+      }
     }
   })
 

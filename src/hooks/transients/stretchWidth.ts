@@ -19,6 +19,7 @@ import {
   reduceToOption,
   SG,
 } from "../../utils/functions"
+import { useSubscribeKey } from "../../utils/hooks"
 import { abs, sign } from "../../utils/math"
 import houses from "../houses"
 import {
@@ -87,8 +88,8 @@ export const useStretchWidth = (
       pipe(
         columnLayout,
         mapToOption(
-          ({ gridGroups, ...columnRest }): O.Option<PositionedColumn> => {
-            const foo = pipe(
+          ({ gridGroups, ...columnRest }): O.Option<PositionedColumn> =>
+            pipe(
               gridGroups,
               mapToOption(
                 ({ modules, ...gridGroupRest }): O.Option<GridGroup> => {
@@ -185,8 +186,6 @@ export const useStretchWidth = (
                 gridGroups,
               }))
             )
-            return foo
-          }
         ),
         O.map((columnLayout): [string, string[]] => [
           st.code,
@@ -226,7 +225,6 @@ export const useStretchWidth = (
   // }, [stIndex])
 
   useEffect(() => {
-    console.log("hi")
     if (stIndex === -1) return
 
     const stCode = sortedSTs[stIndex].code
@@ -268,10 +266,26 @@ export const useStretchWidth = (
 
   // what's going on on drop?
 
+  const sectionTypeDnaOptions = pipe(
+    dnaChangeOptions,
+    R.filterWithIndex((k) => k !== current.code)
+  )
+
+  // map each option to a phony house, scale 0 if not it
+
+  // how will you track "it"?
+
+  // maybe subscribe to the drag here?
+
+  // remember there's the raw/intent and there's the clamped/validated
+
+  // useSubscribeKey(stretchWidthRaw)
+
   return {
     canStretchWidth,
     minWidth,
     maxWidth,
+    sectionTypeDnaOptions,
     // gateLineX,
     sendStretchWidthDragDistance,
     // sendWidthDrop,

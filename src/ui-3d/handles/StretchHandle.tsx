@@ -3,6 +3,7 @@ import { GroupProps } from "@react-three/fiber"
 import { forwardRef } from "react"
 import { Group } from "three"
 import { useHouseDimensions } from "../../hooks/dimensions"
+import { StretchHandleIdentifier } from "../../hooks/gestures/drag"
 import { useHandleMaterial } from "../../hooks/handleMaterial"
 import { EditModeEnum } from "../../hooks/siteCtx"
 import { PI } from "../../utils/math"
@@ -36,6 +37,12 @@ const StretchHandle = forwardRef<Group, Props>(
 
     const handleMaterial = useHandleMaterial()
 
+    const identifier: StretchHandleIdentifier = {
+      identifierType: "STRETCH_HANDLE",
+      houseId,
+      direction,
+      axis,
+    }
     return (
       <group ref={ref} scale={disable ? [0, 0, 0] : [1, 1, 1]} {...groupProps}>
         <RoundedBox
@@ -48,12 +55,7 @@ const StretchHandle = forwardRef<Group, Props>(
           scale-z={0.4}
           material={handleMaterial}
           userData={{
-            identifier: {
-              identifierType: "handle",
-              houseId,
-              editMode: EditModeEnum.Enum.STRETCH,
-              direction,
-            },
+            identifier,
           }}
         />
       </group>
