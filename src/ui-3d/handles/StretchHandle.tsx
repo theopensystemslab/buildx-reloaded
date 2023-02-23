@@ -43,6 +43,7 @@ const StretchHandle = forwardRef<Group, Props>(
       direction,
       axis,
     }
+
     return (
       <group ref={ref} scale={disable ? [0, 0, 0] : [1, 1, 1]} {...groupProps}>
         <RoundedBox

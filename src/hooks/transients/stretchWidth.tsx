@@ -1,5 +1,7 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useState } from "react"
+import { PropsWithChildren, useEffect, useRef, useState } from "react"
+import { Group } from "three"
 import { proxy } from "valtio"
 import {
   filterCompatibleModules,
@@ -9,7 +11,6 @@ import {
 } from "../../data/modules"
 import { SectionType, useSystemSectionTypes } from "../../data/sectionTypes"
 import PhonyDnaHouse from "../../ui-3d/grouped/stretchWidth/PhonyDnaHouse"
-import PhonyHouse from "../../ui-3d/grouped/stretchWidth/PhonyHouse"
 import {
   A,
   mapToOption,
@@ -22,7 +23,8 @@ import {
   SG,
 } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
-import { abs, sign } from "../../utils/math"
+import { abs, max, min, sign } from "../../utils/math"
+import dimensions, { useHouseDimensionsUpdates } from "../dimensions"
 import houses from "../houses"
 import {
   ColumnLayout,
@@ -44,6 +46,38 @@ export type StretchWidth = {
 export const stretchWidthRaw = proxy<Record<string, StretchWidth>>({})
 export const stretchWidthClamped = proxy<Record<string, StretchWidth>>({})
 
+const WidthShowHider = ({
+  houseId,
+  showDistance,
+  children,
+}: PropsWithChildren<{
+  houseId: string
+  showDistance: number
+}>) => {
+  const ref = useRef<Group>(null!)
+
+  useSubscribeKey(stretchWidthClamped, houseId, () => {
+    if (!stretchWidthClamped[houseId]) return
+    const { distance } = stretchWidthClamped[houseId]
+
+    if (showDistance - distance < 0.0001) {
+      ref.current.scale.set(1, 1, 1)
+      invalidate()
+      console.log("show")
+    } else {
+      ref.current.scale.set(0, 0, 0)
+      invalidate()
+      console.log("hide")
+    }
+  })
+
+  return (
+    <group ref={ref} scale={[0, 0, 0]}>
+      {children}
+    </group>
+  )
+}
+
 export const useStretchWidth = (
   houseId: string,
   columnLayout: ColumnLayout
@@ -56,6 +90,12 @@ export const useStretchWidth = (
   const getVanillaModule = useGetVanillaModule(systemId)
 
   const module0 = columnLayout[0].gridGroups[0].modules[0].module
+
+  const sectionTypesByCode = pipe(
+    sectionTypes,
+    A.map((st): [string, SectionType] => [st.code, st]),
+    R.fromFoldable(SG.first<SectionType>(), A.Foldable)
+  )
 
   const { current, options } = pipe(
     sectionTypes,
@@ -268,16 +308,25 @@ export const useStretchWidth = (
 
   // what's going on on drop?
 
+  const {
+    length: houseLength,
+    width: houseWidth,
+    height: houseHeight,
+  } = useHouseDimensionsUpdates(houseId)
+
   const phonyChildren = pipe(
     dnaChangeOptions,
     R.filterWithIndex((k) => k !== current.code),
     R.toArray,
     A.map(([k, dna]) => {
-      console.log([k, dna])
       return (
-        <group key={k} scale={true ? [1, 1, 1] : [0, 0, 0]}>
+        <WidthShowHider
+          key={k}
+          houseId={houseId}
+          showDistance={(sectionTypesByCode[k].width - houseWidth) / 2}
+        >
           <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
-        </group>
+        </WidthShowHider>
       )
     })
   )
@@ -292,13 +341,29 @@ export const useStretchWidth = (
 
   // useSubscribeKey(stretchWidthRaw)
 
+  useSubscribeKey(stretchWidthRaw, houseId, () => {
+    if (!stretchWidthRaw[houseId]) return
+
+    const { dx, dz, direction, distance } = stretchWidthRaw[houseId]
+    const { width: houseWidth } = dimensions[houseId]
+
+    const dxd = direction * distance
+
+    const clampedDistance = min(
+      max(dxd, (houseWidth - minWidth) / 2),
+      (maxWidth - houseWidth) / 2
+    )
+
+    stretchWidthClamped[houseId] = {
+      dx,
+      dz,
+      direction,
+      distance: clampedDistance,
+    }
+  })
+
   return {
     canStretchWidth,
-    // minWidth,
-    // maxWidth,
     phonyChildren,
-    // gateLineX,
-    // sendStretchWidthDragDistance,
-    // sendWidthDrop,
   }
 }

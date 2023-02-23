@@ -129,20 +129,22 @@ export const useGestures = (): any =>
         setCameraEnabled(false)
         // XZ and Y planes should subscribe here to jump to right place
 
-        scope.selected = {
-          ...identifier,
-        }
+        if (identifier) {
+          scope.selected = {
+            ...identifier,
+          }
 
-        if (siteCtx.editMode === null)
-          siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
-        if (siteCtx.houseId !== identifier.houseId)
-          siteCtx.houseId = identifier.houseId
+          if (siteCtx.editMode === null)
+            siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
+          if (siteCtx.houseId !== identifier.houseId)
+            siteCtx.houseId = identifier.houseId
 
-        dragProxy.start = {
-          identifier,
-          point: intersectionPoint,
+          dragProxy.start = {
+            identifier,
+            point: intersectionPoint,
+          }
+          dragProxy.end = false
         }
-        dragProxy.end = false
       } else if (last) {
         event.stopPropagation()
         dragProxy.end = true
