@@ -4,7 +4,13 @@ import houses from "./houses"
 
 type Preview = {
   materials: Record<string, string>
-  dna: string[] | null
+  dna: Record<
+    string,
+    {
+      value: string[]
+      active: boolean
+    }
+  >
 }
 
 type Previews = Record<string, Preview>
@@ -13,7 +19,7 @@ const previews = proxy<Previews>({})
 
 const emptyPreviews = {
   materials: {},
-  dna: null,
+  dna: {},
 }
 
 export const usePreviews = () => {

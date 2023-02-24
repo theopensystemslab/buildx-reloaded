@@ -1,6 +1,7 @@
 import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
-import React, { Fragment } from "react"
+import { Fragment, useEffect, useMemo } from "react"
+import { ref } from "valtio"
 import { useGetStairsModule, usePadColumn } from "../../data/modules"
 import houses from "../../hooks/houses"
 import {
@@ -9,12 +10,11 @@ import {
   rowMatrixToDna,
   useColumnMatrix,
 } from "../../hooks/layouts"
+import previews from "../../hooks/previews"
 import { useGetVanillaModule } from "../../hooks/vanilla"
 import { A, errorThrower, O } from "../../utils/functions"
-import { AddLevel, RemoveLevel, Opening } from "../icons"
-import Radio from "../Radio"
+import { AddLevel, RemoveLevel } from "../icons"
 import ContextMenuButton from "./ContextMenuButton"
-import ContextMenuNested from "./ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void
@@ -48,10 +48,10 @@ const AddRemoveLevels = (props: Props) => {
 
   const canRemoveFloor = ["M", "T"].includes(thisLevelLetter)
 
-  const addFloorAbove = () => {
-    if (!canAddFloorAbove) return
+  const floorAboveDna = useMemo(() => {
+    if (!canAddFloorAbove) return []
 
-    houses[houseId].dna = pipe(
+    return pipe(
       columnMatrix,
       transpose,
       (rows) => [
@@ -94,6 +94,23 @@ const AddRemoveLevels = (props: Props) => {
       A.map(padColumn),
       columnMatrixToDna
     )
+  }, [
+    canAddFloorAbove,
+    columnMatrix,
+    getStairsModule,
+    getVanillaModule,
+    levelIndex,
+    padColumn,
+    targetLevelLetter,
+    targetLevelType,
+  ])
+
+  const key = floorAboveDna.toString()
+
+  const addFloorAbove = () => {
+    if (!canAddFloorAbove) return
+
+    houses[houseId].dna = floorAboveDna
     onComplete?.()
   }
 
@@ -110,11 +127,31 @@ const AddRemoveLevels = (props: Props) => {
     onComplete?.()
   }
 
+  // prep phony dna house
+
+  // on hover do the dishes
+
+  useEffect(() => {
+    if (!canAddFloorAbove) return
+
+    previews[houseId].dna[key] = {
+      active: false,
+      value: ref(floorAboveDna),
+    }
+
+    return () => {
+      delete previews[houseId].dna[key]
+    }
+  }, [canAddFloorAbove, floorAboveDna, houseId, key])
+
   return (
     <Fragment>
       {canAddFloorAbove && (
         <ContextMenuButton
           onClick={addFloorAbove}
+          onHover={(hovered) => {
+            previews[houseId].dna[key].active = hovered
+          }}
           icon={<AddLevel />}
           text="Add level"
           unpaddedSvg
