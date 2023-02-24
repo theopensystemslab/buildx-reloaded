@@ -63,11 +63,9 @@ const StretchWidthShowHider = ({
     if (showDistance - distance < 0.0001) {
       ref.current.scale.set(1, 1, 1)
       invalidate()
-      console.log("show")
     } else {
       ref.current.scale.set(0, 0, 0)
       invalidate()
-      console.log("hide")
     }
   })
 

@@ -1,12 +1,12 @@
-import { pipe } from "fp-ts/lib/function"
-import { forwardRef, Fragment, useRef } from "react"
 import { useDnaColumnLayout } from "@/hooks/layouts"
 import { A } from "@/utils/functions"
-import PhonyColumn from "./PhonyColumn"
-import { Group } from "three"
-import { useSubscribeKey } from "../../../utils/hooks"
-import previews from "../../../hooks/previews"
 import { invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
+import { useRef } from "react"
+import { Group } from "three"
+import previews from "../../../hooks/previews"
+import { useSubscribeKey } from "../../../utils/hooks"
+import PhonyColumn from "./PhonyColumn"
 
 type Props = {
   houseId: string

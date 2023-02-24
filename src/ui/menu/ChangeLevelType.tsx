@@ -1,8 +1,13 @@
+import { pipe } from "fp-ts/lib/function"
+import { useEffect, useRef } from "react"
+import { ref } from "valtio"
 import houses from "../../hooks/houses"
 import {
   LevelTypeOption,
   useChangeLevelType,
 } from "../../hooks/interactions/levels"
+import previews from "../../hooks/previews"
+import { A } from "../../utils/functions"
 import { Menu } from "../icons"
 import Radio from "../Radio"
 import ContextMenuNested from "./ContextMenuNested"
@@ -31,6 +36,47 @@ const ChangeLevelType = (props: Props) => {
     onChange?.()
   }
 
+  const lastKey = useRef<string | null>(null)
+
+  useEffect(() => {
+    // if (!canAddFloorAbove) return
+
+    pipe(
+      levelTypeOptions,
+      A.map(({ value: { houseDna } }) => {
+        const key = houseDna.toString()
+        previews[houseId].dna[key] = {
+          active: false,
+          value: ref(houseDna),
+        }
+      })
+    )
+
+    return () => {
+      pipe(
+        levelTypeOptions,
+        A.map(({ value: { houseDna } }) => {
+          const key = houseDna.toString()
+          delete previews[houseId].dna[key]
+        })
+      )
+    }
+  }, [houseId, levelTypeOptions])
+
+  const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
+    if (incoming === null) {
+      if (lastKey.current !== null) {
+        previews[houseId].dna[lastKey.current].active = false
+        lastKey.current = null
+      }
+    } else {
+      const { houseDna } = incoming
+      const key = houseDna.toString()
+      lastKey.current = key
+      previews[houseId].dna[key].active = true
+    }
+  }
+
   return canChangeLevelType ? (
     <ContextMenuNested
       long
@@ -41,6 +87,7 @@ const ChangeLevelType = (props: Props) => {
         options={levelTypeOptions}
         selected={selectedLevelType}
         onChange={changeLevelType}
+        onHoverChange={previewLevelType}
       />
     </ContextMenuNested>
   ) : null
