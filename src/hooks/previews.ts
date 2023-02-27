@@ -17,17 +17,15 @@ type Previews = Record<string, Preview>
 
 const previews = proxy<Previews>({})
 
-const emptyPreviews = {
-  materials: {},
-  dna: {},
-}
-
 export const usePreviews = () => {
   useSubscribe(
     houses,
     () => {
       for (let houseId of Object.keys(houses)) {
-        previews[houseId] = emptyPreviews
+        previews[houseId] = {
+          materials: {},
+          dna: {},
+        }
       }
     },
     true
@@ -37,7 +35,12 @@ export const usePreviews = () => {
 export const useHousePreviews = (houseId: string) => {
   const housesSnap = useSnapshot(previews) as typeof previews
 
-  return housesSnap[houseId] ?? emptyPreviews
+  return (
+    housesSnap[houseId] ?? {
+      materials: {},
+      dna: {},
+    }
+  )
 }
 
 export default previews

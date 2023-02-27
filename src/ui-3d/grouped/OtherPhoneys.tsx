@@ -14,28 +14,25 @@ type Props = GroupProps & {
 
 const OtherPhoneys = (props: Props) => {
   const { houseId, setHouseVisible } = props
-  const { houseId: siteCtxHouseId } = useSiteCtx()
   const systemId = houses[houseId].systemId
   const { dna: dnaPreviews } = useHousePreviews(houseId)
 
   return (
     <Fragment key={houseId}>
-      {houseId !== siteCtxHouseId
-        ? null
-        : pipe(
-            dnaPreviews,
-            R.collect(S.Ord)((k, { value }) => {
-              return (
-                <PhonyDnaHouse2
-                  key={`${houseId}:${k}`}
-                  houseId={houseId}
-                  systemId={systemId}
-                  dna={value}
-                  setHouseVisible={setHouseVisible}
-                />
-              )
-            })
-          )}
+      {pipe(
+        dnaPreviews,
+        R.collect(S.Ord)((k, { value }) => {
+          return (
+            <PhonyDnaHouse2
+              key={`${houseId}:${k}`}
+              houseId={houseId}
+              systemId={systemId}
+              dna={value}
+              setHouseVisible={setHouseVisible}
+            />
+          )
+        })
+      )}
     </Fragment>
   )
 }
