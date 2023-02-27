@@ -1,10 +1,10 @@
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useState } from "react"
+import { Fragment } from "react"
 import houses from "../../hooks/houses"
-import previews from "../../hooks/previews"
+import { useHousePreviews } from "../../hooks/previews"
+import { useSiteCtx } from "../../hooks/siteCtx"
 import { R, S } from "../../utils/functions"
-import { useSubscribeKey } from "../../utils/hooks"
 import PhonyDnaHouse2 from "./stretchWidth/PhonyDnaHouse2"
 
 type Props = GroupProps & {
@@ -13,32 +13,31 @@ type Props = GroupProps & {
 }
 
 const OtherPhoneys = (props: Props) => {
-  const { houseId, setHouseVisible, ...groupProps } = props
-
+  const { houseId, setHouseVisible } = props
+  const { houseId: siteCtxHouseId } = useSiteCtx()
   const systemId = houses[houseId].systemId
+  const { dna: dnaPreviews } = useHousePreviews(houseId)
 
-  const [children, setChildren] = useState<JSX.Element[]>([])
-
-  useSubscribeKey(previews[houseId], "dna", () => {
-    setChildren(
-      pipe(
-        previews[houseId].dna,
-        R.collect(S.Ord)((k, { value }) => {
-          return (
-            <PhonyDnaHouse2
-              key={k}
-              houseId={houseId}
-              systemId={systemId}
-              dna={value}
-              setHouseVisible={setHouseVisible}
-            />
-          )
-        })
-      )
-    )
-  })
-
-  return <Fragment>{children}</Fragment>
+  return (
+    <Fragment key={houseId}>
+      {houseId !== siteCtxHouseId
+        ? null
+        : pipe(
+            dnaPreviews,
+            R.collect(S.Ord)((k, { value }) => {
+              return (
+                <PhonyDnaHouse2
+                  key={`${houseId}:${k}`}
+                  houseId={houseId}
+                  systemId={systemId}
+                  dna={value}
+                  setHouseVisible={setHouseVisible}
+                />
+              )
+            })
+          )}
+    </Fragment>
+  )
 }
 
 export default OtherPhoneys

@@ -39,8 +39,6 @@ const ChangeLevelType = (props: Props) => {
   const lastKey = useRef<string | null>(null)
 
   useEffect(() => {
-    // if (!canAddFloorAbove) return
-
     pipe(
       levelTypeOptions,
       A.map(({ value: { houseDna } }) => {
@@ -60,12 +58,16 @@ const ChangeLevelType = (props: Props) => {
           delete previews[houseId].dna[key]
         })
       )
+      lastKey.current = null
     }
   }, [houseId, levelTypeOptions])
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
     if (incoming === null) {
-      if (lastKey.current !== null) {
+      if (
+        lastKey.current !== null &&
+        lastKey.current in previews[houseId].dna
+      ) {
         previews[houseId].dna[lastKey.current].active = false
         lastKey.current = null
       }

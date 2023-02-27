@@ -269,7 +269,7 @@ const StretchWidth = forwardRef<Group, Props>((props, ref) => {
 
   const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
 
-  const phonyChildren = useSubscribeKey(stretchWidthRaw, houseId, () => {
+  useSubscribeKey(stretchWidthRaw, houseId, () => {
     if (!stretchWidthRaw[houseId]) return
 
     const { dx, dz, direction, distance } = stretchWidthRaw[houseId]

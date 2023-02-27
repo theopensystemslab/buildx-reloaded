@@ -278,57 +278,10 @@ export const useStretchLength = ({
           }
           break
         }
-
-        // case HandleSideEnum.Enum.LEFT: {
-        //   const clampUp = distanceX > maxWidth - houseWidth
-        //   const clampDown =
-        //     sign(distanceX) === -1 && distanceX < -(houseWidth - minWidth)
-
-        //   if (clampUp) {
-        //     setHouseVisible(false)
-        //     sendStretchWidthDragDistance(distanceX)
-        //   } else {
-        //     setHouseVisible(true)
-        //   }
-
-        //   const clampedDistanceX =
-        //     sign(distanceX) === -1
-        //       ? max(distanceX, -(houseWidth - minWidth))
-        //       : min(distanceX, maxWidth - houseWidth)
-
-        //   leftHandleRef.current?.position.set(clampedDistanceX, 0, 0)
-        //   stretchLengthClamped[houseId] = {
-        //     distanceX: clampedDistanceX,
-        //     distanceZ,
-        //     side,
-        //     dx,
-        //     dz,
-        //   }
-        //   break
-        // }
-
-        // case HandleSideEnum.Enum.RIGHT: {
-        //   const clampedDistanceX =
-        //     sign(distanceX) === -1
-        //       ? max(distanceX, -(maxWidth - houseWidth))
-        //       : min(distanceX, houseWidth - minWidth)
-
-        //   rightHandleRef.current?.position.set(clampedDistanceX, 0, 0)
-        //   stretchLengthClamped[houseId] = {
-        //     distanceX: clampedDistanceX,
-        //     distanceZ,
-        //     side,
-        //     dx,
-        //     dz,
-        //   }
-        //   break
-        // }
       }
     } else {
       startRef.current.position.set(0, 0, 0)
       endRef.current.position.set(0, 0, 0)
-      // rightHandleRef.current.position.set(0, 0, 0)
-      // leftHandleRef.current.position.set(0, 0, 0)
     }
     invalidate()
   })

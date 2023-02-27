@@ -1,5 +1,5 @@
 import { useDnaColumnLayout } from "@/hooks/layouts"
-import { A } from "@/utils/functions"
+import { A, R, S } from "@/utils/functions"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
@@ -18,14 +18,15 @@ type Props = {
 const PhonyDnaHouse2 = (props: Props) => {
   const ref = useRef<Group>(null)
 
-  const { houseId, systemId, dna, setHouseVisible } = props
+  const { houseId, systemId, dna, setHouseVisible, ...restProps } = props
+
   const layout = useDnaColumnLayout(systemId, dna)
 
   const key = dna.toString()
 
   useSubscribeKey(
-    previews[houseId].dna,
-    key,
+    previews,
+    houseId,
     () => {
       const { active } = previews[houseId].dna?.[key] ?? { active: false }
       const v = active ? 1 : 0
@@ -37,12 +38,17 @@ const PhonyDnaHouse2 = (props: Props) => {
   )
 
   return (
-    <group ref={ref} scale={[0, 0, 0]}>
+    <group
+      name={`phonyHouse:${houseId}:${dna}`}
+      ref={ref}
+      scale={[0, 0, 0]}
+      {...restProps}
+    >
       {pipe(
         layout,
         A.map((column) => (
           <PhonyColumn
-            key={`${houseId}:${column.columnIndex}`}
+            key={`phony:${houseId}:${column.columnIndex}`}
             {...{ systemId, houseId, column }}
           />
         ))
