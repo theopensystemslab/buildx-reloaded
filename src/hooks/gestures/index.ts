@@ -2,7 +2,7 @@ import { stretchWidthRaw } from "@/ui-3d/grouped/stretchWidth/StretchWidth2"
 import { A, O } from "@/utils/functions"
 import { useSubscribeKey } from "@/utils/hooks"
 import { isMesh, useRotations } from "@/utils/three"
-import { ThreeEvent } from "@react-three/fiber"
+import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useSnapshot } from "valtio"
@@ -10,6 +10,7 @@ import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import globals from "../globals"
 import { openMenu } from "../menu"
+import { setPreview } from "../previews"
 import scope from "../scope"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
 import { setStretchLength, stretchLengthRaw } from "../transients/stretchLength"
@@ -85,6 +86,7 @@ export const useDragHandler = () => {
     if (dragProxy.end) {
       setTransforms()
       setStretchLength()
+      setPreview()
       dragProxy.start = null
       dragProxy.drag = null
     }

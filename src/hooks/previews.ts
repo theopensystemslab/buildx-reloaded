@@ -1,4 +1,10 @@
+import { pipe } from "fp-ts/lib/function"
 import { proxy, useSnapshot } from "valtio"
+import {
+  stretchWidthClamped,
+  stretchWidthRaw,
+} from "../ui-3d/grouped/stretchWidth/StretchWidth2"
+import { A, O, R } from "../utils/functions"
 import { useSubscribe } from "../utils/hooks"
 import houses from "./houses"
 
@@ -41,6 +47,22 @@ export const useHousePreviews = (houseId: string) => {
       dna: {},
     }
   )
+}
+
+export const setPreview = () => {
+  for (let houseId of Object.keys(previews)) {
+    pipe(
+      previews[houseId].dna,
+      R.toEntries,
+      A.findFirst(([_, { active }]) => active),
+      O.map(([_, { value }]) => {
+        houses[houseId].dna = value
+      })
+    )
+
+    delete stretchWidthRaw[houseId]
+    delete stretchWidthClamped[houseId]
+  }
 }
 
 export default previews

@@ -16,7 +16,6 @@ import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
 import OtherPhoneys from "./OtherPhoneys"
-import StretchWidth from "./stretchWidth/StretchWidth"
 import StretchWidth2 from "./stretchWidth/StretchWidth2"
 
 type Props = {

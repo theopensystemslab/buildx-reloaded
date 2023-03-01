@@ -234,7 +234,7 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
     const dxd = direction * distance
 
     const clampedDistance = min(
-      max(dxd, (houseWidth - minWidth) / 2),
+      max(dxd, -(houseWidth - minWidth) / 2),
       (maxWidth - houseWidth) / 2
     )
 
@@ -293,33 +293,44 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
     switch (direction) {
       case -1: {
         const i = augSectionTypes.findIndex((x) => distance - x.dx > 0.001)
+
         if (i !== -1) {
           if (previewIndex.current !== null) {
             const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
-            previews[houseId].dna[lastKey].active = false
+            if (lastKey in previews[houseId].dna)
+              previews[houseId].dna[lastKey].active = false
           }
+
           if (i === currentIndex) {
             break
           }
           previewIndex.current = i
-          previews[houseId].dna[augSectionTypes[i].houseDnaKey].active = true
-          invalidate()
+
+          const key = augSectionTypes[i].houseDnaKey
+          if (key in previews[houseId].dna)
+            previews[houseId].dna[key].active = true
         }
         break
       }
       default:
       case 1: {
         const i = augSectionTypes.findIndex((x) => distance - x.dx < 0.001)
+
         if (i !== -1) {
           if (previewIndex.current !== null) {
             const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
-            previews[houseId].dna[lastKey].active = false
+            if (lastKey in previews[houseId].dna)
+              previews[houseId].dna[lastKey].active = false
           }
+
           if (i === currentIndex) {
             break
           }
           previewIndex.current = i
-          previews[houseId].dna[augSectionTypes[i].houseDnaKey].active = true
+
+          const key = augSectionTypes[i].houseDnaKey
+          if (key in previews[houseId].dna)
+            previews[houseId].dna[key].active = true
         }
         break
       }
@@ -346,22 +357,6 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
         axis="x"
         direction={-1}
       />
-      {/* {pipe(
-        dnaChangeOptions,
-        R.filterWithIndex((k) => k !== current.code),
-        R.toArray,
-        A.map(([k, dna]) => {
-          return (
-            <StretchWidthShowHider
-              key={k}
-              houseId={houseId}
-              showDistance={(sectionTypesByCode[k].width - houseWidth) / 2}
-            >
-              <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
-            </StretchWidthShowHider>
-          )
-        })
-      )} */}
     </group>
   )
 })
