@@ -68,12 +68,19 @@ export const errorThrower = (message?: string) => () => {
 export const someOrError = <T extends unknown>(message?: string) =>
   O.match<T, T>(errorThrower(message), identity)
 
-export const pipeLog = <T extends unknown>(x: T): T => (console.log(x), x)
+export const pipeLog = <T extends unknown>(t: T): T => (console.log(t), t)
 
 export const pipeLogWith =
   <T extends unknown>(f: (t: T) => void) =>
   (t: T): T => {
     console.log(f(t))
+    return t
+  }
+
+export const pipeEffect =
+  <T extends unknown>(f: (t: T) => void) =>
+  (t: T): T => {
+    f(t)
     return t
   }
 

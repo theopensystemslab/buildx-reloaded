@@ -31,6 +31,7 @@ import { useSubscribeKey } from "@/utils/hooks"
 import { max, min, sign } from "@/utils/math"
 import { GroupProps, invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
+import { NonEmptyArray } from "fp-ts/lib/NonEmptyArray"
 import { Ordering } from "fp-ts/lib/Ordering"
 import { forwardRef, PropsWithChildren, useEffect, useRef } from "react"
 import { Group } from "three"
@@ -39,15 +40,19 @@ import previews from "../../../hooks/previews"
 import { useIsStretchable } from "../../../hooks/siteCtx"
 import StretchHandle from "../../handles/StretchHandle"
 
-export type StretchWidth = {
+export type StretchWidthRaw = {
   direction: 1 | -1
   dx: number
   dz: number
   distance: number
 }
 
-export const stretchWidthRaw = proxy<Record<string, StretchWidth>>({})
-export const stretchWidthClamped = proxy<Record<string, StretchWidth>>({})
+export type StretchWidthClamped = Omit<StretchWidthRaw, "direction">
+
+export const stretchWidthRaw = proxy<Record<string, StretchWidthRaw>>({})
+export const stretchWidthClamped = proxy<Record<string, StretchWidthClamped>>(
+  {}
+)
 
 type Props = GroupProps & {
   houseId: string
@@ -55,7 +60,7 @@ type Props = GroupProps & {
   columnLayout: ColumnLayout
 }
 
-const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
+const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
   const { houseId, columnLayout, setHouseVisible, ...groupProps } = props
 
   const rightHandleRef = useRef<Group>(null!)
@@ -72,36 +77,17 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
 
   const module0 = columnLayout[0].gridGroups[0].modules[0].module
 
-  const { current, options } = pipe(
-    sectionTypes,
-    A.reduce(
-      { current: null, options: [] },
-      (
-        {
-          current,
-          options,
-        }: { current: SectionType | null; options: SectionType[] },
-        st
-      ) =>
-        st.code === module0.structuredDna.sectionType
-          ? {
-              current: st,
-              options,
-            }
-          : {
-              current,
-              options: [...options, st],
-            }
-    ),
-    ({ current, options }) => ({
-      current: current as SectionType,
-      options,
-    })
-  )
+  const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
 
-  const dnaChangeOptions = pipe(
-    // [current, ...options],
-    options,
+  type AugSectionType = SectionType & {
+    live: boolean
+    houseDna: string[]
+    houseDnaKey: string
+    dx: number
+  }
+
+  const augSectionTypes: NonEmptyArray<AugSectionType> = pipe(
+    sectionTypes,
     A.filterMap((st) =>
       pipe(
         columnLayout,
@@ -205,37 +191,37 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
               }))
             )
         ),
-        O.map((columnLayout): [string, string[]] => [
-          st.code,
-          columnLayoutToDNA(columnLayout as ColumnLayout),
-        ])
+        O.map((columnLayout): AugSectionType => {
+          const houseDna = columnLayoutToDNA(columnLayout)
+          return {
+            ...st,
+            live: st.code === module0.structuredDna.sectionType,
+            dx: (st.width - houseWidth) / 2,
+            houseDna,
+            houseDnaKey: houseDna.toString(),
+          }
+        })
       )
     ),
-    R.fromFoldable(SG.first<string[]>(), A.Foldable)
-  )
-
-  const canStretchWidth = options.length > 0
-
-  const sortedSTs: NEA.NonEmptyArray<SectionType> = pipe(
-    sectionTypes,
-    A.filter((st) => R.keys(dnaChangeOptions).includes(st.code)),
     A.sort(
       pipe(
         Num.Ord,
-        Ord.contramap((st: SectionType) => st.width)
+        Ord.contramap((st: AugSectionType) => st.width)
       )
     ),
-    (sts) => {
-      if (!A.isNonEmpty(sts)) throw new Error("Empty section types")
-      return sts
-    }
+    (as) =>
+      A.isNonEmpty(as)
+        ? as
+        : ((): any => {
+            throw new Error("empty section types")
+          })()
   )
 
-  const maxWidth = pipe(sortedSTs, NEA.last, (x) => x.width)
+  const canStretchWidth = augSectionTypes.length > 1
 
-  const minWidth = pipe(sortedSTs, NEA.head, (x) => x.width)
+  const maxWidth = pipe(augSectionTypes, NEA.last, (x) => x.width)
 
-  const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
+  const minWidth = pipe(augSectionTypes, NEA.head, (x) => x.width)
 
   useSubscribeKey(stretchWidthRaw, houseId, () => {
     if (!stretchWidthRaw[houseId]) return
@@ -253,50 +239,34 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
     stretchWidthClamped[houseId] = {
       dx,
       dz,
-      direction,
       distance: clampedDistance,
     }
   })
 
   useEffect(() => {
     pipe(
-      dnaChangeOptions,
-      R.map((dnaChangeOption) => {
-        const key = dnaChangeOption.toString()
+      augSectionTypes,
+      NEA.map((augSectionType) => {
+        const key = augSectionType.houseDna.toString()
         previews[houseId].dna[key] = {
           active: false,
-          value: ref(dnaChangeOption),
+          value: ref(augSectionType.houseDna),
         }
       })
     )
 
     return () => {
       pipe(
-        dnaChangeOptions,
-        R.map((dnaChangeOption) => {
-          const key = dnaChangeOption.toString()
+        augSectionTypes,
+        NEA.map((augSectionType) => {
+          const key = augSectionType.houseDna.toString()
           delete previews[houseId].dna[key]
         })
       )
     }
-  }, [dnaChangeOptions, houseId])
+  }, [houseId, augSectionTypes])
 
-  // smallest to largest
-  const fences = pipe(
-    sectionTypes,
-    A.sort<SectionType>({
-      compare(x, y) {
-        return sign(x.width - y.width) as Ordering
-      },
-      equals(x, y) {
-        return x.width === y.width
-      },
-    }),
-    A.map((st): [number, SectionType] => [(st.width - houseWidth) / 2, st])
-    // R.fromFoldable(SG.first<SectionType>(), A.Foldable)
-  )
-
-  // const fences = pipe(dnaChangeOptions, R.toEntries, A.map())
+  // maybe dx's to indices cache-map sorta thing
 
   const compute = (d: number) => {
     // options should be sorted by width
@@ -313,14 +283,42 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
     // }
   }
 
+  const lastDistance = useRef(0)
+  // const currentj
+
   useSubscribeKey(stretchWidthClamped, houseId, () => {
     if (!stretchWidthClamped[houseId]) return
     const { distance } = stretchWidthClamped[houseId]
 
-    console.log({
-      fences,
-      distance,
-    })
+    const direction = sign(distance - lastDistance.current) as Ordering
+
+    lastDistance.current = distance
+
+    switch (direction) {
+      case 1:
+        console.log("hi 1")
+        const foo = pipe(
+          augSectionTypes,
+          A.findFirst((x) => distance - x.dx < 0.001),
+          O.match(
+            () => {},
+            (augSt) => {
+              console.log(`match!`, augSt)
+            }
+          )
+        )
+        // find first in augs up
+        break
+      case -1:
+        console.log("-1 yo")
+        // find first in augs down
+        break
+    }
+
+    // console.log({
+    //   fences,
+    //   distance,
+    // })
 
     // if (showDistance - distance < 0.0001) {
     //   ref.current.scale.set(1, 1, 1)
@@ -369,4 +367,4 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   )
 })
 
-export default StretchWidth
+export default StretchWidth2
