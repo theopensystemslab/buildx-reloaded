@@ -80,7 +80,7 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
   const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
 
   type AugSectionType = SectionType & {
-    live: boolean
+    // live: boolean
     houseDna: string[]
     houseDnaKey: string
     dx: number
@@ -195,7 +195,9 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
           const houseDna = columnLayoutToDNA(columnLayout)
           return {
             ...st,
-            live: st.code === module0.structuredDna.sectionType,
+            // live: st.code === module0.structuredDna.sectionType,
+            // TODO: maybe lose live and store an index
+            // index based code isn't so bad is it :)
             dx: (st.width - houseWidth) / 2,
             houseDna,
             houseDnaKey: houseDna.toString(),
@@ -243,10 +245,16 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
     }
   })
 
+  const currentIndex = augSectionTypes.findIndex(
+    (x) => x.code === module0.structuredDna.sectionType
+  )
+
   useEffect(() => {
     pipe(
       augSectionTypes,
-      NEA.map((augSectionType) => {
+      NEA.mapWithIndex((i, augSectionType) => {
+        if (i === currentIndex) return
+
         const key = augSectionType.houseDna.toString()
         previews[houseId].dna[key] = {
           active: false,
@@ -258,33 +266,18 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
     return () => {
       pipe(
         augSectionTypes,
-        NEA.map((augSectionType) => {
+        NEA.mapWithIndex((i, augSectionType) => {
+          if (i === currentIndex) return
+
           const key = augSectionType.houseDna.toString()
           delete previews[houseId].dna[key]
         })
       )
     }
-  }, [houseId, augSectionTypes])
-
-  // maybe dx's to indices cache-map sorta thing
-
-  const compute = (d: number) => {
-    // options should be sorted by width
-    // width should be mapped to distance target
-    // if we're dragging UP then we're checking if we're ABOVE target
-    // if we're dragging DOWN then we're checking we're BELOW target
-    // probably leverage index to have array of distances vs. array with other info
-    // switch (true) {
-    //   case d === 0: {
-    //     break
-    //   }
-    //   case d >= top: {
-    //   }
-    // }
-  }
+  }, [houseId, augSectionTypes, currentIndex])
 
   const lastDistance = useRef(0)
-  // const currentj
+  const previewIndex = useRef<number | null>(null)
 
   useSubscribeKey(stretchWidthClamped, houseId, () => {
     if (!stretchWidthClamped[houseId]) return
@@ -294,39 +287,45 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
 
     lastDistance.current = distance
 
+    leftHandleRef.current.position.x = distance
+    rightHandleRef.current.position.x = -distance
+
     switch (direction) {
-      case 1:
-        console.log("hi 1")
-        const foo = pipe(
-          augSectionTypes,
-          A.findFirst((x) => distance - x.dx < 0.001),
-          O.match(
-            () => {},
-            (augSt) => {
-              console.log(`match!`, augSt)
-            }
-          )
-        )
-        // find first in augs up
+      case -1: {
+        const i = augSectionTypes.findIndex((x) => distance - x.dx > 0.001)
+        if (i !== -1) {
+          if (previewIndex.current !== null) {
+            const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
+            previews[houseId].dna[lastKey].active = false
+          }
+          if (i === currentIndex) {
+            break
+          }
+          previewIndex.current = i
+          previews[houseId].dna[augSectionTypes[i].houseDnaKey].active = true
+          invalidate()
+        }
         break
-      case -1:
-        console.log("-1 yo")
-        // find first in augs down
+      }
+      default:
+      case 1: {
+        const i = augSectionTypes.findIndex((x) => distance - x.dx < 0.001)
+        if (i !== -1) {
+          if (previewIndex.current !== null) {
+            const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
+            previews[houseId].dna[lastKey].active = false
+          }
+          if (i === currentIndex) {
+            break
+          }
+          previewIndex.current = i
+          previews[houseId].dna[augSectionTypes[i].houseDnaKey].active = true
+        }
         break
+      }
     }
 
-    // console.log({
-    //   fences,
-    //   distance,
-    // })
-
-    // if (showDistance - distance < 0.0001) {
-    //   ref.current.scale.set(1, 1, 1)
-    //   invalidate()
-    // } else {
-    //   ref.current.scale.set(0, 0, 0)
-    //   invalidate()
-    // }
+    invalidate()
   })
 
   return (

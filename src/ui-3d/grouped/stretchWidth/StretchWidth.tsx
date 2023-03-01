@@ -349,22 +349,6 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
         axis="x"
         direction={-1}
       />
-      {/* {pipe(
-        dnaChangeOptions,
-        R.filterWithIndex((k) => k !== current.code),
-        R.toArray,
-        A.map(([k, dna]) => {
-          return (
-            <StretchWidthShowHider
-              key={k}
-              houseId={houseId}
-              showDistance={(sectionTypesByCode[k].width - houseWidth) / 2}
-            >
-              <PhonyDnaHouse systemId={systemId} houseId={houseId} dna={dna} />
-            </StretchWidthShowHider>
-          )
-        })
-      )} */}
     </group>
   )
 })

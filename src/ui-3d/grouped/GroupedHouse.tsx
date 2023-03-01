@@ -102,12 +102,6 @@ const GroupedHouse = (props: Props) => {
           />
         </group>
 
-        {/* <StretchWidth
-          houseId={houseId}
-          columnLayout={layout}
-          setHouseVisible={setHouseVisible}
-        /> */}
-
         <StretchWidth2
           houseId={houseId}
           columnLayout={layout}
