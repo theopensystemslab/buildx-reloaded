@@ -14,7 +14,6 @@ import {
   PositionedModule,
 } from "@/hooks/layouts"
 import { useGetVanillaModule } from "@/hooks/vanilla"
-import PhonyDnaHouse from "@/ui-3d/grouped/stretchWidth/PhonyDnaHouse"
 import {
   A,
   mapToOption,
@@ -22,10 +21,7 @@ import {
   Num,
   O,
   Ord,
-  pipeEffect,
-  R,
   reduceToOption,
-  SG,
 } from "@/utils/functions"
 import { useSubscribeKey } from "@/utils/hooks"
 import { max, min, sign } from "@/utils/math"
@@ -33,7 +29,7 @@ import { GroupProps, invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { NonEmptyArray } from "fp-ts/lib/NonEmptyArray"
 import { Ordering } from "fp-ts/lib/Ordering"
-import { forwardRef, PropsWithChildren, useEffect, useRef } from "react"
+import { forwardRef, useEffect, useRef } from "react"
 import { Group } from "three"
 import { proxy, ref } from "valtio"
 import previews from "../../../hooks/previews"
@@ -195,9 +191,6 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
           const houseDna = columnLayoutToDNA(columnLayout)
           return {
             ...st,
-            // live: st.code === module0.structuredDna.sectionType,
-            // TODO: maybe lose live and store an index
-            // index based code isn't so bad is it :)
             dx: (st.width - houseWidth) / 2,
             houseDna,
             houseDnaKey: houseDna.toString(),
