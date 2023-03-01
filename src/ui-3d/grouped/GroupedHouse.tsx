@@ -16,7 +16,7 @@ import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
 import OtherPhoneys from "./OtherPhoneys"
-import StretchWidth2 from "./stretchWidth/StretchWidth2"
+import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
   houseId: string
@@ -101,7 +101,7 @@ const GroupedHouse = (props: Props) => {
           />
         </group>
 
-        <StretchWidth2
+        <StretchWidth
           houseId={houseId}
           columnLayout={layout}
           setHouseVisible={setHouseVisible}

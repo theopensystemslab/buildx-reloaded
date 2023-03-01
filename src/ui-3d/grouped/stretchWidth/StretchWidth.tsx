@@ -56,7 +56,7 @@ type Props = GroupProps & {
   columnLayout: ColumnLayout
 }
 
-const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
+const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   const { houseId, columnLayout, setHouseVisible, ...groupProps } = props
 
   const rightHandleRef = useRef<Group>(null!)
@@ -354,4 +354,4 @@ const StretchWidth2 = forwardRef<Group, Props>((props, rootRef) => {
   )
 })
 
-export default StretchWidth2
+export default StretchWidth
