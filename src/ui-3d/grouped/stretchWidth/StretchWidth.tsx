@@ -32,9 +32,10 @@ import { Ordering } from "fp-ts/lib/Ordering"
 import { forwardRef, useEffect, useRef } from "react"
 import { Group } from "three"
 import { proxy, ref } from "valtio"
-import previews from "../../hooks/previews"
-import { useIsStretchable } from "../../hooks/siteCtx"
-import StretchHandle from "../handles/StretchHandle"
+import { useHouse } from "../../../hooks/houses"
+import previews from "../../../hooks/previews"
+import { useIsStretchable } from "../../../hooks/siteCtx"
+import StretchHandle from "../../handles/StretchHandle"
 
 export type StretchWidthRaw = {
   direction: 1 | -1
@@ -249,6 +250,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
         if (i === currentIndex) return
 
         const key = augSectionType.houseDna.toString()
+
         previews[houseId].dna[key] = {
           active: false,
           value: ref(augSectionType.houseDna),
@@ -331,6 +333,13 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
 
     invalidate()
   })
+
+  const { dna } = useHouse(houseId)
+
+  useEffect(() => {
+    leftHandleRef.current.position.set(0, 0, 0)
+    rightHandleRef.current.position.set(0, 0, 0)
+  }, [dna])
 
   return (
     <group

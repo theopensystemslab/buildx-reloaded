@@ -16,7 +16,7 @@ import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
-import StretchWidth from "./StretchWidth"
+import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
   houseId: string

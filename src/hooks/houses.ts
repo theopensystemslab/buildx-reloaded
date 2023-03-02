@@ -122,11 +122,6 @@ export const modulesToRows = (
   )
 }
 
-// export const useHouseRows = (buildingId: string) => {
-//   const houseModules = useHouseModules(buildingId)
-//   return modulesToRows(houseModules)
-// }
-
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses
   return pipe(

@@ -3,7 +3,7 @@ import { proxy, useSnapshot } from "valtio"
 import {
   stretchWidthClamped,
   stretchWidthRaw,
-} from "../ui-3d/grouped/StretchWidth"
+} from "../ui-3d/grouped/stretchWidth/StretchWidth"
 import { A, O, R } from "../utils/functions"
 import { useSubscribe } from "../utils/hooks"
 import houses from "./houses"
@@ -49,7 +49,7 @@ export const useHousePreviews = (houseId: string) => {
   )
 }
 
-export const setPreview = () => {
+export const setPreviews = () => {
   for (let houseId of Object.keys(previews)) {
     pipe(
       previews[houseId].dna,
@@ -59,6 +59,8 @@ export const setPreview = () => {
         houses[houseId].dna = value
       })
     )
+
+    previews[houseId].dna = {}
 
     delete stretchWidthRaw[houseId]
     delete stretchWidthClamped[houseId]
