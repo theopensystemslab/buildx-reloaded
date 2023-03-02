@@ -141,14 +141,14 @@ export const useHouseElementOutline = (
         case SiteCtxModeEnum.Enum.LEVEL: {
           if (scope.hovered !== null) {
             const moduleO3s =
-              moduleObjects.current[getModuleObjectsKey(scope.hovered)]
+              moduleObjects.current[getModuleObjectsKey(scope.hovered)] ?? []
             if (scope.hovered.houseId === houseId && moduleO3s.length > 0) {
               o3s.push(...moduleO3s)
             }
           }
           if (scope.selected !== null) {
             const moduleO3s =
-              moduleObjects.current[getModuleObjectsKey(scope.selected)]
+              moduleObjects.current[getModuleObjectsKey(scope.selected)] ?? []
             if (scope.selected.houseId === houseId && moduleO3s.length > 0) {
               o3s.push(...moduleO3s)
             }
