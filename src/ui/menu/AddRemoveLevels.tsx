@@ -127,10 +127,6 @@ const AddRemoveLevels = (props: Props) => {
     onComplete?.()
   }
 
-  // prep phony dna house
-
-  // on hover do the dishes
-
   useEffect(() => {
     if (!canAddFloorAbove) return
 
