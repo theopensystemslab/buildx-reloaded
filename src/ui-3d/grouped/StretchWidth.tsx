@@ -32,9 +32,9 @@ import { Ordering } from "fp-ts/lib/Ordering"
 import { forwardRef, useEffect, useRef } from "react"
 import { Group } from "three"
 import { proxy, ref } from "valtio"
-import previews from "../../../hooks/previews"
-import { useIsStretchable } from "../../../hooks/siteCtx"
-import StretchHandle from "../../handles/StretchHandle"
+import previews from "../../hooks/previews"
+import { useIsStretchable } from "../../hooks/siteCtx"
+import StretchHandle from "../handles/StretchHandle"
 
 export type StretchWidthRaw = {
   direction: 1 | -1

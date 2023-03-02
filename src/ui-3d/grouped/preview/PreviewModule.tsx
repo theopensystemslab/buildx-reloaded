@@ -3,9 +3,9 @@ import { Module } from "@/data/modules"
 import { indicesToKey, SystemHouseModuleIdentifier } from "@/hooks/layouts"
 import { RM, S } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
-import PhonyElement from "./PhonyElement"
+import PreviewElement from "./PreviewElement"
 
-export type PhonyModuleProps = SystemHouseModuleIdentifier & {
+export type PreviewModuleProps = SystemHouseModuleIdentifier & {
   module: Module
   levelY: number
   moduleZ: number
@@ -13,7 +13,7 @@ export type PhonyModuleProps = SystemHouseModuleIdentifier & {
   endColumn: boolean
 }
 
-const PhonyModule = (props: PhonyModuleProps) => {
+const PreviewModule = (props: PreviewModuleProps) => {
   const {
     systemId,
     houseId,
@@ -40,7 +40,7 @@ const PhonyModule = (props: PhonyModuleProps) => {
       })
 
       return (
-        <PhonyElement
+        <PreviewElement
           key={`${key}:${elementName}`}
           {...{
             module,
@@ -75,4 +75,4 @@ const PhonyModule = (props: PhonyModuleProps) => {
   )
 }
 
-export default PhonyModule
+export default PreviewModule

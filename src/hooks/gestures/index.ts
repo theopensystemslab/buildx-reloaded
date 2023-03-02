@@ -1,4 +1,4 @@
-import { stretchWidthRaw } from "@/ui-3d/grouped/stretchWidth/StretchWidth"
+import { stretchWidthRaw } from "@/ui-3d/grouped/StretchWidth"
 import { A, O } from "@/utils/functions"
 import { useSubscribeKey } from "@/utils/hooks"
 import { isMesh, useRotations } from "@/utils/three"

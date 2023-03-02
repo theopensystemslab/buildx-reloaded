@@ -14,9 +14,9 @@ import {
 import { RA } from "../../utils/functions"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
+import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
-import OtherPhoneys from "./OtherPhoneys"
-import StretchWidth from "./stretchWidth/StretchWidth"
+import StretchWidth from "./StretchWidth"
 
 type Props = {
   houseId: string
@@ -117,7 +117,7 @@ const GroupedHouse = (props: Props) => {
           {columnsDown}
         </group>
 
-        <OtherPhoneys houseId={houseId} setHouseVisible={setHouseVisible} />
+        <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
       </group>
     </Fragment>
   )

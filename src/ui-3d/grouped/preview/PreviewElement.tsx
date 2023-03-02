@@ -2,14 +2,14 @@ import { useMaterial } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
 import { useGeometry } from "@/hooks/hashedGeometries"
-import { PhonyModuleProps } from "./PhonyModule"
+import { PreviewModuleProps } from "./PreviewModule"
 
-type Props = PhonyModuleProps & {
+type Props = PreviewModuleProps & {
   elementName: string
   geometryHash: string
 }
 
-const PhonyElement = (props: Props) => {
+const PreviewElement = (props: Props) => {
   const { systemId, houseId, elementName, geometryHash } = props
 
   const meshRef = useRef<Mesh>(null!)
@@ -22,4 +22,4 @@ const PhonyElement = (props: Props) => {
   )
 }
 
-export default PhonyElement
+export default PreviewElement

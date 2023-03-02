@@ -1,18 +1,18 @@
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import houses from "../../hooks/houses"
-import { useHousePreviews } from "../../hooks/previews"
-import { useSiteCtx } from "../../hooks/siteCtx"
-import { R, S } from "../../utils/functions"
-import PhonyDnaHouse2 from "./stretchWidth/PhonyDnaHouse2"
+import houses from "@/hooks/houses"
+import { useHousePreviews } from "@/hooks/previews"
+import { useSiteCtx } from "@/hooks/siteCtx"
+import { R, S } from "@/utils/functions"
+import PreviewHouse from "./PreviewHouse"
 
 type Props = GroupProps & {
   houseId: string
   setHouseVisible: (b: boolean) => void
 }
 
-const OtherPhoneys = (props: Props) => {
+const PreviewHouses = (props: Props) => {
   const { houseId, setHouseVisible } = props
   const systemId = houses[houseId].systemId
   const { dna: dnaPreviews } = useHousePreviews(houseId)
@@ -23,7 +23,7 @@ const OtherPhoneys = (props: Props) => {
         dnaPreviews,
         R.collect(S.Ord)((k, { value }) => {
           return (
-            <PhonyDnaHouse2
+            <PreviewHouse
               key={`${houseId}:${k}`}
               houseId={houseId}
               systemId={systemId}
@@ -37,4 +37,4 @@ const OtherPhoneys = (props: Props) => {
   )
 }
 
-export default OtherPhoneys
+export default PreviewHouses

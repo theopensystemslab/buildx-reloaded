@@ -4,9 +4,9 @@ import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import previews from "../../../hooks/previews"
-import { useSubscribeKey } from "../../../utils/hooks"
-import PhonyColumn from "./PhonyColumn"
+import previews from "@/hooks/previews"
+import { useSubscribeKey } from "@/utils/hooks"
+import PreviewColumn from "./PreviewColumn"
 
 type Props = {
   houseId: string
@@ -15,7 +15,7 @@ type Props = {
   setHouseVisible: (b: boolean) => void
 }
 
-const PhonyDnaHouse2 = (props: Props) => {
+const PreviewHouse = (props: Props) => {
   const ref = useRef<Group>(null)
 
   const { houseId, systemId, dna, setHouseVisible, ...restProps } = props
@@ -47,7 +47,7 @@ const PhonyDnaHouse2 = (props: Props) => {
       {pipe(
         layout,
         A.map((column) => (
-          <PhonyColumn
+          <PreviewColumn
             key={`phony:${houseId}:${column.columnIndex}`}
             {...{ systemId, houseId, column }}
           />
@@ -57,4 +57,4 @@ const PhonyDnaHouse2 = (props: Props) => {
   )
 }
 
-export default PhonyDnaHouse2
+export default PreviewHouse

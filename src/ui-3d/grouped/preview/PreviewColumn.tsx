@@ -5,7 +5,7 @@ import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
-import PhonyModule from "./PhonyModule"
+import PreviewModule from "./PreviewModule"
 
 type Props = GroupProps & {
   systemId: string
@@ -15,7 +15,7 @@ type Props = GroupProps & {
   end?: boolean
 }
 
-const PhonyColumn = forwardRef<Group, Props>((props, ref) => {
+const PreviewColumn = forwardRef<Group, Props>((props, ref) => {
   const {
     systemId,
     houseId,
@@ -37,7 +37,7 @@ const PhonyColumn = forwardRef<Group, Props>((props, ref) => {
             modules,
             RA.map(({ module, gridGroupIndex, z: moduleZ }) => {
               return (
-                <PhonyModule
+                <PreviewModule
                   key={indicesToKey({
                     houseId,
                     columnIndex,
@@ -67,4 +67,4 @@ const PhonyColumn = forwardRef<Group, Props>((props, ref) => {
   )
 })
 
-export default PhonyColumn
+export default PreviewColumn
