@@ -8,7 +8,7 @@ import { columnLayoutToDNA, HouseModuleIdentifier, layouts } from "../layouts"
 import siteCtx from "../siteCtx"
 import { useChangeModuleLayout } from "./layouts"
 
-export type WindowOpt = {
+export type WindowTypeOption = {
   label: string
   value: { windowType: string; houseDna: string[] }
   thumbnail?: string
@@ -20,8 +20,8 @@ export const useWindowOptions = ({
   levelIndex,
   gridGroupIndex,
 }: HouseModuleIdentifier): {
-  options: WindowOpt[]
-  selected: WindowOpt["value"]
+  options: WindowTypeOption[]
+  selected: WindowTypeOption["value"]
 } => {
   const m =
     layouts[houseId][columnIndex].gridGroups[levelIndex].modules[gridGroupIndex]
@@ -86,7 +86,7 @@ export const useWindowOptions = ({
         })
       )
     ),
-    A.map(([m, wt]): WindowOpt => {
+    A.map(([m, wt]): WindowTypeOption => {
       return {
         label: wt.description,
         value: { houseDna: changeModule(m), windowType: wt.code },
