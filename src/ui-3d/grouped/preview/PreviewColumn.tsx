@@ -1,12 +1,11 @@
 import { indicesToKey, PositionedColumn } from "@/hooks/layouts"
+import { RA } from "@/utils/functions"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
-import { useStretchLengthStartEndColumn } from "../../hooks/transients/stretchLength"
-import { RA } from "../../utils/functions"
-import GroupedModule from "./GroupedModule"
+import PreviewModule from "./PreviewModule"
 
 type Props = GroupProps & {
   systemId: string
@@ -16,27 +15,18 @@ type Props = GroupProps & {
   end?: boolean
 }
 
-const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
+const PreviewColumn = forwardRef<Group, Props>((props, ref) => {
   const {
     systemId,
     houseId,
-    column: { gridGroups, columnIndex, z: columnZ, length: columnLength },
+    column: { gridGroups, columnIndex, z: columnZ },
     start = false,
     end = false,
   } = props
 
-  const columnGroupRef = useRef<Group>(null!)
+  const groupRef = useRef<Group>(null)
 
-  useStretchLengthStartEndColumn({
-    houseId,
-    columnGroupRef,
-    columnZ,
-    columnLength,
-    start,
-    end,
-  })
-
-  const mergedRef = mergeRefs([ref, columnGroupRef])
+  const mergedRef = mergeRefs([ref, groupRef])
 
   return (
     <group ref={mergedRef} key={columnIndex} position-z={columnZ}>
@@ -47,7 +37,7 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
             modules,
             RA.map(({ module, gridGroupIndex, z: moduleZ }) => {
               return (
-                <GroupedModule
+                <PreviewModule
                   key={indicesToKey({
                     houseId,
                     columnIndex,
@@ -77,4 +67,4 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
   )
 })
 
-export default GroupedColumn
+export default PreviewColumn

@@ -60,7 +60,28 @@ export const useHouseModules = (houseId: string) => {
     () =>
       pipe(
         dna,
-        RA.filterMap((dna) =>
+        A.filterMap((dna) =>
+          pipe(
+            systemModules,
+            RA.findFirst(
+              (systemModule: Module) =>
+                systemModule.systemId === systemId && systemModule.dna === dna
+            )
+          )
+        )
+      ),
+    [dna, systemId, systemModules]
+  )
+}
+
+export const useDnaModules = (systemId: string, dna: string[]) => {
+  const systemModules = useSystemModules({ systemId })
+
+  return useMemo(
+    () =>
+      pipe(
+        dna,
+        A.filterMap((dna) =>
           pipe(
             systemModules,
             RA.findFirst(
@@ -99,10 +120,6 @@ export const modulesToRows = (
       }
     )
   )
-}
-export const useHouseRows = (buildingId: string) => {
-  const houseModules = useHouseModules(buildingId)
-  return modulesToRows(houseModules)
 }
 
 export const useHousesSystems = () => {

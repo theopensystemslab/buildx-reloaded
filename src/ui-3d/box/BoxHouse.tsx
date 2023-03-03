@@ -1,4 +1,4 @@
-import { useColumnLayout } from "@/hooks/layouts"
+import { useHouseColumnLayout } from "@/hooks/layouts"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { useHouseDimensionsUpdates } from "../../hooks/dimensions"
@@ -13,7 +13,7 @@ type Props = {
 const BoxHouse = (props: Props) => {
   const groupRef = useRef<Group>(null!)
   const { id } = props
-  const columns = useColumnLayout(id)
+  const columns = useHouseColumnLayout(id)
 
   useHouseDimensionsUpdates(id)
   // useMoveRotateSubscription(id, groupRef)

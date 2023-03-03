@@ -28,7 +28,7 @@ export const all = (...args: boolean[]) =>
 
 export const mapToOption =
   <A, B>(f: (a: A) => O.Option<B>) =>
-  (fa: ReadonlyArray<A>): O.Option<ReadonlyArray<B>> => {
+  (fa: Array<A>): O.Option<Array<B>> => {
     const fb = new Array<B>(fa.length)
     //                   ^?
     for (let i = 0; i < fa.length; i++) {
@@ -42,7 +42,7 @@ export const mapToOption =
 export const reduceToOption: <A, B>(
   b: O.Option<B>,
   f: (i: number, b: O.Option<B>, a: A) => O.Option<B>
-) => (fa: ReadonlyArray<A>) => O.Option<B> = (b, f) => (fa) => {
+) => (fa: Array<A>) => O.Option<B> = (b, f) => (fa) => {
   const len = fa.length
   let out = b
   for (let i = 0; i < len; i++) {
@@ -68,12 +68,19 @@ export const errorThrower = (message?: string) => () => {
 export const someOrError = <T extends unknown>(message?: string) =>
   O.match<T, T>(errorThrower(message), identity)
 
-export const pipeLog = <T extends unknown>(x: T): T => (console.log(x), x)
+export const pipeLog = <T extends unknown>(t: T): T => (console.log(t), t)
 
 export const pipeLogWith =
   <T extends unknown>(f: (t: T) => void) =>
   (t: T): T => {
     console.log(f(t))
+    return t
+  }
+
+export const pipeEffect =
+  <T extends unknown>(f: (t: T) => void) =>
+  (t: T): T => {
+    f(t)
     return t
   }
 

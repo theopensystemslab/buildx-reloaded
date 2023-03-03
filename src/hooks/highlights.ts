@@ -4,7 +4,7 @@ import { Group, Object3D } from "three"
 import { proxy, ref } from "valtio"
 import { useSubscribe } from "../utils/hooks"
 import { isMesh } from "../utils/three"
-import { ElementIdentifier } from "./gestures/drag/elements"
+import { HouseElementIdentifier } from "./gestures/drag"
 import { useHouse } from "./houses"
 import scope from "./scope"
 import siteCtx, { SiteCtxModeEnum } from "./siteCtx"
@@ -40,11 +40,14 @@ export const useHouseElementOutline = (
     allObjects.current = []
 
     groupRef.current.traverse((o3) => {
-      if (!isMesh(o3) || o3.userData.identifier?.identifierType !== "element")
+      if (
+        !isMesh(o3) ||
+        o3.userData.identifier?.identifierType !== "HOUSE_ELEMENT"
+      )
         return
 
       const { elementName, columnIndex, levelIndex, gridGroupIndex } = o3
-        .userData.identifier as ElementIdentifier
+        .userData.identifier as HouseElementIdentifier
 
       if (!(elementName in elementObjects.current)) {
         elementObjects.current[elementName] = [o3]
@@ -138,14 +141,14 @@ export const useHouseElementOutline = (
         case SiteCtxModeEnum.Enum.LEVEL: {
           if (scope.hovered !== null) {
             const moduleO3s =
-              moduleObjects.current[getModuleObjectsKey(scope.hovered)]
+              moduleObjects.current[getModuleObjectsKey(scope.hovered)] ?? []
             if (scope.hovered.houseId === houseId && moduleO3s.length > 0) {
               o3s.push(...moduleO3s)
             }
           }
           if (scope.selected !== null) {
             const moduleO3s =
-              moduleObjects.current[getModuleObjectsKey(scope.selected)]
+              moduleObjects.current[getModuleObjectsKey(scope.selected)] ?? []
             if (scope.selected.houseId === houseId && moduleO3s.length > 0) {
               o3s.push(...moduleO3s)
             }

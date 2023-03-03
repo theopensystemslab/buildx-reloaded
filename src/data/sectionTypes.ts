@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { trpc } from "../utils/trpc"
 import { systemFromId } from "./system"
-import { proxy, useSnapshot } from "valtio"
+import { proxy, ref, useSnapshot } from "valtio"
 
 export type SectionType = {
   id: string
@@ -71,7 +71,7 @@ export const useInitSystemSectionTypes = ({
     },
     {
       onSuccess: (data) => {
-        sectionTypes[systemId] = data
+        sectionTypes[systemId] = ref(data)
       },
     }
   )

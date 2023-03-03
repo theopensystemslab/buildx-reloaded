@@ -1,13 +1,9 @@
-import { HandleSide, HandleSideEnum } from "@/hooks/gestures/drag/handles"
 import { GridGroup } from "@/hooks/layouts"
 import { RA } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import {
-  stretchLengthClamped,
-  stretchLengthRaw,
-} from "../../../hooks/transients/stretch"
+import { stretchLengthClamped } from "../../../hooks/transients/stretchLength"
 import { useSubscribeKey } from "../../../utils/hooks"
 import GroupedStretchModule from "./GroupedStretchModule"
 
@@ -15,7 +11,7 @@ type Props = {
   systemId: string
   houseId: string
   gridGroups: GridGroup[]
-  side: HandleSide
+  direction: number
   columnZ: number
   columnLength: number
 }
@@ -34,19 +30,13 @@ const GroupedStretchColumn = (props: Props) => {
         return
       }
 
-      const { distance, side } = stretchLengthClamped[houseId]
+      const { distance, direction } = stretchLengthClamped[houseId]
 
-      if (side !== props.side) return
+      if (direction !== props.direction) return
 
-      if (
-        side === HandleSideEnum.Enum.BACK &&
-        distance + columnLength / 2 > columnZ
-      ) {
+      if (direction === 1 && distance + columnLength / 2 > columnZ) {
         groupRef.current?.scale.set(1, 1, 1)
-      } else if (
-        side === HandleSideEnum.Enum.FRONT &&
-        distance + columnLength / 2 < columnZ
-      ) {
+      } else if (direction === -1 && distance + columnLength / 2 < columnZ) {
         groupRef.current?.scale.set(1, 1, 1)
       } else {
         groupRef.current?.scale.set(0, 0, 0)

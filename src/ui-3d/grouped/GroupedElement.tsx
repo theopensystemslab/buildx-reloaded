@@ -1,7 +1,7 @@
 import { useMaterial } from "@/hooks/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
-import { ElementIdentifier } from "../../hooks/gestures/drag/elements"
+import { HouseElementIdentifier } from "../../hooks/gestures/drag"
 import { useGeometry } from "../../hooks/hashedGeometries"
 import { ModuleProps } from "./GroupedModule"
 
@@ -26,8 +26,8 @@ const GroupedElement = (props: Props) => {
   const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 
-  const identifier: ElementIdentifier = {
-    identifierType: "element",
+  const identifier: HouseElementIdentifier = {
+    identifierType: "HOUSE_ELEMENT",
     systemId,
     houseId,
     columnIndex,

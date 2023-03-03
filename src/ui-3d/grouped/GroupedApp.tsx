@@ -16,22 +16,17 @@ const GroupedApp = () => {
   const bindAll = useGestures()
   useDragHandler()
 
-  const handleMaterial = useHandleMaterial()
-
   return (
     <Fragment>
       <group {...bindAll()}>
-        <Instances material={handleMaterial}>
-          <circleGeometry args={[0.5, 10]} />
-          {pipe(
-            houseKeys,
-            RA.map((houseId) => (
-              <Suspense key={houseId} fallback={null}>
-                <GroupedHouse houseId={houseId} />
-              </Suspense>
-            ))
-          )}
-        </Instances>
+        {pipe(
+          houseKeys,
+          RA.map((houseId) => (
+            <Suspense key={houseId} fallback={null}>
+              <GroupedHouse houseId={houseId} />
+            </Suspense>
+          ))
+        )}
       </group>
       <XZPlane />
       <YPlane />

@@ -1,8 +1,9 @@
-import { MeshProps } from "@react-three/fiber"
-import { Fragment } from "react"
+import { GroupProps, MeshProps } from "@react-three/fiber"
+import { forwardRef } from "react"
+import { Group } from "three"
 import { useHouseDimensions } from "../../hooks/dimensions"
+import { RotateHandleIdentifier } from "../../hooks/gestures/drag"
 import { useHandleMaterial } from "../../hooks/handleMaterial"
-import { EditModeEnum } from "../../hooks/siteCtx"
 import { PI } from "../../utils/math"
 
 const SIZE = 0.3
@@ -16,66 +17,62 @@ const RotateCircle = (props: MeshProps) => {
   )
 }
 
-const RotateHandles = ({ houseId }: { houseId: string }) => {
-  const { length: houseLength, width: houseWidth } = useHouseDimensions(houseId)
+type Props = {
+  houseId: string
+} & GroupProps
 
-  const handleMaterial = useHandleMaterial()
+const RotateHandles = forwardRef<Group, Props>(
+  ({ houseId, ...groupProps }, ref) => {
+    const { length: houseLength, width: houseWidth } =
+      useHouseDimensions(houseId)
 
-  const OFFSET = 5
+    const handleMaterial = useHandleMaterial()
 
-  return (
-    <Fragment>
-      <RotateCircle
-        position={[0, 0, -OFFSET]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      />
-      <mesh
-        material={handleMaterial}
-        rotation-x={-PI / 2}
-        position={[0, 0, -OFFSET / 2]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      >
-        <planeGeometry args={[SIZE, OFFSET, 1]} />
-      </mesh>
+    const OFFSET = 5
 
-      <RotateCircle
-        position={[-houseWidth / 2 - OFFSET, 0, houseLength / 2]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      />
-      <mesh
-        material={handleMaterial}
-        rotation-x={-PI / 2}
-        position={[-houseWidth / 1.05, 0, houseLength / 2]}
-        userData={{
-          identifier: {
-            identifierType: "handle",
-            houseId,
-            editMode: EditModeEnum.Enum.MOVE_ROTATE,
-          },
-        }}
-      >
-        <planeGeometry args={[OFFSET, SIZE, 1]} />
-      </mesh>
-    </Fragment>
-  )
-}
+    const identifier: RotateHandleIdentifier = {
+      identifierType: "ROTATE_HANDLE",
+      houseId,
+    }
+
+    return (
+      <group ref={ref} {...groupProps}>
+        <RotateCircle
+          position={[0, 0, -OFFSET]}
+          userData={{
+            identifier,
+          }}
+        />
+        <mesh
+          material={handleMaterial}
+          rotation-x={-PI / 2}
+          position={[0, 0, -OFFSET / 2]}
+          userData={{
+            identifier,
+          }}
+        >
+          <planeGeometry args={[SIZE, OFFSET, 1]} />
+        </mesh>
+
+        <RotateCircle
+          position={[-houseWidth / 2 - OFFSET, 0, houseLength / 2]}
+          userData={{
+            identifier,
+          }}
+        />
+        <mesh
+          material={handleMaterial}
+          rotation-x={-PI / 2}
+          position={[-houseWidth / 1.05, 0, houseLength / 2]}
+          userData={{
+            identifier,
+          }}
+        >
+          <planeGeometry args={[OFFSET, SIZE, 1]} />
+        </mesh>
+      </group>
+    )
+  }
+)
 
 export default RotateHandles

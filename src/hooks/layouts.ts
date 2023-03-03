@@ -6,7 +6,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
 import { Module, usePadColumn } from "../data/modules"
-import { useHouseRows } from "./houses"
+import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -62,9 +62,10 @@ export const layouts = proxy<
   Record<string, ColumnLayout> // houseId
 >({})
 
-export const useRowLayout = (buildingId: string): RowLayout =>
+export const useRowLayout = (houseId: string): RowLayout =>
   pipe(
-    useHouseRows(buildingId),
+    useHouseModules(houseId),
+    modulesToRows,
     RA.map((row) =>
       pipe(
         row,
@@ -195,11 +196,10 @@ const columnify =
     return pipe(acc, transposeRA)
   }
 
-export const useColumnLayout = (houseId: string) => {
-  const rows = useHouseRows(houseId)
-
+const modulesToColumnLayout = (modules: Module[]) => {
   const columns = pipe(
-    rows,
+    modules,
+    modulesToRows,
     RA.map((row) =>
       pipe(
         row,
@@ -267,7 +267,7 @@ export const useColumnLayout = (houseId: string) => {
     RA.flatten
   )
 
-  const layout = pipe(
+  return pipe(
     columnifiedFurther,
     RA.reduceWithIndex(
       [],
@@ -350,10 +350,19 @@ export const useColumnLayout = (houseId: string) => {
       }
     )
   )
+}
 
-  layouts[houseId] = ref(layout)
+export const useHouseColumnLayout = (houseId: string) => {
+  const houseModules = useHouseModules(houseId)
+  const columnLayout = modulesToColumnLayout(houseModules)
+  layouts[houseId] = ref(columnLayout)
+  return columnLayout
+}
 
-  return layout
+export const useDnaColumnLayout = (systemId: string, dna: string[]) => {
+  const houseModules = useDnaModules(systemId, dna)
+  const columnLayout = modulesToColumnLayout(houseModules)
+  return columnLayout
 }
 
 export const columnLayoutToDNA = (
@@ -404,7 +413,7 @@ export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   )
 
 export const useColumnMatrix = (buildingId: string) => {
-  const columnLayout = useColumnLayout(buildingId)
+  const columnLayout = useHouseColumnLayout(buildingId)
   return columnLayoutToMatrix(columnLayout)
 }
 
@@ -418,11 +427,6 @@ export const rowLayoutToMatrix = (rowLayout: RowLayout) =>
       )
     )
   )
-
-export const useRowMatrix = (buildingId: string) => {
-  const rowLayout = useRowLayout(buildingId)
-  return rowLayoutToMatrix(rowLayout)
-}
 
 export const rowMatrixToDna = (rowMatrix: Module[][]) =>
   pipe(
