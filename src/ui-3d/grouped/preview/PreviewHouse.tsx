@@ -25,8 +25,8 @@ const PreviewHouse = (props: Props) => {
   const key = dna.toString()
 
   useSubscribeKey(
-    previews,
-    houseId,
+    previews[houseId].dna,
+    key,
     () => {
       const { active } = previews[houseId].dna?.[key] ?? { active: false }
       const v = active ? 1 : 0

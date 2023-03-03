@@ -1,10 +1,9 @@
+import houses from "@/hooks/houses"
+import { useHousePreviews } from "@/hooks/previews"
+import { R, S } from "@/utils/functions"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import houses from "@/hooks/houses"
-import { useHousePreviews } from "@/hooks/previews"
-import { useSiteCtx } from "@/hooks/siteCtx"
-import { R, S } from "@/utils/functions"
 import PreviewHouse from "./PreviewHouse"
 
 type Props = GroupProps & {
