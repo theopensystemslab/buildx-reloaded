@@ -1,11 +1,10 @@
+import { useDragHandler, useGestures } from "@/hooks/gestures"
 import { useHouseKeys } from "@/hooks/houses"
-import { Instances } from "@react-three/drei"
+import { usePreviews } from "@/hooks/previews"
+import { useRouting } from "@/hooks/routing"
+import { RA } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
-import { useDragHandler, useGestures } from "../../hooks/gestures"
-import { useHandleMaterial } from "../../hooks/handleMaterial"
-import { usePreviews } from "../../hooks/previews"
-import { RA } from "../../utils/functions"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import GroupedHouse from "./GroupedHouse"
@@ -15,6 +14,7 @@ const GroupedApp = () => {
   usePreviews()
   const bindAll = useGestures()
   useDragHandler()
+  useRouting()
 
   return (
     <Fragment>

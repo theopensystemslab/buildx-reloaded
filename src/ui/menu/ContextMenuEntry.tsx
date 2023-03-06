@@ -1,13 +1,15 @@
 import { invalidate } from "@react-three/fiber"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 import { House } from "../../data/house"
-import { useHouse } from "../../hooks/houses"
+import houses, { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
-import { useScope } from "../../hooks/scope"
+import scope, { useScope } from "../../hooks/scope"
 import {
   enterBuildingMode,
+  exitBuildingMode,
   SiteCtxMode,
   SiteCtxModeEnum,
+  getModeBools,
   useSiteCtx,
 } from "../../hooks/siteCtx"
 import { Pencil, TextCursor } from "../icons"
@@ -18,6 +20,9 @@ import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
 import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
 import ContextMenuButton from "./common/ContextMenuButton"
+import { Reset, TrashCan } from "@carbon/icons-react"
+import { useAllHouseTypes } from "../../data/houseType"
+import RenameForm from "../RenameForm"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()
@@ -45,27 +50,75 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props?.onClose?.()
   }
 
-  const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+  const { siteMode, buildingMode, levelMode, buildingOrLevelMode } =
+    getModeBools(mode)
 
-  const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
+  const { data: houseTypes = [] } = useAllHouseTypes()
 
-  const buildingOrLevelMode = (
-    [SiteCtxModeEnum.Enum.BUILDING, SiteCtxModeEnum.Enum.LEVEL] as SiteCtxMode[]
-  ).includes(mode)
+  const resetBuilding = () => {
+    const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
+    if (houseType) {
+      houses[houseId].dna = houseType.dna as string[]
+      houses[houseId].modifiedMaterials = {}
+      houses[houseId].rotation = 0
+    }
+    props.onClose?.()
+  }
+
+  const deleteBuilding = () => {
+    delete houses[houseId]
+    scope.selected = null
+
+    if (Object.keys(houses).length === 0) {
+      exitBuildingMode()
+    }
+    props.onClose?.()
+  }
+
+  const [renaming, setRenaming] = useState(false)
 
   return (
     <ContextMenu {...props}>
-      {mode === SiteCtxModeEnum.Enum.SITE && (
+      {siteMode && (
         <Fragment>
+          {!renaming && (
+            <ContextMenuButton
+              icon={<Pencil />}
+              text="Edit building"
+              unpaddedSvg
+              onClick={editBuilding}
+            />
+          )}
           <ContextMenuButton
-            icon={<Pencil />}
-            text="Edit building"
+            icon={<TextCursor />}
+            text="Rename"
             unpaddedSvg
-            onClick={editBuilding}
+            onClick={() => void setRenaming(true)}
           />
-          <ContextMenuButton icon={<TextCursor />} text="Rename" unpaddedSvg />
-          {/* <ContextMenuButton icon={<Menu />} text="Menu" />
-      <ContextMenuButton icon={<Add size={24} />} text="Add" /> */}
+          {renaming && (
+            <RenameForm
+              {...props}
+              currentName={house.friendlyName}
+              onNewName={(newName) => {
+                houses[houseId].friendlyName = newName
+                setRenaming(false)
+              }}
+            />
+          )}
+          {!renaming && (
+            <Fragment>
+              <ContextMenuButton
+                icon={<Reset size={20} />}
+                text="Reset"
+                onClick={resetBuilding}
+              />
+              <ContextMenuButton
+                icon={<TrashCan size={20} />}
+                text="Delete"
+                onClick={deleteBuilding}
+              />
+            </Fragment>
+          )}
         </Fragment>
       )}
 

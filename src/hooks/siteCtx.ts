@@ -145,4 +145,23 @@ export const useSystemId = () => {
   return houses[buildingId].systemId
 }
 
+export const getModeBools = (mode: SiteCtxMode) => {
+  const siteMode = mode === SiteCtxModeEnum.Enum.SITE
+
+  const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+
+  const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
+
+  const buildingOrLevelMode = (
+    [SiteCtxModeEnum.Enum.BUILDING, SiteCtxModeEnum.Enum.LEVEL] as SiteCtxMode[]
+  ).includes(mode)
+
+  return {
+    siteMode,
+    buildingMode,
+    levelMode,
+    buildingOrLevelMode,
+  }
+}
+
 export default siteCtx
