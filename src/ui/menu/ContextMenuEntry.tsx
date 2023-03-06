@@ -11,13 +11,13 @@ import {
   useSiteCtx,
 } from "../../hooks/siteCtx"
 import { Pencil, TextCursor } from "../icons"
-import AddRemoveLevels from "./AddRemoveLevels"
-import ChangeLayouts from "./ChangeLayouts"
-import ChangeLevelType from "./ChangeLevelType"
-import ChangeMaterials from "./ChangeMaterials"
-import ChangeWindows from "./ChangeWindows"
-import ContextMenu, { ContextMenuProps } from "./ContextMenu"
-import ContextMenuButton from "./ContextMenuButton"
+import AddRemoveLevels from "./interactions/AddRemoveLevels"
+import ChangeLayouts from "./interactions/ChangeLayouts"
+import ChangeLevelType from "./interactions/ChangeLevelType"
+import ChangeMaterials from "./interactions/ChangeMaterials"
+import ChangeWindows from "./interactions/ChangeWindows"
+import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
+import ContextMenuButton from "./common/ContextMenuButton"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()

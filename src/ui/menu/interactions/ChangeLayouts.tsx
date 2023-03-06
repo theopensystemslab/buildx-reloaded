@@ -1,14 +1,14 @@
 import React, { Fragment } from "react"
-import houses from "../../hooks/houses"
+import houses from "@//hooks/houses"
 import {
   StairsOpt,
   useLayoutOptions,
   useStairsOptions,
-} from "../../hooks/interactions/layouts"
-import { HouseModuleIdentifier } from "../../hooks/layouts"
-import { Menu } from "../icons"
-import Radio from "../Radio"
-import ContextMenuNested from "./ContextMenuNested"
+} from "@//hooks/interactions/layouts"
+import { HouseModuleIdentifier } from "@//hooks/layouts"
+import { Menu } from "@/ui/icons"
+import Radio from "@/ui/Radio"
+import ContextMenuNested from "../common/ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

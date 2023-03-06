@@ -4,8 +4,8 @@ import mergeRefs from "react-merge-refs"
 import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
 import { useSnapshot } from "valtio"
-import { ScopeItem } from "../../hooks/scope"
-import { useClickAway, useEscape } from "../utils"
+import { ScopeItem } from "../../../hooks/scope"
+import { useClickAway, useEscape } from "../../utils"
 
 export type ContextMenuProps = {
   pageX: number
