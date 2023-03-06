@@ -12,14 +12,14 @@ import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
 
 type Params = {
-  buildingId: string
+  houseId: string
   levelIndex?: string
 }
 
 const BreadcrumbsWithParams = (params: Params) => {
-  const { buildingId, levelIndex } = params
+  const { houseId, levelIndex } = params
 
-  const { friendlyName } = houses[buildingId]
+  const { friendlyName } = houses[houseId]
 
   const [renamingBuilding, setRenamingBuilding] = useState(false)
 
@@ -29,7 +29,7 @@ const BreadcrumbsWithParams = (params: Params) => {
     <Fragment>
       <span>{`/`}</span>
       <Breadcrumb
-        path={`/design?buildingId=${buildingId}`}
+        path={`/design?houseId=${houseId}`}
         label={friendlyName}
         onClick={() => {
           switch (mode) {
@@ -37,7 +37,7 @@ const BreadcrumbsWithParams = (params: Params) => {
               setRenamingBuilding(true)
               break
             case SiteCtxModeEnum.Enum.LEVEL:
-              enterBuildingMode(buildingId)
+              enterBuildingMode(houseId)
               break
           }
         }}
@@ -46,7 +46,7 @@ const BreadcrumbsWithParams = (params: Params) => {
         <RenameForm
           currentName={friendlyName}
           onNewName={(newName) => {
-            if (newName.length > 0) houses[buildingId].friendlyName = newName
+            if (newName.length > 0) houses[houseId].friendlyName = newName
             setRenamingBuilding(false)
           }}
         />
@@ -55,7 +55,7 @@ const BreadcrumbsWithParams = (params: Params) => {
         <Fragment>
           <span>{`/`}</span>
           <Breadcrumb
-            path={`/design?buildingId=${buildingId}&levelIndex=${levelIndex}`}
+            path={`/design?houseId=${houseId}&levelIndex=${levelIndex}`}
             label={`Level ${levelIndex}`}
           />
         </Fragment>
@@ -65,7 +65,7 @@ const BreadcrumbsWithParams = (params: Params) => {
 }
 
 const Breadcrumbs = () => {
-  const [, params] = useRoute<{ buildingId: string; levelIndex?: string }>(
+  const [, params] = useRoute<{ houseId: string; levelIndex?: string }>(
     "/design:rest*"
   )
 
@@ -101,7 +101,7 @@ const Breadcrumbs = () => {
       {mode !== SiteCtxModeEnum.Enum.SITE &&
         typeof params !== "boolean" &&
         params !== null &&
-        "buildingId" in params && (
+        "houseId" in params && (
           <BreadcrumbsWithParams {...(params as Params)} />
         )}
     </Fragment>

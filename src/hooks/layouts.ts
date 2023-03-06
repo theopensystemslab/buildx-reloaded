@@ -412,8 +412,8 @@ export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
     A.flatten
   )
 
-export const useColumnMatrix = (buildingId: string) => {
-  const columnLayout = useHouseColumnLayout(buildingId)
+export const useColumnMatrix = (houseId: string) => {
+  const columnLayout = useHouseColumnLayout(houseId)
   return columnLayoutToMatrix(columnLayout)
 }
 

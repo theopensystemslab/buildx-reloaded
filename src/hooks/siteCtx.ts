@@ -140,9 +140,9 @@ export const useSiteCurrency = () => {
 }
 
 export const useSystemId = () => {
-  const { houseId: buildingId } = useSiteCtx()
-  if (buildingId === null) return null
-  return houses[buildingId].systemId
+  const { houseId } = useSiteCtx()
+  if (houseId === null) return null
+  return houses[houseId].systemId
 }
 
 export const getModeBools = (mode: SiteCtxMode) => {
