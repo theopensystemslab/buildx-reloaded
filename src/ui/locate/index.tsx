@@ -280,6 +280,7 @@ const LocateIndex = () => {
 
     return () => {
       if (!geocoderDiv.current) return
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       geocoderDiv.current.replaceChildren()
     }
   }, [map, setMode])

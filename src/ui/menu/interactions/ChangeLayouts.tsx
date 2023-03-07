@@ -6,7 +6,7 @@ import {
   useStairsOptions,
 } from "@//hooks/interactions/layouts"
 import { HouseModuleIdentifier } from "@//hooks/layouts"
-import { Menu } from "@/ui/icons"
+import { Menu, Pencil } from "@/ui/icons"
 import Radio from "@/ui/Radio"
 import ContextMenuNested from "../common/ContextMenuNested"
 
@@ -52,7 +52,7 @@ const ChangeLayouts = (props: Props) => {
   return (
     <Fragment>
       {canChangeLayout && (
-        <ContextMenuNested label="Change layout" icon={<Menu />}>
+        <ContextMenuNested label="Change layout" icon={<Pencil />} unpaddedSvg>
           <Radio
             options={layoutOpts}
             selected={selectedLayoutOpt}

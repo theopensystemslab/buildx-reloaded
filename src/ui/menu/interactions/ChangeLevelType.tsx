@@ -8,7 +8,7 @@ import {
 } from "@//hooks/interactions/levels"
 import previews from "@//hooks/previews"
 import { A } from "@//utils/functions"
-import { Menu } from "@/ui/icons"
+import { ChangeLevel, Menu } from "@/ui/icons"
 import Radio from "@/ui/Radio"
 import ContextMenuNested from "../common/ContextMenuNested"
 
@@ -83,7 +83,8 @@ const ChangeLevelType = (props: Props) => {
     <ContextMenuNested
       long
       label={`Change ${levelString} type`}
-      icon={<Menu />}
+      icon={<ChangeLevel />}
+      unpaddedSvg
     >
       <Radio
         options={levelTypeOptions}

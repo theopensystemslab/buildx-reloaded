@@ -11,6 +11,8 @@ import {
   SiteCtxModeEnum,
   getModeBools,
   useSiteCtx,
+  downMode,
+  enterLevelMode,
 } from "../../hooks/siteCtx"
 import { Pencil, TextCursor } from "../icons"
 import AddRemoveLevels from "./interactions/AddRemoveLevels"
@@ -46,8 +48,13 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const house = useHouse(houseId) as House
 
   const editBuilding = () => {
-    enterBuildingMode(house.id)
-    props?.onClose?.()
+    downMode(selected)
+    props.onClose?.()
+  }
+
+  const editLevel = () => {
+    downMode(selected)
+    props.onClose?.()
   }
 
   const { siteMode, buildingMode, levelMode, buildingOrLevelMode } =
@@ -124,6 +131,27 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
       {buildingMode && (
         <Fragment>
+          <ContextMenuButton
+            icon={<Pencil />}
+            text="Edit level"
+            unpaddedSvg
+            onClick={editLevel}
+          />
+          <ChangeMaterials
+            houseId={houseId}
+            elementName={elementName}
+            onComplete={props.onClose}
+          />
+
+          <ChangeWindows
+            {...{
+              houseId,
+              columnIndex,
+              levelIndex,
+              gridGroupIndex,
+              onComplete: props.onClose,
+            }}
+          />
           <ChangeLevelType houseId={houseId} onChange={props.onClose} />
           <AddRemoveLevels
             {...{
@@ -137,8 +165,17 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
         </Fragment>
       )}
 
-      {buildingOrLevelMode && (
+      {levelMode && (
         <Fragment>
+          <ChangeLayouts
+            {...{
+              houseId,
+              columnIndex,
+              levelIndex,
+              gridGroupIndex,
+              onComplete: props.onClose,
+            }}
+          />
           <ChangeMaterials
             houseId={houseId}
             elementName={elementName}
@@ -154,18 +191,6 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
             }}
           />
         </Fragment>
-      )}
-
-      {levelMode && (
-        <ChangeLayouts
-          {...{
-            houseId,
-            columnIndex,
-            levelIndex,
-            gridGroupIndex,
-            onComplete: props.onClose,
-          }}
-        />
       )}
     </ContextMenu>
   )

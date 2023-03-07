@@ -56,7 +56,7 @@ const ChangeMaterials = ({
 
       return options.length < 1 ? null : (
         <ContextMenuNested
-          icon={<WatsonHealthSubVolume size={24} />}
+          icon={<WatsonHealthSubVolume size={20} />}
           label={`Change material`}
         >
           <ContextMenuHeading>{elementName}</ContextMenuHeading>
