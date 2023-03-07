@@ -1,0 +1,21 @@
+.geocoder {
+  position: absolute;
+}
+
+.geocoder > div {
+  width: auto;
+  @apply rounded-none;
+}
+
+.searchedGeocoder {
+  bottom: 0;
+  right: 0;
+  @apply m-4;
+}
+
+@screen md {
+  .searchedGeocoder {
+    bottom: unset;
+    top: 0;
+  }
+}

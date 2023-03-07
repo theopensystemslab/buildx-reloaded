@@ -13,7 +13,7 @@ import { useLocation } from "wouter"
 import { useSubscribe } from "../utils/hooks"
 
 export const useRouting = () => {
-  const [, setLocation] = useLocation()
+  const [location, setLocation] = useLocation()
   const [, params] = useRoute<{ houseId: string; levelIndex?: string }>(
     "/design:rest*"
   )
@@ -22,6 +22,7 @@ export const useRouting = () => {
 
   useSubscribe(siteCtx, () => {
     if (urlChangingLock.current) return
+    if (!location.startsWith("/design")) return
 
     const { buildingOrLevelMode, levelMode } = getModeBools(siteCtx.mode)
 

@@ -2,16 +2,16 @@ import Layout from "@/ui/Layout"
 import dynamic from "next/dynamic"
 import { ReactElement } from "react"
 
-// const Map = dynamic(() => import("@//map"), {
-//   ssr: false,
-// })
+const Locate = dynamic(() => import("@/ui/locate"), {
+  ssr: false,
+})
 
-const MapPage = () => {
-  return <div>hi</div>
+const LocatePage = () => {
+  return <Locate />
 }
 
-MapPage.getLayout = (page: ReactElement) => {
+LocatePage.getLayout = (page: ReactElement) => {
   return <Layout>{page}</Layout>
 }
 
-export default MapPage
+export default LocatePage
