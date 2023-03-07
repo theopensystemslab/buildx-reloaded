@@ -36,7 +36,7 @@ import IconButton from "../IconButton"
 import { Menu } from "@/ui/icons"
 import UniversalMenu from "@/ui/UniversalMenu"
 import { useEscape } from "@/ui/utils"
-import css from "./index.module.css"
+import css from "./LocateIndex.module.css"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 

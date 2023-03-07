@@ -2,7 +2,7 @@ import Layout from "@/ui/Layout"
 import dynamic from "next/dynamic"
 import { ReactElement } from "react"
 
-const Locate = dynamic(() => import("@/ui/locate"), {
+const Locate = dynamic(() => import("@/ui/locate/LocateIndex"), {
   ssr: false,
 })
 
