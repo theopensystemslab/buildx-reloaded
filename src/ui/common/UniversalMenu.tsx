@@ -1,4 +1,4 @@
-import Sidebar from "@/ui/Sidebar"
+import Sidebar from "@/ui/common/Sidebar"
 import houses from "@/hooks/houses"
 // import map from "@/hooks/map"
 import { useRouter } from "next/router"

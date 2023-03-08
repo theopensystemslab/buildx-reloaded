@@ -1,6 +1,6 @@
 import { Close } from "@carbon/icons-react"
 import usePortal from "react-cool-portal"
-import { SiteCtxModeEnum, upMode, useSiteCtx } from "../hooks/siteCtx"
+import { SiteCtxModeEnum, upMode, useSiteCtx } from "../../hooks/siteCtx"
 
 const ExitMode = () => {
   const { mode } = useSiteCtx()

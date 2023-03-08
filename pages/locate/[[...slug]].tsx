@@ -1,4 +1,4 @@
-import Layout from "@/ui/Layout"
+import Layout from "@/ui/common/Layout"
 import dynamic from "next/dynamic"
 import { ReactElement } from "react"
 

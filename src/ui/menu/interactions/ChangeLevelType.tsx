@@ -9,7 +9,7 @@ import {
 import previews from "@//hooks/previews"
 import { A } from "@//utils/functions"
 import { ChangeLevel, Menu } from "@/ui/icons"
-import Radio from "@/ui/Radio"
+import Radio from "@/ui/common/Radio"
 import ContextMenuNested from "../common/ContextMenuNested"
 
 type Props = {

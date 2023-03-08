@@ -10,7 +10,7 @@ import { HouseModuleIdentifier } from "@/hooks/layouts"
 import previews from "@/hooks/previews"
 import { A } from "@/utils/functions"
 import { Opening } from "@/ui/icons"
-import Radio from "@/ui/Radio"
+import Radio from "@/ui/common/Radio"
 import ContextMenuNested from "../common/ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {

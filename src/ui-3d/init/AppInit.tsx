@@ -5,11 +5,10 @@ import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/init/MapboxR3FCanvasProjector"
 import RectangularGrid from "@/ui-3d/init/RectangularGrid"
 import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
-import EventDiv from "@/ui/EventDiv"
-import HtmlUi from "@/ui/HtmlUi"
+import HtmlUi from "@/ui/design/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
-import FullScreenContainer from "../../ui/FullScreenContainer"
+import FullScreenContainer from "../../ui/common/FullScreenContainer"
 import Effects from "./Effects"
 import GroundCircle from "./GroundCircle"
 import ShadowPlane from "./ShadowPlane"
@@ -57,19 +56,17 @@ const AppInit = (props: Props) => {
 
   return (
     <FullScreenContainer className="overflow-hidden">
-      <EventDiv>
-        {!mapboxEnabled ? (
-          <VanillaR3FCanvas>
+      {!mapboxEnabled ? (
+        <VanillaR3FCanvas>
+          <Common>{children}</Common>
+        </VanillaR3FCanvas>
+      ) : (
+        <MapboxR3FCanvas>
+          <MapboxR3FCanvasProjector>
             <Common>{children}</Common>
-          </VanillaR3FCanvas>
-        ) : (
-          <MapboxR3FCanvas>
-            <MapboxR3FCanvasProjector>
-              <Common>{children}</Common>
-            </MapboxR3FCanvasProjector>
-          </MapboxR3FCanvas>
-        )}
-      </EventDiv>
+          </MapboxR3FCanvasProjector>
+        </MapboxR3FCanvas>
+      )}
       <HtmlUi />
     </FullScreenContainer>
   )

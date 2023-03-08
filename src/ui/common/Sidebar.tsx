@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import React, { useRef } from "react"
 import IconButton from "./IconButton"
-import { Close } from "./icons"
+import { Close } from "../icons"
 
 export interface Props {
   expanded: boolean

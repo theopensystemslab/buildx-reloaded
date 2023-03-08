@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react"
-import { Analyse, Build, Design, Locate } from "./icons"
+import { Analyse, Build, Design, Locate } from "../icons"
 import NavIconButton from "./NavIconButton"
 
 const Layout = ({ children }: PropsWithChildren<{}>) => {

@@ -1,5 +1,5 @@
 import { Fragment, PropsWithChildren } from "react"
-import Loader from "../ui/Loader"
+import Loader from "../ui/common/Loader"
 import { useInitSystemElements } from "./elements"
 import { useInitSystemLevelTypes } from "./levelTypes"
 import { useInitSystemMaterials } from "./materials"

@@ -9,7 +9,7 @@ import { useSystemMaterials } from "@/data/materials"
 import houses, { useHouse } from "@/hooks/houses"
 import { O } from "@/utils/functions"
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
-import Radio from "@/ui/Radio"
+import Radio from "@/ui/common/Radio"
 import previews from "@/hooks/previews"
 
 const ChangeMaterials = ({

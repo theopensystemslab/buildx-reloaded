@@ -5,7 +5,7 @@ import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
 import { useSnapshot } from "valtio"
 import { ScopeItem } from "../../../hooks/scope"
-import { useClickAway, useEscape } from "../../utils"
+import { useClickAway, useEscape } from "../../common/utils"
 
 export type ContextMenuProps = {
   pageX: number

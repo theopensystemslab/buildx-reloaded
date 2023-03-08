@@ -1,6 +1,6 @@
 import { ReactElement, useRef } from "react"
 import { useDebouncedCallback } from "use-debounce"
-import { useUnmountEffect } from "../utils/hooks"
+import { useUnmountEffect } from "@/utils/hooks"
 
 interface Props<T> {
   selected: T
