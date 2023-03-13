@@ -1,11 +1,11 @@
 import Sidebar from "@/ui/common/Sidebar"
 import houses from "@/hooks/houses"
 // import map from "@/hooks/map"
-import { useRouter } from "next/router"
 import React, { useState } from "react"
 import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
+import { usePathname, useRouter } from "next/navigation"
 
 type Props = {
   open: boolean
@@ -14,8 +14,6 @@ type Props = {
 
 const UniversalMenu = ({ open, close }: Props) => {
   const router = useRouter()
-
-  const path = router.pathname.split("/")?.[1] ?? ""
 
   const [deleteProject, setDeleteProject] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -29,7 +27,7 @@ const UniversalMenu = ({ open, close }: Props) => {
     // map.polygon = null
     // map.mode = "SEARCH"
     // if (path === "map") {
-    router.reload()
+    router.refresh()
     // } else {
     //   router.push("/map")
     // }

@@ -1,7 +1,8 @@
-import css from "./NavIconButton.module.css"
+"use client"
 import Link from "next/link"
-import { useRouter } from "next/router"
-import { Fragment, ReactNode } from "react"
+import { ReactNode } from "react"
+import css from "./NavIconButton.module.css"
+import { usePathname } from "next/navigation"
 
 type Props = {
   onClick?: () => void
@@ -14,11 +15,12 @@ type Props = {
 
 const NavIconButton = (props: Props) => {
   const { href, icon, order, label, onClick, unpaddedSvg, ...restProps } = props
-  const router = useRouter()
+
+  const pathname = usePathname()
 
   if (href) {
     const isActive =
-      href === "/" ? router.pathname === href : router.pathname.startsWith(href)
+      href === "/" ? pathname === href : pathname?.startsWith(href) ?? false
     return (
       <Link
         href={href}

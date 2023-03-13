@@ -1,10 +1,14 @@
-import React, { Fragment } from "react"
+"use client"
+import { Fragment } from "react"
+import HousesView from "./HousesView"
 
 const BuildIndex = () => {
   return (
     <Fragment>
+      {/* <HousePillsSelect />
+      <BuildPageSubNav /> */}
       <div className="w-full h-full flex justify-center items-center">
-        <h1>Build Index</h1>
+        <HousesView />
       </div>
     </Fragment>
   )

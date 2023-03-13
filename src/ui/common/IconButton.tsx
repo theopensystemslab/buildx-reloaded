@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useRouter } from "next/router"
 import { PropsWithChildren } from "react"
 // import { Link, useLocation } from "react-router-dom";
@@ -13,10 +14,10 @@ export const iconButtonStyles =
 
 const IconButton = (props: PropsWithChildren<Props>) => {
   const { href, children, onClick, ...restProps } = props
-  const router = useRouter()
+  const pathname = usePathname()
   // const location = useLocation();
   if (href) {
-    const isActive = router.pathname.startsWith(href)
+    const isActive = pathname?.startsWith(href) ?? false
     return (
       <Link
         href={href}
