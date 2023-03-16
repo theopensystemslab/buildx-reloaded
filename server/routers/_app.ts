@@ -1,3 +1,4 @@
+"use client"
 import { elementsQuery } from "@/data/elements"
 import { allHouseTypesQuery, systemHouseTypesQuery } from "@/data/houseType"
 import { materialsQuery } from "@/data/materials"

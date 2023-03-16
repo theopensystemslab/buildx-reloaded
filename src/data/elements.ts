@@ -1,3 +1,4 @@
+"use client"
 import { systemFromId } from "@/data/system"
 import { hashGeometry } from "@/hooks/hashedGeometries"
 import Airtable from "airtable"

@@ -1,3 +1,4 @@
+"use client"
 // import type { Material } from "./material"
 // import { getField, getAirtableEntries } from "./utils"
 // import { includes } from "ramda"

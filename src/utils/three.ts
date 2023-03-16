@@ -1,3 +1,4 @@
+"use client"
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useCallback, useMemo, useRef } from "react"

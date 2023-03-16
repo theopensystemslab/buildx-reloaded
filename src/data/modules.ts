@@ -1,3 +1,4 @@
+"use client"
 import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
 import { sum } from "fp-ts-std/Array"

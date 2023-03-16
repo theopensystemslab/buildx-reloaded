@@ -1,3 +1,4 @@
+"use client"
 import * as z from "zod"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"

@@ -1,3 +1,4 @@
+"use client"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"

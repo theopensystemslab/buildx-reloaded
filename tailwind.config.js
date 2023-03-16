@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./pages/**/*.{js,ts,jsx,tsx}", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {},
     fontFamily: {
@@ -11,6 +15,16 @@ module.exports = {
       primary: "#2A7A6C",
       "primary-dark": "#1F5B51",
       white: "#FFFFFF",
+      "light-grey": {
+        1: "#DBDBDB",
+        2: "#ECECEC",
+        3: "#F0F0F0",
+      },
+      "dark-grey": "#9D9D9D",
+      "mid-grey": {
+        1: "#B4B4B4",
+        2: "#CDCDCD",
+      },
       grey: {
         10: "#F4F4F4",
         20: "#E0E0E0",
@@ -22,6 +36,28 @@ module.exports = {
         80: "#393939",
         90: "#262626",
         100: "#161616",
+      },
+      building: {
+        1: "#3EFF80",
+        2: "#7DFFE0",
+        3: "#90EBFF",
+        4: "#4193FF",
+        5: "#E09EFF",
+        6: "#FFA1E4",
+        7: "#F73063",
+        8: "#FF7426",
+        9: "#FAFF00",
+        10: "#ADFF00",
+        11: "#B5FFCEBF",
+        12: "#D1FFF4",
+        13: "#D2F7FF",
+        14: "#BAD8FF",
+        15: "#BAD8FF",
+        16: "#FFCFF1",
+        17: "#FFADC2",
+        18: "#FFC9AB",
+        19: "#FDFFAD",
+        20: "#E2FFA4",
       },
     },
   },
