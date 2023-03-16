@@ -1,3 +1,4 @@
+"use client"
 import { useGlobals } from "@/hooks/globals"
 import { useMapboxStore } from "@/hooks/mapboxStore"
 import Lighting from "@/ui-3d/init/Lighting"

@@ -1,3 +1,4 @@
+"use client"
 import { Fragment, PropsWithChildren } from "react"
 import Loader from "../ui/common/Loader"
 import { useInitSystemElements } from "./elements"
