@@ -8,14 +8,8 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react"
+import { useHouses } from "../../src/hooks/houses"
 import { useClickAway } from "../../src/ui/common/utils"
-
-interface Props {
-  houses: Houses
-  selectedHouses: string[]
-  setSelectedHouses: Dispatch<SetStateAction<string[]>>
-  // Passed as a separate prop so it can be computed in a parent component and shared
-}
 
 const colorVariants: Record<number, string> = {
   0: "bg-building-1",
@@ -40,11 +34,15 @@ const colorVariants: Record<number, string> = {
   19: "bg-building-20",
 }
 
-const HousesPillsSelector = (props: Props) => {
+const HousesPillsSelector = () => {
+  const houses = useHouses()
+  const [selectedHouses, setSelectedHouses] = useState<string[]>(
+    Object.keys(houses)
+  )
   const houseSelectOptions: { houseId: string; houseName: string }[] =
-    Object.entries(props.houses)
+    Object.entries(houses)
       .map(([houseId, house]) =>
-        props.selectedHouses.includes(houseId)
+        selectedHouses.includes(houseId)
           ? null
           : {
               houseId,
@@ -63,16 +61,16 @@ const HousesPillsSelector = (props: Props) => {
 
   useClickAway(dropdownRef, closeDropdown)
 
-  // if (Object.values(props.houses).length === 0) {
+  // if (Object.values(houses).length === 0) {
   //   return <p className="px-4 py-2 text-white">No houses available.</p>
   // }
 
   // return null
 
   return (
-    <div className="flex flex-wrap items-center space-x-2 px-4">
-      {props.selectedHouses.map((houseId, index) => {
-        const house = props.houses[houseId]
+    <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5">
+      {selectedHouses.map((houseId, index) => {
+        const house = houses[houseId]
         if (!house) {
           return null
         }
@@ -88,9 +86,7 @@ const HousesPillsSelector = (props: Props) => {
             <button
               className="h-8 w-8 p-0.5 transition-colors duration-200 hover:bg-[rgba(0,0,0,0.05)]"
               onClick={() => {
-                props.setSelectedHouses((prev) =>
-                  prev.filter((id) => id !== houseId)
-                )
+                setSelectedHouses((prev) => prev.filter((id) => id !== houseId))
               }}
             >
               <Close />
@@ -113,7 +109,7 @@ const HousesPillsSelector = (props: Props) => {
           {expanded && (
             <div
               className={`absolute -bottom-1 z-40 w-40 translate-y-full transform overflow-hidden rounded bg-white shadow-lg ${
-                props.selectedHouses.length > 0 ? "right-0" : "left-0"
+                selectedHouses.length > 0 ? "right-0" : "left-0"
               }`}
             >
               {houseSelectOptions.map((houseSelectOption) => (
@@ -121,7 +117,7 @@ const HousesPillsSelector = (props: Props) => {
                   className="block w-full px-4 py-2 text-left transition-colors duration-200 hover:bg-gray-100"
                   key={houseSelectOption.houseId}
                   onClick={() => {
-                    props.setSelectedHouses((prev) => [
+                    setSelectedHouses((prev) => [
                       ...prev,
                       houseSelectOption.houseId,
                     ])

@@ -2,12 +2,12 @@
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
-const BuildIndex = () => {
+const Index = () => {
   const router = useRouter()
   useEffect(() => {
-    router.push("/build/overview")
+    router.push("/locate")
   }, [router])
   return null
 }
 
-export default BuildIndex
+export default Index
