@@ -7,7 +7,7 @@ const Index = () => {
   useEffect(() => {
     router.push("/locate")
   }, [router])
-  return null
+  return <div></div>
 }
 
 export default Index
