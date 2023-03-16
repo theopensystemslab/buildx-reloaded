@@ -1,3 +1,4 @@
+"use client"
 import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "@/constants"
 import siteCtx, { useLocallyStoredSiteCtx } from "@/hooks/siteCtx"
 import mapProxy, {
