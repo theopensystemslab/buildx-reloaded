@@ -1,5 +1,5 @@
 "use client"
-import { trpc } from "@/utils/trpc"
+import { trpc } from "@/utils/trpc-2"
 import Airtable from "airtable"
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"

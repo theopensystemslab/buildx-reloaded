@@ -4,7 +4,7 @@ import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import { systemFromId } from "./system"
 import { proxy, useSnapshot } from "valtio"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../utils/trpc-2"
 
 export type WindowType = {
   id: string

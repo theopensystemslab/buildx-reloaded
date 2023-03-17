@@ -1,6 +1,9 @@
 "use client"
+import dynamic from "next/dynamic"
 import { Fragment } from "react"
-import HousesView from "./HousesView"
+// import HousesView from "./HousesView"
+
+const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
   return (

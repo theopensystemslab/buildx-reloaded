@@ -11,7 +11,7 @@ import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
 import { O, R, RA, RR } from "../utils/functions"
 import { isMesh, useGLTF } from "../utils/three"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../utils/trpc-2"
 import { materialsQuery } from "./materials"
 import { Module } from "./modules"
 

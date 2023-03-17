@@ -9,7 +9,7 @@ import * as z from "zod"
 import { useGetVanillaModule } from "../hooks/vanilla"
 import { A, Num, O, Ord, R, SG } from "../utils/functions"
 import { abs, hamming } from "../utils/math"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../utils/trpc-2"
 import { StairType } from "./stairTypes"
 import { systemFromId } from "./system"
 

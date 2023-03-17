@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic"
-import { TrpcProvider } from "../api/trpc-2/TrpcProvider"
+import { TrpcProvider } from "../api/trpc/TrpcProvider"
 import AnalyseNav from "./common/AnalyseNav"
 
 const HousesPillsSelector = dynamic(

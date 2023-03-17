@@ -11,7 +11,7 @@ import * as z from "zod"
 import houses, { useHouse } from "../hooks/houses"
 import { errorThrower, O, RA, someOrError } from "../utils/functions"
 import { createMaterial } from "../utils/three"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../utils/trpc-2"
 import { useSystemElements } from "./elements"
 
 export interface Material {
