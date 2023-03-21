@@ -2,7 +2,7 @@ import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useMemo } from "react"
 import { ref } from "valtio"
-import { useGetStairsModule, usePadColumn } from "@/data/modules"
+import { useGetStairsModule, usePadColumn } from "~/server/data/modules"
 import houses from "@/hooks/houses"
 import {
   columnMatrixToDna,

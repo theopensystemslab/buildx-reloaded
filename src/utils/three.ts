@@ -13,7 +13,7 @@ import {
   Vector3,
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../constants"
-import { Material } from "../data/materials"
+import { Material } from "../../server/data/materials"
 import dimensions, { getHouseCenter } from "../hooks/dimensions"
 import houses from "../hooks/houses"
 

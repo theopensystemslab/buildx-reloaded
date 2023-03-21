@@ -1,4 +1,4 @@
-import type { HouseType } from "@/data/houseType"
+import type { HouseType } from "~/server/data/houseType"
 
 type Props = {
   houseType: HouseType

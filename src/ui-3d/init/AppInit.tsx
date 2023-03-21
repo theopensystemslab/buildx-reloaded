@@ -14,7 +14,9 @@ import Effects from "./Effects"
 import GroundCircle from "./GroundCircle"
 import ShadowPlane from "./ShadowPlane"
 
-const DataPreload = dynamic(() => import("@/data/DataPreload"), { ssr: false })
+const DataPreload = dynamic(() => import("~/server/data/DataPreload"), {
+  ssr: false,
+})
 
 type Props = PropsWithChildren<{}>
 

@@ -1,5 +1,5 @@
-import { useModuleElements } from "@/data/elements"
-import { Module } from "@/data/modules"
+import { useModuleElements } from "~/server/data/elements"
+import { Module } from "~/server/data/modules"
 import { indicesToKey, SystemHouseModuleIdentifier } from "@/hooks/layouts"
 import { RM, S } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"

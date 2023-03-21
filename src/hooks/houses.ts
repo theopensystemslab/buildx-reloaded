@@ -9,9 +9,13 @@ import { useKey } from "react-use"
 import { Vector3 } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../constants"
-import { getHousesFromLocalStorage, House, Houses } from "../data/house"
-import { useAllHouseTypes } from "../data/houseType"
-import { Module, useSystemModules } from "../data/modules"
+import {
+  getHousesFromLocalStorage,
+  House,
+  Houses,
+} from "../../server/data/house"
+import { useAllHouseTypes } from "../../server/data/houseType"
+import { Module, useSystemModules } from "../../server/data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())

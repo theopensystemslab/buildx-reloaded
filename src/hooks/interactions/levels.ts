@@ -1,7 +1,7 @@
 import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { useInitSystemLevelTypes } from "../../data/levelTypes"
+import { useInitSystemLevelTypes } from "../../../server/data/levelTypes"
 import {
   filterCompatibleModules,
   keysFilter,
@@ -9,7 +9,7 @@ import {
   topCandidateByHamming,
   usePadColumn,
   useSystemModules,
-} from "../../data/modules"
+} from "../../../server/data/modules"
 import { A, O, Ord, S } from "../../utils/functions"
 import houses from "../houses"
 import { columnMatrixToDna } from "../layouts"

@@ -1,18 +1,8 @@
-"use client"
-// import type { Material } from "./material"
-// import { getField, getAirtableEntries } from "./utils"
-// import { includes } from "ramda"
-import { systemFromId } from "@/data/system"
 import Airtable from "airtable"
-import { identity, pipe } from "fp-ts/lib/function"
-import { MeshBasicMaterial, MeshStandardMaterial } from "three"
-import { proxy, ref, useSnapshot } from "valtio"
+import { pipe } from "fp-ts/lib/function"
+import { MeshStandardMaterial } from "three"
 import * as z from "zod"
-import houses, { useHouse } from "../hooks/houses"
-import { errorThrower, O, RA, someOrError } from "../utils/functions"
-import { createMaterial } from "../utils/three"
-import { trpc } from "../utils/trpc"
-import { useSystemElements } from "./elements"
+import { systemFromId } from "~/server/data/system"
 
 export interface Material {
   id: string
@@ -89,32 +79,3 @@ export const materialsQuery =
           z.array(materialParser.transform((xs) => ({ ...xs, systemId }))).parse
         )
     )
-
-// export const useSystemMaterials = ({ systemId }: { systemId: string }) =>
-//   trpc.systemMaterials.useQuery({
-//     systemId,
-//   })
-
-const materials = proxy<Record<string, Material[]>>({})
-
-export const useSystemMaterials = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(materials) as typeof materials
-  return snap?.[systemId] ?? []
-}
-
-export const useInitSystemMaterials = ({ systemId }: { systemId: string }) => {
-  trpc.systemMaterials.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        materials[systemId] = data
-        materials[systemId].forEach((material) => {
-          material.threeMaterial = ref(createMaterial(material))
-        })
-      },
-    }
-  )
-  return useSystemMaterials({ systemId })
-}

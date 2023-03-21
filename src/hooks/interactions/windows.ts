@@ -1,7 +1,14 @@
 import { pipe } from "fp-ts/lib/function"
 import { Option } from "fp-ts/lib/Option"
-import { keysFilter, Module, useSystemModules } from "../../data/modules"
-import { useSystemWindowTypes, WindowType } from "../../data/windowTypes"
+import {
+  keysFilter,
+  Module,
+  useSystemModules,
+} from "../../../server/data/modules"
+import {
+  useSystemWindowTypes,
+  WindowType,
+} from "../../../server/data/windowTypes"
 import { A, O, S } from "../../utils/functions"
 import { getSide, Side } from "../camera"
 import { columnLayoutToDNA, HouseModuleIdentifier, layouts } from "../layouts"

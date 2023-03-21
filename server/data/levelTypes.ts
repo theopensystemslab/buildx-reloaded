@@ -1,8 +1,7 @@
-"use client"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../../src/utils/trpc"
 import { systemFromId } from "./system"
 import { proxy, useSnapshot } from "valtio"
 

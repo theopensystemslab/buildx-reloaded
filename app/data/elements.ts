@@ -1,91 +1,15 @@
-"use client"
-import { systemFromId } from "@/data/system"
 import { hashGeometry } from "@/hooks/hashedGeometries"
-import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useCallback } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { proxy, useSnapshot } from "valtio"
-import * as z from "zod"
-import { O, R, RA, RR } from "../utils/functions"
-import { isMesh, useGLTF } from "../utils/three"
-import { trpc } from "../utils/trpc"
-import { materialsQuery } from "./materials"
-import { Module } from "./modules"
-
-export type Element = {
-  id: string
-  systemId: string
-  name: string
-  ifc4Variable: string
-  defaultMaterial: string
-  materialOptions: Array<string>
-  category: string
-}
-
-export const elementParser = z.object({
-  id: z.string().min(1),
-  fields: z.object({
-    element_code: z
-      .string()
-      .min(1)
-      .transform((s) => s.trim()),
-    ifc4_variable: z.string().min(1),
-    default_material: z.array(z.string().min(1)).optional(),
-    element_category: z.string().min(1),
-  }),
-})
-
-export const elementsQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemId },
-  }: {
-    input: { systemId: string }
-  }): Promise<Element[]> => {
-    const materials = await materialsQuery(airtable)({ input: { systemId } })
-
-    return pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("building_elements")
-        .select()
-        .all()
-        .then(
-          z.array(
-            elementParser.transform(
-              ({
-                id,
-                fields: { element_code, ifc4_variable, element_category },
-              }) => {
-                const defaultMaterials = materials.filter(({ defaultFor }) =>
-                  defaultFor.includes(id)
-                )
-                const optionalMaterials = materials.filter(({ optionalFor }) =>
-                  optionalFor.includes(id)
-                )
-                const defaultMaterial =
-                  defaultMaterials[0]?.name || optionalMaterials[0]?.name || ""
-                const materialOptions = optionalMaterials.map(
-                  (material) => material.name
-                )
-                return {
-                  id,
-                  systemId,
-                  name: element_code,
-                  ifc4Variable: ifc4_variable,
-                  defaultMaterial,
-                  materialOptions,
-                  category: element_category,
-                }
-              }
-            )
-          ).parse
-        )
-    )
-  }
+import { Element } from "../../server/data/elements"
+import { Module } from "../../server/data/modules"
+import { O, R, RA, RR } from "../../src/utils/functions"
+import { isMesh, useGLTF } from "../../src/utils/three"
+import { trpc } from "../../src/utils/trpc"
 
 const systemElements = proxy<Record<string, Element[]>>({})
 

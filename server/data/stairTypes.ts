@@ -1,10 +1,9 @@
-"use client"
 import * as z from "zod"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import { systemFromId } from "./system"
 import { proxy, useSnapshot } from "valtio"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../../src/utils/trpc"
 
 export type StairType = {
   id: string
@@ -56,26 +55,3 @@ export const stairTypesQuery =
           ).parse
         )
     )
-
-const stairTypes = proxy<Record<string, StairType[]>>({})
-
-export const useSystemStairTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(stairTypes) as typeof stairTypes
-  return snap?.[systemId] ?? []
-}
-
-export const useInitSystemStairTypes = ({ systemId }: { systemId: string }) => {
-  trpc.stairTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        stairTypes[systemId] = data
-      },
-    }
-  )
-  return useSystemStairTypes({ systemId })
-}
-
-export default stairTypes

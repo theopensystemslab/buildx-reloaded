@@ -5,7 +5,7 @@ import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
-import { Module, usePadColumn } from "../data/modules"
+import { Module, usePadColumn } from "../../server/data/modules"
 import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {

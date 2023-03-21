@@ -1,5 +1,5 @@
 "use client"
-import { type Houses } from "@/data/house"
+import { type Houses } from "~/server/data/house"
 import { Close } from "@/ui/icons"
 import {
   useCallback,

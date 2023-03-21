@@ -7,7 +7,7 @@ import {
   useGetStairsModule,
   usePadColumn,
   useSystemModules,
-} from "@/data/modules"
+} from "~/server/data/modules"
 import { NEA, O, RA, S, upperFirst } from "@/utils/functions"
 import houses from "@/hooks/houses"
 import { useGetVanillaModule } from "@/hooks/vanilla"
@@ -20,7 +20,7 @@ import {
   columnLayoutToMatrix,
   columnMatrixToDna,
 } from "@/hooks/layouts"
-import { StairType, useSystemStairTypes } from "../../data/stairTypes"
+import { StairType, useSystemStairTypes } from "../../../server/data/stairTypes"
 
 export const useChangeModuleLayout = ({
   houseId,

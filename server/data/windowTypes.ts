@@ -1,10 +1,9 @@
-"use client"
 import * as z from "zod"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import { systemFromId } from "./system"
 import { proxy, useSnapshot } from "valtio"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../../src/utils/trpc"
 
 export type WindowType = {
   id: string
@@ -62,30 +61,3 @@ export const windowTypesQuery =
           ).parse
         )
     )
-
-const windowTypes = proxy<Record<string, WindowType[]>>({})
-
-export const useSystemWindowTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(windowTypes) as typeof windowTypes
-  return snap?.[systemId] ?? []
-}
-
-export const useInitSystemWindowTypes = ({
-  systemId,
-}: {
-  systemId: string
-}) => {
-  trpc.windowTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        windowTypes[systemId] = data
-      },
-    }
-  )
-  return useSystemWindowTypes({ systemId })
-}
-
-export default windowTypes

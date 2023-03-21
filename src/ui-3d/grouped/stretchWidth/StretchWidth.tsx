@@ -3,8 +3,8 @@ import {
   Module,
   topCandidateByHamming,
   useSystemModules,
-} from "@/data/modules"
-import { SectionType, useSystemSectionTypes } from "@/data/sectionTypes"
+} from "~/server/data/modules"
+import { SectionType, useSystemSectionTypes } from "~/server/data/sectionTypes"
 import dimensions, { useHouseDimensionsUpdates } from "@/hooks/dimensions"
 import {
   ColumnLayout,

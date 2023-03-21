@@ -1,8 +1,7 @@
-"use client"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { trpc } from "../utils/trpc"
+import { trpc } from "../../src/utils/trpc"
 import { systemFromId } from "./system"
 import { proxy, ref, useSnapshot } from "valtio"
 
@@ -53,30 +52,3 @@ export const sectionTypesQuery =
           ).parse
         )
     )
-
-const sectionTypes = proxy<Record<string, SectionType[]>>({})
-
-export const useSystemSectionTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(sectionTypes) as typeof sectionTypes
-  return snap?.[systemId] ?? []
-}
-
-export const useInitSystemSectionTypes = ({
-  systemId,
-}: {
-  systemId: string
-}) => {
-  trpc.sectionTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        sectionTypes[systemId] = ref(data)
-      },
-    }
-  )
-  return useSystemSectionTypes({ systemId })
-}
-
-export default sectionTypes

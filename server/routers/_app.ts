@@ -1,15 +1,18 @@
 "use client"
-import { elementsQuery } from "@/data/elements"
-import { allHouseTypesQuery, systemHouseTypesQuery } from "@/data/houseType"
-import { materialsQuery } from "@/data/materials"
-import { modulesQuery } from "@/data/modules"
-import { sectionTypesQuery } from "@/data/sectionTypes"
-import { systemIdParser } from "@/data/system"
+import { elementsQuery } from "~/server/data/elements"
+import {
+  allHouseTypesQuery,
+  systemHouseTypesQuery,
+} from "~/server/data/houseType"
+import { materialsQuery } from "~/server/data/materials"
+import { modulesQuery } from "~/server/data/modules"
+import { sectionTypesQuery } from "~/server/data/sectionTypes"
+import { systemIdParser } from "~/server/data/system"
 import Airtable from "airtable"
-import { levelTypesQuery } from "@/data/levelTypes"
-import { windowTypesQuery } from "@/data/windowTypes"
+import { levelTypesQuery } from "~/server/data/levelTypes"
+import { windowTypesQuery } from "~/server/data/windowTypes"
 import { procedure, router } from "../trpc"
-import { stairTypesQuery } from "@/data/stairTypes"
+import { stairTypesQuery } from "~/server/data/stairTypes"
 
 Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
 const airtable = new Airtable()
