@@ -1,9 +1,7 @@
-import * as z from "zod"
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
+import * as z from "zod"
 import { systemFromId } from "./system"
-import { proxy, useSnapshot } from "valtio"
-import { trpc } from "../../src/utils/trpc"
 
 export type StairType = {
   id: string

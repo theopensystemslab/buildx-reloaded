@@ -1,10 +1,11 @@
 import {
   filterCompatibleModules,
-  Module,
   topCandidateByHamming,
   useSystemModules,
-} from "~/server/data/modules"
-import { SectionType, useSystemSectionTypes } from "~/server/data/sectionTypes"
+} from "~/app/data/modules"
+import { Module } from "~/server/data/modules"
+import { SectionType } from "~/server/data/sectionTypes"
+import { useSystemSectionTypes } from "~/app/data/sectionTypes"
 import dimensions, { useHouseDimensionsUpdates } from "@/hooks/dimensions"
 import {
   ColumnLayout,

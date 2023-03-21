@@ -3,11 +3,10 @@ import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import {
   filterCompatibleModules,
-  Module,
   useGetStairsModule,
   usePadColumn,
   useSystemModules,
-} from "~/server/data/modules"
+} from "~/app/data/modules"
 import { NEA, O, RA, S, upperFirst } from "@/utils/functions"
 import houses from "@/hooks/houses"
 import { useGetVanillaModule } from "@/hooks/vanilla"
@@ -20,7 +19,9 @@ import {
   columnLayoutToMatrix,
   columnMatrixToDna,
 } from "@/hooks/layouts"
-import { StairType, useSystemStairTypes } from "../../../server/data/stairTypes"
+import { StairType } from "../../../server/data/stairTypes"
+import { Module } from "../../../server/data/modules"
+import { useSystemStairTypes } from "../../../app/data/stairTypes"
 
 export const useChangeModuleLayout = ({
   houseId,

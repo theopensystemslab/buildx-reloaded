@@ -1,5 +1,5 @@
 import React from "react"
-import { TrpcProvider } from "../api/trpc-2/TrpcProvider"
+import { TrpcProvider } from "../common/TrpcProvider"
 
 const FooLayout = ({ children }: any) => {
   return <TrpcProvider>{children}</TrpcProvider>

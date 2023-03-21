@@ -1,9 +1,7 @@
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { trpc } from "../../src/utils/trpc"
 import { systemFromId } from "./system"
-import { proxy, useSnapshot } from "valtio"
 
 export interface LevelType {
   id: string
@@ -46,26 +44,3 @@ export const levelTypesQuery =
           ).parse
         )
     )
-
-const levelTypes = proxy<Record<string, LevelType[]>>({})
-
-export const useSystemLevelTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(levelTypes) as typeof levelTypes
-  return snap?.[systemId] ?? []
-}
-
-export const useInitSystemLevelTypes = ({ systemId }: { systemId: string }) => {
-  trpc.levelTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        levelTypes[systemId] = data
-      },
-    }
-  )
-  return useSystemLevelTypes({ systemId })
-}
-
-export default levelTypes

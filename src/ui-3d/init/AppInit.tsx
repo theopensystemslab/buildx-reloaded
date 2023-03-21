@@ -14,7 +14,7 @@ import Effects from "./Effects"
 import GroundCircle from "./GroundCircle"
 import ShadowPlane from "./ShadowPlane"
 
-const DataPreload = dynamic(() => import("~/server/data/DataPreload"), {
+const DataPreload = dynamic(() => import("~/app/data/DataPreload"), {
   ssr: false,
 })
 

@@ -1,6 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { proxy } from "valtio"
-import { Module, useSystemModules } from "../../server/data/modules"
+import { useSystemModules } from "../../app/data/modules"
+import { Module } from "../../server/data/modules"
+
 import { A, all, O, Ord, RA, S, someOrError } from "../utils/functions"
 import { PositionedRow } from "./layouts"
 

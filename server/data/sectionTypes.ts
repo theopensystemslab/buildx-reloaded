@@ -1,9 +1,7 @@
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { trpc } from "../../src/utils/trpc"
 import { systemFromId } from "./system"
-import { proxy, ref, useSnapshot } from "valtio"
 
 export type SectionType = {
   id: string
