@@ -117,10 +117,3 @@ export const allHouseTypesQuery = (airtable: Airtable) => () =>
   ).then((xs) => xs.flat())
 
 export type HouseType = z.infer<typeof houseTypeParser> & { systemId: string }
-
-export const useSystemHouseTypes = ({ systemId }: { systemId: string }) =>
-  trpc.systemHouseTypes.useQuery({
-    systemId: systemId,
-  }).data ?? []
-
-export const useAllHouseTypes = () => trpc.allHouseTypes.useQuery()

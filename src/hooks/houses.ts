@@ -14,10 +14,10 @@ import {
   House,
   Houses,
 } from "../../server/data/house"
-import { useAllHouseTypes } from "../../server/data/houseType"
 import { Module } from "../../server/data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
 import { useSystemModules } from "../../app/data/modules"
+import { useAllHouseTypes } from "../../app/data/houseType"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 

@@ -1,4 +1,4 @@
-import { useAllHouseTypes } from "~/server/data/houseType"
+import { useAllHouseTypes } from "~/app/data/houseType"
 import { System, systems } from "~/server/data/system"
 import { useCameraGroundRaycast } from "@/hooks/camera"
 // import houses from "@/stores/houses"

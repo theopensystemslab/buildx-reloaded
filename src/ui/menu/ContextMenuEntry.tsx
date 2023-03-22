@@ -23,7 +23,7 @@ import ChangeWindows from "./interactions/ChangeWindows"
 import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
 import ContextMenuButton from "./common/ContextMenuButton"
 import { Reset, TrashCan } from "@carbon/icons-react"
-import { useAllHouseTypes } from "../../../server/data/houseType"
+import { useAllHouseTypes } from "~/app/data/houseType"
 import RenameForm from "../design/RenameForm"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
