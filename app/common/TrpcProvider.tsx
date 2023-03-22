@@ -12,7 +12,7 @@ export const TrpcProvider: React.FC<{ children: React.ReactNode }> = (p) => {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: `http://${getBaseUrl()}:3000/api/trpc`,
+          url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
     })
