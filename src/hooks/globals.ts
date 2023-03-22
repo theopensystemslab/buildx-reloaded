@@ -27,7 +27,7 @@ const globals = proxy<GlobalStore>({
   pointerXZ: [0, 0],
   groundMesh: null,
   sidebar: false,
-  preload: true,
+  preload: false,
   intersection: null,
   orthographic: false,
   groundPlane: true,

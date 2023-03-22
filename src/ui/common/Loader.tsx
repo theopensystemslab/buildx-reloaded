@@ -2,7 +2,7 @@ import React from "react"
 
 export default function Loader() {
   return (
-    <div className="absolute w-full h-full flex justify-center items-center">
+    <div className="absolute top-0 w-full h-full flex justify-center items-center">
       <svg
         viewBox="0 0 24 24"
         fill="none"
