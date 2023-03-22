@@ -1,15 +1,8 @@
 "use client"
-import { type Houses } from "~/server/data/house"
 import { Close } from "@/ui/icons"
-import {
-  useCallback,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react"
-import { useHouses } from "../../src/hooks/houses"
-import { useClickAway } from "../../src/ui/common/utils"
+import { useCallback, useRef, useState } from "react"
+import { useHouses } from "@/hooks/houses"
+import { useClickAway } from "@/ui/common/utils"
 
 const colorVariants: Record<number, string> = {
   0: "bg-building-1",
@@ -61,11 +54,9 @@ const HousesPillsSelector = () => {
 
   useClickAway(dropdownRef, closeDropdown)
 
-  // if (Object.values(houses).length === 0) {
-  //   return <p className="px-4 py-2 text-white">No houses available.</p>
-  // }
-
-  // return null
+  if (Object.values(houses).length === 0) {
+    return <p className="px-4 py-2 text-white">No houses available.</p>
+  }
 
   return (
     <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5">
@@ -95,7 +86,7 @@ const HousesPillsSelector = () => {
         )
       })}
 
-      {/* {houseSelectOptions.length > 0 && (
+      {houseSelectOptions.length > 0 && (
         <div className="relative" ref={dropdownRef}>
           <button
             className="w-10 py-1 text-center text-2xl leading-none text-gray-400 transition-colors duration-200 hover:text-white"
@@ -130,7 +121,7 @@ const HousesPillsSelector = () => {
             </div>
           )}
         </div>
-      )} */}
+      )}
     </div>
   )
 }
