@@ -9,7 +9,7 @@ import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
 import { O, R, RA, RR } from "../../src/utils/functions"
 import { isMesh, useGLTF } from "../../src/utils/three"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const systemElements = proxy<Record<string, Element[]>>({})
 

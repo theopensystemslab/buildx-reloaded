@@ -1,6 +1,6 @@
 import { proxy, useSnapshot } from "valtio"
 import { LevelType } from "../../server/data/levelTypes"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const levelTypes = proxy<Record<string, LevelType[]>>({})
 

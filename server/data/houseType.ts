@@ -1,4 +1,4 @@
-import { trpc } from "@/utils/trpc"
+import { trpc } from "~/client/trpc"
 import Airtable from "airtable"
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"

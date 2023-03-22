@@ -1,4 +1,3 @@
-"use client"
 import { elementsQuery } from "~/server/data/elements"
 import {
   allHouseTypesQuery,
@@ -11,8 +10,12 @@ import { systemIdParser } from "~/server/data/system"
 import Airtable from "airtable"
 import { levelTypesQuery } from "~/server/data/levelTypes"
 import { windowTypesQuery } from "~/server/data/windowTypes"
-import { procedure, router } from "./trpc"
 import { stairTypesQuery } from "~/server/data/stairTypes"
+import { initTRPC } from "@trpc/server"
+
+const t = initTRPC.create()
+
+const { router, procedure } = t
 
 Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
 const airtable = new Airtable()

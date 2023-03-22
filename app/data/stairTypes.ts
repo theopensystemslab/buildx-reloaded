@@ -1,6 +1,6 @@
 import { proxy, useSnapshot } from "valtio"
 import { StairType } from "../../server/data/stairTypes"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const systemStairTypes = proxy<Record<string, StairType[]>>({})
 

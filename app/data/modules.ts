@@ -7,7 +7,7 @@ import { StairType } from "../../server/data/stairTypes"
 import { useGetVanillaModule } from "../../src/hooks/vanilla"
 import { A, Num, O, Ord, R, SG } from "../../src/utils/functions"
 import { abs, hamming } from "../../src/utils/math"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const systemModules = proxy<Record<string, Module[]>>({})
 

@@ -1,4 +1,3 @@
-"use client"
 import DataInit from "../data/DataInit"
 
 const FooPage = () => {

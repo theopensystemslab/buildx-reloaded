@@ -1,6 +1,6 @@
 import { proxy, useSnapshot } from "valtio"
 import { WindowType } from "../../server/data/windowTypes"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const windowTypes = proxy<Record<string, WindowType[]>>({})
 

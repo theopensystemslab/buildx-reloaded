@@ -1,6 +1,6 @@
 import { proxy, ref, useSnapshot } from "valtio"
 import { SectionType } from "../../server/data/sectionTypes"
-import { trpc } from "../../src/utils/trpc"
+import { trpc } from "~/client/trpc"
 
 const systemSectionTypes = proxy<Record<string, SectionType[]>>({})
 
