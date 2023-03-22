@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
-import { House } from "../../data/house"
+import { House } from "../../../server/data/house"
 import houses, { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import scope, { useScope } from "../../hooks/scope"
@@ -23,8 +23,8 @@ import ChangeWindows from "./interactions/ChangeWindows"
 import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
 import ContextMenuButton from "./common/ContextMenuButton"
 import { Reset, TrashCan } from "@carbon/icons-react"
-import { useAllHouseTypes } from "../../data/houseType"
-import RenameForm from "../RenameForm"
+import { useAllHouseTypes } from "~/app/data/houseType"
+import RenameForm from "../design/RenameForm"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()

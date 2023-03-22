@@ -1,3 +1,4 @@
+"use client"
 import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "@/constants"
 import siteCtx, { useLocallyStoredSiteCtx } from "@/hooks/siteCtx"
 import mapProxy, {
@@ -32,10 +33,10 @@ import { getLength } from "ol/sphere"
 import { Circle as StyleCircle, Fill, Stroke, Style, Text } from "ol/style"
 import RegularShape from "ol/style/RegularShape"
 import { useEffect, useRef, useState } from "react"
-import IconButton from "../IconButton"
+import IconButton from "../common/IconButton"
 import { Menu } from "@/ui/icons"
-import UniversalMenu from "@/ui/UniversalMenu"
-import { useEscape } from "@/ui/utils"
+import UniversalMenu from "@/ui/common/UniversalMenu"
+import { useEscape } from "@/ui/common/utils"
 import css from "./LocateIndex.module.css"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!

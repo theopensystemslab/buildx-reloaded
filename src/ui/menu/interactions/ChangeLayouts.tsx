@@ -7,7 +7,7 @@ import {
 } from "@//hooks/interactions/layouts"
 import { HouseModuleIdentifier } from "@//hooks/layouts"
 import { Menu, Pencil } from "@/ui/icons"
-import Radio from "@/ui/Radio"
+import Radio from "@/ui/common/Radio"
 import ContextMenuNested from "../common/ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {

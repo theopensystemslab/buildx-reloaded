@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
-import { useModuleElements } from "../../data/elements"
-import { Module } from "../../data/modules"
+import { useModuleElements } from "../../../app/data/elements"
+import { Module } from "../../../server/data/modules"
 import { indicesToKey, SystemHouseModuleIdentifier } from "../../hooks/layouts"
 import { RM, S } from "../../utils/functions"
 import GroupedElement from "./GroupedElement"

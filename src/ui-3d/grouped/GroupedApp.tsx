@@ -1,3 +1,4 @@
+"use client"
 import { useDragHandler, useGestures } from "@/hooks/gestures"
 import { useHouseKeys } from "@/hooks/houses"
 import { usePreviews } from "@/hooks/previews"

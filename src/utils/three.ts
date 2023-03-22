@@ -1,3 +1,4 @@
+"use client"
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useCallback, useMemo, useRef } from "react"
@@ -12,7 +13,7 @@ import {
   Vector3,
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../constants"
-import { Material } from "../data/materials"
+import { Material } from "../../server/data/materials"
 import dimensions, { getHouseCenter } from "../hooks/dimensions"
 import houses from "../hooks/houses"
 

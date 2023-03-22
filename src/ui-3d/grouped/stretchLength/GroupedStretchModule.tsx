@@ -1,5 +1,5 @@
-import { useModuleElements } from "@/data/elements"
-import { Module } from "@/data/modules"
+import { useModuleElements } from "~/app/data/elements"
+import { Module } from "~/server/data/modules"
 import { RM, S } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"

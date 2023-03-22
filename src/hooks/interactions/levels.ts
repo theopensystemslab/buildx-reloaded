@@ -1,15 +1,14 @@
 import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { useInitSystemLevelTypes } from "../../data/levelTypes"
+import { useInitSystemLevelTypes } from "../../../app/data/levelTypes"
 import {
   filterCompatibleModules,
   keysFilter,
-  Module,
   topCandidateByHamming,
   usePadColumn,
   useSystemModules,
-} from "../../data/modules"
+} from "../../../app/data/modules"
 import { A, O, Ord, S } from "../../utils/functions"
 import houses from "../houses"
 import { columnMatrixToDna } from "../layouts"
@@ -20,6 +19,7 @@ import {
   getSelectedModule,
   useScope,
 } from "../scope"
+import { Module } from "../../../server/data/modules"
 
 export type LevelTypeOption = {
   label: string

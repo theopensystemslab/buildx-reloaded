@@ -1,9 +1,9 @@
-import { useModuleElements } from "@/data/elements"
-import { Module } from "@/data/modules"
+import { Module } from "~/server/data/modules"
 import { indicesToKey, SystemHouseModuleIdentifier } from "@/hooks/layouts"
 import { RM, S } from "@/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import PreviewElement from "./PreviewElement"
+import { useModuleElements } from "../../../../app/data/elements"
 
 export type PreviewModuleProps = SystemHouseModuleIdentifier & {
   module: Module
