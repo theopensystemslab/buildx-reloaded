@@ -14,7 +14,7 @@ export const useInitSystemWindowTypes = ({
 }: {
   systemId: string
 }) => {
-  trpc.windowTypes.useQuery(
+  trpc.systemWindowTypes.useQuery(
     {
       systemId: systemId,
     },

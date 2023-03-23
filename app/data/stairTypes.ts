@@ -10,7 +10,7 @@ export const useSystemStairTypes = ({ systemId }: { systemId: string }) => {
 }
 
 export const useInitSystemStairTypes = ({ systemId }: { systemId: string }) => {
-  trpc.stairTypes.useQuery(
+  trpc.systemStairTypes.useQuery(
     {
       systemId: systemId,
     },

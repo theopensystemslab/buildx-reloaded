@@ -1,8 +1,25 @@
 "use client"
-import { Close } from "@/ui/icons"
-import { useCallback, useRef, useState } from "react"
 import { useHouses } from "@/hooks/houses"
 import { useClickAway } from "@/ui/common/utils"
+import { Close } from "@/ui/icons"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { proxy, useSnapshot } from "valtio"
+import { useSubscribe, useSubscribeKey } from "../../src/utils/hooks"
+
+const store = proxy<{
+  selectedHouses: string[]
+}>({
+  selectedHouses: [],
+})
+
+const setSelectedHouseIds = (f: (prev: string[]) => string[]) => {
+  store.selectedHouses = f(store.selectedHouses)
+}
+
+export const useSelectedHouseIds = () => {
+  const { selectedHouses } = useSnapshot(store) as typeof store
+  return selectedHouses
+}
 
 const colorVariants: Record<number, string> = {
   0: "bg-building-1",
@@ -29,9 +46,13 @@ const colorVariants: Record<number, string> = {
 
 const HousesPillsSelector = () => {
   const houses = useHouses()
-  const [selectedHouses, setSelectedHouses] = useState<string[]>(
-    Object.keys(houses)
-  )
+
+  useEffect(() => {
+    store.selectedHouses = Object.keys(houses)
+  }, [houses])
+
+  const selectedHouses = useSelectedHouseIds()
+
   const houseSelectOptions: { houseId: string; houseName: string }[] =
     Object.entries(houses)
       .map(([houseId, house]) =>
@@ -77,7 +98,9 @@ const HousesPillsSelector = () => {
             <button
               className="h-8 w-8 p-0.5 transition-colors duration-200 hover:bg-[rgba(0,0,0,0.05)]"
               onClick={() => {
-                setSelectedHouses((prev) => prev.filter((id) => id !== houseId))
+                setSelectedHouseIds((prev) =>
+                  prev.filter((id) => id !== houseId)
+                )
               }}
             >
               <Close />
@@ -108,7 +131,7 @@ const HousesPillsSelector = () => {
                   className="block w-full px-4 py-2 text-left transition-colors duration-200 hover:bg-gray-100"
                   key={houseSelectOption.houseId}
                   onClick={() => {
-                    setSelectedHouses((prev) => [
+                    setSelectedHouseIds((prev) => [
                       ...prev,
                       houseSelectOption.houseId,
                     ])

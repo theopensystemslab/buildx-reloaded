@@ -12,6 +12,8 @@ import { levelTypesQuery } from "~/server/data/levelTypes"
 import { windowTypesQuery } from "~/server/data/windowTypes"
 import { stairTypesQuery } from "~/server/data/stairTypes"
 import { initTRPC } from "@trpc/server"
+import { blocksQuery } from "../data/blocks"
+import { blockModulesQuery } from "../data/blockModules"
 
 const t = initTRPC.create()
 
@@ -32,14 +34,22 @@ export const appRouter = router({
   systemMaterials: procedure
     .input(systemIdParser)
     .query(materialsQuery(airtable)),
-  sectionTypes: procedure
+  systemSectionTypes: procedure
     .input(systemIdParser)
     .query(sectionTypesQuery(airtable)),
-  levelTypes: procedure.input(systemIdParser).query(levelTypesQuery(airtable)),
-  windowTypes: procedure
+  systemLevelTypes: procedure
+    .input(systemIdParser)
+    .query(levelTypesQuery(airtable)),
+  systemWindowTypes: procedure
     .input(systemIdParser)
     .query(windowTypesQuery(airtable)),
-  stairTypes: procedure.input(systemIdParser).query(stairTypesQuery(airtable)),
+  systemStairTypes: procedure
+    .input(systemIdParser)
+    .query(stairTypesQuery(airtable)),
+  systemBlocks: procedure.input(systemIdParser).query(blocksQuery(airtable)),
+  systemBlockModules: procedure
+    .input(systemIdParser)
+    .query(blockModulesQuery(airtable)),
 })
 
 // export type definition of API
