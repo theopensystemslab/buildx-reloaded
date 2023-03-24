@@ -1,10 +1,10 @@
 "use client"
-import { useHouses } from "@/hooks/houses"
+import houses, { useHouses } from "@/hooks/houses"
 import { useClickAway } from "@/ui/common/utils"
 import { Close } from "@/ui/icons"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
 import { R } from "../../src/utils/functions"
 import { useSubscribe, useSubscribeKey } from "../../src/utils/hooks"
@@ -25,17 +25,20 @@ export const useSelectedHouseIds = () => {
 }
 
 export const useSelectedHouses = () => {
-  const houses = useHouses()
   const selectedHouseIds = useSelectedHouseIds()
 
-  return pipe(
-    houses,
-    R.filterWithIndex((k) => selectedHouseIds.includes(k)),
-    values
+  return useMemo(
+    () =>
+      pipe(
+        houses,
+        R.filterWithIndex((k) => selectedHouseIds.includes(k)),
+        values
+      ),
+    [selectedHouseIds]
   )
 }
 
-const colorVariants: Record<number, string> = {
+export const buildingColorVariants: Record<number, string> = {
   0: "bg-building-1",
   1: "bg-building-2",
   2: "bg-building-3",
@@ -101,7 +104,7 @@ const HousesPillsSelector = () => {
           return null
         }
 
-        const colorClassName = colorVariants[index]
+        const colorClassName = buildingColorVariants[index]
 
         return (
           <p

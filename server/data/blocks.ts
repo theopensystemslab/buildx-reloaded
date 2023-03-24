@@ -8,6 +8,8 @@ export type Block = {
   id: string
   systemId: string
   name: string
+  sheetQuantity: number
+  plywoodCost: number
   // moduleDnas: string[]
   // costPerM2: number
   // embodiedCarbonPerGWP: number
@@ -21,6 +23,9 @@ export const blockTypeParser = z.object({
   id: z.string().min(1),
   fields: z.object({
     Name: z.string().min(1),
+    "Sheet Quantity": z.number().default(1), // sheets per block right?
+    Plywood_cost: z.number().default(0),
+
     // module_line: z.string().min(1),
     // description: z.string().min(1),
     // image: z
@@ -52,15 +57,22 @@ export const blocksQuery =
             .all()
             .then(
               z.array(
-                blockTypeParser.transform(({ id, fields: { Name } }) => ({
-                  id,
-                  systemId,
-                  name: Name,
-                  // code: opening_set,
-                  // description,
-                  // imageUrl: image?.[0]?.url,
-                  // glazingArea: glazing_area,
-                }))
+                blockTypeParser.transform(
+                  ({
+                    id,
+                    fields: {
+                      Name: name,
+                      "Sheet Quantity": sheetQuantity,
+                      Plywood_cost: plywoodCost,
+                    },
+                  }) => ({
+                    id,
+                    systemId,
+                    name,
+                    sheetQuantity,
+                    plywoodCost,
+                  })
+                )
               ).parse
             )
         )
