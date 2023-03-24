@@ -6,14 +6,14 @@ import {
 import { materialsQuery } from "~/server/data/materials"
 import { modulesQuery } from "~/server/data/modules"
 import { sectionTypesQuery } from "~/server/data/sectionTypes"
-import { systemIdParser } from "~/server/data/system"
+import { systemIdParser, systemIdsParser } from "~/server/data/system"
 import Airtable from "airtable"
 import { levelTypesQuery } from "~/server/data/levelTypes"
 import { windowTypesQuery } from "~/server/data/windowTypes"
 import { stairTypesQuery } from "~/server/data/stairTypes"
 import { initTRPC } from "@trpc/server"
 import { blocksQuery } from "../data/blocks"
-import { blockModulesQuery } from "../data/blockModules"
+import { blockModulesEntryQuery } from "../data/blockModulesEntries"
 
 const t = initTRPC.create()
 
@@ -23,7 +23,12 @@ Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
 const airtable = new Airtable()
 
 export const appRouter = router({
-  systemModules: procedure.input(systemIdParser).query(modulesQuery(airtable)),
+  modules: procedure.input(systemIdsParser).query(modulesQuery(airtable)),
+  blocks: procedure.input(systemIdsParser).query(blocksQuery(airtable)),
+  blockModulesEntry: procedure
+    .input(systemIdsParser)
+    .query(blockModulesEntryQuery(airtable)),
+  // -------------------------------------- old-new-sep
   systemHouseTypes: procedure
     .input(systemIdParser)
     .query(systemHouseTypesQuery(airtable)),
@@ -46,10 +51,6 @@ export const appRouter = router({
   systemStairTypes: procedure
     .input(systemIdParser)
     .query(stairTypesQuery(airtable)),
-  systemBlocks: procedure.input(systemIdParser).query(blocksQuery(airtable)),
-  systemBlockModules: procedure
-    .input(systemIdParser)
-    .query(blockModulesQuery(airtable)),
 })
 
 // export type definition of API

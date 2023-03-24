@@ -2,10 +2,12 @@ import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { systemFromId } from "./system"
+import { A } from "../../src/utils/functions"
+import { allSystemIds, systemFromId } from "./system"
 
 export const moduleSelector: QueryParams<any> = {
-  filterByFormula: 'IFC_model!=""',
+  // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
+  filterByFormula: 'GLB_model!=""',
 }
 
 export type StructuredDna = {
@@ -59,11 +61,13 @@ export const moduleParser = z
     id: z.string().min(1),
     fields: z.object({
       module_code: z.string().min(1),
-      IFC_model: z.array(
-        z.object({
-          url: z.string().min(1),
-        })
-      ),
+      IFC_model: z
+        .array(
+          z.object({
+            url: z.string().min(1),
+          })
+        )
+        .optional(),
       GLB_model: z.array(
         z.object({
           url: z.string().min(1),
@@ -104,7 +108,7 @@ export const moduleParser = z
     }) => ({
       id,
       dna: module_code,
-      ifcUrl: IFC_model[0].url,
+      ifcUrl: IFC_model?.[0].url,
       glbUrl: GLB_model[0].url,
       structuredDna: parseDna(module_code),
       length,
@@ -127,7 +131,7 @@ export type Module = {
   systemId: string
   dna: string
   structuredDna: StructuredDna
-  ifcUrl: string
+  ifcUrl?: string
   glbUrl: string
   width: number
   height: number
@@ -146,17 +150,25 @@ export type Module = {
 export const modulesQuery =
   (airtable: Airtable) =>
   ({
-    input: { systemId },
+    input: { systemIds },
   }: {
-    input: { systemId: string }
-  }): Promise<Module[]> =>
-    pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("modules")
-        .select(moduleSelector)
-        .all()
-        .then(
-          z.array(moduleParser.transform((xs) => ({ ...xs, systemId }))).parse
+    input: { systemIds: string[] }
+  }): Promise<Module[]> => {
+    return pipe(
+      systemIds,
+      A.map((systemId) =>
+        pipe(
+          airtable
+            .base(systemFromId(systemId)?.airtableId ?? "")
+            .table("modules")
+            .select(moduleSelector)
+            .all()
+            .then(
+              z.array(moduleParser.transform((xs) => ({ ...xs, systemId })))
+                .parse
+            )
         )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )
+  }

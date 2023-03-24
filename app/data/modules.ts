@@ -19,7 +19,7 @@ export const useSystemModules = ({ systemId }: { systemId: string }) => {
 export const useAllSystemModules = () => useSnapshot(systemModules)
 
 export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
-  trpc.systemModules.useQuery(
+  trpc.modules.useQuery(
     {
       systemId: systemId,
     },

@@ -5,12 +5,12 @@ systems:
   # - id: mobble
   #   name: Inhout Mobble
   #   airtableId: app25JFkKVKKEt5io
-  - id: swift
-    name: WikiHouse Swift
-    airtableId: appGlzQcCZpDNRFsE
-  - id: holz100
-    name: HOLZ100
-    airtableId: appzG3plVRqgH6c5f
+  # - id: swift
+  #   name: WikiHouse Swift
+  #   airtableId: appGlzQcCZpDNRFsE
+  # - id: holz100
+  #   name: HOLZ100
+  #   airtableId: appzG3plVRqgH6c5f
   - id: skylark
     name: WikiHouse Skylark
     airtableId: app7fME5xo63IoGGI

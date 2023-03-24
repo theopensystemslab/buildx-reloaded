@@ -2,8 +2,11 @@
 import { useHouses } from "@/hooks/houses"
 import { useClickAway } from "@/ui/common/utils"
 import { Close } from "@/ui/icons"
+import { values } from "fp-ts-std/Record"
+import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
+import { R } from "../../src/utils/functions"
 import { useSubscribe, useSubscribeKey } from "../../src/utils/hooks"
 
 const store = proxy<{
@@ -19,6 +22,17 @@ const setSelectedHouseIds = (f: (prev: string[]) => string[]) => {
 export const useSelectedHouseIds = () => {
   const { selectedHouses } = useSnapshot(store) as typeof store
   return selectedHouses
+}
+
+export const useSelectedHouses = () => {
+  const houses = useHouses()
+  const selectedHouseIds = useSelectedHouseIds()
+
+  return pipe(
+    houses,
+    R.filterWithIndex((k) => selectedHouseIds.includes(k)),
+    values
+  )
 }
 
 const colorVariants: Record<number, string> = {

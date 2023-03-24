@@ -1,6 +1,7 @@
 import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
+import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
 
 export type Block = {
@@ -36,27 +37,33 @@ export const blockTypeParser = z.object({
 export const blocksQuery =
   (airtable: Airtable) =>
   async ({
-    input: { systemId },
+    input: { systemIds },
   }: {
-    input: { systemId: string }
+    input: { systemIds: string[] }
   }): Promise<Block[]> =>
     pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("All blocks")
-        .select()
-        .all()
-        .then(
-          z.array(
-            blockTypeParser.transform(({ id, fields: { Name } }) => ({
-              id,
-              systemId,
-              name: Name,
-              // code: opening_set,
-              // description,
-              // imageUrl: image?.[0]?.url,
-              // glazingArea: glazing_area,
-            }))
-          ).parse
+      systemIds,
+      A.map((systemId) =>
+        pipe(
+          airtable
+            .base(systemFromId(systemId)?.airtableId ?? "")
+            .table("All blocks")
+            .select()
+            .all()
+            .then(
+              z.array(
+                blockTypeParser.transform(({ id, fields: { Name } }) => ({
+                  id,
+                  systemId,
+                  name: Name,
+                  // code: opening_set,
+                  // description,
+                  // imageUrl: image?.[0]?.url,
+                  // glazingArea: glazing_area,
+                }))
+              ).parse
+            )
         )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )

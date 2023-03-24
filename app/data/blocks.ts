@@ -12,7 +12,7 @@ export const useSystemBlocks = ({ systemId }: { systemId: string }) => {
 export const useAllSystemBlocks = () => useSnapshot(systemBlocks)
 
 export const useInitSystemBlocks = ({ systemId }: { systemId: string }) => {
-  trpc.systemBlocks.useQuery(
+  trpc.blocks.useQuery(
     {
       systemId: systemId,
     },
