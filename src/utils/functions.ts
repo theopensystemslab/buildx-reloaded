@@ -95,3 +95,10 @@ export const objComp = (a: Record<string, any>, b: Record<string, any>) =>
     R.keys(a),
     A.reduce(true, (acc, k) => acc && a[k] === b[k])
   )
+
+// Function to capitalize the first letter of each string in an array
+export const capitalizeFirstLetters = (str: string): string =>
+  str
+    .split(" ")
+    .map((x) => x.charAt(0).toUpperCase())
+    .join("")

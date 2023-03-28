@@ -1,10 +1,4 @@
 "use client"
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
@@ -21,7 +15,8 @@ export type BlockLineItem = {
   blockName: string
   sheetsPerBlock: number
   count: number
-  totalPlywood: number
+  materialsCost: number // connect  to element Structure's material cost
+  costPerBlock: number
   colorClassName: string
   // totalInsulation: number
   // cuttingFiles: any
@@ -50,6 +45,8 @@ export const useSelectedHouseBlockLineItems = (): BlockLineItem[] => {
         }
       }
     }
+
+    console.log(accum)
 
     return pipe(
       selectedHouses,
@@ -133,8 +130,9 @@ export const useSelectedHouseBlockLineItems = (): BlockLineItem[] => {
                 buildingName,
                 count,
                 sheetsPerBlock: block.sheetQuantity,
-                totalPlywood: block.plywoodCost * count,
+                materialsCost: block.materialsCost * count,
                 colorClassName,
+                costPerBlock: block.totalCost,
               })
             : O.none
       )

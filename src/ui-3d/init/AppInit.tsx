@@ -58,7 +58,7 @@ const AppInit = (props: Props) => {
   // useHouseTransformCollisionDetection()
 
   return (
-    <FullScreenContainer className="overflow-hidden">
+    <FullScreenContainer>
       {!mapboxEnabled ? (
         <VanillaR3FCanvas>
           <Common>{children}</Common>
