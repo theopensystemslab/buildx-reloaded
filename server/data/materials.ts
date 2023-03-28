@@ -3,6 +3,8 @@ import { pipe } from "fp-ts/lib/function"
 import { MeshStandardMaterial } from "three"
 import * as z from "zod"
 import { systemFromId } from "~/server/data/system"
+import { A } from "../../src/utils/functions"
+import { QueryFn } from "./types"
 
 export interface Material {
   id: string
@@ -62,20 +64,23 @@ export const materialParser = z
     })
   )
 
-export const materialsQuery =
-  (airtable: Airtable) =>
-  ({
-    input: { systemId },
-  }: {
-    input: { systemId: string }
-  }): Promise<Material[]> =>
+export const materialsQuery: QueryFn<Material> =
+  (airtable) =>
+  ({ input: { systemIds } }) =>
     pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("materials_menu")
-        .select()
-        .all()
-        .then(
-          z.array(materialParser.transform((xs) => ({ ...xs, systemId }))).parse
+      systemIds,
+      A.map((systemId) =>
+        pipe(
+          airtable
+            .base(systemFromId(systemId)?.airtableId ?? "")
+            .table("materials_menu")
+            .select()
+            .all()
+            .then(
+              z.array(materialParser.transform((xs) => ({ ...xs, systemId })))
+                .parse
+            )
         )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )

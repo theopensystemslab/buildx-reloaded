@@ -11,7 +11,7 @@ export const useSystemMaterials = ({ systemId }: { systemId: string }) => {
 }
 
 export const useInitSystemMaterials = ({ systemId }: { systemId: string }) => {
-  trpc.systemMaterials.useQuery(
+  trpc.materials.useQuery(
     {
       systemId: systemId,
     },

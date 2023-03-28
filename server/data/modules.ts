@@ -4,6 +4,7 @@ import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { A, pipeLog } from "../../src/utils/functions"
 import { allSystemIds, systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 export const moduleSelector: QueryParams<any> = {
   // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
@@ -147,13 +148,9 @@ export type Module = {
   description?: string
 }
 
-export const modulesQuery =
-  (airtable: Airtable) =>
-  ({
-    input: { systemIds },
-  }: {
-    input: { systemIds: string[] }
-  }): Promise<Module[]> => {
+export const modulesQuery: QueryFn<Module> =
+  (airtable) =>
+  ({ input: { systemIds } }) => {
     return pipe(
       systemIds,
       A.map((systemId) =>

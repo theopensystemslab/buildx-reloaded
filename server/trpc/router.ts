@@ -26,13 +26,9 @@ export const appRouter = router({
     .input(systemIdsParser)
     .query(blockModulesEntryQuery(airtable)),
   houseTypes: procedure.input(systemIdsParser).query(houseTypesQuery(airtable)),
+  materials: procedure.input(systemIdsParser).query(materialsQuery(airtable)),
+  elements: procedure.input(systemIdsParser).query(elementsQuery(airtable)),
   // -------------------------------------- old-new-sep
-  systemElements: procedure
-    .input(systemIdParser)
-    .query(elementsQuery(airtable)),
-  systemMaterials: procedure
-    .input(systemIdParser)
-    .query(materialsQuery(airtable)),
   systemSectionTypes: procedure
     .input(systemIdParser)
     .query(sectionTypesQuery(airtable)),

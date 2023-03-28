@@ -10,6 +10,7 @@ import {
   systems,
 } from "./system"
 import { A } from "../../src/utils/functions"
+import { QueryFn } from "./types"
 
 const modulesByHouseTypeParser = z.object({
   id: z.string().min(1),
@@ -60,14 +61,10 @@ export const houseTypeParser = z
     })
   )
 
-export const houseTypesQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemIds },
-  }: {
-    input: z.infer<typeof systemIdsParser>
-  }) => {
-    const houseTypes: Promise<HouseType[]> = pipe(
+export const houseTypesQuery: QueryFn<HouseType> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
+    pipe(
       systemIds,
       A.map(async (systemId) => {
         const system = systemFromId(systemId)
@@ -114,8 +111,5 @@ export const houseTypesQuery =
 
       (ps) => Promise.all(ps).then(A.flatten)
     )
-
-    return houseTypes
-  }
 
 export type HouseType = z.infer<typeof houseTypeParser> & { systemId: string }

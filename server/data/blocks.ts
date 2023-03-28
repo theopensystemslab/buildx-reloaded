@@ -3,6 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 export type Block = {
   id: string
@@ -23,13 +24,9 @@ export const blockTypeParser = z.object({
   }),
 })
 
-export const blocksQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemIds },
-  }: {
-    input: { systemIds: string[] }
-  }): Promise<Block[]> =>
+export const blocksQuery: QueryFn<Block> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
     pipe(
       systemIds,
       A.map((systemId) =>

@@ -19,7 +19,7 @@ export const useSystemElements = ({ systemId }: { systemId: string }) => {
 }
 
 export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
-  trpc.systemElements.useQuery(
+  trpc.elements.useQuery(
     {
       systemId: systemId,
     },
