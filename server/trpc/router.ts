@@ -1,19 +1,16 @@
+import { initTRPC } from "@trpc/server"
+import Airtable from "airtable"
 import { elementsQuery } from "~/server/data/elements"
-import {
-  allHouseTypesQuery,
-  systemHouseTypesQuery,
-} from "~/server/data/houseType"
+import { houseTypesQuery } from "~/server/data/houseType"
+import { levelTypesQuery } from "~/server/data/levelTypes"
 import { materialsQuery } from "~/server/data/materials"
 import { modulesQuery } from "~/server/data/modules"
 import { sectionTypesQuery } from "~/server/data/sectionTypes"
-import { systemIdParser, systemIdsParser } from "~/server/data/system"
-import Airtable from "airtable"
-import { levelTypesQuery } from "~/server/data/levelTypes"
-import { windowTypesQuery } from "~/server/data/windowTypes"
 import { stairTypesQuery } from "~/server/data/stairTypes"
-import { initTRPC } from "@trpc/server"
-import { blocksQuery } from "../data/blocks"
+import { systemIdParser, systemIdsParser } from "~/server/data/system"
+import { windowTypesQuery } from "~/server/data/windowTypes"
 import { blockModulesEntryQuery } from "../data/blockModulesEntries"
+import { blocksQuery } from "../data/blocks"
 
 const t = initTRPC.create()
 
@@ -28,11 +25,8 @@ export const appRouter = router({
   blockModulesEntry: procedure
     .input(systemIdsParser)
     .query(blockModulesEntryQuery(airtable)),
+  houseTypes: procedure.input(systemIdsParser).query(houseTypesQuery(airtable)),
   // -------------------------------------- old-new-sep
-  systemHouseTypes: procedure
-    .input(systemIdParser)
-    .query(systemHouseTypesQuery(airtable)),
-  allHouseTypes: procedure.query(allHouseTypesQuery(airtable)),
   systemElements: procedure
     .input(systemIdParser)
     .query(elementsQuery(airtable)),

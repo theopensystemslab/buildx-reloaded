@@ -1,7 +1,7 @@
 import { trpc } from "~/client/trpc"
 
 export const useSystemHouseTypes = ({ systemId }: { systemId: string }) =>
-  trpc.systemHouseTypes.useQuery({
+  trpc.houseTypes.useQuery({
     systemId: systemId,
   }).data ?? []
 

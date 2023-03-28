@@ -2,7 +2,7 @@ import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { A } from "../../src/utils/functions"
+import { A, pipeLog } from "../../src/utils/functions"
 import { allSystemIds, systemFromId } from "./system"
 
 export const moduleSelector: QueryParams<any> = {
