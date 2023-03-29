@@ -1,4 +1,3 @@
-import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import { MeshStandardMaterial } from "three"
 import * as z from "zod"

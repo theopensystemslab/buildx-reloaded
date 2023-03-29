@@ -1,9 +1,9 @@
-import Airtable from "airtable"
 import { QueryParams } from "airtable/lib/query_params"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 const selector: QueryParams<any> = {
   filterByFormula: 'modules!=""',
@@ -43,13 +43,9 @@ export const blockModulesEntryParser = z.object({
   }),
 })
 
-export const blockModulesEntryQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemIds },
-  }: {
-    input: { systemIds: string[] }
-  }): Promise<BlockModulesEntry[]> => {
+export const blockModulesEntryQuery: QueryFn<BlockModulesEntry> =
+  (airtable) =>
+  async ({ input: { systemIds } }) => {
     return pipe(
       systemIds,
       A.map((systemId) =>

@@ -1,15 +1,8 @@
-import { trpc } from "~/client/trpc"
-import Airtable from "airtable"
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import {
-  systemFromId,
-  systemIdParser,
-  systemIdsParser,
-  systems,
-} from "./system"
 import { A } from "../../src/utils/functions"
+import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 
 const modulesByHouseTypeParser = z.object({

@@ -28,19 +28,14 @@ export const appRouter = router({
   houseTypes: procedure.input(systemIdsParser).query(houseTypesQuery(airtable)),
   materials: procedure.input(systemIdsParser).query(materialsQuery(airtable)),
   elements: procedure.input(systemIdsParser).query(elementsQuery(airtable)),
-  // -------------------------------------- old-new-sep
-  systemSectionTypes: procedure
-    .input(systemIdParser)
+  sectionTypes: procedure
+    .input(systemIdsParser)
     .query(sectionTypesQuery(airtable)),
-  systemLevelTypes: procedure
-    .input(systemIdParser)
-    .query(levelTypesQuery(airtable)),
-  systemWindowTypes: procedure
-    .input(systemIdParser)
+  levelTypes: procedure.input(systemIdsParser).query(levelTypesQuery(airtable)),
+  windowTypes: procedure
+    .input(systemIdsParser)
     .query(windowTypesQuery(airtable)),
-  systemStairTypes: procedure
-    .input(systemIdParser)
-    .query(stairTypesQuery(airtable)),
+  stairTypes: procedure.input(systemIdsParser).query(stairTypesQuery(airtable)),
 })
 
 // export type definition of API

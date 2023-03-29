@@ -10,7 +10,7 @@ export const useSystemLevelTypes = ({ systemId }: { systemId: string }) => {
 }
 
 export const useInitSystemLevelTypes = ({ systemId }: { systemId: string }) => {
-  trpc.systemLevelTypes.useQuery(
+  trpc.levelTypes.useQuery(
     {
       systemId: systemId,
     },

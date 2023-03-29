@@ -14,7 +14,7 @@ export const useInitSystemSectionTypes = ({
 }: {
   systemId: string
 }) => {
-  trpc.systemSectionTypes.useQuery(
+  trpc.sectionTypes.useQuery(
     {
       systemId: systemId,
     },
