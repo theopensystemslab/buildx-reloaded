@@ -7,7 +7,6 @@ import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
 import { R } from "../../src/utils/functions"
-import { useSubscribe, useSubscribeKey } from "../../src/utils/hooks"
 
 const store = proxy<{
   selectedHouses: string[]
@@ -97,7 +96,7 @@ const HousesPillsSelector = () => {
   }
 
   return (
-    <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5">
+    <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5 border-b">
       {selectedHouses.map((houseId, index) => {
         const house = houses[houseId]
         if (!house) {
