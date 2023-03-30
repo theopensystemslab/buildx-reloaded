@@ -1,0 +1,7 @@
+.chart {
+  @apply bg-grey-10;
+}
+
+.buildCost {
+  @apply border-b-2 border-black;
+}

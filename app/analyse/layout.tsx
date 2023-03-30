@@ -14,12 +14,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <HousesPillsSelector />
       </div>
       <div className="flex-auto">
-        <div className="flex-1 flex-grow-0 flex-shrink-0">
+        {/* <div className="flex-1 flex-grow-0 flex-shrink-0">
           <AnalyseNav />
-        </div>
-        <div className="flex-auto">
-          <TrpcProvider>{children}</TrpcProvider>
-        </div>
+        </div> */}
+
+        <TrpcProvider>{children}</TrpcProvider>
       </div>
     </div>
   )
