@@ -1,28 +1,18 @@
 "use client"
 
-import { trpc } from "../../../client/trpc"
+import MaterialsListTable from "./MaterialsListTable"
 
-const MaterialsIndex = () => {
-  const { data: modules } = trpc.modules.useQuery()
-  const { data: houseTypes } = trpc.houseTypes.useQuery()
-  const { data: elements } = trpc.elements.useQuery()
-  const { data: materials } = trpc.materials.useQuery()
-
+const MaterialsListIndexPage = () => {
   return (
     <div>
-      <h1>materials</h1>
-      <pre>
-        {JSON.stringify(
-          {
-            elements,
-            materials,
-          },
-          null,
-          2
-        )}
-      </pre>
+      <h1>Materials list</h1>
+      <p>
+        A list of the other materials you will need to find and purchase from
+        other manufacturers. All prices are estimated.
+      </p>
+      <MaterialsListTable />
     </div>
   )
 }
 
-export default MaterialsIndex
+export default MaterialsListIndexPage

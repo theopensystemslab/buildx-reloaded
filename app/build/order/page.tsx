@@ -1,6 +1,5 @@
 "use client"
 
-import PaginatedTable from "../PaginatedTable"
 import OrderListTable from "./OrderListTable"
 
 const OrderIndexPage = () => {
