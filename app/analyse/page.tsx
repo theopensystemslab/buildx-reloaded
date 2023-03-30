@@ -2,16 +2,9 @@
 import clsx from "clsx"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import React, { Fragment } from "react"
+import { Fragment } from "react"
 import { A, capitalizeFirstLetters, O, R } from "../../src/utils/functions"
 import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
-import {
-  buildingColorVariants,
-  useSelectedHouses,
-} from "../common/HousesPillsSelector"
-import BarChart from "./BarChart"
-import Chart from "./Chart"
-import ColumnOfDivs from "./ColumnOfDivs"
 import css from "./page.module.css"
 
 const BuildCostChart = () => {
@@ -114,7 +107,6 @@ const AnalyseIndex = () => {
   return (
     <Fragment>
       <div className="w-full h-full flex justify-start items-center space-x-5">
-        <ColumnOfDivs numbers={[1, 2, 3]} />
         <BuildCostChart />
         <FloorAreaChart />
         <CarbonEmissionsChart />
