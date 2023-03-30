@@ -1,6 +1,7 @@
 "use client"
 
-import PaginatedTable from "./PaginatedTable"
+import PaginatedTable from "../PaginatedTable"
+import OrderListTable from "./OrderListTable"
 
 const OrderIndexPage = () => {
   return (
@@ -11,7 +12,7 @@ const OrderIndexPage = () => {
         All prices are estimated. Send this list to a WikiHouse manufacturer to
         get a precise quote.
       </p>
-      <PaginatedTable />
+      <OrderListTable />
     </div>
   )
 }

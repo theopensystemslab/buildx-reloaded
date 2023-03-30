@@ -1,4 +1,9 @@
 "use client"
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
+import { useSiteCurrency } from "@/hooks/siteCtx"
+import { capitalizeFirstLetters } from "@/utils/functions"
+import PaginatedTable from "../PaginatedTable"
+import clsx from "clsx"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
@@ -9,6 +14,7 @@ import {
   buildingColorVariants,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
+import { ArrowDown } from "@carbon/icons-react"
 
 export type BlockLineItem = {
   buildingName: string
@@ -16,20 +22,20 @@ export type BlockLineItem = {
   sheetsPerBlock: number
   count: number
   materialsCost: number // connect  to element Structure's material cost
+  manufacturingCost: number
   costPerBlock: number
   colorClassName: string
-  // totalInsulation: number
-  // cuttingFiles: any
-  // typicalCost: any
+  cuttingFileUrl: string
+  totalCost: number
 }
 
-export const useSelectedHouseBlockLineItems = (): BlockLineItem[] => {
+const OrderListTable = () => {
   const selectedHouses = useSelectedHouses()
   const { data: modules = [] } = trpc.modules.useQuery()
   const { data: blocks = [] } = trpc.blocks.useQuery()
-  const { data: blockModulesEntries = [] } = trpc.blockModulesEntry.useQuery()
+  const { data: blockModulesEntries = [] } = trpc.blockModulesEntries.useQuery()
 
-  return useMemo(() => {
+  const data = useMemo(() => {
     const accum: Record<string, number> = {}
 
     for (const blockModuleEntry of blockModulesEntries) {
@@ -45,8 +51,6 @@ export const useSelectedHouseBlockLineItems = (): BlockLineItem[] => {
         }
       }
     }
-
-    console.log(accum)
 
     return pipe(
       selectedHouses,
@@ -133,9 +137,101 @@ export const useSelectedHouseBlockLineItems = (): BlockLineItem[] => {
                 materialsCost: block.materialsCost * count,
                 colorClassName,
                 costPerBlock: block.totalCost,
+                manufacturingCost: block.manufacturingCost * count,
+                cuttingFileUrl: block.cuttingFileUrl,
+                totalCost: block.totalCost * count,
               })
             : O.none
       )
     )
   }, [blockModulesEntries, blocks, modules, selectedHouses])
+
+  const { code: currencyCode } = useSiteCurrency()
+
+  const fmt = (value: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+    }).format(value)
+
+  const { totalMaterialCost, totalManufacturingCost, totalTotalCost } = pipe(
+    data,
+    A.reduce(
+      { totalMaterialCost: 0, totalManufacturingCost: 0, totalTotalCost: 0 },
+      ({ totalMaterialCost, totalManufacturingCost, totalTotalCost }, row) => ({
+        totalMaterialCost: totalMaterialCost + row.materialsCost,
+        totalManufacturingCost: totalManufacturingCost + row.manufacturingCost,
+        totalTotalCost: totalTotalCost + row.totalCost,
+      })
+    ),
+    R.map(fmt)
+  )
+
+  const columnHelper = createColumnHelper<BlockLineItem>()
+
+  const columns: ColumnDef<BlockLineItem, any>[] = [
+    columnHelper.accessor("buildingName", {
+      cell: (info) => {
+        return (
+          <div
+            className={clsx("w-full h-full", {
+              [info.row.original.colorClassName]:
+                info.cell.column.id === "buildingName",
+            })}
+          >
+            {capitalizeFirstLetters(info.getValue())}
+          </div>
+        )
+      },
+      header: () => null,
+    }),
+    columnHelper.accessor("blockName", {
+      cell: (info) => <span>{info.getValue()}</span>,
+      header: () => <span>Block type</span>,
+      footer: () => <span>Total</span>,
+    }),
+    columnHelper.accessor("count", {
+      cell: (info) => <span>{info.getValue()}</span>,
+      header: () => <span>Number</span>,
+    }),
+    columnHelper.accessor("costPerBlock", {
+      cell: (info) => <span>{fmt(info.getValue())}</span>,
+      header: () => <span>Cost per Block</span>,
+    }),
+    columnHelper.accessor("materialsCost", {
+      cell: (info) => <span>{fmt(info.getValue())}</span>,
+      header: () => <span>Material Cost</span>,
+      footer: () => <span>{totalMaterialCost}</span>,
+      // aggregatedCell: (info) => <span>{fmt(info.getValue())}</span>,
+      // aggregationFn: "sum",
+      // enableGrouping: true,
+    }),
+    columnHelper.accessor("manufacturingCost", {
+      cell: (info) => <span>{fmt(info.getValue())}</span>,
+      header: () => <span>Manufacturing Cost</span>,
+      footer: () => <span>{totalManufacturingCost}</span>,
+    }),
+    columnHelper.accessor("cuttingFileUrl", {
+      cell: (info) => (
+        <a href={info.getValue()}>
+          <div className="flex font-semibold items-center">
+            <span>{`Download`}</span>
+            <span>
+              <ArrowDown size="20" className="ml-1" />
+            </span>
+          </div>
+        </a>
+      ),
+      header: () => <span>Cutting File</span>,
+    }),
+    columnHelper.accessor("totalCost", {
+      cell: (info) => <span>{fmt(info.getValue())}</span>,
+      header: () => <span>Total cost</span>,
+      footer: () => <span>{`${totalTotalCost} + VAT`}</span>,
+    }),
+  ]
+
+  return <PaginatedTable data={data} columns={columns} />
 }
+
+export default OrderListTable

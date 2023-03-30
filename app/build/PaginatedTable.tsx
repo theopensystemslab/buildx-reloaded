@@ -1,6 +1,5 @@
 import {
   ColumnDef,
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -8,52 +7,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import clsx from "clsx"
-import React from "react"
-import { useSiteCurrency } from "../../../src/hooks/siteCtx"
-import { capitalizeFirstLetters } from "../../../src/utils/functions"
-import {
-  BlockLineItem,
-  useSelectedHouseBlockLineItems,
-} from "./useSelectedHouseBlockLineItems"
+import css from "./PaginatedTable.module.css"
 
-const PaginatedTable = () => {
-  const columnHelper = createColumnHelper<BlockLineItem>()
+type Props<T> = {
+  data: T[]
+  columns: ColumnDef<T>[]
+}
 
-  const data = useSelectedHouseBlockLineItems()
-
-  const { code: currencyCode, symbol: currencySymbol } = useSiteCurrency()
-
-  const columns: ColumnDef<BlockLineItem, any>[] = [
-    columnHelper.accessor("buildingName", {
-      cell: (info) => {
-        return <span>{capitalizeFirstLetters(info.getValue())}</span>
-      },
-      header: () => null,
-    }),
-    columnHelper.accessor("blockName", {
-      cell: (info) => <span>{info.getValue()}</span>,
-      header: () => <span>Block type</span>,
-    }),
-    columnHelper.accessor("count", {
-      cell: (info) => <span>{info.getValue()}</span>,
-      header: () => <span>Number</span>,
-    }),
-    columnHelper.accessor("costPerBlock", {
-      cell: (info) => (
-        <span>
-          {new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: currencyCode,
-          }).format(info.getValue())}
-        </span>
-      ),
-      header: () => <span>Cost per Block</span>,
-    }),
-    columnHelper.accessor("materialsCost", {
-      cell: (info) => <span>{info.getValue()}</span>,
-      header: () => <span>Material Cost</span>,
-    }),
-  ]
+const PaginatedTable = <T extends unknown>(props: Props<T>) => {
+  const { data, columns } = props
 
   const table = useReactTable({
     data,
@@ -62,8 +24,9 @@ const PaginatedTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+
     //
-    debugTable: true,
+    // debugTable: true,
   })
 
   const {
@@ -76,9 +39,8 @@ const PaginatedTable = () => {
   const itemCount = data.length
 
   return (
-    <div className="p-2 ">
-      <div className="h-2" />
-      <table>
+    <div>
+      <table className={css.table}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -113,6 +75,7 @@ const PaginatedTable = () => {
                     <td
                       key={cell.id}
                       className={clsx({
+                        // @ts-ignore
                         [row.original.colorClassName]:
                           cell.column.id === "buildingName",
                       })}
@@ -128,6 +91,22 @@ const PaginatedTable = () => {
             )
           })}
         </tbody>
+        <tfoot>
+          {table.getFooterGroups().map((footerGroup) => (
+            <tr key={footerGroup.id}>
+              {footerGroup.headers.map((header) => (
+                <th key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.footer,
+                        header.getContext()
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </tfoot>
       </table>
       <div className="h-2" />
       <div className="flex justify-between gap-2">
@@ -143,21 +122,8 @@ const PaginatedTable = () => {
             </option>
           ))}
         </select>
-        {/* <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {"<<"}
-        </button> */}
-
         <span className="flex items-center gap-1 flex-grow">
           {firstRow}-{lastRow} of {itemCount} items
-          {/* {table.getState().pagination.pageIndex *
-            table.getState().pagination.pageSize +
-            1}{" "}
-          - {table.getState().pagination.pageSize} of{" "}
-          {table.getRowModel().rows.length} */}
         </span>
         <span className="flex items-center justify-end gap-1 flex-grow">
           <div>Page</div>
@@ -182,13 +148,6 @@ const PaginatedTable = () => {
             {">"}
           </button>
         </div>
-        {/* <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
-          {">>"}
-        </button> */}
         <span className="flex items-center gap-1">
           | Go to page:
           <input
@@ -202,8 +161,6 @@ const PaginatedTable = () => {
           />
         </span>
       </div>
-      <div>{table.getRowModel().rows.length} Rows</div>
-      <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre>
     </div>
   )
 }

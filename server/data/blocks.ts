@@ -10,7 +10,9 @@ export type Block = {
   name: string
   sheetQuantity: number
   materialsCost: number // -> material cost
+  manufacturingCost: number // -> manufacturer cost
   totalCost: number
+  cuttingFileUrl: string
 }
 
 export const blockTypeParser = z.object({
@@ -19,7 +21,9 @@ export const blockTypeParser = z.object({
     Name: z.string().min(1),
     "Sheet Quantity": z.number().default(1), // sheets per block right?
     Materials_cost: z.number().default(0),
+    Manufacturing_cost: z.number().default(0),
     Total_cost: z.number().default(0),
+    Github_cutting_file: z.string().min(1),
   }),
 })
 
@@ -44,7 +48,9 @@ export const blocksQuery: QueryFn<Block> =
                       Name: name,
                       "Sheet Quantity": sheetQuantity,
                       Materials_cost: materialsCost,
+                      Manufacturing_cost: manufacturingCost,
                       Total_cost: totalCost,
+                      Github_cutting_file,
                     },
                   }) => ({
                     id,
@@ -52,7 +58,9 @@ export const blocksQuery: QueryFn<Block> =
                     name,
                     sheetQuantity,
                     materialsCost,
+                    manufacturingCost,
                     totalCost,
+                    cuttingFileUrl: Github_cutting_file,
                   })
                 )
               ).parse

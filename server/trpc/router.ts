@@ -9,7 +9,7 @@ import { sectionTypesQuery } from "~/server/data/sectionTypes"
 import { stairTypesQuery } from "~/server/data/stairTypes"
 import { systemIdParser, systemIdsParser } from "~/server/data/system"
 import { windowTypesQuery } from "~/server/data/windowTypes"
-import { blockModulesEntryQuery } from "../data/blockModulesEntries"
+import { blockModulesEntriesQuery } from "../data/blockModulesEntries"
 import { blocksQuery } from "../data/blocks"
 
 const t = initTRPC.create()
@@ -22,9 +22,9 @@ const airtable = new Airtable()
 export const appRouter = router({
   modules: procedure.input(systemIdsParser).query(modulesQuery(airtable)),
   blocks: procedure.input(systemIdsParser).query(blocksQuery(airtable)),
-  blockModulesEntry: procedure
+  blockModulesEntries: procedure
     .input(systemIdsParser)
-    .query(blockModulesEntryQuery(airtable)),
+    .query(blockModulesEntriesQuery(airtable)),
   houseTypes: procedure.input(systemIdsParser).query(houseTypesQuery(airtable)),
   materials: procedure.input(systemIdsParser).query(materialsQuery(airtable)),
   elements: procedure.input(systemIdsParser).query(elementsQuery(airtable)),

@@ -6,7 +6,7 @@ import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 
 const selector: QueryParams<any> = {
-  filterByFormula: 'modules!=""',
+  filterByFormula: 'AND(modules!="", block!="")',
 }
 
 export type BlockModulesEntry = {
@@ -43,7 +43,7 @@ export const blockModulesEntryParser = z.object({
   }),
 })
 
-export const blockModulesEntryQuery: QueryFn<BlockModulesEntry> =
+export const blockModulesEntriesQuery: QueryFn<BlockModulesEntry> =
   (airtable) =>
   async ({ input: { systemIds } }) => {
     return pipe(
