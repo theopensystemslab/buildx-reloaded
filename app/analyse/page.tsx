@@ -11,6 +11,7 @@ import {
 } from "../common/HousesPillsSelector"
 import BarChart from "./BarChart"
 import Chart from "./Chart"
+import ColumnOfDivs from "./ColumnOfDivs"
 import css from "./page.module.css"
 
 const BuildCostChart = () => {
@@ -56,7 +57,13 @@ const BuildCostChart = () => {
     <div className={clsx(css.chart)}>
       <h3>Build cost</h3>
       <p>Estimated £ GBP</p>
-      <div className={clsx(css.buildCost)}>
+      <div
+        // className={clsx(css.buildCost)}
+        className="grid grid-cols-1 h-64"
+        // style={{
+        //   height: `${totalTotalCost / 10}px`,
+        // }}
+      >
         {pipe(
           orderListByBuilding,
           R.toArray,
@@ -64,21 +71,22 @@ const BuildCostChart = () => {
             return (
               <div
                 key={buildingName}
+                style={{
+                  gridRowEnd: `span ${Math.floor(
+                    (totalCost / totalTotalCost) * 100
+                  )}`,
+                }}
                 className={clsx(
-                  "flex justify-center items-center px-5",
+                  "flex flex-col justify-center  items-center px-2",
                   colorClassName
                 )}
-                style={{
-                  flex: `${totalCost / totalTotalCost} 0 0`,
-                }}
               >
-                {fmt(totalCost)}
+                <div>{capitalizeFirstLetters(buildingName)}</div>
+                <div>{fmt(totalCost)}</div>
               </div>
             )
           })
         )}
-        <p>hello</p>
-        <p>world</p>
       </div>
     </div>
   )
@@ -106,6 +114,7 @@ const AnalyseIndex = () => {
   return (
     <Fragment>
       <div className="w-full h-full flex justify-start items-center space-x-5">
+        <ColumnOfDivs numbers={[1, 2, 3]} />
         <BuildCostChart />
         <FloorAreaChart />
         <CarbonEmissionsChart />
