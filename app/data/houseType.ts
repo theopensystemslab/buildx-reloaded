@@ -1,8 +1,15 @@
 import { trpc } from "~/client/trpc"
+import { HouseType } from "../../server/data/houseType"
 
-export const useSystemHouseTypes = ({ systemId }: { systemId: string }) =>
-  trpc.houseTypes.useQuery({
-    systemId: systemId,
-  }).data ?? []
+export const useHouseTypes = (): HouseType[] => {
+  const { data = [] } = trpc.houseTypes.useQuery()
+  return data
+}
 
-export const useAllHouseTypes = () => trpc.allHouseTypes.useQuery()
+export const useSystemHouseTypes = ({
+  systemId,
+}: {
+  systemId: string
+}): HouseType[] => {
+  return useHouseTypes().filter((x) => x.systemId === systemId)
+}

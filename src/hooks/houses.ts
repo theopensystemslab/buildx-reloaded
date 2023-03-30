@@ -17,7 +17,7 @@ import {
 import { Module } from "../../server/data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
 import { useSystemModules } from "../../app/data/modules"
-import { useAllHouseTypes } from "../../app/data/houseType"
+import { useHouseTypes } from "../../app/data/houseType"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
@@ -50,8 +50,7 @@ export const useHouse = (houseId: string) => {
 
 export const useHouseType = (houseId: string) => {
   const house = useHouse(houseId)
-  const { data } = useAllHouseTypes()
-  const houseTypes = data ?? []
+  const houseTypes = useHouseTypes()
   const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
   if (!houseType) throw new Error("houseType not found")
   return houseType
@@ -156,7 +155,7 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
 }
 
 export const useInsert1000Skylarks = () => {
-  const { data: allHouseTypes } = useAllHouseTypes()
+  const houseTypes = useHouseTypes()
 
   useKey(
     "x",
@@ -164,7 +163,7 @@ export const useInsert1000Skylarks = () => {
       // const position = cameraGroundRaycast() ?? [0, 0, 0]
       const houseTypeId = "recSARkreiK3KMoTi"
 
-      const houseType = allHouseTypes?.find((x) => x.id === houseTypeId)
+      const houseType = houseTypes?.find((x) => x.id === houseTypeId)
       if (!houseType) throw new Error("skylark not found")
 
       const count = 11,
@@ -190,7 +189,7 @@ export const useInsert1000Skylarks = () => {
       }
     },
     undefined,
-    [allHouseTypes]
+    [houseTypes]
   )
 }
 

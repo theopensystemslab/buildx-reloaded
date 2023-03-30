@@ -1,6 +1,5 @@
-import { useAllHouseTypes } from "~/app/data/houseType"
-import { System, systems } from "~/server/data/system"
 import { useCameraGroundRaycast } from "@/hooks/camera"
+import { System, systems } from "~/server/data/system"
 // import houses from "@/stores/houses"
 import Sidebar from "@/ui/common/Sidebar"
 import { pipe } from "fp-ts/lib/function"
@@ -9,6 +8,7 @@ import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
+import { useHouseTypes } from "../../../app/data/houseType"
 import houses from "../../hooks/houses"
 import HouseThumbnail from "./HouseThumbnail"
 // import HouseThumbnail from "./HouseThumbnail"
@@ -19,7 +19,7 @@ type Props = {
 }
 
 const SiteSidebar = ({ open, close }: Props) => {
-  const { data: allHouseTypes } = useAllHouseTypes()
+  const houseTypes = useHouseTypes()
 
   const manySystems = systems.length > 1
   const singleSystem = systems.length === 1
@@ -64,10 +64,10 @@ const SiteSidebar = ({ open, close }: Props) => {
             </button>
           )}
           <p className="px-4 font-bold">{selectedSystem.name} House types</p>
-          {typeof allHouseTypes !== "undefined" ? (
+          {typeof houseTypes !== "undefined" ? (
             <Fragment>
               {pipe(
-                allHouseTypes,
+                houseTypes,
                 mapWithIndex((index, houseType) => {
                   return houseType.systemId === selectedSystem.id ? (
                     <HouseThumbnail

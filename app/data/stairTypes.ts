@@ -1,26 +1,15 @@
-import { proxy, useSnapshot } from "valtio"
-import { StairType } from "../../server/data/stairTypes"
 import { trpc } from "~/client/trpc"
+import { StairType } from "../../server/data/stairTypes"
 
-const systemStairTypes = proxy<Record<string, StairType[]>>({})
-
-export const useSystemStairTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemStairTypes) as typeof systemStairTypes
-  return snap?.[systemId] ?? []
+export const useStairTypes = (): StairType[] => {
+  const { data = [] } = trpc.windowTypes.useQuery()
+  return data
 }
 
-export const useInitSystemStairTypes = ({ systemId }: { systemId: string }) => {
-  trpc.stairTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        systemStairTypes[systemId] = data
-      },
-    }
-  )
-  return useSystemStairTypes({ systemId })
+export const useSystemStairTypes = ({
+  systemId,
+}: {
+  systemId: string
+}): StairType[] => {
+  return useStairTypes().filter((x) => x.systemId === systemId)
 }
-
-export default systemStairTypes

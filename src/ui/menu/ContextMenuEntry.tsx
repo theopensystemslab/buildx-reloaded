@@ -23,8 +23,8 @@ import ChangeWindows from "./interactions/ChangeWindows"
 import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
 import ContextMenuButton from "./common/ContextMenuButton"
 import { Reset, TrashCan } from "@carbon/icons-react"
-import { useAllHouseTypes } from "~/app/data/houseType"
 import RenameForm from "../design/RenameForm"
+import { useHouseTypes } from "../../../app/data/houseType"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()
@@ -60,7 +60,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { siteMode, buildingMode, levelMode, buildingOrLevelMode } =
     getModeBools(mode)
 
-  const { data: houseTypes = [] } = useAllHouseTypes()
+  const houseTypes = useHouseTypes()
 
   const resetBuilding = () => {
     const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)

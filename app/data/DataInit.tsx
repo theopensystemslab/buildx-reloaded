@@ -1,31 +1,34 @@
 "use client"
 import { Fragment, PropsWithChildren } from "react"
 import Loader from "../../src/ui/common/Loader"
-import { useInitSystemElements } from "./elements"
-import { useInitSystemLevelTypes } from "./levelTypes"
-import { useInitSystemMaterials } from "./materials"
-import { useInitSystemModules } from "./modules"
-import { useInitSystemSectionTypes } from "./sectionTypes"
-import { useInitSystemStairTypes } from "./stairTypes"
-import { useInitSystemWindowTypes } from "./windowTypes"
+import { useElements } from "./elements"
+import { useHouseTypes } from "./houseType"
+import { useLevelTypes } from "./levelTypes"
+import { useMaterials } from "./materials"
+import { useModules } from "./modules"
+import { useSectionTypes } from "./sectionTypes"
+import { useStairTypes } from "./stairTypes"
+import { useWindowTypes } from "./windowTypes"
 
 const DataInit = ({ children }: PropsWithChildren<{}>) => {
-  const systemModules = useInitSystemModules({ systemId: "skylark" })
-  const systemElements = useInitSystemElements({ systemId: "skylark" })
-  const systemMaterials = useInitSystemMaterials({ systemId: "skylark" })
-  const systemLevelTypes = useInitSystemLevelTypes({ systemId: "skylark" })
-  const sectionTypes = useInitSystemSectionTypes({ systemId: "skylark" })
-  const windowTypes = useInitSystemWindowTypes({ systemId: "skylark" })
-  const stairTypes = useInitSystemStairTypes({ systemId: "skylark" })
+  const modules = useModules()
+  const elements = useElements()
+  const materials = useMaterials()
+  const levelTypes = useLevelTypes()
+  const sectionTypes = useSectionTypes()
+  const windowTypes = useWindowTypes()
+  const stairTypes = useStairTypes()
+  const houseTypes = useHouseTypes()
 
   const loaded = [
-    systemModules,
-    systemElements,
-    systemMaterials,
-    systemLevelTypes,
+    modules,
+    elements,
+    materials,
+    levelTypes,
     sectionTypes,
     windowTypes,
     stairTypes,
+    houseTypes,
   ].reduce((acc, v) => acc && v.length > 0, true)
 
   return <Fragment>{loaded ? children : <Loader />}</Fragment>
