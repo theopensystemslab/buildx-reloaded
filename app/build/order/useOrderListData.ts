@@ -111,8 +111,14 @@ export const useOrderListData = () => {
                   block.systemId === house.systemId && block.id === blockId
               ),
               count,
-              colorClass: buildingColorVariants[index],
-              staleColorClass: staleColorVariants[index],
+              colorClass:
+                buildingColorVariants[
+                  index % Object.keys(buildingColorVariants).length
+                ],
+              staleColorClass:
+                staleColorVariants[
+                  index % Object.keys(staleColorVariants).length
+                ],
             }
           })
         )

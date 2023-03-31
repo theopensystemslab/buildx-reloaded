@@ -1,3 +1,4 @@
+"use client"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import React, { HTMLAttributes } from "react"
@@ -24,18 +25,21 @@ const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
     renderItem,
     className,
   } = props
+
   const total = items.reduce((acc, v) => acc + itemToValue(v), 0)
+
+  const gridTemplateRows = `${pipe(
+    items,
+    A.map(
+      (item) => `${pipe(item, itemToValue, (x) => (x * 100) / total, floor)}fr`
+    )
+  ).join(" ")}`
+
   return (
     <div
       className={clsx(`grid grid-cols-1`, className)}
       style={{
-        gridTemplateRows: `${pipe(
-          items,
-          A.map(
-            (item) =>
-              `${pipe(item, itemToValue, (x) => (x * 100) / total, floor)}fr`
-          )
-        ).join(" ")}`,
+        gridTemplateRows,
       }}
     >
       {pipe(
@@ -45,7 +49,7 @@ const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
             <div
               key={itemToKey(item)}
               className={clsx(
-                "flex flex-col justify-center  items-center px-2",
+                "flex flex-col justify-center items-center px-2",
                 itemToColorClass(item)
               )}
             >

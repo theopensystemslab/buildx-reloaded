@@ -60,6 +60,7 @@ const BuildCostChart = () => {
         />
         <div />
       </div>
+      <div>loading</div>
     </div>
   )
 }
