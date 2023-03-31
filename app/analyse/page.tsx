@@ -1,10 +1,10 @@
 "use client"
 import clsx from "clsx"
-import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { A, capitalizeFirstLetters, O, R } from "../../src/utils/functions"
 import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
+import BuildCostsChartBar from "./BuildCostsChartBar"
 import css from "./page.module.css"
 
 const BuildCostChart = () => {
@@ -25,54 +25,40 @@ const BuildCostChart = () => {
         O.getOrElse(() => pipe(acc, R.upsertAt(x.buildingName, x)))
       )
     )
-    // TODO: typical costs for each building
-    // R.map(({totalCost, ...rest}) => ({
-
-    // }))
-  )
-
-  const totalTotalCost = pipe(
-    orderListByBuilding,
-    values,
-    A.reduce(0, (acc, x) => acc + x.totalCost)
   )
 
   return (
     <div className={clsx(css.chart)}>
       <h3>Build cost</h3>
       <p>Estimated £ GBP</p>
-      <div className="flex justify-center">
-        <div
-          className="grid grid-cols-1"
-          style={{
-            gridTemplateRows: `${pipe(
-              orderListByBuilding,
-              values,
-              A.map(
-                (x) => `${Math.floor((x.totalCost / totalTotalCost) * 100)}fr`
-              )
-            ).join(" ")}`,
-          }}
-        >
-          {pipe(
-            orderListByBuilding,
-            R.toArray,
-            A.map(([buildingName, { totalCost, colorClassName }]) => {
-              return (
-                <div
-                  key={buildingName}
-                  className={clsx(
-                    "flex flex-col justify-center  items-center px-2",
-                    colorClassName
-                  )}
-                >
-                  <div>{capitalizeFirstLetters(buildingName)}</div>
-                  <div>{fmt(totalCost)}</div>
-                </div>
-              )
-            })
+      <div className="grid grid-cols-4 gap-4">
+        <div />
+        <BuildCostsChartBar
+          items={Object.values(orderListByBuilding)}
+          itemToColorClass={(item) => item.colorClass}
+          itemToValue={(item) => item.totalCost}
+          itemToKey={(item) => item.buildingName}
+          renderItem={(item) => (
+            <div className="flex flex-col justify-center  items-center px-2">
+              <div>{capitalizeFirstLetters(item.buildingName)}</div>
+              <div>{fmt(item.totalCost)}</div>
+            </div>
           )}
-        </div>
+        />
+        <BuildCostsChartBar
+          className="scale-90 translate-y-[5%]"
+          items={Object.values(orderListByBuilding)}
+          itemToColorClass={(item) => item.staleColorClass}
+          itemToValue={(item) => (item.totalCost / 100) * 90}
+          itemToKey={(item) => item.buildingName}
+          renderItem={(item) => (
+            <div className="flex flex-col justify-center  items-center px-2">
+              <div>{capitalizeFirstLetters(item.buildingName)}</div>
+              <div>{fmt((item.totalCost / 100) * 90)}</div>
+            </div>
+          )}
+        />
+        <div />
       </div>
     </div>
   )

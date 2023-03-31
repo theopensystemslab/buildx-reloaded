@@ -23,7 +23,7 @@ const OrderListTable = () => {
         return (
           <div
             className={clsx("w-full h-full", {
-              [info.row.original.colorClassName]:
+              [info.row.original.colorClass]:
                 info.cell.column.id === "buildingName",
             })}
           >

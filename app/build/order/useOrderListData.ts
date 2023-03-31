@@ -7,6 +7,7 @@ import { trpc } from "../../../client/trpc"
 import { A, O, R, S } from "../../../src/utils/functions"
 import {
   buildingColorVariants,
+  staleColorVariants,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
 
@@ -18,7 +19,8 @@ export type OrderListRow = {
   materialsCost: number // connect  to element Structure's material cost
   manufacturingCost: number
   costPerBlock: number
-  colorClassName: string
+  colorClass: string
+  staleColorClass: string
   cuttingFileUrl: string
   totalCost: number
 }
@@ -99,18 +101,20 @@ export const useOrderListData = () => {
               })
             })
           }),
-          R.collect(S.Ord)((blockId, count) => ({
-            buildingName: house.friendlyName,
-            block: blocks.find(
-              (block) =>
-                block.systemId === house.systemId && block.id === blockId
-            ),
-            count,
-            colorClassName:
-              buildingColorVariants[
-                selectedHouses.findIndex((x) => x.id === houseId)
-              ],
-          }))
+          R.collect(S.Ord)((blockId, count) => {
+            const index = selectedHouses.findIndex((x) => x.id === houseId)
+
+            return {
+              buildingName: house.friendlyName,
+              block: blocks.find(
+                (block) =>
+                  block.systemId === house.systemId && block.id === blockId
+              ),
+              count,
+              colorClass: buildingColorVariants[index],
+              staleColorClass: staleColorVariants[index],
+            }
+          })
         )
       ),
 
@@ -119,7 +123,8 @@ export const useOrderListData = () => {
           buildingName,
           block,
           count,
-          colorClassName,
+          colorClass,
+          staleColorClass,
         }): O.Option<OrderListRow> =>
           block
             ? O.some({
@@ -128,7 +133,8 @@ export const useOrderListData = () => {
                 count,
                 sheetsPerBlock: block.sheetQuantity,
                 materialsCost: block.materialsCost * count,
-                colorClassName,
+                colorClass,
+                staleColorClass,
                 costPerBlock: block.totalCost,
                 manufacturingCost: block.manufacturingCost * count,
                 cuttingFileUrl: block.cuttingFileUrl,

@@ -60,6 +60,19 @@ export const buildingColorVariants: Record<number, string> = {
   19: "bg-building-20",
 }
 
+export const staleColorVariants: Record<number, string> = {
+  0: "bg-grey-10",
+  1: "bg-grey-20",
+  2: "bg-grey-30",
+  3: "bg-grey-40",
+  4: "bg-grey-50",
+  5: "bg-grey-60",
+  6: "bg-grey-70",
+  7: "bg-grey-80",
+  8: "bg-grey-90",
+  9: "bg-grey-100",
+}
+
 const HousesPillsSelector = () => {
   const houses = useHouses()
 
