@@ -27,6 +27,9 @@ import Checklist from "../common/Checklist"
 import ExitMode from "./ExitMode"
 import ContextMenuEntry from "../menu/ContextMenuEntry"
 import Radio from "../common/Radio"
+import dynamic from "next/dynamic"
+
+const VoiceRecorder = dynamic(() => import("./VoiceRecorder"), { ssr: false })
 
 const HtmlUi = () => {
   const { sidebar, groundPlane, orthographic } = useGlobals()
@@ -181,6 +184,7 @@ const HtmlUi = () => {
       </HeaderStartPortal>
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
       <ExitMode />
+      <VoiceRecorder />
     </Fragment>
   )
 }
