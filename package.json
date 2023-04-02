@@ -41,6 +41,7 @@
     "mapbox-gl": "^2.11.1",
     "next": "^13.2.4",
     "ol": "^7.3.0",
+    "openai": "^3.2.1",
     "postprocessing": "^6.29.3",
     "react": "18.2.0",
     "react-cool-portal": "^1.2.0",
