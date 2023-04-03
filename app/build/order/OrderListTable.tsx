@@ -50,9 +50,6 @@ const OrderListTable = () => {
       cell: (info) => <span>{fmt(info.getValue())}</span>,
       header: () => <span>Material Cost</span>,
       footer: () => <span>{totalMaterialCost}</span>,
-      // aggregatedCell: (info) => <span>{fmt(info.getValue())}</span>,
-      // aggregationFn: "sum",
-      // enableGrouping: true,
     }),
     columnHelper.accessor("manufacturingCost", {
       cell: (info) => <span>{fmt(info.getValue())}</span>,

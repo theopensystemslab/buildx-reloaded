@@ -1,7 +1,5 @@
 .table {
   @apply w-full bg-grey-10;
-  /* border: 3px solid purple; */
-  /* border-collapse: collapse; */
 }
 
 .table th,
@@ -11,6 +9,5 @@
 }
 
 .table tr {
-  /* border: 3px solid; */
   @apply border border-grey-20;
 }

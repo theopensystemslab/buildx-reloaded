@@ -15,7 +15,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <div className="fixed flex h-full w-full flex-col overflow-auto">
+        <div className="fixed flex h-full w-full flex-col">
           <div className="flex flex-1 flex-grow-0 top-0 z-10 justify-between bg-white shadow items-center">
             <div id="headerStart" className="flex-1" />
             <div className="flex flex-none">
@@ -48,7 +48,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
             </div>
             <div id="headerEnd" className="flex-1" />
           </div>
-          <div className="flex-auto h-full">{children}</div>
+          <div className="flex-auto h-full overflow-y-auto">{children}</div>
         </div>
       </body>
     </html>

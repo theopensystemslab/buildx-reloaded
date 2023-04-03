@@ -20,13 +20,9 @@ const PaginatedTable = <T extends unknown>(props: Props<T>) => {
   const table = useReactTable({
     data,
     columns,
-    // Pipeline
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-
-    //
-    // debugTable: true,
   })
 
   const {
@@ -53,11 +49,6 @@ const PaginatedTable = <T extends unknown>(props: Props<T>) => {
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                        {/* {header.column.getCanFilter() ? (
-                          <div>
-                            <Filter column={header.column} table={table} />
-                          </div>
-                        ) : null} */}
                       </div>
                     )}
                   </th>
