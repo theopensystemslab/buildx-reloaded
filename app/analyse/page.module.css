@@ -1,3 +1,8 @@
 .chart {
   @apply bg-grey-10;
+  @apply max-w-lg;
+}
+
+.chart > div {
+  @apply py-8 px-4;
 }

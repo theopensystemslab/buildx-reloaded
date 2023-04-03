@@ -37,7 +37,10 @@ const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
 
   return (
     <div
-      className={clsx(`grid grid-cols-1`, className)}
+      className={clsx(
+        `grid grid-cols-1 font-semibold leading-6 tracking-wide`,
+        className
+      )}
       style={{
         gridTemplateRows,
       }}
