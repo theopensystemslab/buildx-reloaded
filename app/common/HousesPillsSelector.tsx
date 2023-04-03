@@ -141,7 +141,7 @@ const HousesPillsSelector = () => {
       {houseSelectOptions.length > 0 && (
         <div className="relative" ref={dropdownRef}>
           <button
-            className="w-10 py-1 text-center text-2xl leading-none text-gray-400 transition-colors duration-200 hover:text-white"
+            className="w-10 py-1 text-center text-2xl leading-none text-grey-40 transition-colors duration-200 hover:text-white"
             onClick={() => {
               setExpanded((prev) => !prev)
             }}
