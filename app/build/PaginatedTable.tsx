@@ -65,11 +65,14 @@ const PaginatedTable = <T extends unknown>(props: Props<T>) => {
                   return (
                     <td
                       key={cell.id}
-                      className={clsx({
-                        // @ts-ignore
-                        [row.original.colorClassName]:
-                          cell.column.id === "buildingName",
-                      })}
+                      className={clsx(
+                        {
+                          [(row.original as any).colorClass]:
+                            cell.column.id === "buildingName" &&
+                            "colorClass" in (row.original as any),
+                        }
+                        // "w-full h-full"
+                      )}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

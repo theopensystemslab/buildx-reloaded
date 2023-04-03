@@ -20,16 +20,7 @@ const OrderListTable = () => {
   const columns: ColumnDef<OrderListRow, any>[] = [
     columnHelper.accessor("buildingName", {
       cell: (info) => {
-        return (
-          <div
-            className={clsx("w-full h-full", {
-              [info.row.original.colorClass]:
-                info.cell.column.id === "buildingName",
-            })}
-          >
-            {capitalizeFirstLetters(info.getValue())}
-          </div>
-        )
+        return <div>{capitalizeFirstLetters(info.getValue())}</div>
       },
       header: () => null,
     }),
