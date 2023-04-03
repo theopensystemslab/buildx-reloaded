@@ -13,3 +13,6 @@ export const hamming = (a: string, b: string) => {
     abs(a.codePointAt(0)! - b.codePointAt(0)!)
   ).reduce((acc, v) => acc + v, 0)
 }
+
+export const degreesToRadians = (degrees: number): number =>
+  degrees * (Math.PI / 180)
