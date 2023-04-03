@@ -6,10 +6,8 @@ type Props = {
 }
 
 const HouseThumbnail = (props: Props) => {
-  const { houseType } = props
-
   return (
-    <div className="flex items-center space-x-2 border-b border-gray-200 px-4 py-4">
+    <div className="flex items-center space-x-2 border-b border-grey-20 px-4 py-4">
       <div
         className="h-20 w-20 flex-none rounded-full bg-grey-20"
         style={{

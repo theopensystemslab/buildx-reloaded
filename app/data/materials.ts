@@ -1,28 +1,15 @@
-import { proxy, ref, useSnapshot } from "valtio"
-import { Material } from "../../server/data/materials"
-import { createMaterial } from "../../src/utils/three"
 import { trpc } from "~/client/trpc"
+import { Material } from "../../server/data/materials"
 
-const systemMaterials = proxy<Record<string, Material[]>>({})
-
-export const useSystemMaterials = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemMaterials) as typeof systemMaterials
-  return snap?.[systemId] ?? []
+export const useMaterials = (): Material[] => {
+  const { data = [] } = trpc.materials.useQuery()
+  return data
 }
 
-export const useInitSystemMaterials = ({ systemId }: { systemId: string }) => {
-  trpc.systemMaterials.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        systemMaterials[systemId] = data
-        systemMaterials[systemId].forEach((material) => {
-          material.threeMaterial = ref(createMaterial(material))
-        })
-      },
-    }
-  )
-  return useSystemMaterials({ systemId })
+export const useSystemMaterials = ({
+  systemId,
+}: {
+  systemId: string
+}): Material[] => {
+  return useMaterials().filter((x) => x.systemId === systemId)
 }

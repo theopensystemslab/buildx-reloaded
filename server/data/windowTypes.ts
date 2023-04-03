@@ -1,7 +1,8 @@
-import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
+import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 export type WindowType = {
   id: string
@@ -28,34 +29,34 @@ export const windowTypeParser = z.object({
   }),
 })
 
-export const windowTypesQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemId },
-  }: {
-    input: { systemId: string }
-  }): Promise<WindowType[]> =>
+export const windowTypesQuery: QueryFn<WindowType> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
     pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("window_type")
-        .select()
-        .all()
-        .then(
-          z.array(
-            windowTypeParser.transform(
-              ({
-                id,
-                fields: { opening_set, description, image, glazing_area },
-              }) => ({
-                id,
-                systemId,
-                code: opening_set,
-                description,
-                imageUrl: image?.[0]?.url,
-                glazingArea: glazing_area,
-              })
-            )
-          ).parse
-        )
+      systemIds,
+      A.map((systemId) =>
+        airtable
+          .base(systemFromId(systemId)?.airtableId ?? "")
+          .table("window_type")
+          .select()
+          .all()
+          .then(
+            z.array(
+              windowTypeParser.transform(
+                ({
+                  id,
+                  fields: { opening_set, description, image, glazing_area },
+                }) => ({
+                  id,
+                  systemId,
+                  code: opening_set,
+                  description,
+                  imageUrl: image?.[0]?.url,
+                  glazingArea: glazing_area,
+                })
+              )
+            ).parse
+          )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )

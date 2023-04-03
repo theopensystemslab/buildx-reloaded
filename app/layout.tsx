@@ -48,7 +48,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
             </div>
             <div id="headerEnd" className="flex-1" />
           </div>
-          <div className="flex-auto h-full">{children}</div>
+          <div className="flex-auto h-full overflow-y-auto">{children}</div>
         </div>
       </body>
     </html>

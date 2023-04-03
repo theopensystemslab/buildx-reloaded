@@ -1,0 +1,13 @@
+.table {
+  @apply w-full bg-grey-10;
+}
+
+.table th,
+.table td {
+  @apply p-4;
+  @apply text-left;
+}
+
+.table tr {
+  @apply border border-grey-20;
+}

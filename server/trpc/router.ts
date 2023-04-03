@@ -1,17 +1,16 @@
+import { initTRPC } from "@trpc/server"
+import Airtable from "airtable"
 import { elementsQuery } from "~/server/data/elements"
-import {
-  allHouseTypesQuery,
-  systemHouseTypesQuery,
-} from "~/server/data/houseType"
+import { houseTypesQuery } from "~/server/data/houseType"
+import { levelTypesQuery } from "~/server/data/levelTypes"
 import { materialsQuery } from "~/server/data/materials"
 import { modulesQuery } from "~/server/data/modules"
 import { sectionTypesQuery } from "~/server/data/sectionTypes"
-import { systemIdParser } from "~/server/data/system"
-import Airtable from "airtable"
-import { levelTypesQuery } from "~/server/data/levelTypes"
-import { windowTypesQuery } from "~/server/data/windowTypes"
 import { stairTypesQuery } from "~/server/data/stairTypes"
-import { initTRPC } from "@trpc/server"
+import { systemIdParser, systemIdsParser } from "~/server/data/system"
+import { windowTypesQuery } from "~/server/data/windowTypes"
+import { blockModulesEntriesQuery } from "../data/blockModulesEntries"
+import { blocksQuery } from "../data/blocks"
 
 const t = initTRPC.create()
 
@@ -21,25 +20,22 @@ Airtable.configure({ apiKey: process.env.AIRTABLE_API_KEY })
 const airtable = new Airtable()
 
 export const appRouter = router({
-  systemModules: procedure.input(systemIdParser).query(modulesQuery(airtable)),
-  systemHouseTypes: procedure
-    .input(systemIdParser)
-    .query(systemHouseTypesQuery(airtable)),
-  allHouseTypes: procedure.query(allHouseTypesQuery(airtable)),
-  systemElements: procedure
-    .input(systemIdParser)
-    .query(elementsQuery(airtable)),
-  systemMaterials: procedure
-    .input(systemIdParser)
-    .query(materialsQuery(airtable)),
+  modules: procedure.input(systemIdsParser).query(modulesQuery(airtable)),
+  blocks: procedure.input(systemIdsParser).query(blocksQuery(airtable)),
+  blockModulesEntries: procedure
+    .input(systemIdsParser)
+    .query(blockModulesEntriesQuery(airtable)),
+  houseTypes: procedure.input(systemIdsParser).query(houseTypesQuery(airtable)),
+  materials: procedure.input(systemIdsParser).query(materialsQuery(airtable)),
+  elements: procedure.input(systemIdsParser).query(elementsQuery(airtable)),
   sectionTypes: procedure
-    .input(systemIdParser)
+    .input(systemIdsParser)
     .query(sectionTypesQuery(airtable)),
-  levelTypes: procedure.input(systemIdParser).query(levelTypesQuery(airtable)),
+  levelTypes: procedure.input(systemIdsParser).query(levelTypesQuery(airtable)),
   windowTypes: procedure
-    .input(systemIdParser)
+    .input(systemIdsParser)
     .query(windowTypesQuery(airtable)),
-  stairTypes: procedure.input(systemIdParser).query(stairTypesQuery(airtable)),
+  stairTypes: procedure.input(systemIdsParser).query(stairTypesQuery(airtable)),
 })
 
 // export type definition of API

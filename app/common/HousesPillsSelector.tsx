@@ -1,10 +1,43 @@
 "use client"
-import { Close } from "@/ui/icons"
-import { useCallback, useRef, useState } from "react"
-import { useHouses } from "@/hooks/houses"
+import houses, { useHouses } from "@/hooks/houses"
 import { useClickAway } from "@/ui/common/utils"
+import { Close } from "@/ui/icons"
+import { values } from "fp-ts-std/Record"
+import { pipe } from "fp-ts/lib/function"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { proxy, useSnapshot } from "valtio"
+import { R } from "../../src/utils/functions"
 
-const colorVariants: Record<number, string> = {
+const store = proxy<{
+  selectedHouses: string[]
+}>({
+  selectedHouses: [],
+})
+
+const setSelectedHouseIds = (f: (prev: string[]) => string[]) => {
+  store.selectedHouses = f(store.selectedHouses)
+}
+
+export const useSelectedHouseIds = () => {
+  const { selectedHouses } = useSnapshot(store) as typeof store
+  return selectedHouses
+}
+
+export const useSelectedHouses = () => {
+  const selectedHouseIds = useSelectedHouseIds()
+
+  return useMemo(
+    () =>
+      pipe(
+        houses,
+        R.filterWithIndex((k) => selectedHouseIds.includes(k)),
+        values
+      ),
+    [selectedHouseIds]
+  )
+}
+
+export const buildingColorVariants: Record<number, string> = {
   0: "bg-building-1",
   1: "bg-building-2",
   2: "bg-building-3",
@@ -27,11 +60,28 @@ const colorVariants: Record<number, string> = {
   19: "bg-building-20",
 }
 
+export const staleColorVariants: Record<number, string> = {
+  0: "bg-grey-10",
+  1: "bg-grey-20",
+  2: "bg-grey-30",
+  3: "bg-grey-40",
+  4: "bg-grey-50",
+  5: "bg-grey-60",
+  6: "bg-grey-70",
+  7: "bg-grey-80",
+  8: "bg-grey-90",
+  9: "bg-grey-100",
+}
+
 const HousesPillsSelector = () => {
   const houses = useHouses()
-  const [selectedHouses, setSelectedHouses] = useState<string[]>(
-    Object.keys(houses)
-  )
+
+  useEffect(() => {
+    store.selectedHouses = Object.keys(houses)
+  }, [houses])
+
+  const selectedHouses = useSelectedHouseIds()
+
   const houseSelectOptions: { houseId: string; houseName: string }[] =
     Object.entries(houses)
       .map(([houseId, house]) =>
@@ -59,14 +109,14 @@ const HousesPillsSelector = () => {
   }
 
   return (
-    <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5">
+    <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5 border-b">
       {selectedHouses.map((houseId, index) => {
         const house = houses[houseId]
         if (!house) {
           return null
         }
 
-        const colorClassName = colorVariants[index]
+        const colorClassName = buildingColorVariants[index]
 
         return (
           <p
@@ -77,7 +127,9 @@ const HousesPillsSelector = () => {
             <button
               className="h-8 w-8 p-0.5 transition-colors duration-200 hover:bg-[rgba(0,0,0,0.05)]"
               onClick={() => {
-                setSelectedHouses((prev) => prev.filter((id) => id !== houseId))
+                setSelectedHouseIds((prev) =>
+                  prev.filter((id) => id !== houseId)
+                )
               }}
             >
               <Close />
@@ -89,7 +141,7 @@ const HousesPillsSelector = () => {
       {houseSelectOptions.length > 0 && (
         <div className="relative" ref={dropdownRef}>
           <button
-            className="w-10 py-1 text-center text-2xl leading-none text-gray-400 transition-colors duration-200 hover:text-white"
+            className="w-10 py-1 text-center text-2xl leading-none text-grey-40 transition-colors duration-200 hover:text-white"
             onClick={() => {
               setExpanded((prev) => !prev)
             }}
@@ -108,7 +160,7 @@ const HousesPillsSelector = () => {
                   className="block w-full px-4 py-2 text-left transition-colors duration-200 hover:bg-gray-100"
                   key={houseSelectOption.houseId}
                   onClick={() => {
-                    setSelectedHouses((prev) => [
+                    setSelectedHouseIds((prev) => [
                       ...prev,
                       houseSelectOption.houseId,
                     ])

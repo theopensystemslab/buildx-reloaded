@@ -1,23 +1,21 @@
 import { useGLTF } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { RA, RR } from "../../src/utils/functions"
-import { useAllSystemModules } from "./modules"
+import { useModules } from "./modules"
 
 const DataPreload = () => {
-  const systemModules = useAllSystemModules()
+  const modules = useModules()
 
   pipe(
-    systemModules,
-    RR.map(
-      RA.map((m) => {
-        useGLTF.preload(m.glbUrl)
-        // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
-        //   if (loader instanceof IFCLoader) {
-        //     loader.ifcManager.setWasmPath("../../../wasm/")
-        //   }
-        // })
-      })
-    )
+    modules,
+    RA.map((m) => {
+      useGLTF.preload(m.glbUrl)
+      // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
+      //   if (loader instanceof IFCLoader) {
+      //     loader.ifcManager.setWasmPath("../../../wasm/")
+      //   }
+      // })
+    })
   )
 
   return null

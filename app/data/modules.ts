@@ -1,38 +1,24 @@
 import { sum } from "fp-ts-std/Array"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { proxy, ref, useSnapshot } from "valtio"
+import { trpc } from "~/client/trpc"
 import { Module, StructuredDna } from "../../server/data/modules"
 import { StairType } from "../../server/data/stairTypes"
 import { useGetVanillaModule } from "../../src/hooks/vanilla"
 import { A, Num, O, Ord, R, SG } from "../../src/utils/functions"
 import { abs, hamming } from "../../src/utils/math"
-import { trpc } from "~/client/trpc"
 
-const systemModules = proxy<Record<string, Module[]>>({})
-
-export const useSystemModules = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemModules) as typeof systemModules
-  return snap?.[systemId] ?? []
+export const useModules = (): Module[] => {
+  const { data = [] } = trpc.modules.useQuery()
+  return data
 }
 
-export const useAllSystemModules = () => useSnapshot(systemModules)
-
-export const useInitSystemModules = ({ systemId }: { systemId: string }) => {
-  trpc.systemModules.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        systemModules[systemId] = ref(data)
-      },
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    }
-  )
-  return useSystemModules({ systemId })
+export const useSystemModules = ({
+  systemId,
+}: {
+  systemId: string
+}): Module[] => {
+  return useModules().filter((x) => x.systemId === systemId)
 }
 
 export const useGetStairsModule = (systemId: string) => {
@@ -193,5 +179,3 @@ export const topCandidateByHamming =
       A.head,
       O.map(([m]) => m)
     )
-
-export default systemModules

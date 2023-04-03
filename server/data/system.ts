@@ -23,3 +23,13 @@ export const systemFromId = (id: string) =>
 export const systemIdParser = z.object({
   systemId: z.string().min(1),
 })
+
+export const allSystemIds: string[] = config.systems.map(
+  (system: System) => system.id
+)
+
+export const systemIdsParser = z
+  .object({
+    systemIds: z.array(z.string().min(1)),
+  })
+  .default({ systemIds: allSystemIds })

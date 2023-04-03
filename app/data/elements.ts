@@ -4,32 +4,24 @@ import produce from "immer"
 import { useCallback } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
-import { proxy, useSnapshot } from "valtio"
+import { proxy } from "valtio"
+import { trpc } from "~/client/trpc"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
 import { O, R, RA, RR } from "../../src/utils/functions"
 import { isMesh, useGLTF } from "../../src/utils/three"
-import { trpc } from "~/client/trpc"
 
-const systemElements = proxy<Record<string, Element[]>>({})
-
-export const useSystemElements = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemElements) as typeof systemElements
-  return snap?.[systemId] ?? []
+export const useElements = (): Element[] => {
+  const { data = [] } = trpc.elements.useQuery()
+  return data
 }
 
-export const useInitSystemElements = ({ systemId }: { systemId: string }) => {
-  trpc.systemElements.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        systemElements[systemId] = data
-      },
-    }
-  )
-  return useSystemElements({ systemId })
+export const useSystemElements = ({
+  systemId,
+}: {
+  systemId: string
+}): Element[] => {
+  return useElements().filter((x) => x.systemId === systemId)
 }
 
 const useNodeTypeToElement = (systemId: string) => {
@@ -132,5 +124,3 @@ export const useModuleElements = ({
     }
   )
 }
-
-export default systemElements

@@ -1,30 +1,15 @@
-import { proxy, useSnapshot } from "valtio"
-import { WindowType } from "../../server/data/windowTypes"
 import { trpc } from "~/client/trpc"
+import { WindowType } from "../../server/data/windowTypes"
 
-const windowTypes = proxy<Record<string, WindowType[]>>({})
-
-export const useSystemWindowTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(windowTypes) as typeof windowTypes
-  return snap?.[systemId] ?? []
+export const useWindowTypes = (): WindowType[] => {
+  const { data = [] } = trpc.windowTypes.useQuery()
+  return data
 }
 
-export const useInitSystemWindowTypes = ({
+export const useSystemWindowTypes = ({
   systemId,
 }: {
   systemId: string
-}) => {
-  trpc.windowTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        windowTypes[systemId] = data
-      },
-    }
-  )
-  return useSystemWindowTypes({ systemId })
+}): WindowType[] => {
+  return useWindowTypes().filter((x) => x.systemId === systemId)
 }
-
-export default windowTypes

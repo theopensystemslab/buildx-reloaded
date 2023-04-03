@@ -1,7 +1,8 @@
-import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
+import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 export type StairType = {
   id: string
@@ -26,30 +27,30 @@ export const stairTypeParser = z.object({
   }),
 })
 
-export const stairTypesQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemId },
-  }: {
-    input: { systemId: string }
-  }): Promise<StairType[]> =>
+export const stairTypesQuery: QueryFn<StairType> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
     pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("stair_type")
-        .select()
-        .all()
-        .then(
-          z.array(
-            stairTypeParser.transform(
-              ({ id, fields: { stair_code, description, image } }) => ({
-                id,
-                systemId,
-                code: stair_code,
-                description,
-                imageUrl: image?.[0]?.url,
-              })
-            )
-          ).parse
-        )
+      systemIds,
+      A.map((systemId) =>
+        airtable
+          .base(systemFromId(systemId)?.airtableId ?? "")
+          .table("stair_type")
+          .select()
+          .all()
+          .then(
+            z.array(
+              stairTypeParser.transform(
+                ({ id, fields: { stair_code, description, image } }) => ({
+                  id,
+                  systemId,
+                  code: stair_code,
+                  description,
+                  imageUrl: image?.[0]?.url,
+                })
+              )
+            ).parse
+          )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )

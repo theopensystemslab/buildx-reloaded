@@ -27,7 +27,7 @@ const defaults = {
   editMode: null,
   projectName: null,
   mode: SiteCtxModeEnum.Enum.SITE,
-  region: "EU",
+  region: "UK",
 }
 
 export const getInitialSiteCtx = () =>

@@ -1,9 +1,9 @@
-import { trpc } from "~/client/trpc"
-import Airtable from "airtable"
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { systemFromId, systemIdParser, systems } from "./system"
+import { A } from "../../src/utils/functions"
+import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 const modulesByHouseTypeParser = z.object({
   id: z.string().min(1),
@@ -54,66 +54,55 @@ export const houseTypeParser = z
     })
   )
 
-export const systemHouseTypesQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemId },
-  }: {
-    input: z.infer<typeof systemIdParser>
-  }) => {
-    const system = systemFromId(systemId)
-    if (!system) throw new Error(`No such system ${systemId}`)
-
-    const modulesByHouseType = await airtable
-      .base(system.airtableId)
-      .table("modules_by_housetype")
-      .select()
-      .all()
-      .then((x) => {
-        const parsed = z.array(modulesByHouseTypeParser).safeParse(x)
-
-        if (parsed.success) return parsed.data
-        else return []
-      })
-
-    const houseTypes = await pipe(
-      airtable
-        .base(system.airtableId)
-        .table("house_types")
-        .select()
-        .all()
-        .then(z.array(houseTypeParser).parse)
-        .then((xs) =>
-          xs.map(({ dna, ...rest }) => ({
-            systemId: system.id,
-            dna: pipe(
-              dna,
-              map((modulesByHouseTypeId) => {
-                const moduleByHouseType = modulesByHouseType.find(
-                  (m) => m.id === modulesByHouseTypeId
-                )
-                return moduleByHouseType?.fields.module_code[0]
-              }),
-              filter((x): x is string => Boolean(x))
-            ),
-            ...rest,
-          }))
-        )
-    )
-
-    return houseTypes
-  }
-
-export const allHouseTypesQuery = (airtable: Airtable) => () =>
-  Promise.all(
+export const houseTypesQuery: QueryFn<HouseType> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
     pipe(
-      systems,
-      map((system) =>
-        systemHouseTypesQuery(airtable)({
-          input: { systemId: system.id },
-        })
-      )
+      systemIds,
+      A.map(async (systemId) => {
+        const system = systemFromId(systemId)
+        if (system === null) throw new Error(`no system found ${systemId}`)
+
+        const modulesByHouseType = await pipe(
+          airtable
+            .base(system.airtableId)
+            .table("modules_by_housetype")
+            .select()
+            .all()
+            .then((x) => {
+              const parsed = z.array(modulesByHouseTypeParser).safeParse(x)
+
+              if (parsed.success) return parsed.data
+              else return []
+            })
+        )
+        return pipe(
+          airtable
+            .base(system.airtableId)
+            .table("house_types")
+            .select()
+            .all()
+            .then(z.array(houseTypeParser).parse)
+            .then((xs) =>
+              xs.map(({ dna, ...rest }) => ({
+                systemId: system.id,
+                dna: pipe(
+                  dna,
+                  map((modulesByHouseTypeId) => {
+                    const moduleByHouseType = modulesByHouseType.find(
+                      (m) => m.id === modulesByHouseTypeId
+                    )
+                    return moduleByHouseType?.fields.module_code[0]
+                  }),
+                  filter((x): x is string => Boolean(x))
+                ),
+                ...rest,
+              }))
+            )
+        )
+      }),
+
+      (ps) => Promise.all(ps).then(A.flatten)
     )
-  ).then((xs) => xs.flat())
 
 export type HouseType = z.infer<typeof houseTypeParser> & { systemId: string }

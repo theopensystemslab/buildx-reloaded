@@ -1,7 +1,6 @@
 import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { useInitSystemLevelTypes } from "../../../app/data/levelTypes"
 import {
   filterCompatibleModules,
   keysFilter,
@@ -20,6 +19,7 @@ import {
   useScope,
 } from "../scope"
 import { Module } from "../../../server/data/modules"
+import { useSystemLevelTypes } from "../../../app/data/levelTypes"
 
 export type LevelTypeOption = {
   label: string
@@ -36,7 +36,7 @@ export const useChangeLevelType = ({ systemId }: { systemId: string }) => {
 
   const { houseId, levelIndex } = selected
 
-  const systemLevelTypes = useInitSystemLevelTypes({ systemId })
+  const systemLevelTypes = useSystemLevelTypes({ systemId })
 
   const levelTypes = pipe(
     systemLevelTypes,

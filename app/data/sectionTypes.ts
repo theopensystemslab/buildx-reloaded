@@ -1,30 +1,15 @@
-import { proxy, ref, useSnapshot } from "valtio"
-import { SectionType } from "../../server/data/sectionTypes"
 import { trpc } from "~/client/trpc"
+import { SectionType } from "../../server/data/sectionTypes"
 
-const systemSectionTypes = proxy<Record<string, SectionType[]>>({})
-
-export const useSystemSectionTypes = ({ systemId }: { systemId: string }) => {
-  const snap = useSnapshot(systemSectionTypes) as typeof systemSectionTypes
-  return snap?.[systemId] ?? []
+export const useSectionTypes = (): SectionType[] => {
+  const { data = [] } = trpc.sectionTypes.useQuery()
+  return data
 }
 
-export const useInitSystemSectionTypes = ({
+export const useSystemSectionTypes = ({
   systemId,
 }: {
   systemId: string
-}) => {
-  trpc.sectionTypes.useQuery(
-    {
-      systemId: systemId,
-    },
-    {
-      onSuccess: (data) => {
-        systemSectionTypes[systemId] = ref(data)
-      },
-    }
-  )
-  return useSystemSectionTypes({ systemId })
+}): SectionType[] => {
+  return useSectionTypes().filter((x) => x.systemId === systemId)
 }
-
-export default systemSectionTypes

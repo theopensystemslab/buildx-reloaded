@@ -1,7 +1,8 @@
-import Airtable from "airtable"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
+import { A } from "../../src/utils/functions"
 import { systemFromId } from "./system"
+import { QueryFn } from "./types"
 
 export type SectionType = {
   id: string
@@ -20,33 +21,33 @@ export const sectionTypeParser = z.object({
   }),
 })
 
-export const sectionTypesQuery =
-  (airtable: Airtable) =>
-  async ({
-    input: { systemId },
-  }: {
-    input: { systemId: string }
-  }): Promise<SectionType[]> =>
+export const sectionTypesQuery: QueryFn<SectionType> =
+  (airtable) =>
+  async ({ input: { systemIds } }) =>
     pipe(
-      airtable
-        .base(systemFromId(systemId)?.airtableId ?? "")
-        .table("section_type")
-        .select()
-        .all()
-        .then(
-          z.array(
-            sectionTypeParser.transform(
-              ({
-                id,
-                fields: { section_code, description, section_width },
-              }) => ({
-                id,
-                systemId,
-                code: section_code,
-                description,
-                width: section_width,
-              })
-            )
-          ).parse
-        )
+      systemIds,
+      A.map((systemId) =>
+        airtable
+          .base(systemFromId(systemId)?.airtableId ?? "")
+          .table("section_type")
+          .select()
+          .all()
+          .then(
+            z.array(
+              sectionTypeParser.transform(
+                ({
+                  id,
+                  fields: { section_code, description, section_width },
+                }) => ({
+                  id,
+                  systemId,
+                  code: section_code,
+                  description,
+                  width: section_width,
+                })
+              )
+            ).parse
+          )
+      ),
+      (ps) => Promise.all(ps).then(A.flatten)
     )
