@@ -16,7 +16,7 @@ import {
 } from "../../server/data/house"
 import { Module } from "../../server/data/modules"
 import { A, R, RA, RNEA, RR, S } from "../utils/functions"
-import { useSystemModules } from "../../app/data/modules"
+import { useModules, useSystemModules } from "../../app/data/modules"
 import { useHouseTypes } from "../../app/data/houseType"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
@@ -57,7 +57,7 @@ export const useHouseType = (houseId: string) => {
 }
 
 export const useHouseModules = (houseId: string) => {
-  const { systemId, dna } = useHouse(houseId)
+  const { systemId, dnas: dna } = useHouse(houseId)
   const systemModules = useSystemModules({ systemId })
 
   return useMemo(
@@ -97,6 +97,26 @@ export const useDnaModules = (systemId: string, dna: string[]) => {
       ),
     [dna, systemId, systemModules]
   )
+}
+
+export const useGetHouseModules = () => {
+  const allSystemModules = useModules()
+
+  return ({ systemId, dnas }: { systemId: string; dnas: string[] }) => {
+    let modules: Module[] = []
+
+    for (let dna of dnas) {
+      const foundModule = allSystemModules.find(
+        (module) => module.systemId === systemId && module.dna === dna
+      )
+      if (!foundModule) continue
+      //   throw new Error(
+      //     `no module found for ${JSON.stringify({ systemId, dna })}`
+      //   )
+      modules.push(foundModule)
+    }
+    return modules
+  }
 }
 
 export const modulesToRows = (
@@ -150,7 +170,9 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
   const systemHouses = useSystemHouses(systemId)
   return pipe(
     systemHouses,
-    A.reduce([], (acc: string[], { dna }) => A.uniq(S.Eq)([...acc, ...dna]))
+    A.reduce([], (acc: string[], { dnas: dna }) =>
+      A.uniq(S.Eq)([...acc, ...dna])
+    )
   )
 }
 
@@ -181,7 +203,7 @@ export const useInsert1000Skylarks = () => {
             systemId: houseType.systemId,
             position: new Vector3(x, 0, z),
             rotation: 0,
-            dna: houseType.dna as string[],
+            dnas: houseType.dnas as string[],
             modifiedMaterials: {},
             friendlyName: `Building ${keys(houses).length + 1}`,
           }
@@ -193,60 +215,25 @@ export const useInsert1000Skylarks = () => {
   )
 }
 
-export const systemDnaElementMaterials = proxy<string[]>([])
-
-export const useSystemDnaElementMaterials = () => {
-  // use default material from elementName
-  useEffect(() => {
-    return subscribe(houses, () => {
-      const systemDnas = pipe(
-        houses,
-        RR.collect(S.Ord)((k, a) => a),
-        RNEA.groupBy(({ systemId }) => systemId),
-        RR.map(
-          (houses) =>
-            pipe(
-              houses,
-              RA.reduce([], (acc: string[], { dna }) => [...acc, ...dna]),
-              RA.uniq(S.Eq)
-            )
-          // ...house.reduce((acc: string[], v) => [...acc, ...v.dna], []),
-        )
-        // RR.map((houses) =>
-        //   pipe(
-        //     houses,
-        //     RA.reduce({}, (acc,house) => produce(acc, draft => {
-        //       house.dna.forEach(strand => {
-        //         draft[strand].
-        //       })
-        //     }))
-        //   )
-        // )
-        // RA.uniq(S.Eq)
-      )
-
-      // group by systemId
-
-      const uniqueDnas = pipe(
-        // this needs to be foreach'd by system
-        houses,
-        RR.collect(S.Ord)((_, { dna }) => dna),
-        RA.flatten,
-        RA.uniq(S.Eq)
-      )
-
-      // unique systems
-      // unique modules
-
-      // modified materials
-    })
-  }, [])
-}
-
 export const useHouseSystemId = (houseId: string) => {
   const houses = useHouses()
   const { systemId } = houses[houseId]
   return systemId
+}
+
+export const useHouseFloorAreas = () => {
+  const houses = useHouses()
+  const getHouseModules = useGetHouseModules()
+  return pipe(
+    houses,
+    R.map((house) =>
+      pipe(
+        house,
+        getHouseModules,
+        A.reduce(0, (b, a) => b + a.floorArea)
+      )
+    )
+  )
 }
 
 export default houses

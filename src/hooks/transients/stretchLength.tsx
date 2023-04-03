@@ -319,7 +319,7 @@ export const setStretchLength = () => {
         if (sign(delta) === 1) {
           houses[houseId] = {
             ...houses[houseId],
-            dna: columnLayoutToDNA([
+            dnas: columnLayoutToDNA([
               startColumn,
               ...midColumns,
               ...A.replicate(delta, {
@@ -336,7 +336,7 @@ export const setStretchLength = () => {
         } else if (sign(delta) === -1) {
           houses[houseId] = {
             ...houses[houseId],
-            dna: columnLayoutToDNA([
+            dnas: columnLayoutToDNA([
               startColumn,
               ...midColumns.slice(0, midColumns.length + delta),
               endColumn,
@@ -355,7 +355,7 @@ export const setStretchLength = () => {
           const { x, y, z } = houses[houseId].position
           houses[houseId] = {
             ...houses[houseId],
-            dna: columnLayoutToDNA([
+            dnas: columnLayoutToDNA([
               startColumn,
               ...A.replicate(-delta, {
                 gridGroups: vanillaColumn,
@@ -372,7 +372,7 @@ export const setStretchLength = () => {
         } else if (sign(delta) === 1) {
           houses[houseId] = {
             ...houses[houseId],
-            dna: columnLayoutToDNA([
+            dnas: columnLayoutToDNA([
               startColumn,
               ...midColumns.slice(0, midColumns.length - delta),
               endColumn,

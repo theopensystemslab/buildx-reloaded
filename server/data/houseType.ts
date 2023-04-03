@@ -46,7 +46,7 @@ export const houseTypeParser = z
     }) => ({
       id,
       name: house_type_code,
-      dna: modules,
+      dnas: modules,
       imageUrl: image[0].url,
       description,
       cost,
@@ -84,10 +84,10 @@ export const houseTypesQuery: QueryFn<HouseType> =
             .all()
             .then(z.array(houseTypeParser).parse)
             .then((xs) =>
-              xs.map(({ dna, ...rest }) => ({
+              xs.map(({ dnas, ...rest }) => ({
                 systemId: system.id,
-                dna: pipe(
-                  dna,
+                dnas: pipe(
+                  dnas,
                   map((modulesByHouseTypeId) => {
                     const moduleByHouseType = modulesByHouseType.find(
                       (m) => m.id === modulesByHouseTypeId

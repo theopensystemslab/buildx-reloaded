@@ -33,7 +33,7 @@ export const useHouseElementOutline = (
   const elementObjects = useRef<Record<string, Object3D[]>>({})
   const moduleObjects = useRef<Record<string, Object3D[]>>({})
   const allObjects = useRef<Object3D[]>([])
-  const { dna } = useHouse(houseId)
+  const { dnas: dna } = useHouse(houseId)
 
   useEffect(() => {
     elementObjects.current = {}

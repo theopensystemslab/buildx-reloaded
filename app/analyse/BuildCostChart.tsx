@@ -5,7 +5,7 @@ import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "@/utils/functions"
 import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
-import BuildCostsChartBar from "./BuildCostsChartBar"
+import ChartBar from "./ChartBar"
 import css from "./page.module.css"
 
 const BuildCostChart = () => {
@@ -50,7 +50,7 @@ const BuildCostChart = () => {
         <h5>Estimated £ GBP</h5>
         <div className="grid grid-cols-4 gap-4 border-b-2 border-black">
           <div />
-          <BuildCostsChartBar
+          <ChartBar
             items={Object.values(orderListByBuilding)}
             itemToColorClass={(item) => item.colorClass}
             itemToValue={(item) => item.totalCost}
@@ -62,7 +62,7 @@ const BuildCostChart = () => {
               </div>
             )}
           />
-          <BuildCostsChartBar
+          <ChartBar
             className="scale-90 translate-y-[5%] text-white"
             items={Object.values(orderListByBuilding)}
             itemToColorClass={(item) => item.staleColorClass}

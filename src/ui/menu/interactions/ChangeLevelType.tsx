@@ -32,7 +32,7 @@ const ChangeLevelType = (props: Props) => {
   const canChangeLevelType = levelTypeOptions.length > 1
 
   const changeLevelType = ({ houseDna }: LevelTypeOption["value"]) => {
-    houses[houseId].dna = houseDna
+    houses[houseId].dnas = houseDna
     onChange?.()
   }
 

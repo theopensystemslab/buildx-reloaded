@@ -15,7 +15,7 @@ type Props<T> = {
   className?: HTMLAttributes<HTMLDivElement>["className"]
 }
 
-const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
+const ChartBar = <T extends unknown>(props: Props<T>) => {
   const {
     items,
     itemToString = (item) => JSON.stringify(item),
@@ -65,4 +65,4 @@ const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
   )
 }
 
-export default BuildCostsChartBar
+export default ChartBar

@@ -65,7 +65,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const resetBuilding = () => {
     const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
     if (houseType) {
-      houses[houseId].dna = houseType.dna as string[]
+      houses[houseId].dnas = houseType.dnas as string[]
       houses[houseId].modifiedMaterials = {}
       houses[houseId].rotation = 0
     }

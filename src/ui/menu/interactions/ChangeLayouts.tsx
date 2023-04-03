@@ -29,7 +29,7 @@ const ChangeLayouts = (props: Props) => {
   const canChangeLayout = layoutOpts.length > 1
 
   const changeLayout = ({ houseDna }: typeof layoutOpts[0]["value"]) => {
-    houses[houseId].dna = houseDna
+    houses[houseId].dnas = houseDna
     props.onComplete?.()
   }
 
@@ -45,7 +45,7 @@ const ChangeLayouts = (props: Props) => {
   const canChangeStairs = stairsOpts.length > 1
 
   const changeStairs = ({ houseDna }: StairsOpt["value"]) => {
-    houses[houseId].dna = houseDna
+    houses[houseId].dnas = houseDna
     props.onComplete?.()
   }
 

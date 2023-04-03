@@ -65,7 +65,7 @@ export const useChangeLevelType = ({ systemId }: { systemId: string }) => {
   const selectedOption: LevelTypeOption = {
     label: getDescription(thisLevelType),
     value: {
-      houseDna: houses[houseId].dna,
+      houseDna: houses[houseId].dnas,
       levelType: thisLevelType,
     },
   }
