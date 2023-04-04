@@ -4,9 +4,13 @@ import { ArrowUp } from "@carbon/icons-react"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "@/utils/functions"
-import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
+import {
+  OrderListRow,
+  useOrderListData,
+} from "../../build/order/useOrderListData"
 import ChartBar from "./ChartBar"
-import css from "./page.module.css"
+import css from "./charts.module.css"
+import { Fragment } from "react"
 
 const BuildCostChart = () => {
   const { orderListData, fmt } = useOrderListData()
@@ -50,31 +54,35 @@ const BuildCostChart = () => {
         <h5>Estimated £ GBP</h5>
         <div className="grid grid-cols-4 gap-4 border-b-2 border-black">
           <div />
-          <ChartBar
-            items={Object.values(orderListByBuilding)}
-            itemToColorClass={(item) => item.colorClass}
-            itemToValue={(item) => item.totalCost}
-            itemToKey={(item) => item.buildingName}
-            renderItem={(item) => (
-              <div className="flex flex-col justify-center  items-center px-2">
-                <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                <div>{fmt(item.totalCost)}</div>
-              </div>
-            )}
-          />
-          <ChartBar
-            className="scale-90 translate-y-[5%] text-white"
-            items={Object.values(orderListByBuilding)}
-            itemToColorClass={(item) => item.staleColorClass}
-            itemToValue={(item) => (item.totalCost / 100) * 90}
-            itemToKey={(item) => item.buildingName}
-            renderItem={(item) => (
-              <div className="flex flex-col justify-center  items-center px-2">
-                <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                <div>{fmt((item.totalCost / 100) * 90)}</div>
-              </div>
-            )}
-          />
+          {Object.keys(orderListByBuilding).length > 0 && (
+            <Fragment>
+              <ChartBar
+                items={Object.values(orderListByBuilding)}
+                itemToColorClass={(item) => item.colorClass}
+                itemToValue={(item) => item.totalCost}
+                itemToKey={(item) => item.buildingName}
+                renderItem={(item) => (
+                  <div className="flex flex-col justify-center  items-center px-2">
+                    <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                    <div>{fmt(item.totalCost)}</div>
+                  </div>
+                )}
+              />
+              <ChartBar
+                className="scale-90 translate-y-[5%] text-white"
+                items={Object.values(orderListByBuilding)}
+                itemToColorClass={(item) => item.staleColorClass}
+                itemToValue={(item) => (item.totalCost / 100) * 90}
+                itemToKey={(item) => item.buildingName}
+                renderItem={(item) => (
+                  <div className="flex flex-col justify-center  items-center px-2">
+                    <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                    <div>{fmt((item.totalCost / 100) * 90)}</div>
+                  </div>
+                )}
+              />
+            </Fragment>
+          )}{" "}
           <div />
         </div>
         <div className="grid grid-cols-2 gap-0 mt-8">

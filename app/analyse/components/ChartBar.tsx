@@ -1,9 +1,8 @@
-"use client"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import React, { HTMLAttributes } from "react"
-import { A } from "../../src/utils/functions"
-import { floor } from "../../src/utils/math"
+import { A } from "@/utils/functions"
+import { floor } from "@/utils/math"
 
 type Props<T> = {
   items: T[]
