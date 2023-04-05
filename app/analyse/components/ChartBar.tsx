@@ -12,18 +12,22 @@ type Props<T> = {
   itemToColorClass: (x: T) => string
   renderItem?: (x: T) => React.ReactNode
   className?: HTMLAttributes<HTMLDivElement>["className"]
+  reverse?: boolean
 }
 
 const ChartBar = <T extends unknown>(props: Props<T>) => {
   const {
-    items,
+    items: _items,
     itemToString = (item) => JSON.stringify(item),
     itemToValue,
     itemToKey = itemToString,
     itemToColorClass,
     renderItem,
     className,
+    reverse = false,
   } = props
+
+  const items = reverse ? _items : A.reverse(_items)
 
   const total = items.reduce((acc, v) => acc + itemToValue(v), 0)
 
@@ -37,7 +41,7 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
   return (
     <div
       className={clsx(
-        `grid grid-cols-1 font-semibold leading-6 tracking-wide`,
+        `grid grid-cols-1 font-medium leading-6 tracking-wide`,
         className
       )}
       style={{

@@ -54,7 +54,7 @@ const BuildCostChart = () => {
         <h5>Estimated £ GBP</h5>
       </div>
       <div>
-        <div className="grid grid-cols-4 gap-4 border-b-2 border-black">
+        <div className="grid grid-cols-4 gap-2 border-b border-black">
           <div />
           {Object.keys(orderListByBuilding).length > 0 && (
             <Fragment>
@@ -78,7 +78,7 @@ const BuildCostChart = () => {
                 itemToKey={(item) => item.buildingName}
                 renderItem={(item) => (
                   <div className="flex flex-col justify-center  items-center px-2">
-                    <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                    {/* <div>{capitalizeFirstLetters(item.buildingName)}</div> */}
                     <div>{fmt((item.totalCost / 100) * 90)}</div>
                   </div>
                 )}
@@ -87,21 +87,21 @@ const BuildCostChart = () => {
           )}{" "}
           <div />
         </div>
-        <div className="grid grid-cols-2 gap-0 mt-8">
-          <div className="flex justify-end mx-8">
-            <div className="text-6xl font-normal">{`${symbol}${formatNumberWithK(
+        <div className="grid grid-cols-2 gap-0 mt-5">
+          <div className="flex justify-end mx-8 mt-2">
+            <div className="text-5xl font-normal">{`${symbol}${formatNumberWithK(
               totalCost
             )}`}</div>
           </div>
-          <div className="text-5xl">
+          <div>
             <div>
-              <span className="">
+              <span className="text-3xl">
                 <ArrowUp className="inline" width="1em" height="1em" />
                 <span>{`10%`}</span>
               </span>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 pr-4">
               <span>Compared to conventional new build</span>
             </div>
           </div>

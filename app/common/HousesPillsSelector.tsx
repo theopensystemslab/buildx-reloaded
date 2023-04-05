@@ -61,16 +61,26 @@ export const buildingColorVariants: Record<number, string> = {
 }
 
 export const staleColorVariants: Record<number, string> = {
-  0: "bg-grey-10",
-  1: "bg-grey-20",
+  0: "bg-grey-50",
+  1: "bg-grey-40",
   2: "bg-grey-30",
-  3: "bg-grey-40",
-  4: "bg-grey-50",
+  3: "bg-grey-80",
+  4: "bg-grey-70",
   5: "bg-grey-60",
-  6: "bg-grey-70",
-  7: "bg-grey-80",
-  8: "bg-grey-90",
-  9: "bg-grey-100",
+  // 6: "bg-grey-70",
+  // 7: "bg-grey-80",
+  // 8: "bg-grey-90",
+  // 9: "bg-grey-100",
+}
+
+export const useGetColorClass = () => {
+  const selectedHouseIds = useSelectedHouseIds()
+
+  return (houseId: string, opts: { stale?: boolean } = {}) => {
+    const { stale = false } = opts
+    const index = selectedHouseIds.indexOf(houseId)
+    return stale ? staleColorVariants[index] : buildingColorVariants[index]
+  }
 }
 
 const HousesPillsSelector = () => {
@@ -81,6 +91,8 @@ const HousesPillsSelector = () => {
   }, [houses])
 
   const selectedHouses = useSelectedHouseIds()
+
+  const getColorClass = useGetColorClass()
 
   const houseSelectOptions: { houseId: string; houseName: string }[] =
     Object.entries(houses)
@@ -116,12 +128,12 @@ const HousesPillsSelector = () => {
           return null
         }
 
-        const colorClassName = buildingColorVariants[index]
+        const colorClass = getColorClass(houseId)
 
         return (
           <p
             key={houseId}
-            className={`inline-flex items-center space-x-1 overflow-hidden rounded-full ${colorClassName}`}
+            className={`inline-flex items-center space-x-1 overflow-hidden rounded-full ${colorClass}`}
           >
             <span className="inline-block py-1 pl-3">{house.friendlyName}</span>
             <button

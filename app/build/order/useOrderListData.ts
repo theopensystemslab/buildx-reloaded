@@ -8,6 +8,7 @@ import { A, O, R, S } from "../../../src/utils/functions"
 import {
   buildingColorVariants,
   staleColorVariants,
+  useGetColorClass,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
 
@@ -26,6 +27,8 @@ export type OrderListRow = {
 }
 export const useOrderListData = () => {
   const selectedHouses = useSelectedHouses()
+  const getColorClass = useGetColorClass()
+
   const { data: modules = [], status: modulesQueryStatus } =
     trpc.modules.useQuery()
   const { data: blocks = [], status: blocksQueryStatus } =
@@ -128,14 +131,8 @@ export const useOrderListData = () => {
                   block.systemId === house.systemId && block.id === blockId
               ),
               count,
-              colorClass:
-                buildingColorVariants[
-                  index % Object.keys(buildingColorVariants).length
-                ],
-              staleColorClass:
-                staleColorVariants[
-                  index % Object.keys(staleColorVariants).length
-                ],
+              colorClass: getColorClass(houseId),
+              staleColorClass: getColorClass(houseId, { stale: true }),
             }
           })
         )
@@ -166,7 +163,7 @@ export const useOrderListData = () => {
             : O.none
       )
     )
-  }, [blockModulesEntries, blocks, modules, selectedHouses])
+  }, [blockModulesEntries, blocks, getColorClass, modules, selectedHouses])
 
   const { code: currencyCode } = useSiteCurrency()
 

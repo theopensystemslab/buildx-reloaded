@@ -14,12 +14,12 @@ import { type SpaceType } from "~/server/data/spaceTypes"
 import { type StairType } from "~/server/data/stairTypes"
 import { type WindowType } from "~/server/data/windowTypes"
 import { useSelectedHouseIds } from "../../common/HousesPillsSelector"
-import { useElements } from "../elements"
-import { useEnergyInfos } from "../energyInfos"
-import { type House } from "../houses"
-import { useMaterials } from "../materials"
-import { useSpaceTypes } from "../spaceTypes"
-import { useWindowTypes } from "../windowTypes"
+import { useElements } from "../../data/elements"
+import { useEnergyInfos } from "../../data/energyInfos"
+import { type House } from "../../data/houses"
+import { useMaterials } from "../../data/materials"
+import { useSpaceTypes } from "../../data/spaceTypes"
+import { useWindowTypes } from "../../data/windowTypes"
 
 export type SystemsData = {
   houseTypes: Array<HouseType>
@@ -587,7 +587,7 @@ const calculateHouseInfo = (
   }
 }
 
-export const useDataMetrics = () => {
+export const useAnalyseData = () => {
   const houses = useHouses()
 
   const getHouseModules = useGetHouseModules()
@@ -668,10 +668,9 @@ export const formatLong = (d: number) => {
 
 export const formatWithUnit = (d: number, unitOfMeasurement: string) => {
   const formatted = format(d)
-  const formattedWithUnit =
-    unitOfMeasurement === "€"
-      ? `${unitOfMeasurement}${formatted}`
-      : `${formatted}${unitOfMeasurement}`
+  const formattedWithUnit = ["€", "£", "$"].includes(unitOfMeasurement)
+    ? `${unitOfMeasurement}${formatted}`
+    : `${formatted}${unitOfMeasurement}`
   return formattedWithUnit
 }
 

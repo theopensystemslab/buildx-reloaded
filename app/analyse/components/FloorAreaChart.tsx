@@ -4,7 +4,7 @@ import { A, capitalizeFirstLetters, R, S } from "@/utils/functions"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import {
-  buildingColorVariants,
+  useGetColorClass,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
 import ChartBar from "./ChartBar"
@@ -12,6 +12,8 @@ import css from "./charts.module.css"
 
 const FloorAreaChart = () => {
   const selectedHouses = useSelectedHouses()
+
+  const getColorClass = useGetColorClass()
 
   const houseFloorAreas = useHouseFloorAreas()
 
@@ -42,10 +44,7 @@ const FloorAreaChart = () => {
                 return {
                   houseId,
                   floorArea,
-                  colorClass:
-                    buildingColorVariants[
-                      houseIndex % Object.keys(buildingColorVariants).length
-                    ],
+                  colorClass: getColorClass(houseId),
                   displayName: capitalizeFirstLetters(house.friendlyName),
                 }
               })
@@ -55,7 +54,7 @@ const FloorAreaChart = () => {
             itemToKey={(item) => item.houseId}
             renderItem={(item) => (
               <div className="flex flex-col justify-center  items-center px-2">
-                <div>{capitalizeFirstLetters(item.displayName)}</div>
+                <div>{item.displayName}</div>
                 <div>{item.floorArea}</div>
               </div>
             )}
