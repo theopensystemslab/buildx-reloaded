@@ -26,9 +26,26 @@ export type OrderListRow = {
 }
 export const useOrderListData = () => {
   const selectedHouses = useSelectedHouses()
-  const { data: modules = [] } = trpc.modules.useQuery()
-  const { data: blocks = [] } = trpc.blocks.useQuery()
-  const { data: blockModulesEntries = [] } = trpc.blockModulesEntries.useQuery()
+  const { data: modules = [], status: modulesQueryStatus } =
+    trpc.modules.useQuery()
+  const { data: blocks = [], status: blocksQueryStatus } =
+    trpc.blocks.useQuery()
+  const {
+    data: blockModulesEntries = [],
+    status: blockModulesEntriesQueryStatus,
+  } = trpc.blockModulesEntries.useQuery()
+
+  const allStatuses = [
+    modulesQueryStatus,
+    blocksQueryStatus,
+    blockModulesEntriesQueryStatus,
+  ]
+
+  const status: typeof modulesQueryStatus = allStatuses.includes("error")
+    ? "error"
+    : allStatuses.includes("loading")
+    ? "loading"
+    : "success"
 
   const data = useMemo(() => {
     const accum: Record<string, number> = {}
@@ -177,6 +194,7 @@ export const useOrderListData = () => {
     totalManufacturingCost,
     totalTotalCost,
     orderListData: data,
+    status,
     fmt,
   }
 }

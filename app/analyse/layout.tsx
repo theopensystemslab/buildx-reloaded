@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic"
 import { TrpcProvider } from "../common/TrpcProvider"
-import AnalyseNav from "./common/AnalyseNav"
 
 const HousesPillsSelector = dynamic(
   () => import("../common/HousesPillsSelector"),
@@ -17,7 +16,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* <div className="flex-1 flex-grow-0 flex-shrink-0">
           <AnalyseNav />
         </div> */}
-
         <TrpcProvider>{children}</TrpcProvider>
       </div>
     </div>

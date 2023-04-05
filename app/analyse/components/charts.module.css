@@ -6,3 +6,6 @@
 .chart > div {
   @apply py-8 px-4;
 }
+
+.chart > div:nth-child(2) {
+}

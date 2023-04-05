@@ -52,6 +52,8 @@ const BuildCostChart = () => {
       <div>
         <h2>Build cost</h2>
         <h5>Estimated £ GBP</h5>
+      </div>
+      <div>
         <div className="grid grid-cols-4 gap-4 border-b-2 border-black">
           <div />
           {Object.keys(orderListByBuilding).length > 0 && (

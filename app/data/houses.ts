@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "../../src/constants"
+import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "@/constants"
 
 export const houseParser = z.object({
   id: z.string().min(1),

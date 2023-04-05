@@ -1,0 +1,12 @@
+.root {
+  @apply w-full h-full;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 1rem;
+}
+
+@screen sm {
+  .root {
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  }
+}

@@ -3,22 +3,31 @@ import { useHouseFloorAreas } from "@/hooks/houses"
 import { A, capitalizeFirstLetters, R, S } from "@/utils/functions"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
+import { trpc } from "../../../client/trpc"
 import {
   buildingColorVariants,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
+import { useDataMetrics } from "../../data/metrics"
+import { useSystemsSettings } from "../../data/settings"
 import ChartBar from "./ChartBar"
 import css from "./charts.module.css"
 
 const CarbonEmissionsChart = () => {
   const selectedHouses = useSelectedHouses()
 
-  const houseFloorAreas = useHouseFloorAreas()
+  // const houseFloorAreas = useHouseFloorAreas()
 
-  const totalFloorArea = pipe(
-    houseFloorAreas,
-    R.reduce(S.Ord)(0, (b, a) => b + a)
-  )
+  // const totalFloorArea = pipe(
+  //   houseFloorAreas,
+  //   R.reduce(S.Ord)(0, (b, a) => b + a)
+  // )
+
+  const settings = useSystemsSettings()
+
+  const foo = useDataMetrics()
+
+  console.log({ settings, ...foo })
 
   return (
     <div className={clsx(css.chart)}>
@@ -26,8 +35,9 @@ const CarbonEmissionsChart = () => {
         <h2>Carbon emissions</h2>
         <h5>Gross internal m²</h5>
       </div>
+      <pre>{JSON.stringify({ ...foo, settings }, null, 2)}</pre>
       <div>
-        {selectedHouses.length > 0 && (
+        {/* {selectedHouses.length > 0 && (
           <ChartBar
             items={pipe(
               houseFloorAreas,
@@ -60,7 +70,7 @@ const CarbonEmissionsChart = () => {
               </div>
             )}
           />
-        )}
+        )} */}
       </div>
     </div>
   )
