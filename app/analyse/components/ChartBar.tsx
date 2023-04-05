@@ -41,7 +41,7 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
   return (
     <div
       className={clsx(
-        `grid grid-cols-1 font-medium leading-6 tracking-wide`,
+        `grid grid-cols-1 font-medium leading-6 tracking-wide h-64`,
         className
       )}
       style={{
