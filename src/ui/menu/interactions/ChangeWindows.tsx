@@ -80,7 +80,7 @@ const ChangeWindows = (props: Props) => {
   }
 
   const changeWindow = ({ houseDna }: WindowTypeOption["value"]) => {
-    houses[houseId].dna = houseDna
+    houses[houseId].dnas = houseDna
     props.onComplete?.()
   }
 

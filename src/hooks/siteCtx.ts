@@ -2,6 +2,7 @@ import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "@/constants"
 import { useEffect } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
+import { formatWithUnit } from "../../app/analyse/data"
 import { guardNotNullish } from "../utils/functions"
 import { isSSR } from "../utils/next"
 import houses from "./houses"
@@ -133,9 +134,14 @@ export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
 
 export const useSiteCurrency = () => {
   const { region } = useSiteCtx()
+  const symbol = region === "UK" ? "£" : "€"
+  const code = region === "UK" ? "GBP" : "EUR"
+
   return {
-    symbol: region === "UK" ? "£" : "€",
-    code: region === "UK" ? "GBP" : "EUR",
+    symbol,
+    code,
+    formatWithSymbol: (x: number) => formatWithUnit(x, symbol),
+    formatWithCode: (x: number) => formatWithUnit(x, code),
   }
 }
 

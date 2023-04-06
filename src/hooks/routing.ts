@@ -58,9 +58,6 @@ export const useRouting = () => {
         exitBuildingMode()
     }
 
-    scope.selected = null
-    scope.hovered = null
-
     urlChangingLock.current = false
   }, [params])
 }

@@ -2,7 +2,7 @@
 import { Fragment, PropsWithChildren } from "react"
 import Loader from "../../src/ui/common/Loader"
 import { useElements } from "./elements"
-import { useHouseTypes } from "./houseType"
+import { useHouseTypes } from "./houseTypes"
 import { useLevelTypes } from "./levelTypes"
 import { useMaterials } from "./materials"
 import { useModules } from "./modules"

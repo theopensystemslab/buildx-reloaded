@@ -1,9 +1,8 @@
-"use client"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import React, { HTMLAttributes } from "react"
-import { A } from "../../src/utils/functions"
-import { floor } from "../../src/utils/math"
+import { A } from "@/utils/functions"
+import { floor } from "@/utils/math"
 
 type Props<T> = {
   items: T[]
@@ -13,31 +12,44 @@ type Props<T> = {
   itemToColorClass: (x: T) => string
   renderItem?: (x: T) => React.ReactNode
   className?: HTMLAttributes<HTMLDivElement>["className"]
+  reverse?: boolean
 }
 
-const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
+const ChartBar = <T extends unknown>(props: Props<T>) => {
   const {
-    items,
+    items: _items,
     itemToString = (item) => JSON.stringify(item),
     itemToValue,
     itemToKey = itemToString,
     itemToColorClass,
     renderItem,
     className,
+    reverse = false,
   } = props
+
+  const items = reverse ? _items : A.reverse(_items)
 
   const total = items.reduce((acc, v) => acc + itemToValue(v), 0)
 
   const gridTemplateRows = `${pipe(
     items,
     A.map(
-      (item) => `${pipe(item, itemToValue, (x) => (x * 100) / total, floor)}fr`
+      (item) =>
+        `auto minmax(1fr, ${pipe(
+          item,
+          itemToValue,
+          (x) => (x * 100) / total,
+          floor
+        )}fr)`
     )
   ).join(" ")}`
 
   return (
     <div
-      className={clsx(`grid grid-cols-1`, className)}
+      className={clsx(
+        `grid grid-cols-1 font-medium leading-6 tracking-wide`,
+        className
+      )}
       style={{
         gridTemplateRows,
       }}
@@ -62,4 +74,4 @@ const BuildCostsChartBar = <T extends unknown>(props: Props<T>) => {
   )
 }
 
-export default BuildCostsChartBar
+export default ChartBar

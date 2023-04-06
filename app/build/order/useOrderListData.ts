@@ -8,6 +8,7 @@ import { A, O, R, S } from "../../../src/utils/functions"
 import {
   buildingColorVariants,
   staleColorVariants,
+  useGetColorClass,
   useSelectedHouses,
 } from "../../common/HousesPillsSelector"
 
@@ -26,9 +27,28 @@ export type OrderListRow = {
 }
 export const useOrderListData = () => {
   const selectedHouses = useSelectedHouses()
-  const { data: modules = [] } = trpc.modules.useQuery()
-  const { data: blocks = [] } = trpc.blocks.useQuery()
-  const { data: blockModulesEntries = [] } = trpc.blockModulesEntries.useQuery()
+  const getColorClass = useGetColorClass()
+
+  const { data: modules = [], status: modulesQueryStatus } =
+    trpc.modules.useQuery()
+  const { data: blocks = [], status: blocksQueryStatus } =
+    trpc.blocks.useQuery()
+  const {
+    data: blockModulesEntries = [],
+    status: blockModulesEntriesQueryStatus,
+  } = trpc.blockModulesEntries.useQuery()
+
+  const allStatuses = [
+    modulesQueryStatus,
+    blocksQueryStatus,
+    blockModulesEntriesQueryStatus,
+  ]
+
+  const status: typeof modulesQueryStatus = allStatuses.includes("error")
+    ? "error"
+    : allStatuses.includes("loading")
+    ? "loading"
+    : "success"
 
   const data = useMemo(() => {
     const accum: Record<string, number> = {}
@@ -49,7 +69,7 @@ export const useOrderListData = () => {
 
     return pipe(
       selectedHouses,
-      A.chain(({ id: houseId, dna: dnas, ...house }) =>
+      A.chain(({ id: houseId, dnas: dnas, ...house }) =>
         pipe(
           dnas,
           A.map((dna) => ({
@@ -111,14 +131,8 @@ export const useOrderListData = () => {
                   block.systemId === house.systemId && block.id === blockId
               ),
               count,
-              colorClass:
-                buildingColorVariants[
-                  index % Object.keys(buildingColorVariants).length
-                ],
-              staleColorClass:
-                staleColorVariants[
-                  index % Object.keys(staleColorVariants).length
-                ],
+              colorClass: getColorClass(houseId),
+              staleColorClass: getColorClass(houseId, { stale: true }),
             }
           })
         )
@@ -149,7 +163,7 @@ export const useOrderListData = () => {
             : O.none
       )
     )
-  }, [blockModulesEntries, blocks, modules, selectedHouses])
+  }, [blockModulesEntries, blocks, getColorClass, modules, selectedHouses])
 
   const { code: currencyCode } = useSiteCurrency()
 
@@ -177,6 +191,7 @@ export const useOrderListData = () => {
     totalManufacturingCost,
     totalTotalCost,
     orderListData: data,
+    status,
     fmt,
   }
 }

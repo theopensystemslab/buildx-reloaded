@@ -1,7 +1,7 @@
 import { initTRPC } from "@trpc/server"
 import Airtable from "airtable"
 import { elementsQuery } from "~/server/data/elements"
-import { houseTypesQuery } from "~/server/data/houseType"
+import { houseTypesQuery } from "~/server/data/houseTypes"
 import { levelTypesQuery } from "~/server/data/levelTypes"
 import { materialsQuery } from "~/server/data/materials"
 import { modulesQuery } from "~/server/data/modules"
@@ -11,6 +11,10 @@ import { systemIdParser, systemIdsParser } from "~/server/data/system"
 import { windowTypesQuery } from "~/server/data/windowTypes"
 import { blockModulesEntriesQuery } from "../data/blockModulesEntries"
 import { blocksQuery } from "../data/blocks"
+import { energyInfosQuery } from "../data/energyInfos"
+import { internalLayoutTypesQuery } from "../data/internalLayoutTypes"
+import { systemSettingsQuery } from "../data/settings"
+import { spaceTypesQuery } from "../data/spaceTypes"
 
 const t = initTRPC.create()
 
@@ -36,6 +40,16 @@ export const appRouter = router({
     .input(systemIdsParser)
     .query(windowTypesQuery(airtable)),
   stairTypes: procedure.input(systemIdsParser).query(stairTypesQuery(airtable)),
+  internalLayoutTypes: procedure
+    .input(systemIdsParser)
+    .query(internalLayoutTypesQuery(airtable)),
+  spaceTypes: procedure.input(systemIdsParser).query(spaceTypesQuery(airtable)),
+  settings: procedure
+    .input(systemIdsParser)
+    .query(systemSettingsQuery(airtable)),
+  energyInfos: procedure
+    .input(systemIdsParser)
+    .query(energyInfosQuery(airtable)),
 })
 
 // export type definition of API

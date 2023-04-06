@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
-import { House } from "../../../server/data/house"
+import { House } from "../../../app/data/houses"
 import houses, { useHouse } from "../../hooks/houses"
 import { closeMenu } from "../../hooks/menu"
 import scope, { useScope } from "../../hooks/scope"
@@ -24,7 +24,7 @@ import ContextMenu, { ContextMenuProps } from "./common/ContextMenu"
 import ContextMenuButton from "./common/ContextMenuButton"
 import { Reset, TrashCan } from "@carbon/icons-react"
 import RenameForm from "../design/RenameForm"
-import { useHouseTypes } from "../../../app/data/houseType"
+import { useHouseTypes } from "../../../app/data/houseTypes"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()
@@ -65,7 +65,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const resetBuilding = () => {
     const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
     if (houseType) {
-      houses[houseId].dna = houseType.dna as string[]
+      houses[houseId].dnas = houseType.dnas as string[]
       houses[houseId].modifiedMaterials = {}
       houses[houseId].rotation = 0
     }

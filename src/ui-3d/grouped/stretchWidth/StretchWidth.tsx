@@ -335,7 +335,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
     invalidate()
   })
 
-  const { dna } = useHouse(houseId)
+  const { dnas: dna } = useHouse(houseId)
 
   useEffect(() => {
     leftHandleRef.current.position.set(0, 0, 0)

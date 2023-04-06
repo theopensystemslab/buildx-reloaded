@@ -56,7 +56,7 @@ export const setPreviews = () => {
       R.toEntries,
       A.findFirst(([_, { active }]) => active),
       O.map(([_, { value }]) => {
-        houses[houseId].dna = value
+        houses[houseId].dnas = value
       })
     )
 

@@ -8,7 +8,7 @@ import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
-import { useHouseTypes } from "../../../app/data/houseType"
+import { useHouseTypes } from "../../../app/data/houseTypes"
 import houses from "../../hooks/houses"
 import HouseThumbnail from "./HouseThumbnail"
 // import HouseThumbnail from "./HouseThumbnail"
@@ -84,7 +84,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                           systemId: houseType.systemId,
                           position,
                           rotation: 0,
-                          dna: houseType.dna as string[],
+                          dnas: houseType.dnas as string[],
                           modifiedMaterials: {},
                           friendlyName: `Building ${keys(houses).length + 1}`,
                         }

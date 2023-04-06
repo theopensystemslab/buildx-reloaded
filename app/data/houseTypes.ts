@@ -1,5 +1,5 @@
 import { trpc } from "~/client/trpc"
-import { HouseType } from "../../server/data/houseType"
+import { HouseType } from "~/server/data/houseTypes"
 
 export const useHouseTypes = (): HouseType[] => {
   const { data = [] } = trpc.houseTypes.useQuery()

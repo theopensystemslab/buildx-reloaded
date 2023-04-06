@@ -110,14 +110,14 @@ const AddRemoveLevels = (props: Props) => {
   const addFloorAbove = () => {
     if (!canAddFloorAbove) return
 
-    houses[houseId].dna = floorAboveDna
+    houses[houseId].dnas = floorAboveDna
     onComplete?.()
   }
 
   const removeFloor = () => {
     if (!canRemoveFloor) return
 
-    houses[houseId].dna = pipe(
+    houses[houseId].dnas = pipe(
       columnMatrix,
       transpose,
       (rows) => [...rows.slice(0, levelIndex), ...rows.slice(levelIndex + 1)],
