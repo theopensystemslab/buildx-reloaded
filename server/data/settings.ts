@@ -70,18 +70,3 @@ export const systemSettingsQuery: QueryFn<SystemSettings> =
       ),
       (ps) => Promise.all(ps)
     )
-
-// export const useSystemSettings = (id: string) => {
-//   const { settings } = useSystemsData()
-
-//   return pipe(
-//     settings,
-//     A.findFirstMap(({ systemId, height, length }) =>
-//       systemId === id ? O.some({ height, length }) : O.none
-//     ),
-//     O.getOrElse(() => ({
-//       height: { min: 0, max: 10 },
-//       length: { min: 0, max: 100 },
-//     }))
-//   )
-// }
