@@ -106,9 +106,7 @@ export const useGetHouseModules = () => {
         (module) => module.systemId === systemId && module.dna === dna
       )
       if (!foundModule) continue
-      //   throw new Error(
-      //     `no module found for ${JSON.stringify({ systemId, dna })}`
-      //   )
+
       modules.push(foundModule)
     }
     return modules
