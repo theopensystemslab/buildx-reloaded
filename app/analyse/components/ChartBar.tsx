@@ -34,14 +34,20 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
   const gridTemplateRows = `${pipe(
     items,
     A.map(
-      (item) => `${pipe(item, itemToValue, (x) => (x * 100) / total, floor)}fr`
+      (item) =>
+        `auto minmax(1fr, ${pipe(
+          item,
+          itemToValue,
+          (x) => (x * 100) / total,
+          floor
+        )}fr)`
     )
   ).join(" ")}`
 
   return (
     <div
       className={clsx(
-        `grid grid-cols-1 font-medium leading-6 tracking-wide h-64`,
+        `grid grid-cols-1 font-medium leading-6 tracking-wide`,
         className
       )}
       style={{

@@ -1,11 +1,20 @@
 .chart {
   @apply bg-grey-10;
   @apply max-w-lg;
-}
-
-.chart > div {
-  @apply py-8 px-4;
+  @apply px-4 py-6;
 }
 
 .chart > div:nth-child(2) {
+  @apply mt-5;
+}
+
+.chartBottom {
+  @apply grid grid-cols-2 gap-0;
+  @apply mt-5;
+}
+
+.chartBottom > div:first-child {
+  @apply flex justify-end;
+  @apply mx-8 mt-2;
+  @apply text-5xl font-normal;
 }

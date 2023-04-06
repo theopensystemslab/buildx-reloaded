@@ -54,45 +54,43 @@ const BuildCostChart = () => {
         <h5>Estimated £ GBP</h5>
       </div>
       <div>
-        <div className="grid grid-cols-4 gap-2 border-b border-black">
-          <div />
-          {Object.keys(orderListByBuilding).length > 0 && (
-            <Fragment>
-              <ChartBar
-                items={Object.values(orderListByBuilding)}
-                itemToColorClass={(item) => item.colorClass}
-                itemToValue={(item) => item.totalCost}
-                itemToKey={(item) => item.buildingName}
-                renderItem={(item) => (
-                  <div className="flex flex-col justify-center  items-center px-2">
-                    <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                    <div>{fmt(item.totalCost)}</div>
-                  </div>
-                )}
-              />
-              <ChartBar
-                className="scale-90 translate-y-[5%] text-white"
-                items={Object.values(orderListByBuilding)}
-                itemToColorClass={(item) => item.staleColorClass}
-                itemToValue={(item) => (item.totalCost / 100) * 90}
-                itemToKey={(item) => item.buildingName}
-                renderItem={(item) => (
-                  <div className="flex flex-col justify-center  items-center px-2">
-                    {/* <div>{capitalizeFirstLetters(item.buildingName)}</div> */}
-                    <div>{fmt((item.totalCost / 100) * 90)}</div>
-                  </div>
-                )}
-              />
-            </Fragment>
-          )}
+        <div className="h-64">
+          <div className="grid grid-cols-4 gap-2 border-b border-black h-full">
+            <div />
+            {Object.keys(orderListByBuilding).length > 0 && (
+              <Fragment>
+                <ChartBar
+                  items={Object.values(orderListByBuilding)}
+                  itemToColorClass={(item) => item.colorClass}
+                  itemToValue={(item) => item.totalCost}
+                  itemToKey={(item) => item.buildingName}
+                  renderItem={(item) => (
+                    <div className="flex flex-col justify-center  items-center">
+                      <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                      <div>{fmt(item.totalCost)}</div>
+                    </div>
+                  )}
+                />
+                <ChartBar
+                  className="scale-90 translate-y-[5%] text-white"
+                  items={Object.values(orderListByBuilding)}
+                  itemToColorClass={(item) => item.staleColorClass}
+                  itemToValue={(item) => (item.totalCost / 100) * 90}
+                  itemToKey={(item) => item.buildingName}
+                  renderItem={(item) => (
+                    <div className="flex flex-col justify-center  items-center">
+                      {/* <div>{capitalizeFirstLetters(item.buildingName)}</div> */}
+                      <div>{fmt((item.totalCost / 100) * 90)}</div>
+                    </div>
+                  )}
+                />
+              </Fragment>
+            )}
+          </div>
           <div />
         </div>
-        <div className="grid grid-cols-2 gap-0 mt-5">
-          <div className="flex justify-end mx-8 mt-2">
-            <div className="text-5xl font-normal">{`${symbol}${formatNumberWithK(
-              totalCost
-            )}`}</div>
-          </div>
+        <div className={css.chartBottom}>
+          <div>{`${symbol}${formatNumberWithK(totalCost)}`}</div>
           <div>
             <div>
               <span className="text-3xl">
@@ -101,7 +99,7 @@ const BuildCostChart = () => {
               </span>
             </div>
 
-            <div className="mt-4 pr-4">
+            <div className="mt-4">
               <span>Compared to conventional new build</span>
             </div>
           </div>

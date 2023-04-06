@@ -34,9 +34,10 @@ const FloorAreaChart = () => {
         <h2>Floor area</h2>
         <h5>Gross internal m²</h5>
       </div>
-      <div>
+      <div className="h-64">
         {selectedHouses.length > 0 && (
           <ChartBar
+            className="h-full"
             items={pipe(
               houseFloorAreas,
               R.toArray,
@@ -59,7 +60,7 @@ const FloorAreaChart = () => {
             itemToValue={(item) => item.floorArea}
             itemToKey={(item) => item.houseId}
             renderItem={(item) => (
-              <div className="flex flex-col justify-center  items-center px-2">
+              <div className="flex flex-col justify-center  items-center">
                 <div>{item.displayName}</div>
                 <div>{formatWithUnit(floor(item.floorArea), "m²")}</div>
               </div>
@@ -67,7 +68,7 @@ const FloorAreaChart = () => {
           />
         )}
       </div>
-      <div className="grid grid-cols-2 gap-0">
+      <div className={css.chartBottom}>
         <div className="flex justify-end mx-8 mt-2">
           <div className="text-5xl font-normal">
             {formatWithUnit(floor(totalFloorArea), "m²")}
@@ -77,7 +78,7 @@ const FloorAreaChart = () => {
           <div>
             <span className="text-3xl">{`${formatWithSymbol(1200)}/m²`}</span>
           </div>
-          <div className="pr-4">
+          <div className="">
             <span>Cost per floor area</span>
           </div>
         </div>
