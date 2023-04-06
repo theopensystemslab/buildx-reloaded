@@ -30,11 +30,6 @@ const getEnergyEntry = (fieldName: string, records: Array<any>): number => {
     ),
     O.getOrElse(() => 0)
   )
-  // return (
-  //   find()?.fields[
-  //     "SWC_constants"
-  //   ] || 0
-  // )
 }
 
 export const energyInfoParser = z.object({
@@ -63,50 +58,35 @@ export const energyInfosQuery: QueryFn<EnergyInfo> =
           .table("energy_calculator")
           .select()
           .all()
-          .then(
-            (records: any) => {
-              return {
-                systemId,
-                dhwDemand: getEnergyEntry("DHW demand", records),
-                spaceHeatingDemand: getEnergyEntry(
-                  "Space Heating Demand",
-                  records
-                ),
-                totalHeatingDemand: getEnergyEntry(
-                  "Total Heating Demand",
-                  records
-                ),
-                freshAirRequirement: getEnergyEntry(
-                  "Fresh Air Requirment",
-                  records
-                ),
-                operationalCo2: getEnergyEntry("Operational Co2", records),
-                primaryEnergyDemand: getEnergyEntry(
-                  "Primary Energy Demand ",
-                  records
-                ),
-                generationEnergy: getEnergyEntry("Generation Energy", records),
-                electricityTariff: getEnergyEntry(
-                  "Electricity tariff",
-                  records
-                ),
-                glazingUValue: getEnergyEntry("Glazing u-value", records),
-                wallUValue: getEnergyEntry("Wall u-value", records),
-                floorUValue: getEnergyEntry("Floor u-value", records),
-                roofUValue: getEnergyEntry("Roof u-value", records),
-              }
+          .then((records: any) => {
+            return {
+              systemId,
+              dhwDemand: getEnergyEntry("DHW demand", records),
+              spaceHeatingDemand: getEnergyEntry(
+                "Space Heating Demand",
+                records
+              ),
+              totalHeatingDemand: getEnergyEntry(
+                "Total Heating Demand",
+                records
+              ),
+              freshAirRequirement: getEnergyEntry(
+                "Fresh Air Requirment",
+                records
+              ),
+              operationalCo2: getEnergyEntry("Operational Co2", records),
+              primaryEnergyDemand: getEnergyEntry(
+                "Primary Energy Demand ",
+                records
+              ),
+              generationEnergy: getEnergyEntry("Generation Energy", records),
+              electricityTariff: getEnergyEntry("Electricity tariff", records),
+              glazingUValue: getEnergyEntry("Glazing u-value", records),
+              wallUValue: getEnergyEntry("Wall u-value", records),
+              floorUValue: getEnergyEntry("Floor u-value", records),
+              roofUValue: getEnergyEntry("Roof u-value", records),
             }
-            // z.array(
-            //   spaceTypeParser.transform(
-            //     ({ id, fields: { space_code, description, image } }) => ({
-            //       id,
-            //       systemId,
-            //       code: space_code,
-            //       description,
-            //     })
-            //   )
-            // ).parse
-          )
+          })
       ),
-      (ps) => Promise.all(ps) //.then(A.flatten)
+      (ps) => Promise.all(ps)
     )
