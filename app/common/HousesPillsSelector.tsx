@@ -135,7 +135,9 @@ const HousesPillsSelector = () => {
             key={houseId}
             className={`inline-flex items-center space-x-1 overflow-hidden rounded-full ${colorClass}`}
           >
-            <span className="inline-block py-1 pl-3">{house.friendlyName}</span>
+            <span className="inline-block py-1 pl-3 text-sm font-semibold tracking-wide">
+              {house.friendlyName}
+            </span>
             <button
               className="h-8 w-8 p-0.5 transition-colors duration-200 hover:bg-[rgba(0,0,0,0.05)]"
               onClick={() => {

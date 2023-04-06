@@ -13,6 +13,10 @@ a {
   text-decoration: none;
 }
 
+p {
+  @apply tracking-wide leading-normal text-sm;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -31,13 +35,13 @@ a {
 }
 
 h1 {
-  @apply text-4xl font-bold;
-}
-
-h2 {
   @apply text-2xl font-bold;
 }
 
-h3 {
+h2 {
   @apply text-xl font-bold;
+}
+
+h3 {
+  @apply text-lg font-bold;
 }
