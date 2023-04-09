@@ -1,10 +1,9 @@
 "use client"
-import { useThree } from "@react-three/fiber"
 import ObjectLoader from "@speckle/objectloader"
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { suspend } from "suspend-react"
 import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial } from "three"
-import BigD from "@speckle/viewer"
+import ifcParser from "./ifcParser"
 
 const Main = () => {
   const speckleObject: any = suspend(async () => {
@@ -14,54 +13,44 @@ const Main = () => {
       objectId: "9f798d821d7b9d1901828fe5880885b1",
     })
 
-    return await loader.getAndConstructObject((e) => {})
+    return await loader.getAndConstructObject(() => {})
   }, [])
-
-  // const { geometry, material } = useMemo(() => {
-  //   const { faces, vertices } =
-  //     speckleObject.children[0].children[0]["@displayValue"][0]
-
-  //   const geometry = new BufferGeometry()
-  //   const verticesArray = new Float32Array(vertices)
-  //   geometry.setAttribute("position", new BufferAttribute(verticesArray, 3))
-  //   const facesArray = new Uint32Array(faces)
-  //   geometry.setIndex(new BufferAttribute(facesArray, 1))
-  //   const material = new MeshBasicMaterial({ color: 0xffffff, wireframe: true })
-  //   // const mesh = new Mesh(geometry, material)
-  //   // scene.add(mesh);
-
-  //   return { geometry, material }
-  // }, [speckleObject.children])
 
   const meshes = useMemo(() => {
     const meshes: Mesh[] = []
 
-    speckleObject.children[0].children.forEach((child: any) => {
-      console.log(child)
-      if (
-        child?.["@displayValue"]?.[0]?.speckle_type !== "Objects.Geometry.Mesh"
-      )
-        return
+    console.log({ speckleObject })
 
-      const { faces, vertices } = child?.["@displayValue"]?.[0]
+    const foo = ifcParser.parse(speckleObject)
 
-      const geometry = new BufferGeometry()
-      const verticesArray = new Float32Array(vertices)
-      geometry.setAttribute("position", new BufferAttribute(verticesArray, 3))
-      const facesArray = new Uint32Array(faces)
-      geometry.setIndex(new BufferAttribute(facesArray, 1))
-      const material = new MeshBasicMaterial({
-        color: 0xffffff,
-        wireframe: true,
-      })
+    console.log(foo)
 
-      const mesh = new Mesh(geometry, material)
+    // speckleObject.children[0].children.forEach((child: any) => {
+    //   console.log(child)
+    //   if (
+    //     child?.["@displayValue"]?.[0]?.speckle_type !== "Objects.Geometry.Mesh"
+    //   )
+    //     return
 
-      meshes.push(mesh)
-    })
+    //   const { faces, vertices } = child?.["@displayValue"]?.[0]
+
+    //   const geometry = new BufferGeometry()
+    //   const verticesArray = new Float32Array(vertices)
+    //   geometry.setAttribute("position", new BufferAttribute(verticesArray, 3))
+    //   const facesArray = new Uint32Array(faces)
+    //   geometry.setIndex(new BufferAttribute(facesArray, 1))
+    //   const material = new MeshBasicMaterial({
+    //     color: 0xffffff,
+    //     wireframe: true,
+    //   })
+
+    //   const mesh = new Mesh(geometry, material)
+
+    //   meshes.push(mesh)
+    // })
 
     return meshes
-  }, [speckleObject.children])
+  }, [speckleObject])
 
   return (
     <group>
