@@ -2,7 +2,7 @@
 import ObjectLoader from "@speckle/objectloader"
 import { useMemo } from "react"
 import { suspend } from "suspend-react"
-import { BufferAttribute, BufferGeometry, Mesh, MeshBasicMaterial } from "three"
+import { Mesh, MeshBasicMaterial } from "three"
 import ifcParser from "./ifcParser"
 
 const Main = () => {
@@ -16,41 +16,15 @@ const Main = () => {
     return await loader.getAndConstructObject(() => {})
   }, [])
 
+  const material = useMemo(() => new MeshBasicMaterial({ color: "tomato" }), [])
+
   const meshes = useMemo(() => {
-    const meshes: Mesh[] = []
-
-    console.log({ speckleObject })
-
-    const foo = ifcParser.parse(speckleObject)
-
-    console.log(foo)
-
-    // speckleObject.children[0].children.forEach((child: any) => {
-    //   console.log(child)
-    //   if (
-    //     child?.["@displayValue"]?.[0]?.speckle_type !== "Objects.Geometry.Mesh"
-    //   )
-    //     return
-
-    //   const { faces, vertices } = child?.["@displayValue"]?.[0]
-
-    //   const geometry = new BufferGeometry()
-    //   const verticesArray = new Float32Array(vertices)
-    //   geometry.setAttribute("position", new BufferAttribute(verticesArray, 3))
-    //   const facesArray = new Uint32Array(faces)
-    //   geometry.setIndex(new BufferAttribute(facesArray, 1))
-    //   const material = new MeshBasicMaterial({
-    //     color: 0xffffff,
-    //     wireframe: true,
-    //   })
-
-    //   const mesh = new Mesh(geometry, material)
-
-    //   meshes.push(mesh)
-    // })
+    const meshes = ifcParser
+      .parse(speckleObject)
+      .map((x) => new Mesh(x.geometry, material))
 
     return meshes
-  }, [speckleObject])
+  }, [material, speckleObject])
 
   return (
     <group>

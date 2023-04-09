@@ -12,6 +12,7 @@ type InputData = {
 
 export function convertSpeckleToThree(input: InputData): BufferGeometry {
   const geometry = new BufferGeometry()
+
   const { faces, vertices } = input
   const indices: number[] = []
 
@@ -152,8 +153,22 @@ export function convertSpeckleToThree(input: InputData): BufferGeometry {
     k += n + 1
   }
 
+  const transformedVertices = vertices.map((_, index) => {
+    switch (index % 3) {
+      case 1:
+        return vertices[index + 1]
+      case 2:
+        return vertices[index - 1]
+      default:
+        return vertices[index]
+    }
+  })
+
   geometry.setIndex(new Uint32BufferAttribute(indices, 1))
-  geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3))
+  geometry.setAttribute(
+    "position",
+    new Float32BufferAttribute(transformedVertices, 3)
+  )
 
   return geometry
 }
