@@ -1,0 +1,41 @@
+/* Mobile styles */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  @apply bg-grey-90 text-white text-sm p-8 tracking-wide;
+}
+
+.column {
+  flex: 0 0 100%;
+  margin-bottom: 1.5rem;
+}
+
+.column1 {
+  @apply max-w-xs;
+}
+
+.column2 {
+  @apply space-y-[1px];
+}
+
+.linkWrapper {
+  @apply hover:underline;
+}
+
+/* Medium screen and above */
+@screen md {
+  .footer {
+    justify-content: space-between;
+    @apply flex-nowrap;
+  }
+
+  .column {
+    flex: 1 1 33%;
+    margin-bottom: 0;
+  }
+
+  .column1 {
+    @apply mr-14;
+  }
+}

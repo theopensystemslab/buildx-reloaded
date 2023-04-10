@@ -5,6 +5,7 @@ import { PropsWithChildren } from "react"
 import { Analyse, Build, Design, Locate } from "@/ui/icons"
 import NavIconButton from "@/ui/common/NavIconButton"
 import { Inter } from "next/font/google"
+import Footer from "./common/Footer"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
           <div className="flex-auto h-full overflow-y-auto overflow-x-hidden">
             {children}
           </div>
+          <Footer />
         </div>
       </body>
     </html>
