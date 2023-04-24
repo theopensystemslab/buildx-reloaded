@@ -1,162 +1,165 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
-import type { ControlPosition, MapRef } from "react-map-gl"
-import { useControl } from "react-map-gl"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
+import { distance, Feature } from "@turf/turf"
+import { Fragment, useState } from "react"
+import { Layer, MapRef, Source, useControl } from "react-map-gl"
 
-const noop = () => {}
+const DrawControls = () => {
+  const [labelData, setLabelData] = useState<Feature[]>([])
 
-type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
-  position?: ControlPosition
-  onCreate?: (evt: { features: object[] }) => void
-  onUpdate?: (evt: { features: object[]; action: string }) => void
-  onDelete?: (evt: { features: object[] }) => void
-}
+  const updateLabels = () => {
+    if (draw) {
+      const features = draw.getAll()
+      const newLabelData: Feature[] = []
 
-const DrawControls = (props: DrawControlProps) => {
-  const {
-    onCreate = noop,
-    onUpdate = noop,
-    onDelete = noop,
-    position = "top-left",
-  } = props
+      features.features.forEach((feature) => {
+        if (feature.geometry.type === "Polygon") {
+          const coordinates = feature.geometry.coordinates[0]
+          for (let i = 0; i < coordinates.length - 1; i++) {
+            const from = coordinates[i]
+            const to = coordinates[i + 1]
+            const segmentDistance = distance(from, to, { units: "meters" })
+            const midPoint: [number, number] = [
+              (from[0] + to[0]) / 2,
+              (from[1] + to[1]) / 2,
+            ]
 
-  const drawStyles2 = [
-    // ACTIVE (being drawn)
-    // polygon fill
-    {
-      id: "gl-draw-polygon-fill",
-      type: "fill",
-      filter: ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-      paint: {
-        "fill-color": "rgba(255, 255, 255, 0.5)",
-        "fill-outline-color": "#ffffff",
-      },
-    },
-    // polygon outline stroke
-    {
-      id: "gl-draw-polygon-stroke-active",
-      type: "line",
-      filter: ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-      layout: {
-        "line-cap": "round",
-        "line-join": "round",
-      },
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 2,
-      },
-    },
-    // vertex point halos
-    {
-      id: "gl-draw-polygon-and-line-vertex-halo-active",
-      type: "circle",
-      filter: [
-        "all",
-        ["==", "meta", "vertex"],
-        ["==", "$type", "Point"],
-        ["!=", "mode", "static"],
-      ],
-      paint: {
-        "circle-radius": 5,
-        "circle-color": "#ffffff",
-      },
-    },
-    // vertex points
-    {
-      id: "gl-draw-polygon-and-line-vertex-active",
-      type: "circle",
-      filter: [
-        "all",
-        ["==", "meta", "vertex"],
-        ["==", "$type", "Point"],
-        ["!=", "mode", "static"],
-      ],
-      paint: {
-        "circle-radius": 3,
-        "circle-color": "#ffffff",
-      },
-    },
-  ]
+            newLabelData.push({
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: midPoint,
+              },
+              properties: {
+                label: `${segmentDistance.toFixed(2)} m`,
+              },
+              id: `${feature.id}-${i}`,
+            })
+          }
+        }
+      })
 
-  const drawStyles = [
-    // Polygon fill
-    {
-      id: "gl-draw-polygon-fill",
-      type: "fill",
-      filter: ["all", ["==", "$type", "Polygon"], ["==", "meta", "user"]],
-      paint: {
-        "fill-color": "rgba(255, 255, 255, 0.2)",
-      },
-    },
-    // Polygon outline
-    {
-      id: "gl-draw-polygon-stroke",
-      type: "line",
-      filter: ["all", ["==", "$type", "Polygon"], ["==", "meta", "user"]],
-      paint: {
-        "line-color": "#fff",
-        "line-width": 2,
-      },
-    },
-    // Vertices
-    {
-      id: "gl-draw-points",
-      type: "circle",
-      filter: ["all", ["==", "$type", "Point"], ["==", "meta", "vertex"]],
-      paint: {
-        "circle-radius": 5,
-        "circle-color": "white",
-      },
-    },
-    // Segment distance labels
-    {
-      id: "gl-draw-line-label",
-      type: "symbol",
-      filter: [
-        "all",
-        ["==", "$type", "LineString"],
-        ["==", "meta", "midpoint"],
-      ],
-      layout: {
-        "text-field": "{label}",
-        "text-font": ["Calibri", "sans-serif"],
-        "text-size": 12,
-        "text-anchor": "bottom",
-        "text-offset": [0, -1.5],
-        "text-allow-overlap": false,
-      },
-      paint: {
-        "text-color": "rgba(255, 255, 255, 1)",
-        "text-halo-color": "rgba(0, 0, 0, 0.4)",
-        "text-halo-width": 2,
-        "text-halo-blur": 0,
-      },
-    },
-  ]
+      setLabelData(newLabelData)
+    }
+  }
 
-  useControl<MapboxDraw>(
+  const draw = useControl<MapboxDraw>(
     () =>
       new MapboxDraw({
-        ...props,
-        styles: drawStyles2,
-        // styles: [],
+        styles: [
+          // ACTIVE (being drawn)
+          // polygon fill
+          {
+            id: "gl-draw-polygon-fill",
+            type: "fill",
+            filter: [
+              "all",
+              ["==", "$type", "Polygon"],
+              ["!=", "mode", "static"],
+            ],
+            paint: {
+              "fill-color": "rgba(255, 255, 255, 0.5)",
+              "fill-outline-color": "#ffffff",
+            },
+          },
+          // polygon outline stroke
+          {
+            id: "gl-draw-polygon-stroke-active",
+            type: "line",
+            filter: [
+              "all",
+              ["==", "$type", "Polygon"],
+              ["!=", "mode", "static"],
+            ],
+            layout: {
+              "line-cap": "round",
+              "line-join": "round",
+            },
+            paint: {
+              "line-color": "#ffffff",
+              "line-width": 2,
+            },
+          },
+          // vertex point halos
+          {
+            id: "gl-draw-polygon-and-line-vertex-halo-active",
+            type: "circle",
+            filter: [
+              "all",
+              ["==", "meta", "vertex"],
+              ["==", "$type", "Point"],
+              ["!=", "mode", "static"],
+            ],
+            paint: {
+              "circle-radius": 5,
+              "circle-color": "#ffffff",
+            },
+          },
+          // vertex points
+          {
+            id: "gl-draw-polygon-and-line-vertex-active",
+            type: "circle",
+            filter: [
+              "all",
+              ["==", "meta", "vertex"],
+              ["==", "$type", "Point"],
+              ["!=", "mode", "static"],
+            ],
+            paint: {
+              "circle-radius": 3,
+              "circle-color": "#ffffff",
+            },
+          },
+        ],
       }),
+    // onCreate
     ({ map }: { map: MapRef }) => {
-      map.on("draw.create", onCreate)
-      map.on("draw.update", onUpdate)
-      map.on("draw.delete", onDelete)
+      map.on("draw.create", updateLabels)
+      map.on("draw.update", updateLabels)
+      map.on("draw.delete", updateLabels)
+      map.on("mousemove", updateLabels)
     },
+    // onRemove
     ({ map }: { map: MapRef }) => {
-      map.off("draw.create", onCreate)
-      map.off("draw.update", onUpdate)
-      map.off("draw.delete", onDelete)
-    },
-    {
-      position,
+      map.off("draw.create", updateLabels)
+      map.off("draw.update", updateLabels)
+      map.off("draw.delete", updateLabels)
+      map.off("mousemove", updateLabels)
+      setLabelData([])
     }
   )
 
-  return null
+  return (
+    <Fragment>
+      <Source
+        key="foo-source"
+        id="label-data"
+        type="geojson"
+        data={{
+          type: "FeatureCollection",
+          features: labelData as any,
+        }}
+      >
+        <Layer
+          key="foo-layer"
+          id="segment-labels"
+          type="symbol"
+          layout={{
+            "text-field": ["get", "label"],
+            "text-size": 12,
+            "text-anchor": "bottom",
+            "text-offset": [0, -1.5],
+          }}
+          paint={{
+            "text-color": "rgba(255, 255, 255, 1)",
+            "text-halo-color": "rgba(0, 0, 0, 0.4)",
+            "text-halo-width": 1,
+            "text-halo-blur": 1,
+          }}
+        />
+      </Source>
+    </Fragment>
+  )
 }
 
 export default DrawControls

@@ -17,6 +17,7 @@ const Map = ({ children }: PropsWithChildren<{}>) => {
       // mapStyle="mapbox://styles/mapbox/streets-v9"
       mapStyle="mapbox://styles/mapbox/satellite-v9"
       mapboxAccessToken={MAPBOX_TOKEN}
+      reuseMaps
     >
       {children}
     </ReactMapGLMap>
