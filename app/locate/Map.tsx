@@ -1,11 +1,12 @@
-import Map from "react-map-gl"
+import ReactMapGLMap from "react-map-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
+import { PropsWithChildren } from "react"
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 
-export default function MapView() {
+const Map = ({ children }: PropsWithChildren<{}>) => {
   return (
-    <Map
+    <ReactMapGLMap
       id="mapbox-container"
       initialViewState={{
         longitude: -122.4,
@@ -16,6 +17,10 @@ export default function MapView() {
       // mapStyle="mapbox://styles/mapbox/streets-v9"
       mapStyle="mapbox://styles/mapbox/satellite-v9"
       mapboxAccessToken={MAPBOX_TOKEN}
-    />
+    >
+      {children}
+    </ReactMapGLMap>
   )
 }
+
+export default Map
