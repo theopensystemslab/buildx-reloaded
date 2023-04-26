@@ -47,7 +47,6 @@ const DrawControls = () => {
     () =>
       new MapboxDraw({
         styles: [
-          // ACTIVE (being drawn)
           // polygon fill
           {
             id: "gl-draw-polygon-fill",
@@ -108,6 +107,24 @@ const DrawControls = () => {
             paint: {
               "circle-radius": 3,
               "circle-color": "#ffffff",
+            },
+          },
+          // uncommitted line
+          {
+            id: "gl-draw-uncommitted-line",
+            type: "line",
+            filter: [
+              "all",
+              ["==", "$type", "LineString"],
+              ["!=", "mode", "static"],
+            ],
+            layout: {
+              "line-cap": "round",
+              "line-join": "round",
+            },
+            paint: {
+              "line-color": "#ffffff",
+              "line-width": 2,
             },
           },
         ],
