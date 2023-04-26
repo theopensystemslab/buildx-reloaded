@@ -3,14 +3,14 @@ import { pipe } from "fp-ts/lib/function"
 import { MutableRefObject, useEffect, useMemo, useRef } from "react"
 import { Group, Material, Matrix4, Plane, Vector3 } from "three"
 import { proxy, ref } from "valtio"
-import { useSystemElements } from "../../app/data/elements"
-import { useSystemMaterials } from "../../app/data/materials"
+import { useElements, useSystemElements } from "~/app/data/elements"
+import { useMaterials, useSystemMaterials } from "~/app/data/materials"
 import { A, O, R, RA, someOrError } from "../utils/functions"
 import { useSubscribe, useSubscribeKey } from "../utils/hooks"
 import { createMaterial, isMesh } from "../utils/three"
 import elementCategories from "./elementCategories"
 import globals from "./globals"
-import houses, { useHouse } from "./houses"
+import houses, { useHouse, useHouses } from "./houses"
 import { layouts } from "./layouts"
 import { useHousePreviews } from "./previews"
 import siteCtx from "./siteCtx"
@@ -27,6 +27,28 @@ const getMaterialHash = ({
 }) => `${systemId}:${houseId}:${materialName}`
 
 const hashedMaterials = proxy<Record<string, Material>>({})
+
+export const useGetElementMaterialName = () => {
+  const elements = useElements()
+
+  return (houseId: string, elementName: string) => {
+    const house = houses[houseId]
+    const materialName =
+      elementName in house.modifiedMaterials
+        ? house.modifiedMaterials[elementName]
+        : pipe(
+            elements,
+            A.findFirstMap((el) =>
+              el.name === elementName ? O.some(el.defaultMaterial) : O.none
+            ),
+            someOrError(
+              `No element found for ${elementName} in system ${house.systemId}`
+            )
+          )
+
+    return materialName
+  }
+}
 
 export const useMaterialName = (houseId: string, elementName: string) => {
   const { modifiedMaterials, systemId } = useHouse(houseId)

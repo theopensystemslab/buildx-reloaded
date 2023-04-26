@@ -4,7 +4,9 @@ import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useMemo } from "react"
+import { useGetElementMaterialName } from "../../../src/hooks/hashedMaterials"
 import { A, R } from "../../../src/utils/functions"
+import { useAnalyseData } from "../../analyse/data"
 import { useSelectedHouses } from "../../common/HousesPillsSelector"
 import PaginatedTable from "../PaginatedTable"
 
@@ -25,12 +27,30 @@ const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
   const selectedHouses = useSelectedHouses()
+  // const selectedHouses = useSelectedHouses()
+
+  const { areas, costs, embodiedCo2, energyUse, operationalCo2, byHouse } =
+    useAnalyseData()
+
+  const getElementMaterialName = useGetElementMaterialName()
 
   const data: MaterialsListItem[] = useMemo(() => {
-    const accum: Record<string, number> = {}
+    // const accum: Record<string, number> = {}
 
     // TODO: query here like in OrderListTable
 
+    // const foo = pipe(areas, R.toEntries, A.map(([k,r]) => {}))
+
+    // TODO: solve byHouse thing, confirm with clayton
+
+    // const cladding: MaterialsListItem = {
+    //   item: "cladding",
+    //   quantity: areas.cladding,
+    //   specification: getMaterialName(houseId, elementName)
+
+    // }
+
+    // return [cladding]
     return []
   }, [])
 
