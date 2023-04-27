@@ -1,14 +1,15 @@
 "use client"
-import React from "react"
-import { MapProvider } from "react-map-gl"
-import DrawControls from "./DrawControls"
+import PolygonControl from "./PolygonControl"
 import Map from "./Map"
+import GeocoderControl from "./GeocoderControl"
+import css from "./Locate.module.css"
 
 const Locate = () => {
   return (
-    <div className="relative w-full h-full">
+    <div className={css.root}>
       <Map>
-        <DrawControls />
+        <PolygonControl />
+        <GeocoderControl />
       </Map>
     </div>
   )
