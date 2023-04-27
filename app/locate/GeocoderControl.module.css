@@ -1,0 +1,16 @@
+.root {
+  @apply absolute w-full h-full pointer-events-none;
+  @apply flex flex-col justify-center items-center;
+}
+
+.above {
+  @apply bg-green-500;
+}
+
+.middle {
+  @apply h-20 bg-black;
+}
+
+.below {
+  @apply bg-blue-500;
+}

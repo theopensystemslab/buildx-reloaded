@@ -5,7 +5,7 @@ import { Fragment, useState } from "react"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
 import { polygonDrawStyles } from "./mapStyles"
 
-const DrawControls = () => {
+const PolygonControl = () => {
   const [labelDataFeatures, setLabelDataFeatures] = useState<
     Feature<Geometry>[]
   >([])
@@ -99,4 +99,4 @@ const DrawControls = () => {
   )
 }
 
-export default DrawControls
+export default PolygonControl
