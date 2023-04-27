@@ -1,16 +1,19 @@
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
-import { distance, Feature } from "@turf/turf"
+import { distance, Feature, Geometry } from "@turf/turf"
 import { Fragment, useState } from "react"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
+import { polygonDrawStyles } from "./mapStyles"
 
 const DrawControls = () => {
-  const [labelData, setLabelData] = useState<Feature[]>([])
+  const [labelDataFeatures, setLabelDataFeatures] = useState<
+    Feature<Geometry>[]
+  >([])
 
   const updateLabels = () => {
     if (draw) {
       const features = draw.getAll()
-      const newLabelData: Feature[] = []
+      const newLabelDataFeatures: Feature<Geometry>[] = []
 
       features.features.forEach((feature) => {
         if (feature.geometry.type === "Polygon") {
@@ -24,7 +27,7 @@ const DrawControls = () => {
               (from[1] + to[1]) / 2,
             ]
 
-            newLabelData.push({
+            newLabelDataFeatures.push({
               type: "Feature",
               geometry: {
                 type: "Point",
@@ -39,95 +42,14 @@ const DrawControls = () => {
         }
       })
 
-      setLabelData(newLabelData)
+      setLabelDataFeatures(newLabelDataFeatures)
     }
   }
 
   const draw = useControl<MapboxDraw>(
     () =>
       new MapboxDraw({
-        styles: [
-          // polygon fill
-          {
-            id: "gl-draw-polygon-fill",
-            type: "fill",
-            filter: [
-              "all",
-              ["==", "$type", "Polygon"],
-              ["!=", "mode", "static"],
-            ],
-            paint: {
-              "fill-color": "rgba(255, 255, 255, 0.5)",
-              "fill-outline-color": "#ffffff",
-            },
-          },
-          // polygon outline stroke
-          {
-            id: "gl-draw-polygon-stroke-active",
-            type: "line",
-            filter: [
-              "all",
-              ["==", "$type", "Polygon"],
-              ["!=", "mode", "static"],
-            ],
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-            },
-            paint: {
-              "line-color": "#ffffff",
-              "line-width": 2,
-            },
-          },
-          // vertex point halos
-          {
-            id: "gl-draw-polygon-and-line-vertex-halo-active",
-            type: "circle",
-            filter: [
-              "all",
-              ["==", "meta", "vertex"],
-              ["==", "$type", "Point"],
-              ["!=", "mode", "static"],
-            ],
-            paint: {
-              "circle-radius": 5,
-              "circle-color": "#ffffff",
-            },
-          },
-          // vertex points
-          {
-            id: "gl-draw-polygon-and-line-vertex-active",
-            type: "circle",
-            filter: [
-              "all",
-              ["==", "meta", "vertex"],
-              ["==", "$type", "Point"],
-              ["!=", "mode", "static"],
-            ],
-            paint: {
-              "circle-radius": 3,
-              "circle-color": "#ffffff",
-            },
-          },
-          // uncommitted line
-          {
-            id: "gl-draw-uncommitted-line",
-            type: "line",
-            filter: [
-              "all",
-              ["==", "$type", "LineString"],
-              ["!=", "mode", "static"],
-            ],
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-            },
-            paint: {
-              "line-color": "#ffffff",
-              "line-width": 2,
-            },
-          },
-        ],
+        styles: polygonDrawStyles,
       }),
     // onCreate
     ({ map }: { map: MapRef }) => {
@@ -142,23 +64,22 @@ const DrawControls = () => {
       map.off("draw.update", updateLabels)
       map.off("draw.delete", updateLabels)
       map.off("mousemove", updateLabels)
-      setLabelData([])
     }
   )
 
   return (
     <Fragment>
       <Source
-        key="foo-source"
+        key="label-data"
         id="label-data"
         type="geojson"
         data={{
           type: "FeatureCollection",
-          features: labelData as any,
+          features: labelDataFeatures as any,
         }}
       >
         <Layer
-          key="foo-layer"
+          key="segment-labels"
           id="segment-labels"
           type="symbol"
           layout={{
@@ -166,12 +87,11 @@ const DrawControls = () => {
             "text-size": 12,
             "text-anchor": "bottom",
             "text-offset": [0, -1.5],
+            "text-allow-overlap": true,
           }}
           paint={{
-            "text-color": "rgba(255, 255, 255, 1)",
-            "text-halo-color": "rgba(0, 0, 0, 0.4)",
-            "text-halo-width": 1,
-            "text-halo-blur": 1,
+            "text-color": "#fff",
+            "text-halo-width": 2,
           }}
         />
       </Source>
