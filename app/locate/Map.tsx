@@ -1,6 +1,5 @@
 import ReactMapGLMap from "react-map-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import "./Map.css"
 import { PropsWithChildren } from "react"
 
 const Map = ({ children }: PropsWithChildren<{}>) => {

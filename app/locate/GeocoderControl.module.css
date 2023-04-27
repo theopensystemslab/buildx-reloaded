@@ -3,14 +3,25 @@
   @apply flex flex-col justify-center items-center;
 }
 
-.above {
-  @apply bg-green-500;
+.root > div {
+  @apply max-w-xs;
+  @apply text-white;
 }
 
-.middle {
-  @apply h-20 bg-black;
+.above,
+.geocoder,
+.below {
+  @apply w-full;
+}
+
+.above h2 {
+  @apply text-2xl;
+}
+
+.geocoder :global(.mapboxgl-ctrl-geocoder) {
+  @apply w-full max-w-none;
 }
 
 .below {
-  @apply bg-blue-500;
+  @apply flex justify-end;
 }

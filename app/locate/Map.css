@@ -1,8 +1,0 @@
-.mapboxgl-ctrl-geocoder {
-  @apply absolute inset-0;
-}
-
-.mapboxgl-ctrl-top-left {
-  @apply w-full h-full;
-  @apply flex justify-center items-center;
-}
