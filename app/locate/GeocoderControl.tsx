@@ -1,9 +1,9 @@
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css"
-import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import { useMap } from "react-map-gl"
 import css from "./GeocoderControl.module.css"
+import { setLocateState } from "./state"
 
 const MAX_ZOOM = 19
 
@@ -11,6 +11,10 @@ const GeocoderControl = () => {
   const geocoderDiv = useRef<HTMLDivElement>(null)
 
   const [geocoderEnabled, setGeocoderEnabled] = useState(true)
+
+  useEffect(() => {
+    if (!geocoderEnabled) setLocateState("DRAWING_POLYGON")
+  }, [geocoderEnabled])
 
   const { current: map } = useMap()
 
