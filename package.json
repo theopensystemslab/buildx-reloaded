@@ -31,6 +31,7 @@
     "camera-controls": "^1.37.2",
     "clsx": "^1.2.1",
     "crypto-js": "^4.1.1",
+    "d3-dsv": "^3.0.1",
     "encoding": "^0.1.13",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
@@ -62,6 +63,7 @@
   "devDependencies": {
     "@types/carbon__icons-react": "^11.12.0",
     "@types/crypto-js": "^4.1.1",
+    "@types/d3-dsv": "^3.0.1",
     "@types/mapbox-gl": "^2.7.10",
     "@types/mapbox__mapbox-gl-geocoder": "^4.7.3",
     "@types/node": "18.7.14",
