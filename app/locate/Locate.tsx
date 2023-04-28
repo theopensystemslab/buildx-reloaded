@@ -4,12 +4,12 @@ import Map from "./Map"
 import GeocoderControl from "./GeocoderControl"
 import css from "./Locate.module.css"
 import { useState } from "react"
+import { useLocateState } from "./state"
 
 // state = Geocoding | DrawingPolygon | PolygonDrawn
 
 const Locate = () => {
-  const [drawing, setDrawing] = useState(true)
-  const [geocoding, setGeocoding] = useState(true)
+  const locateState = useLocateState()
 
   return (
     <div className={css.root}>
@@ -17,7 +17,7 @@ const Locate = () => {
         <PolygonControl />
         <GeocoderControl />
       </Map>
-      {drawing && (
+      {locateState === "DRAWING_POLYGON" && (
         <div className={css.instructDrawTopLeft}>
           <h2>Draw the outline of your site</h2>
         </div>

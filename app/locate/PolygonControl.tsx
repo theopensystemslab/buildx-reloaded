@@ -4,6 +4,7 @@ import { distance, Feature, Geometry } from "@turf/turf"
 import { Fragment, useState } from "react"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
 import { polygonDrawStyles } from "./mapStyles"
+import { useSubscribeLocateState } from "./state"
 
 const PolygonControl = () => {
   const [labelDataFeatures, setLabelDataFeatures] = useState<
@@ -50,6 +51,7 @@ const PolygonControl = () => {
     () =>
       new MapboxDraw({
         styles: polygonDrawStyles,
+        displayControlsDefault: false,
       }),
     // onCreate
     ({ map }: { map: MapRef }) => {
@@ -66,6 +68,30 @@ const PolygonControl = () => {
       map.off("mousemove", updateLabels)
     }
   )
+
+  useSubscribeLocateState((locateState) => {
+    switch (locateState) {
+      case "DRAWING_POLYGON":
+        console.log("DRAWING_POLYGON")
+        draw.changeMode("draw_polygon")
+        break
+      default:
+        console.log("OTHER")
+        draw.changeMode("simple_select")
+        break
+    }
+  })
+
+  // TODO: complete me
+
+  // const handleToggleDraw = () => {
+  //   setDrawingEnabled(!drawingEnabled);
+  //   draw.current.changeMode(drawingEnabled ? 'simple_select' : 'draw_polygon');
+  // };
+
+  // const handleDeleteDraw = () => {
+  //   draw.current.deleteAll();
+  // };
 
   return (
     <Fragment>
