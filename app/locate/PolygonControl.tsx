@@ -1,12 +1,22 @@
+import { TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { distance, Feature, Geometry } from "@turf/turf"
 import { Fragment, useState } from "react"
+import usePortal from "react-cool-portal"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
+import IconButton from "../../src/ui/common/IconButton"
 import { polygonDrawStyles } from "./mapStyles"
-import { useSubscribeLocateState } from "./state"
+import { useLocateState, useSubscribeLocateState } from "./state"
 
-const PolygonControl = () => {
+type Props = {
+  leftMenuContainerId: string
+  topLeftContainerId: string
+}
+
+const PolygonControl = (props: Props) => {
+  const { leftMenuContainerId, topLeftContainerId } = props
+
   const [labelDataFeatures, setLabelDataFeatures] = useState<
     Feature<Geometry>[]
   >([])
@@ -93,6 +103,20 @@ const PolygonControl = () => {
   //   draw.current.deleteAll();
   // };
 
+  const { Portal: LeftMenuPortal } = usePortal({
+    containerId: leftMenuContainerId,
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
+  const { Portal: TopLeftPortal } = usePortal({
+    containerId: topLeftContainerId,
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
+  const locateState = useLocateState()
+
   return (
     <Fragment>
       <Source
@@ -121,6 +145,30 @@ const PolygonControl = () => {
           }}
         />
       </Source>
+      <LeftMenuPortal>
+        <IconButton
+          onClick={() => {
+            // TODO: to globals?
+            // mapProxy.polygon = null
+            // localStorage.setItem(
+            //   BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY,
+            //   "null"
+            // )
+            // vectorSource.clear()
+          }}
+        >
+          <div className="flex items-center justify-center">
+            <TrashCan size={24} />
+          </div>
+        </IconButton>
+      </LeftMenuPortal>
+      <TopLeftPortal>
+        {locateState === "DRAWING_POLYGON" && (
+          <div>
+            <h2>Draw the outline of your site</h2>
+          </div>
+        )}
+      </TopLeftPortal>
     </Fragment>
   )
 }

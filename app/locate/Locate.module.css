@@ -2,10 +2,22 @@
   @apply relative w-full h-full;
 }
 
-.root .instructDrawTopLeft {
+.root .topLeftContainer {
   @apply text-white text-xl;
   @apply absolute top-0 left-0;
   @apply max-w-[14rem];
   @apply m-4;
   @apply pointer-events-none;
+}
+
+.root .leftMenuContainer {
+  @apply absolute left-0 inset-y-0;
+  @apply flex flex-col items-center justify-center;
+  @apply bg-transparent;
+  @apply pointer-events-none;
+  /* @apply z-50; */
+}
+
+.root .leftMenuContainer > div {
+  @apply bg-white flex flex-col pointer-events-auto;
 }

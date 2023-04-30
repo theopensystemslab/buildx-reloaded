@@ -1,27 +1,27 @@
 "use client"
-import PolygonControl from "./PolygonControl"
-import Map from "./Map"
+import HtmlPortalContainer from "../../src/ui/common/HtmlPortalContainer"
 import GeocoderControl from "./GeocoderControl"
 import css from "./Locate.module.css"
-import { useState } from "react"
-import { useLocateState } from "./state"
-
-// state = Geocoding | DrawingPolygon | PolygonDrawn
+import Map from "./Map"
+import PolygonControl from "./PolygonControl"
 
 const Locate = () => {
-  const locateState = useLocateState()
+  const leftMenuContainerId = "left-menu-container"
+  const topLeftContainerId = "top-left-container-id"
 
   return (
     <div className={css.root}>
       <Map>
-        <PolygonControl />
-        <GeocoderControl />
+        <GeocoderControl {...{ leftMenuContainerId }} />
+        <PolygonControl {...{ leftMenuContainerId, topLeftContainerId }} />
       </Map>
-      {locateState === "DRAWING_POLYGON" && (
-        <div className={css.instructDrawTopLeft}>
-          <h2>Draw the outline of your site</h2>
-        </div>
-      )}
+      <HtmlPortalContainer
+        id={topLeftContainerId}
+        className={css.topLeftContainer}
+      />
+      <div className={css.leftMenuContainer}>
+        <HtmlPortalContainer id={leftMenuContainerId} />
+      </div>
     </div>
   )
 }
