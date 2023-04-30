@@ -4,7 +4,7 @@ import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { csvFormat } from "d3-dsv"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import PaginatedTable from "../PaginatedTable"
 import { OrderListRow, useOrderListData } from "./useOrderListData"
 
@@ -92,30 +92,13 @@ const OrderListTable = (props: Props) => {
     ]
   )
 
-  useEffect(() => {
-    const headers = columns.map((column) => column.id)
-
-    // @ts-ignore
-    const accessorKeys: string[] = columns.map((column) => column.accessorKey)
-
-    const data = pipe(
-      orderListData,
-      A.map((row) =>
-        pipe(
-          accessorKeys,
-          A.filterMap((k) => pipe(row, R.lookup(k)))
-        )
-      )
-    )
-
-    const csvContent = csvFormat([headers, ...data])
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-
-    setCsvDownloadUrl(url)
-  }, [columns, orderListData, setCsvDownloadUrl])
-
-  return <PaginatedTable data={orderListData} columns={columns} />
+  return (
+    <PaginatedTable
+      data={orderListData}
+      columns={columns}
+      setCsvDownloadUrl={setCsvDownloadUrl}
+    />
+  )
 }
 
-export default OrderListTable
+export default memo(OrderListTable)
