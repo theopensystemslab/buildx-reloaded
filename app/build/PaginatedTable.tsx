@@ -7,15 +7,20 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import clsx from "clsx"
+import { csvFormat, csvFormatRows } from "d3-dsv"
+import { pipe } from "fp-ts/lib/function"
+import { useEffect } from "react"
+import { A, O, R } from "../../src/utils/functions"
 import css from "./PaginatedTable.module.css"
 
-type Props<T> = {
+type Props<T extends {}> = {
   data: T[]
   columns: ColumnDef<T>[]
+  setCsvDownloadUrl: (s: string) => void
 }
 
-const PaginatedTable = <T extends unknown>(props: Props<T>) => {
-  const { data, columns } = props
+const PaginatedTable = <T extends {}>(props: Props<T>) => {
+  const { data, columns, setCsvDownloadUrl } = props
 
   const table = useReactTable({
     data,
@@ -33,6 +38,30 @@ const PaginatedTable = <T extends unknown>(props: Props<T>) => {
   const lastRow = Math.min((pageIndex + 1) * pageSize, data.length)
 
   const itemCount = data.length
+
+  useEffect(() => {
+    const headers: string[] = columns.map((column) => column.id as string)
+
+    // @ts-ignore
+    const accessorKeys: string[] = columns.map((column) => column.accessorKey)
+
+    const rows: string[][] = pipe(
+      data,
+      A.map((row) =>
+        pipe(
+          accessorKeys,
+          A.filterMap((k) => pipe(row, R.lookup(k), O.map(String)))
+        )
+      )
+    )
+
+    const csvContent = csvFormatRows([headers, ...rows])
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+
+    setCsvDownloadUrl(url)
+  }, [columns, data, setCsvDownloadUrl])
 
   return (
     <div>
@@ -62,18 +91,18 @@ const PaginatedTable = <T extends unknown>(props: Props<T>) => {
             return (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => {
+                  const className = clsx(
+                    {
+                      [(row.original as any).colorClass]:
+                        // @ts-ignore
+                        cell.column.columnDef.accessorKey === "buildingName" &&
+                        "colorClass" in (row.original as any),
+                    }
+                    // "w-full h-full"
+                  )
+
                   return (
-                    <td
-                      key={cell.id}
-                      className={clsx(
-                        {
-                          [(row.original as any).colorClass]:
-                            cell.column.id === "buildingName" &&
-                            "colorClass" in (row.original as any),
-                        }
-                        // "w-full h-full"
-                      )}
-                    >
+                    <td key={cell.id} className={className}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
