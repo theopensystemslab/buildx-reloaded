@@ -3,7 +3,7 @@ import { useSiteCurrency } from "@/hooks/siteCtx"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { A, R } from "../../../src/utils/functions"
 import { useSelectedHouses } from "../../common/HousesPillsSelector"
 import PaginatedTable from "../PaginatedTable"
@@ -18,7 +18,12 @@ type MaterialsListItem = {
   linkUrl: string
 }
 
-const MaterialsListTable = () => {
+type Props = {
+  setCsvDownloadUrl: (s: string) => void
+}
+const MaterialsListTable = (props: Props) => {
+  const { setCsvDownloadUrl } = props
+
   const selectedHouses = useSelectedHouses()
 
   const data: MaterialsListItem[] = useMemo(() => {
@@ -93,7 +98,13 @@ const MaterialsListTable = () => {
     }),
   ]
 
-  return <PaginatedTable data={data} columns={columns} />
+  return (
+    <PaginatedTable
+      data={data}
+      columns={columns}
+      setCsvDownloadUrl={setCsvDownloadUrl}
+    />
+  )
 }
 
-export default MaterialsListTable
+export default memo(MaterialsListTable)
