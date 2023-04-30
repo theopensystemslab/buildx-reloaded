@@ -91,18 +91,18 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             return (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => {
+                  const className = clsx(
+                    {
+                      [(row.original as any).colorClass]:
+                        // @ts-ignore
+                        cell.column.columnDef.accessorKey === "buildingName" &&
+                        "colorClass" in (row.original as any),
+                    }
+                    // "w-full h-full"
+                  )
+
                   return (
-                    <td
-                      key={cell.id}
-                      className={clsx(
-                        {
-                          [(row.original as any).colorClass]:
-                            cell.column.id === "buildingName" &&
-                            "colorClass" in (row.original as any),
-                        }
-                        // "w-full h-full"
-                      )}
-                    >
+                    <td key={cell.id} className={className}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

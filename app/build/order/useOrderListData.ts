@@ -25,6 +25,7 @@ export type OrderListRow = {
   cuttingFileUrl: string
   totalCost: number
 }
+
 export const useOrderListData = () => {
   const selectedHouses = useSelectedHouses()
   const getColorClass = useGetColorClass()
