@@ -4,9 +4,11 @@ import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css"
 import { Fragment, useEffect, useRef, useState } from "react"
 import usePortal from "react-cool-portal"
 import { useMap } from "react-map-gl"
-import IconButton from "../../src/ui/common/IconButton"
+import IconButton from "@/ui/common/IconButton"
 import css from "./GeocoderControl.module.css"
-import { setLocateState } from "./state"
+import { dispatchLocateEvent, LocateEvents } from "../state/events"
+import { useEvent } from "react-use"
+import { useMapPolygon } from "../state/polygon"
 
 const MAX_ZOOM = 19
 
@@ -16,16 +18,22 @@ type Props = {
 
 const GeocoderControl = (props: Props) => {
   const { leftMenuContainerId } = props
-
   const geocoderDiv = useRef<HTMLDivElement>(null)
-
-  const [geocoderEnabled, setGeocoderEnabled] = useState(true)
-
-  useEffect(() => {
-    if (!geocoderEnabled) setLocateState("DRAWING_POLYGON")
-  }, [geocoderEnabled])
-
   const { current: map } = useMap()
+
+  const mapPolygon = useMapPolygon()
+
+  const [geocoderEnabled, setGeocoderEnabled] = useState(() => {
+    console.log(mapPolygon)
+    return mapPolygon === null
+  })
+
+  const hideGeocoder = () => {
+    setGeocoderEnabled(false)
+  }
+
+  useEvent(LocateEvents.Enum.GeocoderEntered, hideGeocoder)
+  useEvent(LocateEvents.Enum.GeocoderClickAway, hideGeocoder)
 
   useEffect(() => {
     const container = geocoderDiv.current
@@ -45,7 +53,9 @@ const GeocoderControl = (props: Props) => {
 
       map.flyTo({ center: result.center, zoom: MAX_ZOOM })
 
-      setGeocoderEnabled(false)
+      dispatchLocateEvent(LocateEvents.Enum.GeocoderEntered)
+
+      // setGeocoderEnabled(false)
 
       // const isGB = result.context.find(
       //   ({ id, short_code }: any) =>
@@ -64,10 +74,6 @@ const GeocoderControl = (props: Props) => {
     }
   }, [map])
 
-  const hideGeocoder = () => {
-    setGeocoderEnabled(false)
-  }
-
   const { Portal } = usePortal({
     containerId: leftMenuContainerId,
     autoRemoveContainer: false,
@@ -83,7 +89,13 @@ const GeocoderControl = (props: Props) => {
           </div>
           <div ref={geocoderDiv} className={css.geocoder}></div>
           <div className={css.below}>
-            <button onClick={hideGeocoder}>or find it on the map</button>
+            <button
+              onClick={() =>
+                dispatchLocateEvent(LocateEvents.Enum.GeocoderClickAway)
+              }
+            >
+              or find it on the map
+            </button>
           </div>
         </div>
       </div>

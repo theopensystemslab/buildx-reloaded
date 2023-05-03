@@ -1,13 +1,18 @@
+import IconButton from "@/ui/common/IconButton"
 import { TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { distance, Feature, Geometry } from "@turf/turf"
+import { pipe } from "fp-ts/lib/function"
 import { Fragment, useState } from "react"
 import usePortal from "react-cool-portal"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
-import IconButton from "../../src/ui/common/IconButton"
+import { useEvent } from "react-use"
+import { A, O, R } from "../../../src/utils/functions"
+import { LocateEvents } from "../state/events"
+import { polygonFeatureParser } from "../state/geojson"
+import { setMapPolygon } from "../state/polygon"
 import { polygonDrawStyles } from "./mapStyles"
-import { useLocateState, useSubscribeLocateState } from "./state"
 
 type Props = {
   leftMenuContainerId: string
@@ -57,6 +62,19 @@ const PolygonControl = (props: Props) => {
     }
   }
 
+  const newPolygon = () => {
+    pipe(
+      draw.getAll().features,
+      A.head,
+      O.map((feature) => {
+        const result = polygonFeatureParser.safeParse(feature)
+        if (result.success) {
+          setMapPolygon(result.data.geometry)
+        }
+      })
+    )
+  }
+
   const draw = useControl<MapboxDraw>(
     () =>
       new MapboxDraw({
@@ -65,8 +83,14 @@ const PolygonControl = (props: Props) => {
       }),
     // onCreate
     ({ map }: { map: MapRef }) => {
-      map.on("draw.create", updateLabels)
-      map.on("draw.update", updateLabels)
+      map.on("draw.create", () => {
+        updateLabels()
+        newPolygon()
+      })
+      map.on("draw.update", () => {
+        updateLabels()
+        newPolygon()
+      })
       map.on("draw.delete", updateLabels)
       map.on("mousemove", updateLabels)
     },
@@ -79,18 +103,25 @@ const PolygonControl = (props: Props) => {
     }
   )
 
-  useSubscribeLocateState((locateState) => {
-    switch (locateState) {
-      case "DRAWING_POLYGON":
-        console.log("DRAWING_POLYGON")
-        draw.changeMode("draw_polygon")
-        break
-      default:
-        console.log("OTHER")
-        draw.changeMode("simple_select")
-        break
-    }
-  })
+  const enableDrawPolygonMode = () => {
+    draw.changeMode("draw_polygon")
+  }
+
+  useEvent(LocateEvents.Enum.GeocoderEntered, enableDrawPolygonMode)
+  useEvent(LocateEvents.Enum.GeocoderClickAway, enableDrawPolygonMode)
+
+  // useSubscribeLocateState((locateState) => {
+  //   switch (locateState) {
+  //     case "DRAWING_POLYGON":
+  //       console.log("DRAWING_POLYGON")
+  //       draw.changeMode("draw_polygon")
+  //       break
+  //     default:
+  //       console.log("OTHER")
+  //       draw.changeMode("simple_select")
+  //       break
+  //   }
+  // })
 
   // TODO: complete me
 
@@ -115,7 +146,7 @@ const PolygonControl = (props: Props) => {
     internalShowHide: false,
   })
 
-  const locateState = useLocateState()
+  // const locateState = useLocateState()
 
   return (
     <Fragment>
@@ -163,11 +194,11 @@ const PolygonControl = (props: Props) => {
         </IconButton>
       </LeftMenuPortal>
       <TopLeftPortal>
-        {locateState === "DRAWING_POLYGON" && (
+        {/* {locateState === "DRAWING_POLYGON" && (
           <div>
             <h2>Draw the outline of your site</h2>
           </div>
-        )}
+        )} */}
       </TopLeftPortal>
     </Fragment>
   )

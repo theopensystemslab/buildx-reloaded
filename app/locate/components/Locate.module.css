@@ -15,7 +15,6 @@
   @apply flex flex-col items-center justify-center;
   @apply bg-transparent;
   @apply pointer-events-none;
-  /* @apply z-50; */
 }
 
 .root .leftMenuContainer > div {

@@ -118,7 +118,11 @@ export const useMapPolygon = () => {
       BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY
     )
     if (rawStoragePayload) {
-      mapProxy.polygon = JSON.parse(rawStoragePayload)
+      try {
+        mapProxy.polygon = JSON.parse(rawStoragePayload)
+      } catch (error) {
+        console.error("Error parsing polygon from local storage:", error)
+      }
     }
   }, [])
 
