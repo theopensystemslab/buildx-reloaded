@@ -72,7 +72,7 @@ const GeocoderControl = (props: Props) => {
     return () => {
       container.replaceChildren()
     }
-  }, [map])
+  }, [map, geocoderEnabled])
 
   const { Portal } = usePortal({
     containerId: leftMenuContainerId,
@@ -80,35 +80,35 @@ const GeocoderControl = (props: Props) => {
     internalShowHide: false,
   })
 
-  return !geocoderEnabled ? null : (
-    <Fragment>
-      <div className={css.root}>
-        <div>
-          <div className={css.above}>
-            <h2>Enter your project location to begin</h2>
-          </div>
-          <div ref={geocoderDiv} className={css.geocoder}></div>
-          <div className={css.below}>
-            <button
-              onClick={() =>
-                dispatchLocateEvent(LocateEvents.Enum.GeocoderClickAway)
-              }
-            >
-              or find it on the map
-            </button>
-          </div>
+  return geocoderEnabled ? (
+    <div className={css.root}>
+      <div>
+        <div className={css.above}>
+          <h2>Enter your project location to begin</h2>
+        </div>
+        <div ref={geocoderDiv} className={css.geocoder}></div>
+        <div className={css.below}>
+          <button
+            onClick={() =>
+              dispatchLocateEvent(LocateEvents.Enum.GeocoderClickAway)
+            }
+          >
+            or find it on the map
+          </button>
         </div>
       </div>
-      <Portal>
-        <IconButton
+    </div>
+  ) : (
+    <Portal>
+      <IconButton
         //  onClick={() => void setMode("SEARCH")}
-        >
-          <div className="flex items-center justify-center">
-            <Search size={24} />
-          </div>
-        </IconButton>
-      </Portal>
-    </Fragment>
+        onClick={() => setGeocoderEnabled(true)}
+      >
+        <div className="flex items-center justify-center">
+          <Search size={24} />
+        </div>
+      </IconButton>
+    </Portal>
   )
 }
 

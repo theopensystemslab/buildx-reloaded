@@ -1,6 +1,7 @@
 import { Polygon } from "@turf/turf"
 import { proxy, useSnapshot } from "valtio"
 import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "@/constants"
+import { useMemo } from "react"
 
 function getInitialPolygon() {
   const rawStoragePayload = localStorage.getItem(
@@ -26,6 +27,7 @@ const prox = proxy<{
 
 export const useMapPolygon = () => {
   const { polygon } = useSnapshot(prox) as typeof prox
+  console.log(polygon)
   return polygon
 }
 
@@ -35,4 +37,9 @@ export const setMapPolygon = (polygon: Polygon) => {
     BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY,
     JSON.stringify(polygon)
   )
+}
+
+export const trashMapPolygon = () => {
+  prox.polygon = null
+  localStorage.setItem(BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY, "null")
 }

@@ -4,14 +4,14 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { distance, Feature, Geometry } from "@turf/turf"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import usePortal from "react-cool-portal"
 import { Layer, MapRef, Source, useControl } from "react-map-gl"
 import { useEvent } from "react-use"
 import { A, O, R } from "../../../src/utils/functions"
 import { LocateEvents } from "../state/events"
 import { polygonFeatureParser } from "../state/geojson"
-import { setMapPolygon } from "../state/polygon"
+import { setMapPolygon, trashMapPolygon, useMapPolygon } from "../state/polygon"
 import { polygonDrawStyles } from "./mapStyles"
 
 type Props = {
@@ -92,19 +92,28 @@ const PolygonControl = (props: Props) => {
         newPolygon()
       })
       map.on("draw.delete", updateLabels)
-      map.on("mousemove", updateLabels)
+      // map.on("mousemove", updateLabels)
     },
     // onRemove
     ({ map }: { map: MapRef }) => {
       map.off("draw.create", updateLabels)
       map.off("draw.update", updateLabels)
       map.off("draw.delete", updateLabels)
-      map.off("mousemove", updateLabels)
+      // map.off("mousemove", updateLabels)
     }
   )
 
+  const [drawMode, setDrawMode] = useState<"simple_select" | "draw_polygon">(
+    "simple_select"
+  )
+
+  useEffect(() => {
+    draw.changeMode(drawMode as any)
+    console.log({ drawMode, drawDrawMode: draw.getMode() })
+  }, [draw, drawMode])
+
   const enableDrawPolygonMode = () => {
-    draw.changeMode("draw_polygon")
+    setDrawMode("draw_polygon")
   }
 
   useEvent(LocateEvents.Enum.GeocoderEntered, enableDrawPolygonMode)
@@ -146,6 +155,7 @@ const PolygonControl = (props: Props) => {
     internalShowHide: false,
   })
 
+  const mapPolygon = useMapPolygon()
   // const locateState = useLocateState()
 
   return (
@@ -176,30 +186,30 @@ const PolygonControl = (props: Props) => {
           }}
         />
       </Source>
-      <LeftMenuPortal>
-        <IconButton
-          onClick={() => {
-            // TODO: to globals?
-            // mapProxy.polygon = null
-            // localStorage.setItem(
-            //   BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY,
-            //   "null"
-            // )
-            // vectorSource.clear()
-          }}
-        >
-          <div className="flex items-center justify-center">
-            <TrashCan size={24} />
-          </div>
-        </IconButton>
-      </LeftMenuPortal>
-      <TopLeftPortal>
-        {/* {locateState === "DRAWING_POLYGON" && (
+      {mapPolygon === null && drawMode === "draw_polygon" && (
+        <TopLeftPortal>
           <div>
             <h2>Draw the outline of your site</h2>
           </div>
-        )} */}
-      </TopLeftPortal>
+        </TopLeftPortal>
+      )}
+
+      {mapPolygon !== null && (
+        <LeftMenuPortal>
+          <IconButton
+            onClick={() => {
+              trashMapPolygon()
+              draw.deleteAll()
+              setDrawMode("draw_polygon")
+              updateLabels()
+            }}
+          >
+            <div className="flex items-center justify-center">
+              <TrashCan size={24} />
+            </div>
+          </IconButton>
+        </LeftMenuPortal>
+      )}
     </Fragment>
   )
 }
