@@ -6,9 +6,9 @@ import { centerOfMass, distance, Feature, Geometry } from "@turf/turf"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useState } from "react"
 import usePortal from "react-cool-portal"
-import { Layer, MapRef, Source, useControl, useMap } from "react-map-gl"
+import { Layer, MapRef, Source, useControl } from "react-map-gl"
 import { useEvent } from "react-use"
-import { A, O, R } from "../../../src/utils/functions"
+import { A, O } from "@/utils/functions"
 import useFlyTo, { flyToDefaultOpts } from "../hooks/useFlyTo"
 import { LocateEvents } from "../state/events"
 import { polygonFeatureParser } from "../state/geojson"
@@ -74,7 +74,11 @@ const PolygonControl = (props: Props) => {
         }
       })
     )
+    updateLabels()
   }
+
+  const drawCreateHandler = newPolygon
+  const drawUpdateHandler = newPolygon
 
   const draw = useControl<MapboxDraw>(
     () =>
@@ -84,21 +88,15 @@ const PolygonControl = (props: Props) => {
       }),
     // onCreate
     ({ map }: { map: MapRef }) => {
-      map.on("draw.create", () => {
-        updateLabels()
-        newPolygon()
-      })
-      map.on("draw.update", () => {
-        updateLabels()
-        newPolygon()
-      })
+      map.on("draw.create", drawCreateHandler)
+      map.on("draw.update", drawUpdateHandler)
       map.on("draw.delete", updateLabels)
       map.on("mousemove", updateLabels)
     },
     // onRemove
     ({ map }: { map: MapRef }) => {
-      map.off("draw.create", updateLabels)
-      map.off("draw.update", updateLabels)
+      map.off("draw.create", drawCreateHandler)
+      map.off("draw.update", drawUpdateHandler)
       map.off("draw.delete", updateLabels)
       map.off("mousemove", updateLabels)
     }
@@ -108,12 +106,14 @@ const PolygonControl = (props: Props) => {
     "simple_select"
   )
 
-  useEffect(() => {
+  const syncMode = () => {
     draw.changeMode(drawMode as any)
-  }, [draw, drawMode])
+  }
+
+  useEffect(syncMode, [draw, drawMode])
 
   const enableDrawPolygonMode = () => {
-    setDrawMode("draw_polygon")
+    trash()
   }
 
   useEvent(LocateEvents.Enum.GeocoderEntered, enableDrawPolygonMode)
@@ -137,6 +137,7 @@ const PolygonControl = (props: Props) => {
     trashMapPolygon()
     draw.deleteAll()
     setDrawMode("draw_polygon")
+    syncMode()
     updateLabels()
   }
 
