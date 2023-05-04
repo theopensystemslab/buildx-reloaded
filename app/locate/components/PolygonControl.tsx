@@ -2,13 +2,14 @@ import IconButton from "@/ui/common/IconButton"
 import { TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
-import { distance, Feature, Geometry } from "@turf/turf"
+import { centerOfMass, distance, Feature, Geometry } from "@turf/turf"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useState } from "react"
 import usePortal from "react-cool-portal"
-import { Layer, MapRef, Source, useControl } from "react-map-gl"
+import { Layer, MapRef, Source, useControl, useMap } from "react-map-gl"
 import { useEvent } from "react-use"
 import { A, O, R } from "../../../src/utils/functions"
+import useFlyTo, { flyToDefaultOpts } from "../hooks/useFlyTo"
 import { LocateEvents } from "../state/events"
 import { polygonFeatureParser } from "../state/geojson"
 import { setMapPolygon, trashMapPolygon, useMapPolygon } from "../state/polygon"
@@ -109,7 +110,6 @@ const PolygonControl = (props: Props) => {
 
   useEffect(() => {
     draw.changeMode(drawMode as any)
-    console.log({ drawMode, drawDrawMode: draw.getMode() })
   }, [draw, drawMode])
 
   const enableDrawPolygonMode = () => {
@@ -158,6 +158,47 @@ const PolygonControl = (props: Props) => {
   const mapPolygon = useMapPolygon()
   // const locateState = useLocateState()
 
+  const trash = () => {
+    trashMapPolygon()
+    draw.deleteAll()
+    setDrawMode("draw_polygon")
+    updateLabels()
+  }
+
+  const flyTo = useFlyTo()
+
+  useEffect(() => {
+    if (mapPolygon !== null) {
+      draw.add({
+        type: "FeatureCollection",
+        features: [
+          {
+            geometry: mapPolygon,
+            properties: {},
+            type: "Feature",
+          },
+        ],
+      })
+
+      const {
+        geometry: {
+          coordinates: [lng, lat],
+        },
+      } = centerOfMass(mapPolygon)
+
+      flyTo([lng, lat])
+
+      const timeout = setTimeout(() => {
+        updateLabels()
+      }, (flyToDefaultOpts.duration ?? 0) - 1000)
+
+      return () => {
+        clearTimeout(timeout)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draw])
+
   return (
     <Fragment>
       <Source
@@ -196,14 +237,7 @@ const PolygonControl = (props: Props) => {
 
       {mapPolygon !== null && (
         <LeftMenuPortal>
-          <IconButton
-            onClick={() => {
-              trashMapPolygon()
-              draw.deleteAll()
-              setDrawMode("draw_polygon")
-              updateLabels()
-            }}
-          >
+          <IconButton onClick={trash}>
             <div className="flex items-center justify-center">
               <TrashCan size={24} />
             </div>

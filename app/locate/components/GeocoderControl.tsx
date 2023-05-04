@@ -9,8 +9,7 @@ import css from "./GeocoderControl.module.css"
 import { dispatchLocateEvent, LocateEvents } from "../state/events"
 import { useEvent } from "react-use"
 import { useMapPolygon } from "../state/polygon"
-
-const MAX_ZOOM = 19
+import useFlyTo from "../hooks/useFlyTo"
 
 type Props = {
   leftMenuContainerId: string
@@ -24,7 +23,6 @@ const GeocoderControl = (props: Props) => {
   const mapPolygon = useMapPolygon()
 
   const [geocoderEnabled, setGeocoderEnabled] = useState(() => {
-    console.log(mapPolygon)
     return mapPolygon === null
   })
 
@@ -35,6 +33,8 @@ const GeocoderControl = (props: Props) => {
   useEvent(LocateEvents.Enum.GeocoderEntered, hideGeocoder)
   useEvent(LocateEvents.Enum.GeocoderClickAway, hideGeocoder)
 
+  const flyTo = useFlyTo()
+
   useEffect(() => {
     const container = geocoderDiv.current
     if (!container) return
@@ -43,7 +43,7 @@ const GeocoderControl = (props: Props) => {
       marker: false,
       accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!,
       placeholder: "Enter a place name or address",
-      flyTo: true,
+      // flyTo: true,
     })
 
     geocoder.addTo(container)
@@ -51,7 +51,7 @@ const GeocoderControl = (props: Props) => {
     geocoder.on("result", ({ result }) => {
       if (!map) return
 
-      map.flyTo({ center: result.center, zoom: MAX_ZOOM })
+      flyTo(result.center)
 
       dispatchLocateEvent(LocateEvents.Enum.GeocoderEntered)
 
@@ -72,7 +72,7 @@ const GeocoderControl = (props: Props) => {
     return () => {
       container.replaceChildren()
     }
-  }, [map, geocoderEnabled])
+  }, [map, geocoderEnabled, flyTo])
 
   const { Portal } = usePortal({
     containerId: leftMenuContainerId,

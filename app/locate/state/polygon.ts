@@ -27,7 +27,6 @@ const prox = proxy<{
 
 export const useMapPolygon = () => {
   const { polygon } = useSnapshot(prox) as typeof prox
-  console.log(polygon)
   return polygon
 }
 
