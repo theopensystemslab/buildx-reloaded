@@ -93,14 +93,14 @@ const PolygonControl = (props: Props) => {
         newPolygon()
       })
       map.on("draw.delete", updateLabels)
-      // map.on("mousemove", updateLabels)
+      map.on("mousemove", updateLabels)
     },
     // onRemove
     ({ map }: { map: MapRef }) => {
       map.off("draw.create", updateLabels)
       map.off("draw.update", updateLabels)
       map.off("draw.delete", updateLabels)
-      // map.off("mousemove", updateLabels)
+      map.off("mousemove", updateLabels)
     }
   )
 
@@ -119,30 +119,6 @@ const PolygonControl = (props: Props) => {
   useEvent(LocateEvents.Enum.GeocoderEntered, enableDrawPolygonMode)
   useEvent(LocateEvents.Enum.GeocoderClickAway, enableDrawPolygonMode)
 
-  // useSubscribeLocateState((locateState) => {
-  //   switch (locateState) {
-  //     case "DRAWING_POLYGON":
-  //       console.log("DRAWING_POLYGON")
-  //       draw.changeMode("draw_polygon")
-  //       break
-  //     default:
-  //       console.log("OTHER")
-  //       draw.changeMode("simple_select")
-  //       break
-  //   }
-  // })
-
-  // TODO: complete me
-
-  // const handleToggleDraw = () => {
-  //   setDrawingEnabled(!drawingEnabled);
-  //   draw.current.changeMode(drawingEnabled ? 'simple_select' : 'draw_polygon');
-  // };
-
-  // const handleDeleteDraw = () => {
-  //   draw.current.deleteAll();
-  // };
-
   const { Portal: LeftMenuPortal } = usePortal({
     containerId: leftMenuContainerId,
     autoRemoveContainer: false,
@@ -156,7 +132,6 @@ const PolygonControl = (props: Props) => {
   })
 
   const mapPolygon = useMapPolygon()
-  // const locateState = useLocateState()
 
   const trash = () => {
     trashMapPolygon()
