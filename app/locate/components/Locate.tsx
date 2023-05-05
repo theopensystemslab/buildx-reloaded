@@ -13,6 +13,7 @@ const gadheim = {
 const Locate = () => {
   const leftMenuContainerId = "left-menu-container"
   const topLeftContainerId = "top-left-container-id"
+  const bottomRightContainerId = "bottom-right-container-id"
 
   return (
     <div className={css.root}>
@@ -26,7 +27,13 @@ const Locate = () => {
         reuseMaps
       >
         <GeocoderControl {...{ leftMenuContainerId }} />
-        <PolygonControl {...{ leftMenuContainerId, topLeftContainerId }} />
+        <PolygonControl
+          {...{
+            leftMenuContainerId,
+            topLeftContainerId,
+            bottomRightContainerId,
+          }}
+        />
       </ReactMapGLMap>
 
       <HtmlPortalContainer
@@ -37,6 +44,11 @@ const Locate = () => {
       <div className={css.leftMenuContainer}>
         <HtmlPortalContainer id={leftMenuContainerId} />
       </div>
+
+      <HtmlPortalContainer
+        id={bottomRightContainerId}
+        className={css.bottomRightContainer}
+      />
     </div>
   )
 }

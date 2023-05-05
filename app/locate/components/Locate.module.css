@@ -20,3 +20,8 @@
 .root .leftMenuContainer > div {
   @apply bg-white flex flex-col pointer-events-auto;
 }
+
+.root .bottomRightContainer {
+  @apply absolute bottom-0 right-0;
+  @apply pointer-events-none;
+}

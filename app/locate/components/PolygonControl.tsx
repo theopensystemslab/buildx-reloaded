@@ -1,5 +1,5 @@
 import IconButton from "@/ui/common/IconButton"
-import { TrashCan } from "@carbon/icons-react"
+import { ChevronRight, TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { centerOfMass, distance, Feature, Geometry } from "@turf/turf"
@@ -14,14 +14,17 @@ import { LocateEvents } from "../state/events"
 import { polygonFeatureParser } from "../state/geojson"
 import { setMapPolygon, trashMapPolygon, useMapPolygon } from "../state/polygon"
 import { polygonDrawStyles } from "./mapStyles"
+import Link from "next/link"
 
 type Props = {
   leftMenuContainerId: string
   topLeftContainerId: string
+  bottomRightContainerId: string
 }
 
 const PolygonControl = (props: Props) => {
-  const { leftMenuContainerId, topLeftContainerId } = props
+  const { leftMenuContainerId, topLeftContainerId, bottomRightContainerId } =
+    props
 
   const [labelDataFeatures, setLabelDataFeatures] = useState<
     Feature<Geometry>[]
@@ -131,6 +134,12 @@ const PolygonControl = (props: Props) => {
     internalShowHide: false,
   })
 
+  const { Portal: BottomRightPortal } = usePortal({
+    containerId: bottomRightContainerId,
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
   const mapPolygon = useMapPolygon()
 
   const trash = () => {
@@ -212,13 +221,24 @@ const PolygonControl = (props: Props) => {
       )}
 
       {mapPolygon !== null && (
-        <LeftMenuPortal>
-          <IconButton onClick={trash}>
-            <div className="flex items-center justify-center">
-              <TrashCan size={24} />
-            </div>
-          </IconButton>
-        </LeftMenuPortal>
+        <Fragment>
+          <LeftMenuPortal>
+            <IconButton onClick={trash}>
+              <div className="flex items-center justify-center">
+                <TrashCan size={24} />
+              </div>
+            </IconButton>
+          </LeftMenuPortal>
+          <BottomRightPortal>
+            <Link
+              href={`/design`}
+              className="bg-white text-grey-100 px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide pointer-events-auto"
+            >
+              <div>Continue to design</div>
+              <ChevronRight size="20" className="ml-16" />
+            </Link>
+          </BottomRightPortal>
+        </Fragment>
       )}
     </Fragment>
   )
