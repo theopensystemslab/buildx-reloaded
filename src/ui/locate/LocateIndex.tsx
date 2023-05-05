@@ -321,8 +321,6 @@ const LocateIndex = () => {
     if (mapPolygon !== null && mode === "SEARCH") setMode("DRAW")
   }, [mapPolygon, mode, setMode])
 
-  const rootRef = useRef<HTMLDivElement>(null)
-
   const discardSearch = () => {
     if (mode === "SEARCH" && mapPolygon !== null) {
       setMode("DRAW")
@@ -333,7 +331,6 @@ const LocateIndex = () => {
 
   return (
     <div
-      ref={rootRef}
       className="relative flex h-full w-full flex-col items-center justify-center"
       onClick={discardSearch}
     >

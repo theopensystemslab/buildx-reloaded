@@ -1,0 +1,42 @@
+.root {
+  @apply absolute w-full h-full pointer-events-none;
+  @apply flex flex-col justify-center items-center;
+}
+
+.root > div {
+  @apply max-w-xs;
+  @apply text-white;
+}
+
+.above,
+.geocoder,
+.below {
+  @apply w-full;
+}
+
+.above h2 {
+  @apply text-2xl;
+}
+
+.geocoder :global(.mapboxgl-ctrl-geocoder) {
+  @apply w-full max-w-none rounded-none;
+}
+
+.geocoder :global(.mapboxgl-ctrl-geocoder input) {
+  @apply outline-none;
+}
+
+.geocoder {
+  @apply mt-4;
+}
+
+.below {
+  @apply flex justify-end;
+  @apply mt-2;
+}
+
+.below button {
+  @apply inline;
+  @apply border-b border-white;
+  @apply pointer-events-auto;
+}

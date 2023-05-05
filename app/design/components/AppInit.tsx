@@ -1,18 +1,19 @@
 "use client"
 import { useGlobals } from "@/hooks/globals"
 import { useMapboxStore } from "@/hooks/mapboxStore"
+import Effects from "@/ui-3d/init/Effects"
+import GroundCircle from "@/ui-3d/init/GroundCircle"
 import Lighting from "@/ui-3d/init/Lighting"
 import MapboxR3FCanvas from "@/ui-3d/init/MapboxR3FCanvas"
 import MapboxR3FCanvasProjector from "@/ui-3d/init/MapboxR3FCanvasProjector"
 import RectangularGrid from "@/ui-3d/init/RectangularGrid"
+import ShadowPlane from "@/ui-3d/init/ShadowPlane"
 import VanillaR3FCanvas from "@/ui-3d/init/VanillaR3FCanvas"
+import FullScreenContainer from "@/ui/common/FullScreenContainer"
 import HtmlUi from "@/ui/design/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
-import FullScreenContainer from "../../ui/common/FullScreenContainer"
-import Effects from "./Effects"
-import GroundCircle from "./GroundCircle"
-import ShadowPlane from "./ShadowPlane"
+import SiteBoundary from "./SiteBoundary"
 
 const DataPreload = dynamic(() => import("~/app/data/DataPreload"), {
   ssr: false,
@@ -40,6 +41,7 @@ const Common = (props: Props) => {
         z={{ cells: 61, size: 1 }}
         color="#ababab"
       />
+      <SiteBoundary />
       <Effects />
       {children}
     </Fragment>
