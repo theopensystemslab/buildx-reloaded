@@ -38,7 +38,7 @@ const MaterialsListTable = (props: Props) => {
 
   // const getElementMaterialName = useGetElementMaterialName()
 
-  const materialsListData = useMaterialsListData()
+  const { data, fmt } = useMaterialsListData()
 
   // const data: MaterialsListItem[] = useMemo(() => {
   //   const foo = pipe(
@@ -68,14 +68,8 @@ const MaterialsListTable = (props: Props) => {
 
   const { code: currencyCode } = useSiteCurrency()
 
-  const fmt = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-    }).format(value)
-
   const { totalEstimatedCost, totalCarbonCost } = pipe(
-    materialsListData,
+    data,
     A.reduce(
       { totalEstimatedCost: 0, totalCarbonCost: 0 },
       ({ totalEstimatedCost, totalCarbonCost }, row) => ({
@@ -101,7 +95,7 @@ const MaterialsListTable = (props: Props) => {
       header: () => <span>Item</span>,
     }),
     columnHelper.accessor("quantity", {
-      cell: (info) => <span>{`${info.getValue()}m²`}</span>,
+      cell: (info) => <span>{`${Number(info.getValue()).toFixed(1)}m²`}</span>,
       header: () => <span>Quantity</span>,
     }),
     columnHelper.accessor("specification", {
@@ -118,7 +112,9 @@ const MaterialsListTable = (props: Props) => {
       footer: () => <span>{totalEstimatedCost}</span>,
     }),
     columnHelper.accessor("carbonCost", {
-      cell: (info) => <span>{`${fmt(info.getValue())} CO₂`}</span>,
+      cell: (info) => (
+        <span>{`${Number(info.getValue()).toFixed(1)}T CO₂`}</span>
+      ),
       header: () => <span>Carbon cost</span>,
       footer: () => <span>{totalCarbonCost}</span>,
     }),
@@ -139,7 +135,7 @@ const MaterialsListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={materialsListData}
+      data={data}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />

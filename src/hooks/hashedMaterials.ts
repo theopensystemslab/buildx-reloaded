@@ -28,6 +28,35 @@ const getMaterialHash = ({
 
 const hashedMaterials = proxy<Record<string, Material>>({})
 
+export const useGetElementMaterial = () => {
+  const elements = useElements()
+  const materials = useMaterials()
+
+  return (houseId: string, elementName: string) => {
+    const house = houses[houseId]
+    const materialName =
+      elementName in house.modifiedMaterials
+        ? house.modifiedMaterials[elementName]
+        : pipe(
+            elements,
+            A.findFirstMap((el) =>
+              el.name === elementName ? O.some(el.defaultMaterial) : O.none
+            ),
+            someOrError(
+              `No element found for ${elementName} in system ${house.systemId}`
+            )
+          )
+
+    return pipe(
+      materials,
+      A.findFirst((x) => x.name === materialName),
+      someOrError(
+        `No material found for ${materialName} in system ${house.systemId}`
+      )
+    )
+  }
+}
+
 export const useGetElementMaterialName = () => {
   const elements = useElements()
 

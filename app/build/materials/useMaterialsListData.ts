@@ -1,5 +1,10 @@
 import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"
+import {
+  useGetElementMaterial,
+  useGetElementMaterialName,
+} from "../../../src/hooks/hashedMaterials"
+import { useSiteCurrency } from "../../../src/hooks/siteCtx"
 import { A, O, R } from "../../../src/utils/functions"
 import { useAnalyseData } from "../../analyse/data"
 import {
@@ -24,33 +29,20 @@ export type MaterialsListRow = {
 export const useMaterialsListData = () => {
   const getColorClass = useGetColorClass()
 
-  // const { data: modules = [], status: modulesQueryStatus } =
-  //   trpc.modules.useQuery()
-  // const { data: blocks = [], status: blocksQueryStatus } =
-  //   trpc.blocks.useQuery()
-  // const {
-  //   data: blockModulesEntries = [],
-  //   status: blockModulesEntriesQueryStatus,
-  // } = trpc.blockModulesEntries.useQuery()
+  const { byHouse } = useAnalyseData()
 
-  // const allStatuses = [
-  //   modulesQueryStatus,
-  //   blocksQueryStatus,
-  //   blockModulesEntriesQueryStatus,
-  // ]
+  const { code: currencyCode } = useSiteCurrency()
 
-  // const status: typeof modulesQueryStatus = allStatuses.includes("error")
-  //   ? "error"
-  //   : allStatuses.includes("loading")
-  //   ? "loading"
-  //   : "success"
-
-  // const selectedHouseIds = useSelectedHouseIds()
-
-  const { areas, costs, embodiedCo2, energyUse, operationalCo2, byHouse } =
-    useAnalyseData()
+  const fmt = (value: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+    }).format(value)
 
   const selectedHouses = useSelectedHouses()
+
+  const getElementMaterialName = useGetElementMaterialName()
+  const getElementMaterial = useGetElementMaterial()
 
   const materialsListData: MaterialsListRow[] = useMemo(() => {
     const foo: MaterialsListRow[] = pipe(
@@ -59,29 +51,79 @@ export const useMaterialsListData = () => {
         pipe(
           byHouse,
           R.lookup(house.id),
-          O.map(({ areas, costs, operationalCo2 }): MaterialsListRow => {
+          O.map(({ areas, costs, operationalCo2 }): MaterialsListRow[] => {
             // we probably need to for each the 3 special elements here
 
-            return {
+            const sharedProps = {
               buildingName: house.friendlyName,
-              carbonCost: 0,
               colorClass: getColorClass(house.id),
-              estimatedCost: 0,
-              estimatedCostPerUnit: 0,
-              item: "item",
-              linkUrl: "url",
-              quantity: 0,
-              specification: "spec",
               staleColorClass: getColorClass(house.id, { stale: true }),
             }
+
+            const claddingMaterial = getElementMaterial(house.id, "Cladding")
+
+            console.log({ claddingMaterial })
+
+            const cladding: MaterialsListRow = {
+              ...sharedProps,
+              carbonCost: claddingMaterial.embodiedCarbonPerM2 * areas.cladding,
+              estimatedCost: costs.cladding,
+              estimatedCostPerUnit: claddingMaterial.costPerM2,
+              item: "Cladding",
+              linkUrl: "#",
+              quantity: areas.cladding,
+              specification: getElementMaterialName(house.id, "Cladding"),
+            }
+
+            const liningMaterial = getElementMaterial(
+              house.id,
+              "Internal wall lining"
+            )
+
+            const lining: MaterialsListRow = {
+              ...sharedProps,
+              carbonCost:
+                liningMaterial.embodiedCarbonPerM2 * areas.internalLining,
+              estimatedCost: costs.internalLining,
+              estimatedCostPerUnit: liningMaterial.costPerM2,
+              item: "Internal Lining",
+              linkUrl: "#",
+              quantity: areas.internalLining,
+              specification: getElementMaterialName(
+                house.id,
+                "Internal wall lining"
+              ),
+            }
+
+            const roofing: MaterialsListRow = {
+              ...sharedProps,
+              carbonCost: 0,
+              estimatedCost: 0,
+              estimatedCostPerUnit: 0,
+              item: "Roofing",
+              linkUrl: "#",
+              quantity: 0,
+              specification: "spec", //getElementMaterialName(house.id, "Roofing"),
+            }
+
+            console.log({ cladding, lining, roofing })
+
+            return [cladding, lining, roofing]
           })
         )
-      )
+      ),
+      A.flatten
     )
     return foo
-  }, [byHouse, getColorClass, selectedHouses])
+  }, [
+    byHouse,
+    getColorClass,
+    getElementMaterial,
+    getElementMaterialName,
+    selectedHouses,
+  ])
 
-  return materialsListData
+  return { data: materialsListData, fmt }
 
   // const data = useMemo(() => {
   //   const accum: Record<string, number> = {}
