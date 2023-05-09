@@ -5,7 +5,7 @@ import AppInit from "./components/AppInit"
 const IndexPage = () => {
   return (
     <DataInit>
-      <AppInit>
+      <AppInit controlsEnabled={true} mapEnabled={false}>
         <GroupedApp />
       </AppInit>
     </DataInit>

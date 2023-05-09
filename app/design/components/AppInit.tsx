@@ -1,6 +1,5 @@
 "use client"
 import { useGlobals } from "@/hooks/globals"
-import { useMapboxStore } from "@/hooks/mapboxStore"
 import Effects from "@/ui-3d/init/Effects"
 import GroundCircle from "@/ui-3d/init/GroundCircle"
 import Lighting from "@/ui-3d/init/Lighting"
@@ -13,16 +12,20 @@ import FullScreenContainer from "@/ui/common/FullScreenContainer"
 import HtmlUi from "@/ui/design/HtmlUi"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
+import SiteCamControls from "../../../src/ui-3d/camera/SiteCamControls"
 import SiteBoundary from "./SiteBoundary"
 
 const DataPreload = dynamic(() => import("~/app/data/DataPreload"), {
   ssr: false,
 })
 
-type Props = PropsWithChildren<{}>
+type Props = PropsWithChildren<{
+  mapEnabled: boolean
+  controlsEnabled: boolean
+}>
 
 const Common = (props: Props) => {
-  const { children } = props
+  const { controlsEnabled, children } = props
   const { preload, groundPlane } = useGlobals()
 
   return (
@@ -43,36 +46,29 @@ const Common = (props: Props) => {
       />
       <SiteBoundary />
       <Effects />
+      <SiteCamControls />
       {children}
     </Fragment>
   )
 }
 
 const AppInit = (props: Props) => {
-  const { children } = props
-
-  const { mapboxEnabled } = useMapboxStore()
-
-  // useKey("t", () => {
-  //   mapboxStore.mapboxEnabled = !mapboxStore.mapboxEnabled
-  // })
-
-  // useHouseTransformCollisionDetection()
+  const { controlsEnabled, mapEnabled, children } = props
 
   return (
     <FullScreenContainer>
-      {!mapboxEnabled ? (
+      {!mapEnabled ? (
         <VanillaR3FCanvas>
-          <Common>{children}</Common>
+          <Common {...props}>{children}</Common>
         </VanillaR3FCanvas>
       ) : (
         <MapboxR3FCanvas>
           <MapboxR3FCanvasProjector>
-            <Common>{children}</Common>
+            <Common {...props}>{children}</Common>
           </MapboxR3FCanvasProjector>
         </MapboxR3FCanvas>
       )}
-      <HtmlUi />
+      {controlsEnabled && <HtmlUi controlsEnabled={controlsEnabled} />}
     </FullScreenContainer>
   )
 }

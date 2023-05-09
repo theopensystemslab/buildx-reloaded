@@ -11,7 +11,7 @@ const AppInit = dynamic(() => import("../../design/components/AppInit"), {
 const HousesView = () => {
   return (
     <DataInit>
-      <AppInit>
+      <AppInit controlsEnabled={false} mapEnabled={false}>
         <GroupedApp />
       </AppInit>
     </DataInit>
