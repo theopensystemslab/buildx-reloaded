@@ -5,12 +5,17 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useMemo } from "react"
 import { useGetElementMaterialName } from "../../../src/hooks/hashedMaterials"
-import { A, R } from "../../../src/utils/functions"
+import { A, capitalizeFirstLetters, R } from "../../../src/utils/functions"
 import { useAnalyseData } from "../../analyse/data"
-import { useSelectedHouses } from "../../common/HousesPillsSelector"
+import {
+  useSelectedHouseIds,
+  useSelectedHouses,
+} from "../../common/HousesPillsSelector"
 import PaginatedTable from "../PaginatedTable"
+import { useMaterialsListData } from "./useMaterialsListData"
 
 type MaterialsListItem = {
+  buildingName: string
   item: string
   quantity: number
   specification: string
@@ -26,33 +31,40 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const selectedHouses = useSelectedHouses()
-  // const selectedHouses = useSelectedHouses()
+  // const selectedHouseIds = useSelectedHouseIds()
 
-  const { areas, costs, embodiedCo2, energyUse, operationalCo2, byHouse } =
-    useAnalyseData()
+  // const { areas, costs, embodiedCo2, energyUse, operationalCo2, byHouse } =
+  //   useAnalyseData()
 
-  const getElementMaterialName = useGetElementMaterialName()
+  // const getElementMaterialName = useGetElementMaterialName()
 
-  const data: MaterialsListItem[] = useMemo(() => {
-    // const accum: Record<string, number> = {}
+  const materialsListData = useMaterialsListData()
 
-    // TODO: query here like in OrderListTable
+  // const data: MaterialsListItem[] = useMemo(() => {
+  //   const foo = pipe(
+  //     byHouse,
+  //     R.filterWithIndex((houseId) => selectedHouseIds.includes(houseId)),
+  //     R.toArray,
+  //     A.map(([k, { costs, areas, operationalCo2 }]) => {})
+  //   )
+  //   // const accum: Record<string, number> = {}
 
-    // const foo = pipe(areas, R.toEntries, A.map(([k,r]) => {}))
+  //   // TODO: query here like in OrderListTable
 
-    // TODO: solve byHouse thing, confirm with clayton
+  //   // const foo = pipe(areas, R.toEntries, A.map(([k,r]) => {}))
 
-    // const cladding: MaterialsListItem = {
-    //   item: "cladding",
-    //   quantity: areas.cladding,
-    //   specification: getMaterialName(houseId, elementName)
+  //   // TODO: solve byHouse thing, confirm with clayton
 
-    // }
+  //   // const cladding: MaterialsListItem = {
+  //   //   item: "cladding",
+  //   //   quantity: areas.cladding,
+  //   //   specification: getMaterialName(houseId, elementName)
 
-    // return [cladding]
-    return []
-  }, [])
+  //   // }
+
+  //   // return [cladding]
+  //   return []
+  // }, [byHouse, selectedHouseIds])
 
   const { code: currencyCode } = useSiteCurrency()
 
@@ -63,7 +75,7 @@ const MaterialsListTable = (props: Props) => {
     }).format(value)
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
-    data,
+    materialsListData,
     A.reduce(
       { totalEstimatedCost: 0, totalCarbonCost: 0 },
       ({ totalEstimatedCost, totalCarbonCost }, row) => ({
@@ -77,6 +89,13 @@ const MaterialsListTable = (props: Props) => {
   const columnHelper = createColumnHelper<MaterialsListItem>()
 
   const columns: ColumnDef<MaterialsListItem, any>[] = [
+    columnHelper.accessor("buildingName", {
+      id: "Building Name",
+      cell: (info) => {
+        return <div>{capitalizeFirstLetters(info.getValue())}</div>
+      },
+      header: () => null,
+    }),
     columnHelper.accessor("item", {
       cell: (info) => <span>{info.getValue()}</span>,
       header: () => <span>Item</span>,
@@ -120,7 +139,7 @@ const MaterialsListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={data}
+      data={materialsListData}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />
