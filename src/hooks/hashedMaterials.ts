@@ -3,8 +3,8 @@ import { pipe } from "fp-ts/lib/function"
 import { MutableRefObject, useEffect, useMemo, useRef } from "react"
 import { Group, Material, Matrix4, Plane, Vector3 } from "three"
 import { proxy, ref } from "valtio"
-import { useSystemElements } from "../../app/data/elements"
-import { useSystemMaterials } from "../../app/data/materials"
+import { useElements, useSystemElements } from "~/app/data/elements"
+import { useMaterials, useSystemMaterials } from "~/app/data/materials"
 import { A, O, R, RA, someOrError } from "../utils/functions"
 import { useSubscribe, useSubscribeKey } from "../utils/hooks"
 import { createMaterial, isMesh } from "../utils/three"
@@ -27,6 +27,57 @@ const getMaterialHash = ({
 }) => `${systemId}:${houseId}:${materialName}`
 
 const hashedMaterials = proxy<Record<string, Material>>({})
+
+export const useGetElementMaterial = () => {
+  const elements = useElements()
+  const materials = useMaterials()
+
+  return (houseId: string, elementName: string) => {
+    const house = houses[houseId]
+    const materialName =
+      elementName in house.modifiedMaterials
+        ? house.modifiedMaterials[elementName]
+        : pipe(
+            elements,
+            A.findFirstMap((el) =>
+              el.name === elementName ? O.some(el.defaultMaterial) : O.none
+            ),
+            someOrError(
+              `No element found for ${elementName} in system ${house.systemId}`
+            )
+          )
+
+    return pipe(
+      materials,
+      A.findFirst((x) => x.name === materialName),
+      someOrError(
+        `No material found for ${materialName} in system ${house.systemId}`
+      )
+    )
+  }
+}
+
+export const useGetElementMaterialName = () => {
+  const elements = useElements()
+
+  return (houseId: string, elementName: string) => {
+    const house = houses[houseId]
+    const materialName =
+      elementName in house.modifiedMaterials
+        ? house.modifiedMaterials[elementName]
+        : pipe(
+            elements,
+            A.findFirstMap((el) =>
+              el.name === elementName ? O.some(el.defaultMaterial) : O.none
+            ),
+            someOrError(
+              `No element found for ${elementName} in system ${house.systemId}`
+            )
+          )
+
+    return materialName
+  }
+}
 
 export const useMaterialName = (houseId: string, elementName: string) => {
   const { modifiedMaterials, systemId } = useHouse(houseId)

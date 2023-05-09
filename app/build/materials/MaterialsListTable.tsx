@@ -1,14 +1,14 @@
 "use client"
-import { useSiteCurrency } from "@/hooks/siteCtx"
+import { A, capitalizeFirstLetters, R } from "@/utils/functions"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
-import { memo, useMemo } from "react"
-import { A, R } from "../../../src/utils/functions"
-import { useSelectedHouses } from "../../common/HousesPillsSelector"
+import { memo } from "react"
 import PaginatedTable from "../PaginatedTable"
+import { useMaterialsListData } from "./useMaterialsListData"
 
 type MaterialsListItem = {
+  buildingName: string
   item: string
   quantity: number
   specification: string
@@ -24,23 +24,7 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const selectedHouses = useSelectedHouses()
-
-  const data: MaterialsListItem[] = useMemo(() => {
-    const accum: Record<string, number> = {}
-
-    // TODO: query here like in OrderListTable
-
-    return []
-  }, [])
-
-  const { code: currencyCode } = useSiteCurrency()
-
-  const fmt = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-    }).format(value)
+  const { data, fmt } = useMaterialsListData()
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     data,
@@ -57,12 +41,19 @@ const MaterialsListTable = (props: Props) => {
   const columnHelper = createColumnHelper<MaterialsListItem>()
 
   const columns: ColumnDef<MaterialsListItem, any>[] = [
+    columnHelper.accessor("buildingName", {
+      id: "Building Name",
+      cell: (info) => {
+        return <div>{capitalizeFirstLetters(info.getValue())}</div>
+      },
+      header: () => null,
+    }),
     columnHelper.accessor("item", {
       cell: (info) => <span>{info.getValue()}</span>,
       header: () => <span>Item</span>,
     }),
     columnHelper.accessor("quantity", {
-      cell: (info) => <span>{`${info.getValue()}m²`}</span>,
+      cell: (info) => <span>{`${Number(info.getValue()).toFixed(1)}m²`}</span>,
       header: () => <span>Quantity</span>,
     }),
     columnHelper.accessor("specification", {
@@ -79,7 +70,9 @@ const MaterialsListTable = (props: Props) => {
       footer: () => <span>{totalEstimatedCost}</span>,
     }),
     columnHelper.accessor("carbonCost", {
-      cell: (info) => <span>{`${fmt(info.getValue())} CO₂`}</span>,
+      cell: (info) => (
+        <span>{`${Number(info.getValue()).toFixed(1)}T CO₂`}</span>
+      ),
       header: () => <span>Carbon cost</span>,
       footer: () => <span>{totalCarbonCost}</span>,
     }),

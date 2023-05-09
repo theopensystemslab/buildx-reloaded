@@ -600,9 +600,6 @@ export const useAnalyseData = () => {
 
   const selectedHouseIds = useSelectedHouseIds()
 
-  const houseIds =
-    selectedHouseIds.length > 0 ? selectedHouseIds : Object.keys(houses)
-
   const byHouse = pipe(
     houses,
     R.filterMap((house) => {
