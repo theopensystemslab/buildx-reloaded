@@ -1,16 +1,9 @@
 "use client"
-import { useSiteCurrency } from "@/hooks/siteCtx"
+import { A, capitalizeFirstLetters, R } from "@/utils/functions"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
-import { memo, useMemo } from "react"
-import { useGetElementMaterialName } from "../../../src/hooks/hashedMaterials"
-import { A, capitalizeFirstLetters, R } from "../../../src/utils/functions"
-import { useAnalyseData } from "../../analyse/data"
-import {
-  useSelectedHouseIds,
-  useSelectedHouses,
-} from "../../common/HousesPillsSelector"
+import { memo } from "react"
 import PaginatedTable from "../PaginatedTable"
 import { useMaterialsListData } from "./useMaterialsListData"
 
@@ -31,42 +24,7 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  // const selectedHouseIds = useSelectedHouseIds()
-
-  // const { areas, costs, embodiedCo2, energyUse, operationalCo2, byHouse } =
-  //   useAnalyseData()
-
-  // const getElementMaterialName = useGetElementMaterialName()
-
   const { data, fmt } = useMaterialsListData()
-
-  // const data: MaterialsListItem[] = useMemo(() => {
-  //   const foo = pipe(
-  //     byHouse,
-  //     R.filterWithIndex((houseId) => selectedHouseIds.includes(houseId)),
-  //     R.toArray,
-  //     A.map(([k, { costs, areas, operationalCo2 }]) => {})
-  //   )
-  //   // const accum: Record<string, number> = {}
-
-  //   // TODO: query here like in OrderListTable
-
-  //   // const foo = pipe(areas, R.toEntries, A.map(([k,r]) => {}))
-
-  //   // TODO: solve byHouse thing, confirm with clayton
-
-  //   // const cladding: MaterialsListItem = {
-  //   //   item: "cladding",
-  //   //   quantity: areas.cladding,
-  //   //   specification: getMaterialName(houseId, elementName)
-
-  //   // }
-
-  //   // return [cladding]
-  //   return []
-  // }, [byHouse, selectedHouseIds])
-
-  const { code: currencyCode } = useSiteCurrency()
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     data,
