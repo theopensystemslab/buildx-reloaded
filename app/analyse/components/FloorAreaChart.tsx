@@ -1,7 +1,6 @@
 "use client"
 import { useHouseFloorAreas } from "@/hooks/houses"
-import { A, capitalizeFirstLetters, R, S } from "@/utils/functions"
-import { ArrowUp } from "@carbon/icons-react"
+import { A, capitalizeFirstLetters, O, R, S } from "@/utils/functions"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { useSiteCurrency } from "../../../src/hooks/siteCtx"
@@ -41,20 +40,24 @@ const FloorAreaChart = () => {
             items={pipe(
               houseFloorAreas,
               R.toArray,
-              A.map(([houseId, floorArea]) => {
-                const houseIndex = selectedHouses.findIndex(
-                  (x) => x.id === houseId
+              A.map(([houseId, floorArea]) =>
+                pipe(
+                  selectedHouses,
+                  A.filterMap((selectedHouse) =>
+                    selectedHouse.id === houseId
+                      ? O.some({
+                          houseId,
+                          floorArea,
+                          colorClass: getColorClass(houseId),
+                          displayName: capitalizeFirstLetters(
+                            selectedHouse.friendlyName
+                          ),
+                        })
+                      : O.none
+                  )
                 )
-
-                const house = selectedHouses[houseIndex]
-
-                return {
-                  houseId,
-                  floorArea,
-                  colorClass: getColorClass(houseId),
-                  displayName: capitalizeFirstLetters(house.friendlyName),
-                }
-              })
+              ),
+              A.flatten
             )}
             itemToColorClass={(item) => item.colorClass}
             itemToValue={(item) => item.floorArea}
