@@ -19,7 +19,6 @@ const VanillaR3FCanvas = (props: Props) => {
       frameloop="demand"
     >
       {children}
-      <SiteCamControls />
     </Canvas>
   )
 }

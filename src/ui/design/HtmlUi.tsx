@@ -28,7 +28,11 @@ import ExitMode from "./ExitMode"
 import ContextMenuEntry from "../menu/ContextMenuEntry"
 import Radio from "../common/Radio"
 
-const HtmlUi = () => {
+type Props = {
+  controlsEnabled: boolean
+}
+
+const HtmlUi = (props: Props) => {
   const { sidebar, groundPlane, orthographic } = useGlobals()
 
   // const { mapboxEnabled } = useMapboxStore()
