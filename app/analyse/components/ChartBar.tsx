@@ -1,8 +1,8 @@
+import { A } from "@/utils/functions"
+import { floor } from "@/utils/math"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import React, { HTMLAttributes } from "react"
-import { A } from "@/utils/functions"
-import { floor } from "@/utils/math"
 
 type Props<T> = {
   items: T[]
@@ -35,7 +35,7 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
     items,
     A.map(
       (item) =>
-        `auto minmax(1fr, ${pipe(
+        `minmax(auto,${pipe(
           item,
           itemToValue,
           (x) => (x * 100) / total,
@@ -44,15 +44,19 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
     )
   ).join(" ")}`
 
+  const style = {
+    gridTemplateRows,
+  }
+
+  console.log(style)
+
   return (
     <div
       className={clsx(
         `grid grid-cols-1 font-medium leading-6 tracking-wide`,
         className
       )}
-      style={{
-        gridTemplateRows,
-      }}
+      style={style}
     >
       {pipe(
         items,
