@@ -40,4 +40,8 @@ export const setGroundPlaneEnabled = (b: boolean) => {
   settings.groundPlaneEnabled = b
 }
 
+export const setSidebar = (b: boolean) => {
+  settings.sidebar = b
+}
+
 export default settings

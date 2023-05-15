@@ -48,8 +48,6 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
     gridTemplateRows,
   }
 
-  console.log(style)
-
   return (
     <div
       className={clsx(

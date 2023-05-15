@@ -6,6 +6,7 @@ import { Menu, SectionCuts } from "~/app/ui/icons"
 import UniversalMenu from "~/app/ui/UniversalMenu"
 import {
   setGroundPlaneEnabled,
+  setSidebar,
   useDesignSettings,
   useVerticalCuts,
 } from "../state/settings"
@@ -27,7 +28,6 @@ import { R, S } from "@/utils/functions"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
-import { setSidebar } from "../../state/settings"
 import { useMenu } from "../state/menu"
 
 type Props = {
