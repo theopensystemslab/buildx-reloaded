@@ -1,5 +1,5 @@
 import { z } from "zod"
-import config from "~/buildx.config.yaml"
+import config from "@/buildx.config.yaml"
 
 export type System = {
   id: string

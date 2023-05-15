@@ -1,6 +1,6 @@
 "use client"
 
-import "@/src/styles/globals.css"
+import "~/styles/globals.css"
 import { PropsWithChildren } from "react"
 import { Analyse, Build, Design, Locate } from "~/ui/icons"
 import NavIconButton from "~/ui//NavIconButton"
