@@ -1,4 +1,4 @@
-import { hashGeometry } from "@/hooks/hashedGeometries"
+import { hashGeometry } from "~/app/design/state/hashedGeometries"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useCallback } from "react"

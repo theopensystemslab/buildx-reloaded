@@ -1,4 +1,3 @@
-import { useSiteCurrency } from "@/hooks/siteCtx"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
@@ -6,11 +5,10 @@ import { useMemo } from "react"
 import { trpc } from "../../../client/trpc"
 import { A, O, R, S } from "../../../src/utils/functions"
 import {
-  buildingColorVariants,
-  staleColorVariants,
   useGetColorClass,
   useSelectedHouses,
-} from "../../common/HousesPillsSelector"
+} from "../../analyse/ui/HousesPillsSelector"
+import { useSiteCurrency } from "../../design/state/siteCtx"
 
 export type OrderListRow = {
   buildingName: string

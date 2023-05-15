@@ -8,8 +8,8 @@ import {
   useSystemModules,
 } from "~/app/data/modules"
 import { NEA, O, RA, S, upperFirst } from "@/utils/functions"
-import houses from "@/hooks/houses"
-import { useGetVanillaModule } from "@/hooks/vanilla"
+import houses from "~/app/design/state/houses"
+import { useGetVanillaModule } from "~/app/design/state/vanilla"
 import {
   HouseModuleIdentifier,
   layouts,
@@ -18,7 +18,7 @@ import {
   columnLayoutToDNA,
   columnLayoutToMatrix,
   columnMatrixToDna,
-} from "@/hooks/layouts"
+} from "~/app/design/state/layouts"
 import { StairType } from "../../../server/data/stairTypes"
 import { Module } from "../../../server/data/modules"
 import { useSystemStairTypes } from "../../../app/data/stairTypes"

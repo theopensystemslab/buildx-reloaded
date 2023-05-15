@@ -2,7 +2,7 @@ import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import { proxy, useSnapshot } from "valtio"
 import { A, O } from "../utils/functions"
-import { columnLayoutToMatrix, layouts } from "./layouts"
+import { columnLayoutToMatrix, layouts } from "../../app/design/state/layouts"
 
 export type ScopeItem = {
   elementName: string

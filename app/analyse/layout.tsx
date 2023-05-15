@@ -1,10 +1,9 @@
 import dynamic from "next/dynamic"
-import { TrpcProvider } from "../common/TrpcProvider"
+import { TrpcProvider } from "../ui/TrpcProvider"
 
-const HousesPillsSelector = dynamic(
-  () => import("../common/HousesPillsSelector"),
-  { ssr: false }
-)
+const HousesPillsSelector = dynamic(() => import("./ui/HousesPillsSelector"), {
+  ssr: false,
+})
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

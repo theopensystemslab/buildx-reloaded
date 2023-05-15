@@ -9,8 +9,8 @@ import {
   useSystemModules,
 } from "../../../app/data/modules"
 import { A, O, Ord, S } from "../../utils/functions"
-import houses from "../houses"
-import { columnMatrixToDna } from "../layouts"
+import houses from "../../../app/design/state/houses"
+import { columnMatrixToDna } from "../../../app/design/state/layouts"
 import {
   getSelectedColumnMatrix,
   getSelectedLevelModules,

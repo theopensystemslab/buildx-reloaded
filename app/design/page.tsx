@@ -1,6 +1,6 @@
 import DataInit from "~/app/data/DataInit"
-import GroupedApp from "@/ui-3d/grouped/GroupedApp"
-import AppInit from "./components/AppInit"
+import GroupedApp from "./ui-3d/grouped/GroupedApp"
+import AppInit from "./ui-3d/init/AppInit"
 
 const IndexPage = () => {
   return (

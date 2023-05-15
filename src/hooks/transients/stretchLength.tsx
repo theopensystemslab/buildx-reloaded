@@ -4,7 +4,7 @@ import { MutableRefObject, useMemo } from "react"
 import { Group, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
-import GroupedStretchColumn from "../../ui-3d/grouped/stretchLength/GroupedStretchColumn"
+import GroupedStretchColumn from "~/app/design/ui-3d/grouped/stretchLength/GroupedStretchColumn"
 import { A, NEA, RA } from "../../utils/functions"
 import { useSubscribeKey } from "../../utils/hooks"
 import { floor, max, round, sign } from "../../utils/math"
@@ -13,19 +13,19 @@ import dimensions, {
   collideOBB,
   useHouseDimensionsUpdates,
   usePostTransMatrix,
-} from "../dimensions"
-import houses, { useHouse } from "../houses"
+} from "../../../app/design/state/dimensions"
+import houses, { useHouse } from "../../../app/design/state/houses"
 import {
   ColumnLayout,
   columnLayoutToDNA,
   layouts,
   PositionedRow,
-} from "../layouts"
+} from "../../../app/design/state/layouts"
 import {
   getVanillaColumnLength,
   useGetVanillaModule,
   vanillaColumns,
-} from "../vanilla"
+} from "../../../app/design/state/vanilla"
 
 export type StretchLength = {
   direction: 1 | -1

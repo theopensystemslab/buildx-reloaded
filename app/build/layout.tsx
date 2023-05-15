@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic"
-import { TrpcProvider } from "../common/TrpcProvider"
+import { TrpcProvider } from "../ui/TrpcProvider"
 import BuildNav from "./common/BuildNav"
 
 const HousesPillsSelector = dynamic(
-  () => import("../common/HousesPillsSelector"),
+  () => import("../analyse/ui/HousesPillsSelector"),
   { ssr: false }
 )
 

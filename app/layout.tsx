@@ -2,8 +2,8 @@
 
 import "@/styles/globals.css"
 import { PropsWithChildren } from "react"
-import { Analyse, Build, Design, Locate } from "@/ui/icons"
-import NavIconButton from "@/ui/common/NavIconButton"
+import { Analyse, Build, Design, Locate } from "~/app/ui/icons"
+import NavIconButton from "~/app/ui//NavIconButton"
 import { Inter } from "next/font/google"
 
 const inter = Inter({

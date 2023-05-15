@@ -5,9 +5,13 @@ import { keysFilter, useSystemModules } from "../../../app/data/modules"
 import { WindowType } from "../../../server/data/windowTypes"
 import { useSystemWindowTypes } from "../../../app/data/windowTypes"
 import { A, O, S } from "../../utils/functions"
-import { getSide, Side } from "../camera"
-import { columnLayoutToDNA, HouseModuleIdentifier, layouts } from "../layouts"
-import siteCtx from "../siteCtx"
+import { getSide, Side } from "../../../app/design/state/camera"
+import {
+  columnLayoutToDNA,
+  HouseModuleIdentifier,
+  layouts,
+} from "../../../app/design/state/layouts"
+import siteCtx from "../../../app/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
 
 export type WindowTypeOption = {

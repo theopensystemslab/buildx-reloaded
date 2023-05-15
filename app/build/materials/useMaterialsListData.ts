@@ -3,14 +3,14 @@ import { useMemo } from "react"
 import {
   useGetElementMaterial,
   useGetElementMaterialName,
-} from "@/hooks/hashedMaterials"
-import { useSiteCurrency } from "@/hooks/siteCtx"
+} from "~/app/design/state/hashedMaterials"
 import { A, O, R } from "@/utils/functions"
-import { useAnalyseData } from "../../analyse/data"
+import { useAnalyseData } from "../../analyse/state/data"
 import {
   useGetColorClass,
   useSelectedHouses,
-} from "../../common/HousesPillsSelector"
+} from "../../analyse/ui/HousesPillsSelector"
+import { useSiteCurrency } from "../../design/state/siteCtx"
 
 export type MaterialsListRow = {
   buildingName: string
