@@ -5,9 +5,9 @@ import { useMemo } from "react"
 import { Matrix4, Plane, Vector3 } from "three"
 import { useSnapshot } from "valtio"
 import { R } from "../utils/functions"
-import { useVerticalCuts } from "./globals"
-import houses from "./houses"
-import { ColumnLayout } from "./layouts"
+import houses from "../../app/design/state/houses"
+import { ColumnLayout } from "../../app/design/state/layouts"
+import { useVerticalCuts } from "~/app/design/state/settings"
 
 export const useVerticalCutPlanes = (
   columnLayout: ColumnLayout,

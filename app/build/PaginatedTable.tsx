@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import clsx from "clsx"
-import { csvFormat, csvFormatRows } from "d3-dsv"
+import { csvFormatRows } from "d3-dsv"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect } from "react"
 import { A, O, R } from "../../src/utils/functions"

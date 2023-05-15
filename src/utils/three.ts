@@ -12,10 +12,10 @@ import {
   Scene,
   Vector3,
 } from "three"
-import { CameraLayer, RaycasterLayer } from "../constants"
+import { CameraLayer, RaycasterLayer } from "../../app/design/state/constants"
 import { Material } from "../../server/data/materials"
-import dimensions, { getHouseCenter } from "../hooks/dimensions"
-import houses from "../hooks/houses"
+import dimensions, { getHouseCenter } from "../../app/design/state/dimensions"
+import houses from "../../app/design/state/houses"
 
 export type GltfT = {
   nodes: {

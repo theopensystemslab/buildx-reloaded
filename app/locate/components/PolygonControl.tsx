@@ -1,4 +1,4 @@
-import IconButton from "@/ui/common/IconButton"
+import IconButton from "~/app/ui//IconButton"
 import { ChevronRight, TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"

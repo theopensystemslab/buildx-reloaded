@@ -1,6 +1,6 @@
-import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "@/constants"
 import { Polygon } from "@turf/turf"
 import { proxy, useSnapshot } from "valtio"
+import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "./constants"
 
 function getInitialPolygon() {
   const rawStoragePayload = localStorage.getItem(

@@ -1,6 +1,6 @@
 "use client"
 import { Fragment, PropsWithChildren } from "react"
-import Loader from "../../src/ui/common/Loader"
+import Loader from "../ui/Loader"
 import { useElements } from "./elements"
 import { useHouseTypes } from "./houseTypes"
 import { useLevelTypes } from "./levelTypes"

@@ -1,8 +1,8 @@
 "use client"
 import { useOrderListData } from "../build/order/useOrderListData"
-import BuildCostChart from "./components/BuildCostChart"
-import CarbonEmissionsChart from "./components/CarbonEmissionsChart"
-import FloorAreaChart from "./components/FloorAreaChart"
+import BuildCostChart from "./ui/BuildCostChart"
+import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
+import FloorAreaChart from "./ui/FloorAreaChart"
 import css from "./page.module.css"
 
 const AnalyseIndex = () => {

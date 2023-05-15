@@ -1,15 +1,12 @@
-import scope from "@/hooks/scope"
+import { useRoute } from "@/utils/wouter"
+import { useEffect, useRef } from "react"
+import { useLocation } from "wouter"
 import siteCtx, {
   enterBuildingMode,
   enterLevelMode,
   exitBuildingMode,
-  SiteCtxModeEnum,
   getModeBools,
-} from "@/hooks/siteCtx"
-import { useRoute } from "@/utils/wouter"
-import { useEffect, useRef } from "react"
-import { subscribe } from "valtio"
-import { useLocation } from "wouter"
+} from "~/app/design/state/siteCtx"
 import { useSubscribe } from "../utils/hooks"
 
 export const useRouting = () => {
