@@ -3,8 +3,8 @@ import { useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
-import { ScopeItem } from "@/hooks/scope"
-import { useClickAway, useEscape } from "~/app/ui/utils"
+import { ScopeItem } from "~/design/state/scope"
+import { useClickAway, useEscape } from "~/ui/utils"
 
 export type ContextMenuProps = {
   pageX: number

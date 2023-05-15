@@ -5,7 +5,7 @@ import siteContext, {
   useProjectName,
   useSiteCtx,
 } from "../state/siteCtx"
-import { useRoute } from "@/utils/wouter"
+import { useRoute } from "~/utils/wouter"
 import { Fragment, useState } from "react"
 import houses from "../state/houses"
 import Breadcrumb from "./Breadcrumb"

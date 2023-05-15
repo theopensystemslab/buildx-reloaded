@@ -1,4 +1,4 @@
-import CameraSync from "@/threebox/camera/CameraSync"
+import CameraSync from "@/src/threebox/camera/CameraSync"
 import { proxy, ref, useSnapshot } from "valtio"
 
 type MapboxStore = {

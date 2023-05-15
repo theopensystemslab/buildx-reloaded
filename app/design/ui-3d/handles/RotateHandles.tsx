@@ -3,8 +3,8 @@ import { forwardRef } from "react"
 import { Group } from "three"
 import { useHouseDimensions } from "../../state/dimensions"
 import { RotateHandleIdentifier } from "../../state/gestures/drag"
-import { useHandleMaterial } from "@/hooks/handleMaterial"
-import { PI } from "@/utils/math"
+import { useHandleMaterial } from "~/design/state/handleMaterial"
+import { PI } from "~/utils/math"
 
 const SIZE = 0.3
 

@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { DoubleSide, MeshStandardMaterial } from "three"
 import { LineMaterial } from "three-stdlib"
 import { proxy, ref } from "valtio"
-import { useDesignSettings } from "~/app/design/state/settings"
+import { useDesignSettings } from "~/design/state/settings"
 
 const cache = proxy<Record<string, LineMaterial>>({})
 

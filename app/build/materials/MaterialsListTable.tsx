@@ -1,5 +1,5 @@
 "use client"
-import { A, capitalizeFirstLetters, R } from "@/utils/functions"
+import { A, capitalizeFirstLetters, R } from "~/utils/functions"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"

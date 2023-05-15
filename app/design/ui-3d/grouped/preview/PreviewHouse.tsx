@@ -1,11 +1,11 @@
-import { useDnaColumnLayout } from "~/app/design/state/layouts"
-import { A } from "@/utils/functions"
+import { useDnaColumnLayout } from "~/design/state/layouts"
+import { A } from "~/utils/functions"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import previews from "~/app/design/state/previews"
-import { useSubscribeKey } from "@/utils/hooks"
+import previews from "~/design/state/previews"
+import { useSubscribeKey } from "~/utils/hooks"
 import PreviewColumn from "./PreviewColumn"
 
 type Props = {

@@ -1,15 +1,15 @@
-import { hashGeometry } from "~/app/design/state/hashedGeometries"
+import { hashGeometry } from "~/design/state/hashedGeometries"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useCallback } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { proxy } from "valtio"
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
-import { O, R, RA, RR } from "../../src/utils/functions"
-import { isMesh, useGLTF } from "../../src/utils/three"
+import { O, R, RA, RR } from "~/utils/functions"
+import { isMesh, useGLTF } from "~/utils/three"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()

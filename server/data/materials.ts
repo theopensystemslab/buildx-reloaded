@@ -1,8 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { MeshStandardMaterial } from "three"
 import * as z from "zod"
-import { systemFromId } from "~/server/data/system"
-import { A } from "../../src/utils/functions"
+import { systemFromId } from "@/server/data/system"
+import { A } from "~/utils/functions"
 import { QueryFn } from "./types"
 
 export interface Material {

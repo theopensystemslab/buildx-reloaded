@@ -1,6 +1,6 @@
 import { Line } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { A } from "@/utils/functions"
+import { A } from "~/utils/functions"
 import { useSiteBoundaryPoints } from "../state/boundary"
 
 const SiteBoundary = () => {

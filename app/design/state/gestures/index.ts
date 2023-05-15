@@ -1,16 +1,16 @@
-import { setPreviews } from "~/app/design/state/previews"
-import scope from "@/hooks/scope"
+import { setPreviews } from "~/design/state/previews"
+import scope from "~/design/state/scope"
 import {
   setStretchLength,
   stretchLengthRaw,
-} from "~/app/design/state/transients/stretchLength"
+} from "~/design/state/transients/stretchLength"
 import {
   preTransformsTransients,
   setTransforms,
-} from "~/app/design/state/transients/transforms"
-import { A, O } from "@/utils/functions"
-import { useSubscribeKey } from "@/utils/hooks"
-import { isMesh, useRotations } from "@/utils/three"
+} from "~/design/state/transients/transforms"
+import { A, O } from "~/utils/functions"
+import { useSubscribeKey } from "~/utils/hooks"
+import { isMesh, useRotations } from "~/utils/three"
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"

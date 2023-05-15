@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { systemFromId } from "~/server/data/system"
-import { A } from "../../src/utils/functions"
+import { systemFromId } from "@/server/data/system"
+import { A } from "~/utils/functions"
 import { materialsQuery } from "./materials"
 import { QueryFn } from "./types"
 

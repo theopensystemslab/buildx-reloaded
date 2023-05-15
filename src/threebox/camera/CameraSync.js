@@ -3,8 +3,8 @@
  * @author jscastro / https://github.com/jscastro76
  */
 import * as THREE from "three"
-import utils from "../utils/utils"
-import ThreeboxConstants from "../utils/constants"
+import utils from "~/utils/utils"
+import ThreeboxConstants from "~/utils/constants"
 
 function CameraSync(map, camera, world) {
   this.map = map

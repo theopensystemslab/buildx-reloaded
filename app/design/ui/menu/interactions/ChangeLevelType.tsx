@@ -1,15 +1,15 @@
 import {
   LevelTypeOption,
   useChangeLevelType,
-} from "@//hooks/interactions/levels"
-import previews from "~/app/design/state/previews"
-import { A } from "@//utils/functions"
+} from "~/design/state/interactions/levels"
+import previews from "~/design/state/previews"
+import { A } from "~/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useRef } from "react"
 import { ref } from "valtio"
-import houses from "~/app/design/state/houses"
-import Radio from "~/app/ui//Radio"
-import { ChangeLevel } from "~/app/ui/icons"
+import houses from "~/design/state/houses"
+import Radio from "~/ui//Radio"
+import { ChangeLevel } from "~/ui/icons"
 import ContextMenuNested from "../ContextMenuNested"
 
 type Props = {

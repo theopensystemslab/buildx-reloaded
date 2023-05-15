@@ -2,10 +2,10 @@ import {
   filterCompatibleModules,
   topCandidateByHamming,
   useSystemModules,
-} from "~/app/data/modules"
-import { Module } from "~/server/data/modules"
-import { SectionType } from "~/server/data/sectionTypes"
-import { useSystemSectionTypes } from "~/app/data/sectionTypes"
+} from "~/data/modules"
+import { Module } from "@/server/data/modules"
+import { SectionType } from "@/server/data/sectionTypes"
+import { useSystemSectionTypes } from "~/data/sectionTypes"
 import dimensions, {
   useHouseDimensionsUpdates,
 } from "../../../state/dimensions"
@@ -15,8 +15,8 @@ import {
   GridGroup,
   PositionedColumn,
   PositionedModule,
-} from "~/app/design/state/layouts"
-import { useGetVanillaModule } from "~/app/design/state/vanilla"
+} from "~/design/state/layouts"
+import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   A,
   mapToOption,
@@ -25,9 +25,9 @@ import {
   O,
   Ord,
   reduceToOption,
-} from "@/utils/functions"
-import { useSubscribeKey } from "@/utils/hooks"
-import { max, min, sign } from "@/utils/math"
+} from "~/utils/functions"
+import { useSubscribeKey } from "~/utils/hooks"
+import { max, min, sign } from "~/utils/math"
 import { GroupProps, invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { NonEmptyArray } from "fp-ts/lib/NonEmptyArray"
@@ -36,7 +36,7 @@ import { forwardRef, useEffect, useRef } from "react"
 import { Group } from "three"
 import { proxy, ref } from "valtio"
 import { useHouse } from "../../../state/houses"
-import previews from "~/app/design/state/previews"
+import previews from "~/design/state/previews"
 import StretchHandle from "../../handles/StretchHandle"
 import { useIsStretchable } from "../../../state/siteCtx"
 

@@ -2,7 +2,7 @@
 import { ArrowDown } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
-import { A } from "../../../src/utils/functions"
+import { A } from "~/utils/functions"
 import HousesView from "./HousesView"
 import css from "./page.module.css"
 

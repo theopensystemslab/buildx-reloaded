@@ -2,7 +2,7 @@
 import { ArrowUp } from "@carbon/icons-react"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
-import { A, capitalizeFirstLetters, O, R } from "@/utils/functions"
+import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import {
   OrderListRow,
   useOrderListData,

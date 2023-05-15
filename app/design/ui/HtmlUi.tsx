@@ -1,9 +1,9 @@
 import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
 import { Fragment, useState } from "react"
-import IconButton from "~/app/ui/IconButton"
-import IconMenu from "~/app/ui/IconMenu"
-import { Menu, SectionCuts } from "~/app/ui/icons"
-import UniversalMenu from "~/app/ui/UniversalMenu"
+import IconButton from "~/ui/IconButton"
+import IconMenu from "~/ui/IconMenu"
+import { Menu, SectionCuts } from "~/ui/icons"
+import UniversalMenu from "~/ui/UniversalMenu"
 import {
   setGroundPlaneEnabled,
   setSidebar,
@@ -16,15 +16,15 @@ import { pipe } from "fp-ts/lib/function"
 import { keys } from "fp-ts/lib/Record"
 import usePortal from "react-cool-portal"
 import { useSnapshot } from "valtio"
-import Checklist from "~/app/ui/Checklist"
-import Radio from "~/app/ui/Radio"
+import Checklist from "~/ui/Checklist"
+import Radio from "~/ui/Radio"
 import {
   setOrthographic,
   useCameraReset,
   useOrthographic,
 } from "../state/camera"
 import elementCategories from "../state/elementCategories"
-import { R, S } from "@/utils/functions"
+import { R, S } from "~/utils/functions"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"

@@ -1,4 +1,4 @@
-import mapboxStore, { setMapboxMap } from "@/hooks/mapboxStore"
+import mapboxStore, { setMapboxMap } from "@/src/hooks/mapboxStore"
 import {
   addAfterEffect,
   addEffect,
@@ -15,9 +15,9 @@ import "mapbox-gl/dist/mapbox-gl.css"
 import { PropsWithChildren, useEffect, useState } from "react"
 import * as THREE from "three"
 import { BasicShadowMap, sRGBEncoding } from "three"
-import { reverseV2 } from "@/utils/math"
-import { onCreated } from "@/utils/three"
-import { DEFAULT_ORIGIN } from "~/app/locate/state/constants"
+import { reverseV2 } from "~/utils/math"
+import { onCreated } from "~/utils/three"
+import { DEFAULT_ORIGIN } from "~/locate/state/constants"
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!
 

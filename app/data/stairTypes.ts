@@ -1,4 +1,4 @@
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { StairType } from "../../server/data/stairTypes"
 
 export const useStairTypes = (): StairType[] => {

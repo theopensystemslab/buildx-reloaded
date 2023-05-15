@@ -1,10 +1,10 @@
-import { useMapboxStore } from "@/hooks/mapboxStore"
-import utils from "@/threebox/utils/utils"
+import { useMapboxStore } from "@/src/hooks/mapboxStore"
+import utils from "@/src/threebox/utils/utils"
 import { useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { PropsWithChildren, useRef } from "react"
 import { Group } from "three"
-import { DEFAULT_ORIGIN } from "~/app/locate/state/constants"
+import { DEFAULT_ORIGIN } from "~/locate/state/constants"
 
 type Props = PropsWithChildren<{}>
 

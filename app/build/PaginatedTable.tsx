@@ -10,7 +10,7 @@ import clsx from "clsx"
 import { csvFormatRows } from "d3-dsv"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect } from "react"
-import { A, O, R } from "../../src/utils/functions"
+import { A, O, R } from "~/utils/functions"
 import css from "./PaginatedTable.module.css"
 
 type Props<T extends {}> = {

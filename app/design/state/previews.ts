@@ -4,8 +4,8 @@ import {
   stretchWidthClamped,
   stretchWidthRaw,
 } from "../ui-3d/grouped/stretchWidth/StretchWidth"
-import { A, O, R } from "../../../src/utils/functions"
-import { useSubscribe } from "../../../src/utils/hooks"
+import { A, O, R } from "~/utils/functions"
+import { useSubscribe } from "~/utils/hooks"
 import houses from "./houses"
 
 type Preview = {

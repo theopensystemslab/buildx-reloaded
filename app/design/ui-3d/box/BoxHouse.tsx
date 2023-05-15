@@ -1,4 +1,4 @@
-import { useHouseColumnLayout } from "~/app/design/state/layouts"
+import { useHouseColumnLayout } from "~/design/state/layouts"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { useHouseDimensionsUpdates } from "../../state/dimensions"

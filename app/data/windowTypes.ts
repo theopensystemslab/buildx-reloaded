@@ -1,4 +1,4 @@
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { WindowType } from "../../server/data/windowTypes"
 
 export const useWindowTypes = (): WindowType[] => {

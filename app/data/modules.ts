@@ -1,12 +1,12 @@
 import { sum } from "fp-ts-std/Array"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { Module, StructuredDna } from "../../server/data/modules"
 import { StairType } from "../../server/data/stairTypes"
 import { useGetVanillaModule } from "../design/state/vanilla"
-import { A, Num, O, Ord, R, SG } from "../../src/utils/functions"
-import { abs, hamming } from "../../src/utils/math"
+import { A, Num, O, Ord, R, SG } from "~/utils/functions"
+import { abs, hamming } from "~/utils/math"
 
 export const useModules = (): Module[] => {
   const { data = [] } = trpc.modules.useQuery()

@@ -1,4 +1,4 @@
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { SectionType } from "../../server/data/sectionTypes"
 
 export const useSectionTypes = (): SectionType[] => {

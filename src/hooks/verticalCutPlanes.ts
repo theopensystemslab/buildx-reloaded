@@ -4,10 +4,10 @@ import { none, some } from "fp-ts/lib/Option"
 import { useMemo } from "react"
 import { Matrix4, Plane, Vector3 } from "three"
 import { useSnapshot } from "valtio"
-import { R } from "../utils/functions"
-import houses from "../../app/design/state/houses"
-import { ColumnLayout } from "../../app/design/state/layouts"
-import { useVerticalCuts } from "~/app/design/state/settings"
+import { R } from "~/utils/functions"
+import houses from "~/design/state/houses"
+import { ColumnLayout } from "~/design/state/layouts"
+import { useVerticalCuts } from "~/design/state/settings"
 
 export const useVerticalCutPlanes = (
   columnLayout: ColumnLayout,

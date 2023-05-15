@@ -1,4 +1,4 @@
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { Material } from "../../server/data/materials"
 
 export const useMaterials = (): Material[] => {

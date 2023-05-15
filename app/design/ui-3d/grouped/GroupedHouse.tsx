@@ -1,16 +1,16 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useRef } from "react"
 import { Group } from "three"
-import { useHouseMaterialOps } from "~/app/design/state/hashedMaterials"
-import { useHouseElementOutline } from "@/hooks/highlights"
+import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
+import { useHouseElementOutline } from "~/design/state/highlights"
 import { useHouseSystemId } from "../../state/houses"
-import { useHouseColumnLayout } from "~/app/design/state/layouts"
-import { useStretchLength } from "~/app/design/state/transients/stretchLength"
+import { useHouseColumnLayout } from "~/design/state/layouts"
+import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
   usePostTransformsTransients,
   usePreTransformsTransients,
-} from "~/app/design/state/transients/transforms"
-import { RA } from "@/utils/functions"
+} from "~/design/state/transients/transforms"
+import { RA } from "~/utils/functions"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import PreviewHouses from "./preview/PreviewHouses"

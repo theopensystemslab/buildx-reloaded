@@ -1,4 +1,4 @@
-import { onCreated } from "@/utils/three"
+import { onCreated } from "~/utils/three"
 import { Canvas } from "@react-three/fiber"
 import { PropsWithChildren } from "react"
 import { BasicShadowMap } from "three"

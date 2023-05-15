@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { A, O } from "../../src/utils/functions"
+import { A, O } from "~/utils/functions"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 

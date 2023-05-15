@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useHouses } from "../../state/houses"
-import { RA, RR } from "@/utils/functions"
+import { RA, RR } from "~/utils/functions"
 import BoxHouse from "./BoxHouse"
 
 const BoxApp = () => {

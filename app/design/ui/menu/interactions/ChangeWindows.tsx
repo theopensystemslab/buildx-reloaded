@@ -1,16 +1,16 @@
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useRef } from "react"
 import { ref } from "valtio"
-import houses from "~/app/design/state/houses"
+import houses from "~/design/state/houses"
 import {
   useWindowOptions,
   WindowTypeOption,
-} from "@/hooks/interactions/windows"
-import { HouseModuleIdentifier } from "~/app/design/state/layouts"
-import previews from "~/app/design/state/previews"
-import { A } from "@/utils/functions"
-import { Opening } from "~/app/ui/icons"
-import Radio from "~/app/ui//Radio"
+} from "~/design/state/interactions/windows"
+import { HouseModuleIdentifier } from "~/design/state/layouts"
+import previews from "~/design/state/previews"
+import { A } from "~/utils/functions"
+import { Opening } from "~/ui/icons"
+import Radio from "~/ui//Radio"
 import ContextMenuNested from "../ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {

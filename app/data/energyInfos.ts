@@ -1,5 +1,5 @@
-import { trpc } from "~/client/trpc"
-import { EnergyInfo } from "~/server/data/energyInfos"
+import { trpc } from "@/client/trpc"
+import { EnergyInfo } from "@/server/data/energyInfos"
 
 export const useEnergyInfos = (): EnergyInfo[] => {
   const { data = [] } = trpc.energyInfos.useQuery()

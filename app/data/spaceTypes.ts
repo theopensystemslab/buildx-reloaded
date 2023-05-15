@@ -1,5 +1,5 @@
-import { trpc } from "~/client/trpc"
-import { SpaceType } from "~/server/data/spaceTypes"
+import { trpc } from "@/client/trpc"
+import { SpaceType } from "@/server/data/spaceTypes"
 
 export const useSpaceTypes = (): SpaceType[] => {
   const { data = [] } = trpc.spaceTypes.useQuery()

@@ -1,4 +1,4 @@
-import { trpc } from "~/client/trpc"
+import { trpc } from "@/client/trpc"
 import { LevelType } from "../../server/data/levelTypes"
 
 export const useLevelTypes = (): LevelType[] => {

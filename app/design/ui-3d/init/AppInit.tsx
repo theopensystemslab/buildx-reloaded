@@ -1,13 +1,13 @@
 "use client"
-import Effects from "~/app/design/ui-3d/init/Effects"
-import GroundCircle from "~/app/design/ui-3d/init/GroundCircle"
-import Lighting from "~/app/design/ui-3d/init/Lighting"
-import MapboxR3FCanvas from "~/app/design/ui-3d/init/MapboxR3FCanvas"
-import MapboxR3FCanvasProjector from "~/app/design/ui-3d/init/MapboxR3FCanvasProjector"
-import RectangularGrid from "~/app/design/ui-3d/init/RectangularGrid"
-import ShadowPlane from "~/app/design/ui-3d/init/ShadowPlane"
-import VanillaR3FCanvas from "~/app/design/ui-3d/init/VanillaR3FCanvas"
-import FullScreenContainer from "~/app/ui//FullScreenContainer"
+import Effects from "~/design/ui-3d/init/Effects"
+import GroundCircle from "~/design/ui-3d/init/GroundCircle"
+import Lighting from "~/design/ui-3d/init/Lighting"
+import MapboxR3FCanvas from "~/design/ui-3d/init/MapboxR3FCanvas"
+import MapboxR3FCanvasProjector from "~/design/ui-3d/init/MapboxR3FCanvasProjector"
+import RectangularGrid from "~/design/ui-3d/init/RectangularGrid"
+import ShadowPlane from "~/design/ui-3d/init/ShadowPlane"
+import VanillaR3FCanvas from "~/design/ui-3d/init/VanillaR3FCanvas"
+import FullScreenContainer from "~/ui//FullScreenContainer"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import SiteCamControls from "../camera/SiteCamControls"
@@ -15,7 +15,7 @@ import SiteBoundary from "../SiteBoundary"
 import HtmlUi from "../../ui/HtmlUi"
 import { useDesignSettings } from "../../state/settings"
 
-const DataPreload = dynamic(() => import("~/app/data/DataPreload"), {
+const DataPreload = dynamic(() => import("~/data/DataPreload"), {
   ssr: false,
 })
 
