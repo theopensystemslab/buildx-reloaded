@@ -1,4 +1,4 @@
-import mapboxStore, { setMapboxMap } from "@/src/hooks/mapboxStore"
+import mapboxStore, { setMapboxMap } from "~/design/state/mapboxStore"
 import {
   addAfterEffect,
   addEffect,

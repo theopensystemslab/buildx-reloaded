@@ -1,5 +1,5 @@
-import { useMapboxStore } from "@/src/hooks/mapboxStore"
-import utils from "@/src/threebox/utils/utils"
+import { useMapboxStore } from "~/design/state//mapboxStore"
+import utils from "~/design/state/threebox/utils/utils"
 import { useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { PropsWithChildren, useRef } from "react"

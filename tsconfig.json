@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"],
-      "*": ["src/types/*"],
+      "*": ["app/types/*"],
       "@/*": ["./*"]
     },
     "target": "es5",
