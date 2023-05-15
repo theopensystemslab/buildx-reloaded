@@ -1,5 +1,5 @@
-import { useHandleMaterial } from "@/hooks/handleMaterial"
-import { PI } from "@/utils/math"
+import { useHandleMaterial } from "~/design/state/handleMaterial"
+import { PI } from "~/utils/math"
 import { RoundedBox } from "@react-three/drei"
 import { GroupProps } from "@react-three/fiber"
 import { forwardRef } from "react"

@@ -1,7 +1,7 @@
 "use client"
 import "mapbox-gl/dist/mapbox-gl.css"
 import ReactMapGLMap from "react-map-gl"
-import HtmlPortalContainer from "~/app/ui//HtmlPortalContainer"
+import HtmlPortalContainer from "~/ui//HtmlPortalContainer"
 import GeocoderControl from "./GeocoderControl"
 import css from "./Locate.module.css"
 import PolygonControl from "./PolygonControl"

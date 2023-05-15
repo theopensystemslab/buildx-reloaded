@@ -1,7 +1,7 @@
-import { useMaterial } from "~/app/design/state/hashedMaterials"
+import { useMaterial } from "~/design/state/hashedMaterials"
 import { useRef } from "react"
 import { Mesh } from "three"
-import { useGeometry } from "~/app/design/state/hashedGeometries"
+import { useGeometry } from "~/design/state/hashedGeometries"
 import { PreviewModuleProps } from "./PreviewModule"
 
 type Props = PreviewModuleProps & {

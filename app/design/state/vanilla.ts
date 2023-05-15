@@ -1,16 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { proxy } from "valtio"
 import { useSystemModules } from "../../data/modules"
-import { Module } from "../../../server/data/modules"
-import {
-  A,
-  all,
-  O,
-  Ord,
-  RA,
-  S,
-  someOrError,
-} from "../../../src/utils/functions"
+import { Module } from "@/server/data/modules"
+import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
 import { PositionedRow } from "./layouts"
 
 export const vanillaColumns = proxy<Record<string, PositionedRow[]>>({})

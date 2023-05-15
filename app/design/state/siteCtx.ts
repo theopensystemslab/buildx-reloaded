@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
-import { isSSR } from "../../../src/utils/next"
+import { isSSR } from "~/utils/next"
 import { formatWithUnit } from "../../analyse/state/data"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
 import houses from "./houses"

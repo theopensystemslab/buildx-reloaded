@@ -1,11 +1,11 @@
-import { indicesToKey, PositionedColumn } from "~/app/design/state/layouts"
+import { indicesToKey, PositionedColumn } from "~/design/state/layouts"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
-import { useStretchLengthStartEndColumn } from "~/app/design/state/transients/stretchLength"
-import { RA } from "@/utils/functions"
+import { useStretchLengthStartEndColumn } from "~/design/state/transients/stretchLength"
+import { RA } from "~/utils/functions"
 import GroupedModule from "./GroupedModule"
 
 type Props = GroupProps & {

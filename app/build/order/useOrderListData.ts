@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useMemo } from "react"
 import { trpc } from "../../../client/trpc"
-import { A, O, R, S } from "../../../src/utils/functions"
+import { A, O, R, S } from "~/utils/functions"
 import {
   useGetColorClass,
   useSelectedHouses,

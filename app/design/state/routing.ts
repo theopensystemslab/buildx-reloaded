@@ -1,4 +1,4 @@
-import { useRoute } from "@/utils/wouter"
+import { useRoute } from "~/utils/wouter"
 import { useEffect, useRef } from "react"
 import { useLocation } from "wouter"
 import siteCtx, {
@@ -6,8 +6,8 @@ import siteCtx, {
   enterLevelMode,
   exitBuildingMode,
   getModeBools,
-} from "~/app/design/state/siteCtx"
-import { useSubscribe } from "../utils/hooks"
+} from "~/design/state/siteCtx"
+import { useSubscribe } from "~/utils/hooks"
 
 export const useRouting = () => {
   const [location, setLocation] = useLocation()

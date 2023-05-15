@@ -1,5 +1,5 @@
-import { indicesToKey, PositionedColumn } from "~/app/design/state/layouts"
-import { RA } from "@/utils/functions"
+import { indicesToKey, PositionedColumn } from "~/design/state/layouts"
+import { RA } from "~/utils/functions"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { forwardRef, useRef } from "react"

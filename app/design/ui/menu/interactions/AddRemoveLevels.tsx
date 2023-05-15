@@ -2,18 +2,18 @@ import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useMemo } from "react"
 import { ref } from "valtio"
-import { useGetStairsModule, usePadColumn } from "~/app/data/modules"
-import houses from "~/app/design/state/houses"
+import { useGetStairsModule, usePadColumn } from "~/data/modules"
+import houses from "~/design/state/houses"
 import {
   columnMatrixToDna,
   HouseModuleIdentifier,
   rowMatrixToDna,
   useColumnMatrix,
-} from "~/app/design/state/layouts"
-import previews from "~/app/design/state/previews"
-import { useGetVanillaModule } from "~/app/design/state/vanilla"
-import { A, errorThrower, O } from "@/utils/functions"
-import { AddLevel, RemoveLevel } from "~/app/ui/icons"
+} from "~/design/state/layouts"
+import previews from "~/design/state/previews"
+import { useGetVanillaModule } from "~/design/state/vanilla"
+import { A, errorThrower, O } from "~/utils/functions"
+import { AddLevel, RemoveLevel } from "~/ui/icons"
 import ContextMenuButton from "../ContextMenuButton"
 
 type Props = HouseModuleIdentifier & {

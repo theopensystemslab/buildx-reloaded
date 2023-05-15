@@ -11,7 +11,7 @@ import { mapWithIndex } from "fp-ts/lib/Record"
 import * as React from "react"
 import * as THREE from "three"
 import { Event, OrthographicCamera, PerspectiveCamera } from "three"
-import { CameraLayer } from "~/app/design/state/constants"
+import { CameraLayer } from "~/design/state/constants"
 
 CameraControls.install({ THREE })
 extend({ CameraControls })

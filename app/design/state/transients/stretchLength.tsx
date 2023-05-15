@@ -4,23 +4,23 @@ import { MutableRefObject, useMemo } from "react"
 import { Group, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { proxy } from "valtio"
-import GroupedStretchColumn from "~/app/design/ui-3d/grouped/stretchLength/GroupedStretchColumn"
-import { A, NEA, RA } from "@/utils/functions"
-import { useSubscribeKey } from "@/utils/hooks"
-import { floor, max, round, sign } from "@/utils/math"
-import { yAxis } from "@/utils/three"
+import GroupedStretchColumn from "~/design/ui-3d/grouped/stretchLength/GroupedStretchColumn"
+import { A, NEA, RA } from "~/utils/functions"
+import { useSubscribeKey } from "~/utils/hooks"
+import { floor, max, round, sign } from "~/utils/math"
+import { yAxis } from "~/utils/three"
 import dimensions, {
   collideOBB,
   useHouseDimensionsUpdates,
   usePostTransMatrix,
-} from "@/../app/design/state/dimensions"
-import houses, { useHouse } from "@/../app/design/state/houses"
+} from "~/design/state/dimensions"
+import houses, { useHouse } from "~/design/state/houses"
 import {
   ColumnLayout,
   columnLayoutToDNA,
   layouts,
   PositionedRow,
-} from "@/../app/design/state/layouts"
+} from "~/design/state/layouts"
 import {
   getVanillaColumnLength,
   useGetVanillaModule,

@@ -1,4 +1,4 @@
-import highlights from "@/hooks/highlights"
+import highlights from "~/design/state/highlights"
 import { useFBO } from "@react-three/drei"
 import { invalidate, useFrame, useThree } from "@react-three/fiber"
 import {

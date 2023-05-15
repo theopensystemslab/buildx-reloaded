@@ -1,17 +1,17 @@
 import { pipe } from "fp-ts/lib/function"
 import { Option } from "fp-ts/lib/Option"
-import { Module } from "../../../server/data/modules"
-import { keysFilter, useSystemModules } from "../../../app/data/modules"
-import { WindowType } from "../../../server/data/windowTypes"
-import { useSystemWindowTypes } from "../../../app/data/windowTypes"
-import { A, O, S } from "../../utils/functions"
-import { getSide, Side } from "../../../app/design/state/camera"
+import { Module } from "@/server/data/modules"
+import { keysFilter, useSystemModules } from "~/data/modules"
+import { WindowType } from "@/server/data/windowTypes"
+import { useSystemWindowTypes } from "~/data/windowTypes"
+import { A, O, S } from "~/utils/functions"
+import { getSide, Side } from "~/design/state/camera"
 import {
   columnLayoutToDNA,
   HouseModuleIdentifier,
   layouts,
-} from "../../../app/design/state/layouts"
-import siteCtx from "../../../app/design/state/siteCtx"
+} from "~/design/state/layouts"
+import siteCtx from "~/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
 
 export type WindowTypeOption = {

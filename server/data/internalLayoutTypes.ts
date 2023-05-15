@@ -2,7 +2,7 @@ import * as z from "zod"
 import { pipe } from "fp-ts/lib/function"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
-import { A } from "@/utils/functions"
+import { A } from "~/utils/functions"
 
 export interface InternalLayoutType {
   id: string

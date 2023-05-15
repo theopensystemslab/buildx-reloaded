@@ -1,10 +1,10 @@
 import { proxy } from "valtio"
 import houses from "../houses"
-import { useSubscribeKey } from "@/utils/hooks"
+import { useSubscribeKey } from "~/utils/hooks"
 import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
 import { MutableRefObject, useRef } from "react"
 import { Group, Vector3 } from "three"
-import { yAxis } from "@/utils/three"
+import { yAxis } from "~/utils/three"
 import { invalidate } from "@react-three/fiber"
 
 export type Transforms = {

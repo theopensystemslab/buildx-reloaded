@@ -1,4 +1,4 @@
-import { PositionedRow } from "~/app/design/state/layouts"
+import { PositionedRow } from "~/design/state/layouts"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import { Plane } from "three"

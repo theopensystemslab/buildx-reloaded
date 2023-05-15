@@ -1,5 +1,5 @@
-import { A } from "@/utils/functions"
-import { floor } from "@/utils/math"
+import { A } from "~/utils/functions"
+import { floor } from "~/utils/math"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import React, { HTMLAttributes } from "react"

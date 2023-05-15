@@ -3,10 +3,10 @@ import {
   StairsOpt,
   useLayoutOptions,
   useStairsOptions,
-} from "@//hooks/interactions/layouts"
-import { HouseModuleIdentifier } from "~/app/design/state/layouts"
-import { Menu, Pencil } from "~/app/ui/icons"
-import Radio from "~/app/ui//Radio"
+} from "~/design/state/interactions/layouts"
+import { HouseModuleIdentifier } from "~/design/state/layouts"
+import { Menu, Pencil } from "~/ui/icons"
+import Radio from "~/ui//Radio"
 import ContextMenuNested from "../ContextMenuNested"
 import houses from "../../../state/houses"
 

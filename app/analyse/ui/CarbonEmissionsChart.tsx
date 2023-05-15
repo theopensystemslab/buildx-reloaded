@@ -1,5 +1,5 @@
 "use client"
-import { capitalizeFirstLetters, R, S } from "@/utils/functions"
+import { capitalizeFirstLetters, R, S } from "~/utils/functions"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { useGetColorClass } from "./HousesPillsSelector"

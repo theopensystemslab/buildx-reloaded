@@ -7,10 +7,10 @@ import {
   topCandidateByHamming,
   usePadColumn,
   useSystemModules,
-} from "../../../app/data/modules"
-import { A, O, Ord, S } from "../../utils/functions"
-import houses from "../../../app/design/state/houses"
-import { columnMatrixToDna } from "../../../app/design/state/layouts"
+} from "~/data/modules"
+import { A, O, Ord, S } from "~/utils/functions"
+import houses from "~/design/state/houses"
+import { columnMatrixToDna } from "~/design/state/layouts"
 import {
   getSelectedColumnMatrix,
   getSelectedLevelModules,
@@ -18,8 +18,8 @@ import {
   getSelectedModule,
   useScope,
 } from "../scope"
-import { Module } from "../../../server/data/modules"
-import { useSystemLevelTypes } from "../../../app/data/levelTypes"
+import { Module } from "@/server/data/modules"
+import { useSystemLevelTypes } from "~/data/levelTypes"
 
 export type LevelTypeOption = {
   label: string

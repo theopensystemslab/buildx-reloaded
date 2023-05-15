@@ -6,10 +6,10 @@ import {
   useGetStairsModule,
   usePadColumn,
   useSystemModules,
-} from "~/app/data/modules"
-import { NEA, O, RA, S, upperFirst } from "@/utils/functions"
-import houses from "~/app/design/state/houses"
-import { useGetVanillaModule } from "~/app/design/state/vanilla"
+} from "~/data/modules"
+import { NEA, O, RA, S, upperFirst } from "~/utils/functions"
+import houses from "~/design/state/houses"
+import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   HouseModuleIdentifier,
   layouts,
@@ -18,10 +18,10 @@ import {
   columnLayoutToDNA,
   columnLayoutToMatrix,
   columnMatrixToDna,
-} from "~/app/design/state/layouts"
-import { StairType } from "../../../server/data/stairTypes"
-import { Module } from "../../../server/data/modules"
-import { useSystemStairTypes } from "../../../app/data/stairTypes"
+} from "~/design/state/layouts"
+import { StairType } from "@/server/data/stairTypes"
+import { Module } from "@/server/data/modules"
+import { useSystemStairTypes } from "~/data/stairTypes"
 
 export const useChangeModuleLayout = ({
   houseId,

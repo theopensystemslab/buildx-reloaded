@@ -1,6 +1,6 @@
 "use client"
-import { trpc } from "~/client/trpc"
-import { Block } from "~/server/data/blocks"
+import { trpc } from "@/client/trpc"
+import { Block } from "@/server/data/blocks"
 
 export const useBlocks = (): Block[] => {
   const { data = [] } = trpc.blocks.useQuery()

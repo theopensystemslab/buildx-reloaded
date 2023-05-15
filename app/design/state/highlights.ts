@@ -2,12 +2,12 @@ import { invalidate } from "@react-three/fiber"
 import { MutableRefObject, useEffect, useRef } from "react"
 import { Group, Object3D } from "three"
 import { proxy, ref } from "valtio"
-import { useSubscribe } from "../utils/hooks"
-import { isMesh } from "../utils/three"
-import { HouseElementIdentifier } from "../../app/design/state/gestures/drag"
-import { useHouse } from "../../app/design/state/houses"
+import { useSubscribe } from "~/utils/hooks"
+import { isMesh } from "~/utils/three"
+import { HouseElementIdentifier } from "~/design/state/gestures/drag"
+import { useHouse } from "~/design/state/houses"
 import scope from "./scope"
-import siteCtx, { SiteCtxModeEnum } from "../../app/design/state/siteCtx"
+import siteCtx, { SiteCtxModeEnum } from "~/design/state/siteCtx"
 
 type Highights = {
   outlined: Array<Object3D>

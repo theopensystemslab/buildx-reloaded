@@ -6,7 +6,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
 import { usePadColumn } from "../../data/modules"
-import { Module } from "../../../server/data/modules"
+import { Module } from "@/server/data/modules"
 import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {

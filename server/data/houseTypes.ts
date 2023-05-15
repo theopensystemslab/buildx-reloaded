@@ -1,7 +1,7 @@
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { A } from "../../src/utils/functions"
+import { A } from "~/utils/functions"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 

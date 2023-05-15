@@ -1,10 +1,10 @@
 "use client"
-import DataInit from "~/app/data/DataInit"
-import GroupedApp from "~/app/design/ui-3d/grouped/GroupedApp"
+import DataInit from "~/data/DataInit"
+import GroupedApp from "~/design/ui-3d/grouped/GroupedApp"
 import React from "react"
 import dynamic from "next/dynamic"
 
-const AppInit = dynamic(() => import("~/app/design/ui-3d/init/AppInit"), {
+const AppInit = dynamic(() => import("~/design/ui-3d/init/AppInit"), {
   ssr: false,
 })
 

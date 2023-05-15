@@ -3,8 +3,8 @@ import { useMemo } from "react"
 import {
   useGetElementMaterial,
   useGetElementMaterialName,
-} from "~/app/design/state/hashedMaterials"
-import { A, O, R } from "@/utils/functions"
+} from "~/design/state/hashedMaterials"
+import { A, O, R } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import {
   useGetColorClass,

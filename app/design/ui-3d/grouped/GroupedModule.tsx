@@ -1,11 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
-import { useModuleElements } from "@/../app/data/elements"
-import { Module } from "@/../server/data/modules"
+import { useModuleElements } from "~/data/elements"
+import { Module } from "@/server/data/modules"
 import {
   indicesToKey,
   SystemHouseModuleIdentifier,
-} from "~/app/design/state/layouts"
-import { RM, S } from "@/utils/functions"
+} from "~/design/state/layouts"
+import { RM, S } from "~/utils/functions"
 import GroupedElement from "./GroupedElement"
 
 export type ModuleProps = SystemHouseModuleIdentifier & {

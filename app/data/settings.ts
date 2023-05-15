@@ -1,5 +1,5 @@
-import { trpc } from "~/client/trpc"
-import { SystemSettings } from "~/server/data/settings"
+import { trpc } from "@/client/trpc"
+import { SystemSettings } from "@/server/data/settings"
 
 export const useSystemsSettings = (): SystemSettings[] => {
   const { data = [] } = trpc.settings.useQuery()
