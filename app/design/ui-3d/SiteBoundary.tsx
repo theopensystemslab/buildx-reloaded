@@ -11,14 +11,14 @@ const SiteBoundary = () => {
     A.map(([x, z]): [number, number, number] => [x, height, z])
   )
 
-  return (
+  return siteBoundaryPoints.length > 0 ? (
     <Line
       points={siteBoundaryPoints}
       lineWidth={2}
       // @ts-ignore
       color="#9D9D9D"
     />
-  )
+  ) : null
 }
 
 export default SiteBoundary

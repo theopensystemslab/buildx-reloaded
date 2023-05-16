@@ -4,7 +4,7 @@ import { Fragment, useMemo } from "react"
 import { MeshBasicMaterial } from "three"
 import { Module } from "../../../../server/data/modules"
 import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
-import { A, O, pipeLog } from "../../../utils/functions"
+import { A, O } from "../../../utils/functions"
 import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
 
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
@@ -20,7 +20,6 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
       const material = pipe(
         ifcTag,
         getElementMaterial,
-        pipeLog,
         O.match(
           () => defaultMaterial,
           (x) => x.threeMaterial ?? defaultMaterial

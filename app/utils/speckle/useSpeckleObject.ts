@@ -28,6 +28,7 @@ const extractStreamId = (urlString: string) => {
 
 const useSpeckleObject = (speckleBranchUrl: string) => {
   const streamId = extractStreamId(speckleBranchUrl)
+
   const speckleObject: any = suspend(async () => {
     const data: any = await request("https://speckle.xyz/graphql", document, {
       streamId,
@@ -39,15 +40,14 @@ const useSpeckleObject = (speckleBranchUrl: string) => {
       serverUrl: "https://speckle.xyz",
       streamId,
       objectId,
-      options: {
-        enableCaching: true,
-      },
+      // options: {
+      //   enableCaching: true,
+      //   excludeProps: true
+      // },
     })
 
     return await loader.getAndConstructObject(() => {})
   }, [streamId])
-
-  console.log({ speckleObject })
 
   return speckleIfcParser.parse(speckleObject)
 }
