@@ -56,14 +56,13 @@ export const elementsQuery: QueryFn<Element> =
                       ({ optionalFor }) => optionalFor.includes(id)
                     )
                     const defaultMaterial =
-                      defaultMaterials[0]?.name ||
-                      optionalMaterials[0]?.name ||
+                      defaultMaterials[0]?.specification ||
+                      optionalMaterials[0]?.specification ||
                       ""
                     const materialOptions = optionalMaterials.map(
-                      (material) => material.name
+                      (material) => material.specification
                     )
 
-                    console.log({ element_code })
                     return {
                       id,
                       systemId,

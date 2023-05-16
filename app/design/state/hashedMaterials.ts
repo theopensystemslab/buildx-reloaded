@@ -43,7 +43,7 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
       O.chain((materialName) =>
         pipe(
           materials,
-          A.findFirst((x) => x.name === materialName)
+          A.findFirst((x) => x.specification === materialName)
         )
       )
     )
@@ -70,7 +70,7 @@ export const useGetElementMaterial = () => {
 
     return pipe(
       materials,
-      A.findFirst((x) => x.name === materialName),
+      A.findFirst((x) => x.specification === materialName),
       someOrError(
         `No material found for ${materialName} in system ${house.systemId}`
       )
@@ -144,7 +144,7 @@ export const useMaterial = ({
     () =>
       pipe(
         systemMaterials,
-        RA.findFirst((m) => m.name === materialName),
+        RA.findFirst((m) => m.specification === materialName),
         someOrError("no material")
       ),
     [materialName, systemMaterials]

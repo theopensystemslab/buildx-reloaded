@@ -310,7 +310,7 @@ export const matchSpecialMaterials = (
     context.materials.find(
       (material) =>
         material.systemId === house.systemId &&
-        material.name ===
+        material.specification ===
           (house.modifiedMaterials[claddingElementName] ||
             claddingElement.defaultMaterial)
     )
@@ -320,7 +320,7 @@ export const matchSpecialMaterials = (
     context.materials.find(
       (material) =>
         material.systemId === house.systemId &&
-        material.name ===
+        material.specification ===
           (house.modifiedMaterials[internalLiningElementName] ||
             internalLiningElement.defaultMaterial)
     )
@@ -330,7 +330,7 @@ export const matchSpecialMaterials = (
     context.materials.find(
       (material) =>
         material.systemId === house.systemId &&
-        material.name ===
+        material.specification ===
           (house.modifiedMaterials[roofingElementName] ||
             roofingElement.defaultMaterial)
     )

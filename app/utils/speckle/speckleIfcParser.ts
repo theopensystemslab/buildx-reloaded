@@ -1,4 +1,6 @@
+import { pipe } from "fp-ts/lib/function"
 import { z } from "zod"
+import { A } from "../functions"
 import { convertSpeckleToThree } from "./convertSpeckleToThree"
 
 const displayValueSchema = z.object({
@@ -10,18 +12,12 @@ const displayValueSchema = z.object({
 const childSchema = z
   .object({
     type: z.string(),
-    "@displayValue": z
-      .array(displayValueSchema)
-      .length(1)
-      .transform(([x]) => x),
+    "@displayValue": z.array(displayValueSchema).default([]),
   })
-  .transform(({ type, "@displayValue": { faces, vertices } }) => ({
+  .transform(({ type, "@displayValue": values }) => ({
     type,
-    faces,
-    vertices,
+    values,
   }))
-  .nullable()
-  .default(null)
 
 function isNonNull<T>(x: T | null): x is T {
   return x !== null
@@ -29,23 +25,29 @@ function isNonNull<T>(x: T | null): x is T {
 
 const ifcSiteSchema = z.object({
   type: z.literal("IFCSITE"),
-  children: z
-    .array(childSchema)
-    .transform((children) => children.filter(isNonNull)),
+  elements: z.array(childSchema).transform((elements) =>
+    pipe(
+      elements,
+      A.filter(isNonNull),
+      A.chain(({ type, values }) =>
+        values.map(({ faces, vertices }) => ({ type, faces, vertices }))
+      )
+    )
+  ),
 })
 
 const ifcProjectSchema = z
   .object({
     type: z.literal("IFCPROJECT"),
-    children: z
+    elements: z
       .array(ifcSiteSchema)
       .length(1)
       .transform(([x]) => x),
   })
-  .transform(({ children }) => children)
+  .transform(({ elements }) => elements)
 
 const speckleIfcParser = ifcProjectSchema.transform((x) =>
-  x.children.map(({ faces, vertices, type }) => ({
+  x.elements.map(({ faces, vertices, type }) => ({
     ifcTag: type,
     geometry: convertSpeckleToThree({ faces, vertices }),
   }))

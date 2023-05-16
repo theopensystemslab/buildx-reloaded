@@ -2,17 +2,9 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment, useMemo } from "react"
 import { MeshBasicMaterial } from "three"
 import { Module } from "../../../../server/data/modules"
-import {
-  useGetDefaultElementMaterial,
-  useGetElementMaterial,
-} from "../../../design/state/hashedMaterials"
-import { A, O } from "../../../utils/functions"
+import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
+import { A, O, pipeLog } from "../../../utils/functions"
 import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
-
-// const streamId = "3616f2f9fb"
-const streamId = "ba796865f8"
-const objectId = "9f798d821d7b9d1901828fe5880885b1"
-// https://speckle.xyz/streams/ba796865f8/branches/main
 
 function extractStreamId(urlString: string) {
   const url = new URL(urlString)
@@ -23,17 +15,15 @@ function extractStreamId(urlString: string) {
 }
 
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
+  const streamId = extractStreamId(module.speckleBranchUrl)
   // const gltf = useGLTF(module.modelUrl)
   const ifcGeometries = useSpeckleObject({
-    streamId: extractStreamId(module.speckleBranchUrl),
+    streamId,
   })
 
   const getElementMaterial = useGetDefaultElementMaterial(module.systemId)
 
-  const defaultMaterial = useMemo(
-    () => new MeshBasicMaterial({ transparent: true, opacity: 0 }),
-    []
-  )
+  const defaultMaterial = useMemo(() => new MeshBasicMaterial(), [])
 
   const meshes = pipe(
     ifcGeometries,
@@ -41,12 +31,12 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
       const material = pipe(
         ifcTag,
         getElementMaterial,
+        pipeLog,
         O.match(
           () => defaultMaterial,
           (x) => x.threeMaterial ?? defaultMaterial
         )
       )
-      // getElementMaterial(ifcTag)?.threeMaterial ?? defaultMaterial
 
       return <mesh key={i} {...{ geometry, material }} />
     })

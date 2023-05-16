@@ -3,9 +3,6 @@ import { suspend } from "suspend-react"
 import speckleIfcParser from "./speckleIfcParser"
 import { request, gql } from "graphql-request"
 
-// streamId: "3616f2f9fb",
-// objectId: "9f798d821d7b9d1901828fe5880885b1",
-
 const document = gql`
   query Stream($streamId: String!) {
     stream(id: $streamId) {
@@ -26,9 +23,8 @@ const useSpeckleObject = ({ streamId }: { streamId: string }) => {
     const data: any = await request("https://speckle.xyz/graphql", document, {
       streamId,
     })
-    const objectId = data.stream.branch.commits.items[0].referencedObject
 
-    console.log({ objectId })
+    const objectId = data.stream.branch.commits.items[0].referencedObject
 
     let loader = new ObjectLoader({
       serverUrl: "https://speckle.xyz",
@@ -37,7 +33,9 @@ const useSpeckleObject = ({ streamId }: { streamId: string }) => {
     })
 
     return await loader.getAndConstructObject(() => {})
-  }, [])
+  }, [streamId])
+
+  console.log({ speckleObject })
 
   return speckleIfcParser.parse(speckleObject)
 }

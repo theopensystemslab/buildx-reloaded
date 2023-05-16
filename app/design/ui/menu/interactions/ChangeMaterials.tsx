@@ -41,9 +41,9 @@ const ChangeMaterials = ({
             materials.forEach((material) => {
               if (
                 material.systemId === house.systemId &&
-                element.materialOptions.includes(material.name)
+                element.materialOptions.includes(material.specification)
               ) {
-                record[material.name] = material.imageUrl
+                record[material.specification] = material.imageUrl
               }
             })
             return record
