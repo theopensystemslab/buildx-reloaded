@@ -15,6 +15,7 @@ export function convertSpeckleToThree(input: InputData): BufferGeometry {
 
   const { faces, vertices } = input
   const indices: number[] = []
+  const normals: number[] = []
 
   function triangleIsCCW(
     referenceNormal: Vector3,
@@ -79,6 +80,10 @@ export function convertSpeckleToThree(input: InputData): BufferGeometry {
       faceNormal.z += (jPos.x - iPos.x) * (iPos.y + jPos.y) // projection on xy
     }
     faceNormal.normalize()
+
+    for (let j = 0; j < n; j++) {
+      normals.push(faceNormal.x, faceNormal.y, faceNormal.z)
+    }
 
     //Set up previous and next links to effectively form a double-linked vertex list
     const prev = Array(n)
@@ -169,6 +174,7 @@ export function convertSpeckleToThree(input: InputData): BufferGeometry {
     "position",
     new Float32BufferAttribute(transformedVertices, 3)
   )
+  geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3))
 
   return geometry
 }

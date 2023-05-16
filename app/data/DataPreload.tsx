@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import { RA } from "~/utils/functions"
-import useSpeckleObject from "../utils/speckle/useSpeckleObject"
+// import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 import { useModules } from "./modules"
 
 const DataPreload = () => {

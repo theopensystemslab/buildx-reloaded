@@ -1,9 +1,14 @@
+import { QueryParams } from "airtable/lib/query_params"
 import { filter, map } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { A } from "~/utils/functions"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
+
+const modulesByHouseTypeSelector: QueryParams<any> = {
+  filterByFormula: 'module!=""',
+}
 
 const modulesByHouseTypeParser = z.object({
   id: z.string().min(1),
@@ -67,11 +72,10 @@ export const houseTypesQuery: QueryFn<HouseType> =
           airtable
             .base(system.airtableId)
             .table("modules_by_housetype")
-            .select()
+            .select(modulesByHouseTypeSelector)
             .all()
             .then((x) => {
               const parsed = z.array(modulesByHouseTypeParser).safeParse(x)
-
               if (parsed.success) return parsed.data
               else return []
             })

@@ -116,15 +116,29 @@ export const useMaterialName = (houseId: string, elementName: string) => {
       }
       return O.some(defaultMaterial)
     }),
-    someOrError("no element")
+    someOrError(`no element found for ${elementName} in ${systemId}`)
   )
 
   return useMemo(() => {
-    if (elementName in materialsPreviews) return materialsPreviews[elementName]
-    else if (elementName in modifiedMaterials)
+    if (elementName in materialsPreviews) {
+      return materialsPreviews[elementName]
+    } else if (elementName in modifiedMaterials)
       return modifiedMaterials[elementName]
-    else return defaultMaterialName
-  }, [defaultMaterialName, elementName, materialsPreviews, modifiedMaterials])
+    else {
+      if (!defaultMaterialName) {
+        console.log(
+          `defaultMaterialName empty for ${elementName} in ${systemId}`
+        )
+      }
+      return defaultMaterialName
+    }
+  }, [
+    defaultMaterialName,
+    elementName,
+    materialsPreviews,
+    modifiedMaterials,
+    systemId,
+  ])
 }
 
 export const useMaterial = ({
@@ -145,9 +159,9 @@ export const useMaterial = ({
       pipe(
         systemMaterials,
         RA.findFirst((m) => m.specification === materialName),
-        someOrError("no material")
+        someOrError(`no material found for ${materialName} in ${systemId}`)
       ),
-    [materialName, systemMaterials]
+    [materialName, systemId, systemMaterials]
   )
 
   return useMemo(() => {
