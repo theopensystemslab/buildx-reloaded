@@ -28,6 +28,27 @@ const getMaterialHash = ({
 
 const hashedMaterials = proxy<Record<string, Material>>({})
 
+export const useGetDefaultElementMaterial = (systemId: string) => {
+  const elements = useElements()
+  const materials = useMaterials()
+
+  return (ifcTag: string) =>
+    pipe(
+      elements,
+      A.findFirstMap((el) => {
+        return el.ifc4Variable.toUpperCase() === ifcTag
+          ? O.some(el.defaultMaterial)
+          : O.none
+      }),
+      O.chain((materialName) =>
+        pipe(
+          materials,
+          A.findFirst((x) => x.name === materialName)
+        )
+      )
+    )
+}
+
 export const useGetElementMaterial = () => {
   const elements = useElements()
   const materials = useMaterials()

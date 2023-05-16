@@ -21,8 +21,10 @@ const ChangeMaterials = ({
   elementName: string
   onComplete?: () => void
 }) => {
-  const elements = useSystemElements({ systemId: "skylark" })
-  const materials = useSystemMaterials({ systemId: "skylark" })
+  const systemId = houses[houseId].systemId
+
+  const elements = useSystemElements({ systemId })
+  const materials = useSystemMaterials({ systemId })
 
   const house = useHouse(houseId)
 

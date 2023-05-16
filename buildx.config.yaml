@@ -1,4 +1,7 @@
 systems:
+  - id: speckle-skylark
+    name: WikiHouse Skylark
+    airtableId: app9duJc6vjuA9b8m
   # - id: 3cea-amvic
   #   name: 3CEA (Amvic)
   #   airtableId: appsOHJyDxhPrHyxc
@@ -11,9 +14,10 @@ systems:
   # - id: holz100
   #   name: HOLZ100
   #   airtableId: appzG3plVRqgH6c5f
-  - id: skylark
-    name: WikiHouse Skylark
-    airtableId: app7fME5xo63IoGGI
   # - id: skylark-2
   #   name: Skylark Ng
   #   airtableId: appIft3BCbLGb8nZG
+
+  # - id: skylark
+  #   name: WikiHouse Skylark
+  #   airtableId: app7fME5xo63IoGGI

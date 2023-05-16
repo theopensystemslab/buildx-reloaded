@@ -62,6 +62,8 @@ export const elementsQuery: QueryFn<Element> =
                     const materialOptions = optionalMaterials.map(
                       (material) => material.name
                     )
+
+                    console.log({ element_code })
                     return {
                       id,
                       systemId,
