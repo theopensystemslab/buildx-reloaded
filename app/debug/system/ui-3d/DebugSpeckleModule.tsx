@@ -1,3 +1,4 @@
+"use client"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useMemo } from "react"
 import { MeshBasicMaterial } from "three"
@@ -6,20 +7,8 @@ import { useGetDefaultElementMaterial } from "../../../design/state/hashedMateri
 import { A, O, pipeLog } from "../../../utils/functions"
 import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
 
-function extractStreamId(urlString: string) {
-  const url = new URL(urlString)
-  const pathParts = url.pathname.split("/")
-  // Assuming the URL is always in the format /streams/{streamId}/branches/{branchName}
-  const streamIdIndex = pathParts.indexOf("streams") + 1
-  return pathParts[streamIdIndex]
-}
-
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
-  const streamId = extractStreamId(module.speckleBranchUrl)
-  // const gltf = useGLTF(module.modelUrl)
-  const ifcGeometries = useSpeckleObject({
-    streamId,
-  })
+  const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
 
   const getElementMaterial = useGetDefaultElementMaterial(module.systemId)
 

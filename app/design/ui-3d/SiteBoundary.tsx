@@ -1,3 +1,4 @@
+"use client"
 import { Line } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
 import { A } from "~/utils/functions"

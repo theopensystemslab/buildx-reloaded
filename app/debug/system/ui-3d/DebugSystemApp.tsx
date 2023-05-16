@@ -1,3 +1,4 @@
+"use client"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import { systems } from "../../../../server/data/system"

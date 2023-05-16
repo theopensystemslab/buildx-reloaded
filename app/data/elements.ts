@@ -10,6 +10,7 @@ import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
 import { O, R, RA, RR } from "~/utils/functions"
 import { isMesh, useGLTF } from "~/utils/three"
+import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()
@@ -22,6 +23,31 @@ export const useSystemElements = ({
   systemId: string
 }): Element[] => {
   return useElements().filter((x) => x.systemId === systemId)
+}
+
+const useIfcTagToElement = (systemId: string) => {
+  const elements = useSystemElements({ systemId })
+
+  return useCallback(
+    (ifcTag: string) => {
+      const result = pipe(
+        elements,
+        RA.findFirst((el) => {
+          return el.ifc4Variable.toUpperCase() === ifcTag
+        }),
+        O.toUndefined
+      )
+
+      if (result === undefined) {
+        console.log({
+          unmatchedNodeType: { ifcTag },
+        })
+      }
+
+      return result
+    },
+    [elements]
+  )
 }
 
 const useNodeTypeToElement = (systemId: string) => {
@@ -83,33 +109,34 @@ export const invertModuleElementGeometriesKey = (input: string) => {
 
 export const useModuleElements = ({
   systemId,
-  glbUrl,
+  speckleBranchUrl,
   dna,
 }: Module): ElementGeometryHashMap => {
-  const nodeTypeToElement = useNodeTypeToElement(systemId)
-  const gltf = useGLTF(glbUrl)
+  const ifcTagToElement = useIfcTagToElement(systemId)
+  const speckleObject = useSpeckleObject(speckleBranchUrl)
   const key = getModuleElementGeometriesKey({ systemId, dna })
   const maybeModuleElementGeometries = moduleElementGeometryHashMaps?.[key]
   if (maybeModuleElementGeometries) return maybeModuleElementGeometries
 
   return pipe(
-    gltf.nodes,
-    R.toArray,
-    RA.reduce({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
-      const element = nodeTypeToElement(nodeType)
-      if (!element) return acc
-      return produce(acc, (draft) => {
-        node.traverse((child) => {
-          if (isMesh(child)) {
-            if (element.name in draft) draft[element.name].push(child)
-            else draft[element.name] = [child]
-          }
+    speckleObject,
+    RA.reduce(
+      {},
+      (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
+        const element = ifcTagToElement(ifcTag)
+        if (!element) return acc
+
+        return produce(acc, (draft) => {
+          if (element.name in draft) draft[element.name].push(geometry)
+          else draft[element.name] = [geometry]
+          // node.traverse((child) => {
+          //   if (isMesh(child)) {
+          //   }
+          // })
         })
-      })
-    }),
-    RR.map((meshes) =>
-      mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
+      }
     ),
+    RR.map((geoms) => mergeBufferGeometries(geoms)),
     RR.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
     (elementGeometries) => {
       const elements = new Map<ElementName, GeometryHash>()
