@@ -236,6 +236,9 @@ export const convertSpeckleToThree = (input: InputData): BufferGeometry => {
   )
   buffer.setIndex(indices)
 
+  // Rotate geometry from Z-up to Y-up
+  buffer.rotateX(-Math.PI / 2)
+
   // Compute vertex normals
   computeVertexNormals(buffer, new Float64Array(input.vertices))
 
