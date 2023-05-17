@@ -42,6 +42,8 @@ export const createMaterial = (config: Material) => {
       color: config.defaultColor,
       // transparent: true,
       emissive: "#000",
+      side: DoubleSide,
+      // wireframe: true,
       // opacity: 0.6,
       // depthTest: false,
     })

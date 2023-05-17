@@ -14,7 +14,7 @@ const settings = proxy<{
   mapEnabled: false,
   sidebar: false,
   preload: true,
-  groundPlaneEnabled: true,
+  groundPlaneEnabled: false,
   verticalCuts: {
     width: false,
     length: false,

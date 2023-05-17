@@ -43,7 +43,11 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
       O.chain((materialName) =>
         pipe(
           materials,
-          A.findFirst((x) => x.specification === materialName)
+          A.findFirstMap((x) =>
+            x.specification === materialName
+              ? O.some({ ...x, threeMaterial: createMaterial(x) })
+              : O.none
+          )
         )
       )
     )

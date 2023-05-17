@@ -1,11 +1,14 @@
 "use client"
+import { useHelper } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useMemo } from "react"
-import { MeshBasicMaterial } from "three"
+import { Fragment, useMemo, useRef } from "react"
+import { Group, Material, MeshBasicMaterial } from "three"
+import { VertexNormalsHelper } from "three-stdlib"
 import { Module } from "../../../../server/data/modules"
 import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
-import { A, O } from "../../../utils/functions"
+import { A, O, pipeLog, pipeLogWith } from "../../../utils/functions"
 import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
+import DebugSpeckleElement from "./DebugSpeckleElement"
 
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
   const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
@@ -14,32 +17,28 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
 
   const defaultMaterial = useMemo(() => new MeshBasicMaterial(), [])
 
-  const meshes = pipe(
-    ifcGeometries,
-    A.mapWithIndex((i, { ifcTag, geometry }) => {
-      const material = pipe(
-        ifcTag,
-        getElementMaterial,
-        O.match(
-          () => defaultMaterial,
-          (x) => x.threeMaterial ?? defaultMaterial
-        )
-      )
-
-      return <mesh key={i} {...{ geometry, material }} />
-    })
-  )
+  const groupRef = useRef<Group>(null)
 
   return (
-    <Fragment>
-      <group>{meshes}</group>
-      {/* <mesh position={[0, module.height / 2, -module.length / 2]}>
-        <boxBufferGeometry
-          args={[module.width, module.height, module.length]}
-        />
-        <meshBasicMaterial color="blue" wireframe />
-      </mesh> */}
-    </Fragment>
+    <group ref={groupRef}>
+      {pipe(
+        ifcGeometries,
+        // A.takeLeft(1),
+        A.mapWithIndex((i, { ifcTag, geometry }) => {
+          const material = pipe(
+            ifcTag,
+            getElementMaterial,
+            O.match(
+              (): Material => defaultMaterial,
+              (x): Material => x.threeMaterial
+            ),
+            pipeLogWith((material) => [ifcTag, material])
+          )
+
+          return <DebugSpeckleElement key={i} {...{ geometry, material }} />
+        })
+      )}
+    </group>
   )
 }
 
