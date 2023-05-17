@@ -1,0 +1,17 @@
+.root select {
+  background-color: gray;
+  overflow: hidden;
+}
+
+.root select + div {
+  overflow: hidden;
+}
+
+:root .root {
+  --leva-sizes-rootWidth: 460px;
+  --leva-sizes-controlWidth: 360px;
+}
+
+.root option {
+  @apply bg-white;
+}
