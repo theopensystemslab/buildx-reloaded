@@ -6,6 +6,7 @@ import { useModules } from "../../../data/modules"
 import { A, O, S } from "../../../utils/functions"
 import { useControls } from "leva"
 import DebugSpeckleModule from "./DebugSpeckleModule"
+import DebugSpeckleModule2 from "./DebugSpeckleModule2"
 
 const DebugSystemApp = () => {
   const allModules = useModules()
@@ -48,7 +49,7 @@ const DebugSystemApp = () => {
           module.systemId === system && module.dna === moduleDna
             ? O.some(
                 <Suspense key={moduleDna} fallback={null}>
-                  <DebugSpeckleModule module={module} />
+                  <DebugSpeckleModule2 module={module} />
                 </Suspense>
               )
             : O.none

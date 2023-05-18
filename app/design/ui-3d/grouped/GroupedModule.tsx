@@ -5,8 +5,10 @@ import {
   indicesToKey,
   SystemHouseModuleIdentifier,
 } from "~/design/state/layouts"
-import { RM, S } from "~/utils/functions"
+import { M, O, pipeLog, R, RM, S } from "~/utils/functions"
 import GroupedElement from "./GroupedElement"
+import { calculateArea } from "../../../utils/three"
+import { hashedGeometries } from "../../state/hashedGeometries"
 
 export type ModuleProps = SystemHouseModuleIdentifier & {
   module: Module
@@ -31,6 +33,18 @@ const GroupedModule = (props: ModuleProps) => {
   } = props
 
   const elements = useModuleElements(module)
+
+  pipe(
+    elements,
+    M.filterMapWithIndex((k, a) => {
+      return pipe(
+        hashedGeometries,
+        R.lookup(a),
+        O.map((geom) => pipe(geom, calculateArea))
+      )
+    }),
+    pipeLog
+  )
 
   const children = pipe(
     elements,

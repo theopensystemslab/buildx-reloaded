@@ -1,16 +1,17 @@
 "use client"
-import { useHelper } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useMemo, useRef } from "react"
+import { useMemo, useRef } from "react"
 import { Group, Material, MeshBasicMaterial } from "three"
-import { VertexNormalsHelper } from "three-stdlib"
 import { Module } from "../../../../server/data/modules"
+import { useModuleElements } from "../../../data/elements"
+import { hashedGeometries } from "../../../design/state/hashedGeometries"
 import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
-import { A, O, pipeLog, pipeLogWith } from "../../../utils/functions"
+import { A, M, O, pipeLog, pipeLogWith, R, S } from "../../../utils/functions"
 import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
+import { calculateArea } from "../../../utils/three"
 import DebugSpeckleElement from "./DebugSpeckleElement"
 
-const DebugSpeckleModule = ({ module }: { module: Module }) => {
+const DebugSpeckleModule2 = ({ module }: { module: Module }) => {
   const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
 
   const getElementMaterial = useGetDefaultElementMaterial(module.systemId)
@@ -19,12 +20,21 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
 
   const groupRef = useRef<Group>(null)
 
+  const elements = useModuleElements(module)
+
+  pipe(
+    elements,
+    M.filterMapWithIndex((elementName, geometryHash) =>
+      pipe(hashedGeometries, R.lookup(geometryHash), O.map(calculateArea))
+    ),
+    pipeLog
+  )
+
   return (
     <group ref={groupRef}>
       {pipe(
-        ifcGeometries,
-        // A.takeLeft(1),
-        A.mapWithIndex((i, { ifcTag, geometry }) => {
+        elements,
+        M.filterMapWithIndex((ifcTag, geometryHash) => {
           const material = pipe(
             ifcTag,
             getElementMaterial,
@@ -34,11 +44,17 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
             )
           )
 
-          return <DebugSpeckleElement key={i} {...{ geometry, material }} />
+          return pipe(
+            hashedGeometries,
+            R.lookup(geometryHash),
+            O.map((geometry) => (
+              <DebugSpeckleElement key={ifcTag} {...{ geometry, material }} />
+            ))
+          )
         })
       )}
     </group>
   )
 }
 
-export default DebugSpeckleModule
+export default DebugSpeckleModule2

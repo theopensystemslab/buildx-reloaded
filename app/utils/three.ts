@@ -3,6 +3,7 @@ import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useCallback, useMemo, useRef } from "react"
 import {
+  BufferGeometry,
   DoubleSide,
   Group,
   Matrix4,
@@ -183,4 +184,39 @@ export const useRotations = () => {
   )
 
   return { rotateV2, unrotateV2 }
+}
+
+export const calculateArea = (geometry: BufferGeometry): number => {
+  if (geometry.index === null) {
+    throw new Error("Geometry is not indexed")
+  }
+  let totalArea = 0
+  let indices = geometry.index.array
+  let positions = geometry.attributes.position.array
+
+  for (let i = 0; i < indices.length; i += 3) {
+    let a = getVertex(indices[i])
+    let b = getVertex(indices[i + 1])
+    let c = getVertex(indices[i + 2])
+
+    totalArea += triangleArea(a, b, c)
+  }
+
+  function getVertex(index: number): Vector3 {
+    return new Vector3(
+      positions[3 * index],
+      positions[3 * index + 1],
+      positions[3 * index + 2]
+    )
+  }
+
+  function triangleArea(a: Vector3, b: Vector3, c: Vector3): number {
+    let v1 = new Vector3().subVectors(b, a)
+    let v2 = new Vector3().subVectors(c, a)
+
+    let crossProduct = new Vector3().crossVectors(v1, v2)
+    return crossProduct.length() / 2
+  }
+
+  return totalArea
 }
