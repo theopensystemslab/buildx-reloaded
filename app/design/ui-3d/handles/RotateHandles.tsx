@@ -55,7 +55,7 @@ const RotateHandles = forwardRef<Group, Props>(
         </mesh>
 
         <RotateCircle
-          position={[-houseWidth / 2 - OFFSET, 0, houseLength / 2]}
+          position={[-OFFSET - houseWidth / 4, 0, houseLength / 2]}
           userData={{
             identifier,
           }}

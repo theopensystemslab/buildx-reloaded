@@ -49,38 +49,6 @@ const useIfcTagToElement = (systemId: string) => {
   )
 }
 
-const useNodeTypeToElement = (systemId: string) => {
-  const elements = useSystemElements({ systemId })
-
-  return useCallback(
-    (nodeType: string) => {
-      const strippedNodeType = nodeType
-        .replace(/I?None.*/, "")
-        .replace(/Component.*/, "")
-        .replace(/Union.*/, "")
-        .replaceAll(/[0-9]/g, "")
-        .replace(/Object/, "")
-        .replace(/(Ifc.*)(Ifc.*)/, "$1")
-      const result = pipe(
-        elements,
-        RA.findFirst((el) => {
-          return el.ifc4Variable === strippedNodeType
-        }),
-        O.toUndefined
-      )
-
-      if (result === undefined && nodeType.startsWith("Ifc")) {
-        console.log({
-          unmatchedNodeType: { nodeType, strippedNodeType },
-        })
-      }
-
-      return result
-    },
-    [elements]
-  )
-}
-
 type ElementName = string
 type SystemIdModuleDna = string
 type GeometryHash = string

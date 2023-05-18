@@ -64,7 +64,7 @@ useSpeckleObject.preload = (speckleBranchUrl: string) => {
       serverUrl: "https://speckle.xyz",
       streamId,
       objectId,
-      options: { enableCaching: true },
+      // options: { enableCaching: true },
     })
 
     loader.getAndConstructObject(() => {})
