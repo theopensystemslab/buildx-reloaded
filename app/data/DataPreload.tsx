@@ -9,8 +9,8 @@ const DataPreload = () => {
   pipe(
     modules,
     RA.map((m) => {
-      useSpeckleObject.preload(m.speckleBranchUrl)
-      console.log(`preloaded ${m.speckleBranchUrl}`)
+      // useSpeckleObject.preload(m.speckleBranchUrl)
+      // console.log(`preloaded ${m.speckleBranchUrl}`)
       //
       // useGLTF.preload(m.glbUrl)
       // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {

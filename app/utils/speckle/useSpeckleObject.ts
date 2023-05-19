@@ -40,10 +40,12 @@ const useSpeckleObject = (speckleBranchUrl: string) => {
       serverUrl: "https://speckle.xyz",
       streamId,
       objectId,
-      // options: {
-      //   enableCaching: true,
-      //   excludeProps: true
-      // },
+      options: {
+        enableCaching: false,
+        excludeProps: [],
+        customLogger: undefined,
+        customWarner: undefined,
+      },
     })
 
     return await loader.getAndConstructObject(() => {})

@@ -34,18 +34,6 @@ const GroupedModule = (props: ModuleProps) => {
 
   const elements = useModuleElements(module)
 
-  pipe(
-    elements,
-    M.filterMapWithIndex((k, a) => {
-      return pipe(
-        hashedGeometries,
-        R.lookup(a),
-        O.map((geom) => pipe(geom, calculateArea))
-      )
-    }),
-    pipeLog
-  )
-
   const children = pipe(
     elements,
     RM.collect(S.Ord)((elementName, geometryHash) => {
