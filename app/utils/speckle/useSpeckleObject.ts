@@ -1,6 +1,10 @@
 import ObjectLoader from "@speckle/objectloader"
+import { pipe } from "fp-ts/lib/function"
 import { gql, request } from "graphql-request"
 import { suspend } from "suspend-react"
+import { BufferGeometry, BufferGeometryLoader } from "three"
+import { trpc } from "../../../client/trpc"
+import { R } from "../functions"
 import speckleIfcParser from "./speckleIfcParser"
 
 const document = gql`
@@ -69,6 +73,19 @@ useSpeckleObject.preload = (speckleBranchUrl: string) => {
 
     loader.getAndConstructObject(() => {})
   })
+}
+
+export const useSpeckleObject2 = (speckleBranchUrl: string) => {
+  const { data: ifcJsonGeometries = {} } = trpc.speckleModel.useQuery({
+    speckleBranchUrl,
+  })
+
+  const loader = new BufferGeometryLoader()
+
+  return pipe(
+    ifcJsonGeometries,
+    R.map((jsonGeom) => loader.parse(jsonGeom) as BufferGeometry)
+  )
 }
 
 export default useSpeckleObject
