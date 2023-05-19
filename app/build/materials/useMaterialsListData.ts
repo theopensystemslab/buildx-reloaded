@@ -43,78 +43,80 @@ export const useMaterialsListData = () => {
   const getElementMaterialName = useGetElementMaterialName()
   const getElementMaterial = useGetElementMaterial()
 
-  const data: MaterialsListRow[] = useMemo(() => {
-    const foo: MaterialsListRow[] = pipe(
-      selectedHouses,
-      A.filterMap((house) =>
-        pipe(
-          byHouse,
-          R.lookup(house.id),
-          O.map(({ areas, costs }): MaterialsListRow[] => {
-            const sharedProps = {
-              buildingName: house.friendlyName,
-              colorClass: getColorClass(house.id),
-              staleColorClass: getColorClass(house.id, { stale: true }),
-            }
+  const data: MaterialsListRow[] = useMemo(
+    () =>
+      pipe(
+        selectedHouses,
+        A.filterMap((house) =>
+          pipe(
+            byHouse,
+            R.lookup(house.id),
+            O.map(({ areas, costs }): MaterialsListRow[] => {
+              const sharedProps = {
+                buildingName: house.friendlyName,
+                colorClass: getColorClass(house.id),
+                staleColorClass: getColorClass(house.id, { stale: true }),
+              }
 
-            const claddingMaterial = getElementMaterial(house.id, "Cladding")
+              const claddingMaterial = getElementMaterial(house.id, "Cladding")
 
-            const cladding: MaterialsListRow = {
-              ...sharedProps,
-              carbonCost: claddingMaterial.embodiedCarbonPerM2 * areas.cladding,
-              estimatedCost: costs.cladding,
-              estimatedCostPerUnit: claddingMaterial.costPerM2,
-              item: "Cladding",
-              linkUrl: "#",
-              quantity: areas.cladding,
-              specification: getElementMaterialName(house.id, "Cladding"),
-            }
+              const cladding: MaterialsListRow = {
+                ...sharedProps,
+                carbonCost:
+                  claddingMaterial.embodiedCarbonPerM2 * areas.cladding,
+                estimatedCost: costs.cladding,
+                estimatedCostPerUnit: claddingMaterial.costPerM2,
+                item: "Cladding",
+                linkUrl: "#",
+                quantity: areas.cladding,
+                specification: getElementMaterialName(house.id, "Cladding"),
+              }
 
-            const liningMaterial = getElementMaterial(
-              house.id,
-              "Internal wall lining"
-            )
-
-            const lining: MaterialsListRow = {
-              ...sharedProps,
-              carbonCost:
-                liningMaterial.embodiedCarbonPerM2 * areas.internalLining,
-              estimatedCost: costs.internalLining,
-              estimatedCostPerUnit: liningMaterial.costPerM2,
-              item: "Internal Lining",
-              linkUrl: "#",
-              quantity: areas.internalLining,
-              specification: getElementMaterialName(
+              const liningMaterial = getElementMaterial(
                 house.id,
                 "Internal wall lining"
-              ),
-            }
+              )
 
-            const roofing: MaterialsListRow = {
-              ...sharedProps,
-              carbonCost: 0,
-              estimatedCost: 0,
-              estimatedCostPerUnit: 0,
-              item: "Roofing",
-              linkUrl: "#",
-              quantity: 0,
-              specification: "spec", //getElementMaterialName(house.id, "Roofing"),
-            }
+              const lining: MaterialsListRow = {
+                ...sharedProps,
+                carbonCost:
+                  liningMaterial.embodiedCarbonPerM2 * areas.internalLining,
+                estimatedCost: costs.internalLining,
+                estimatedCostPerUnit: liningMaterial.costPerM2,
+                item: "Internal Lining",
+                linkUrl: "#",
+                quantity: areas.internalLining,
+                specification: getElementMaterialName(
+                  house.id,
+                  "Internal wall lining"
+                ),
+              }
 
-            return [cladding, lining, roofing]
-          })
-        )
+              const roofing: MaterialsListRow = {
+                ...sharedProps,
+                carbonCost: 0,
+                estimatedCost: 0,
+                estimatedCostPerUnit: 0,
+                item: "Roofing",
+                linkUrl: "#",
+                quantity: 0,
+                specification: "spec", //getElementMaterialName(house.id, "Roofing"),
+              }
+
+              return [cladding, lining, roofing]
+            })
+          )
+        ),
+        A.flatten
       ),
-      A.flatten
-    )
-    return foo
-  }, [
-    byHouse,
-    getColorClass,
-    getElementMaterial,
-    getElementMaterialName,
-    selectedHouses,
-  ])
+    [
+      byHouse,
+      getColorClass,
+      getElementMaterial,
+      getElementMaterialName,
+      selectedHouses,
+    ]
+  )
 
   return { data, fmt }
 }
