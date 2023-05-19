@@ -1,3 +1,4 @@
+"use client"
 import IconButton from "~/ui//IconButton"
 import { ChevronRight, TrashCan } from "@carbon/icons-react"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"

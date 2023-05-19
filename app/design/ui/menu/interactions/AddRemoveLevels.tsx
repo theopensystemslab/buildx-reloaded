@@ -51,49 +51,54 @@ const AddRemoveLevels = (props: Props) => {
   const floorAboveDna = useMemo(() => {
     if (!canAddFloorAbove) return []
 
-    return pipe(
-      columnMatrix,
-      transpose,
-      (rows) => [
-        ...rows.slice(0, levelIndex + 1),
-        pipe(
-          rows[levelIndex],
-          A.map((group) =>
-            pipe(
-              group,
-              A.map((m) => {
-                const vanillaModule = pipe(
-                  getVanillaModule(m, {
-                    levelType: targetLevelType,
-                  })
-                )
+    try {
+      return pipe(
+        columnMatrix,
+        transpose,
+        (rows) => [
+          ...rows.slice(0, levelIndex + 1),
+          pipe(
+            rows[levelIndex],
+            A.map((group) =>
+              pipe(
+                group,
+                A.map((m) => {
+                  const vanillaModule = pipe(
+                    getVanillaModule(m, {
+                      levelType: targetLevelType,
+                    })
+                  )
 
-                if (m.structuredDna.stairsType === "ST0")
-                  return A.replicate(
-                    m.structuredDna.gridUnits /
-                      vanillaModule.structuredDna.gridUnits,
-                    vanillaModule
+                  if (m.structuredDna.stairsType === "ST0")
+                    return A.replicate(
+                      m.structuredDna.gridUnits /
+                        vanillaModule.structuredDna.gridUnits,
+                      vanillaModule
+                    )
+                  const stairsModule = pipe(
+                    getStairsModule(m, {
+                      levelType: targetLevelType,
+                    }),
+                    errorThrower(
+                      `No stairs module found for ${m.dna} level ${targetLevelLetter}`
+                    )
                   )
-                const stairsModule = pipe(
-                  getStairsModule(m, {
-                    levelType: targetLevelType,
-                  }),
-                  errorThrower(
-                    `No stairs module found for ${m.dna} level ${targetLevelLetter}`
-                  )
-                )
-                return [stairsModule]
-              }),
-              A.flatten
+                  return [stairsModule]
+                }),
+                A.flatten
+              )
             )
-          )
-        ),
-        ...rows.slice(levelIndex + 1),
-      ],
-      transpose,
-      A.map(padColumn),
-      columnMatrixToDna
-    )
+          ),
+          ...rows.slice(levelIndex + 1),
+        ],
+        transpose,
+        A.map(padColumn),
+        columnMatrixToDna
+      )
+    } catch (e) {
+      console.log(`AddRemoveLevels error`, e)
+      return []
+    }
   }, [
     canAddFloorAbove,
     columnMatrix,

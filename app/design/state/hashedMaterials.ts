@@ -28,6 +28,31 @@ const getMaterialHash = ({
 
 const hashedMaterials = proxy<Record<string, Material>>({})
 
+export const useGetDefaultElementMaterial = (systemId: string) => {
+  const elements = useElements()
+  const materials = useMaterials()
+
+  return (ifcTag: string) =>
+    pipe(
+      elements,
+      A.findFirstMap((el) => {
+        return el.ifc4Variable.toUpperCase() === ifcTag
+          ? O.some(el.defaultMaterial)
+          : O.none
+      }),
+      O.chain((materialName) =>
+        pipe(
+          materials,
+          A.findFirstMap((x) =>
+            x.specification === materialName
+              ? O.some({ ...x, threeMaterial: createMaterial(x) })
+              : O.none
+          )
+        )
+      )
+    )
+}
+
 export const useGetElementMaterial = () => {
   const elements = useElements()
   const materials = useMaterials()
@@ -49,7 +74,7 @@ export const useGetElementMaterial = () => {
 
     return pipe(
       materials,
-      A.findFirst((x) => x.name === materialName),
+      A.findFirst((x) => x.specification === materialName),
       someOrError(
         `No material found for ${materialName} in system ${house.systemId}`
       )
@@ -95,15 +120,29 @@ export const useMaterialName = (houseId: string, elementName: string) => {
       }
       return O.some(defaultMaterial)
     }),
-    someOrError("no element")
+    someOrError(`no element found for ${elementName} in ${systemId}`)
   )
 
   return useMemo(() => {
-    if (elementName in materialsPreviews) return materialsPreviews[elementName]
-    else if (elementName in modifiedMaterials)
+    if (elementName in materialsPreviews) {
+      return materialsPreviews[elementName]
+    } else if (elementName in modifiedMaterials)
       return modifiedMaterials[elementName]
-    else return defaultMaterialName
-  }, [defaultMaterialName, elementName, materialsPreviews, modifiedMaterials])
+    else {
+      if (!defaultMaterialName) {
+        console.log(
+          `defaultMaterialName empty for ${elementName} in ${systemId}`
+        )
+      }
+      return defaultMaterialName
+    }
+  }, [
+    defaultMaterialName,
+    elementName,
+    materialsPreviews,
+    modifiedMaterials,
+    systemId,
+  ])
 }
 
 export const useMaterial = ({
@@ -123,10 +162,10 @@ export const useMaterial = ({
     () =>
       pipe(
         systemMaterials,
-        RA.findFirst((m) => m.name === materialName),
-        someOrError("no material")
+        RA.findFirst((m) => m.specification === materialName),
+        someOrError(`no material found for ${materialName} in ${systemId}`)
       ),
-    [materialName, systemMaterials]
+    [materialName, systemId, systemMaterials]
   )
 
   return useMemo(() => {

@@ -4,11 +4,12 @@ import * as z from "zod"
 import { systemFromId } from "@/server/data/system"
 import { A } from "~/utils/functions"
 import { QueryFn } from "./types"
+import { QueryParams } from "airtable/lib/query_params"
 
 export interface Material {
   id: string
   systemId: string
-  name: string
+  specification: string
   defaultFor: Array<string>
   optionalFor: Array<string>
   imageUrl: string
@@ -18,13 +19,16 @@ export interface Material {
   threeMaterial?: MeshStandardMaterial
 }
 
-// elements requires materials first
+export const materialSelector: QueryParams<any> = {
+  // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
+  filterByFormula: 'specification!=""',
+}
 
 export const materialParser = z
   .object({
     id: z.string().min(1),
     fields: z.object({
-      name: z.string().min(1).default(""),
+      specification: z.string().min(1),
       default_material_for: z.array(z.string().min(1)).default([]),
       optional_material_for: z.array(z.string().min(1)).default([]),
       default_colour: z.string().min(1).default(""),
@@ -43,7 +47,7 @@ export const materialParser = z
     ({
       id,
       fields: {
-        name,
+        specification,
         default_material_for,
         optional_material_for,
         material_image,
@@ -53,7 +57,7 @@ export const materialParser = z
       },
     }) => ({
       id,
-      name,
+      specification,
       defaultFor: default_material_for ?? [],
       optionalFor: optional_material_for ?? [],
       imageUrl: material_image?.[0]?.url,
@@ -73,7 +77,7 @@ export const materialsQuery: QueryFn<Material> =
           airtable
             .base(systemFromId(systemId)?.airtableId ?? "")
             .table("materials_menu")
-            .select()
+            .select(materialSelector)
             .all()
             .then(
               z.array(materialParser.transform((xs) => ({ ...xs, systemId })))

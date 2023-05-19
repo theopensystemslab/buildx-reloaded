@@ -11,11 +11,14 @@ import FullScreenContainer from "~/ui//FullScreenContainer"
 import dynamic from "next/dynamic"
 import { Fragment, PropsWithChildren } from "react"
 import SiteCamControls from "../camera/SiteCamControls"
-import SiteBoundary from "../SiteBoundary"
 import HtmlUi from "../../ui/HtmlUi"
 import { useDesignSettings } from "../../state/settings"
 
 const DataPreload = dynamic(() => import("~/data/DataPreload"), {
+  ssr: false,
+})
+
+const SiteBoundary = dynamic(() => import("../SiteBoundary"), {
   ssr: false,
 })
 

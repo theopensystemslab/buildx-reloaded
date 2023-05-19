@@ -7,7 +7,8 @@ import { QueryFn } from "./types"
 
 export const moduleSelector: QueryParams<any> = {
   // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
-  filterByFormula: 'GLB_model!=""',
+  // filterByFormula: 'GLB_model!=""',
+  filterByFormula: 'speckle_branch_url!=""',
 }
 
 export type StructuredDna = {
@@ -61,18 +62,7 @@ export const moduleParser = z
     id: z.string().min(1),
     fields: z.object({
       module_code: z.string().min(1),
-      IFC_model: z
-        .array(
-          z.object({
-            url: z.string().min(1),
-          })
-        )
-        .optional(),
-      GLB_model: z.array(
-        z.object({
-          url: z.string().min(1),
-        })
-      ),
+      speckle_branch_url: z.string().min(1),
       section_width: z.array(z.number()),
       level_height: z.array(z.number()),
       length_dims: z.number(),
@@ -92,8 +82,7 @@ export const moduleParser = z
       id,
       fields: {
         module_code,
-        IFC_model,
-        GLB_model,
+        speckle_branch_url,
         section_width: [width],
         level_height: [height],
         length_dims: length,
@@ -108,8 +97,7 @@ export const moduleParser = z
     }) => ({
       id,
       dna: module_code,
-      ifcUrl: IFC_model?.[0].url,
-      glbUrl: GLB_model[0].url,
+      speckleBranchUrl: speckle_branch_url,
       structuredDna: parseDna(module_code),
       length,
       height,
@@ -131,8 +119,7 @@ export type Module = {
   systemId: string
   dna: string
   structuredDna: StructuredDna
-  ifcUrl?: string
-  glbUrl: string
+  speckleBranchUrl: string
   width: number
   height: number
   length: number

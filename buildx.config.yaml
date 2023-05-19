@@ -1,19 +1,4 @@
 systems:
-  # - id: 3cea-amvic
-  #   name: 3CEA (Amvic)
-  #   airtableId: appsOHJyDxhPrHyxc
-  # - id: mobble
-  #   name: Inhout Mobble
-  #   airtableId: app25JFkKVKKEt5io
-  # - id: swift
-  #   name: WikiHouse Swift
-  #   airtableId: appGlzQcCZpDNRFsE
-  # - id: holz100
-  #   name: HOLZ100
-  #   airtableId: appzG3plVRqgH6c5f
-  - id: skylark
+  - id: speckle-skylark
     name: WikiHouse Skylark
-    airtableId: app7fME5xo63IoGGI
-  # - id: skylark-2
-  #   name: Skylark Ng
-  #   airtableId: appIft3BCbLGb8nZG
+    airtableId: app9duJc6vjuA9b8m

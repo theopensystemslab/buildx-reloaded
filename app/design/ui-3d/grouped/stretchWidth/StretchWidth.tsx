@@ -35,7 +35,7 @@ import { Ordering } from "fp-ts/lib/Ordering"
 import { forwardRef, useEffect, useRef } from "react"
 import { Group } from "three"
 import { proxy, ref } from "valtio"
-import { useHouse } from "../../../state/houses"
+import houses, { useHouse } from "../../../state/houses"
 import previews from "~/design/state/previews"
 import StretchHandle from "../../handles/StretchHandle"
 import { useIsStretchable } from "../../../state/siteCtx"
@@ -68,7 +68,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
 
   const isStretchable = useIsStretchable(houseId)
 
-  const systemId = "skylark"
+  const systemId = houses[houseId].systemId
 
   const systemModules = useSystemModules({ systemId })
   const sectionTypes = useSystemSectionTypes({ systemId })

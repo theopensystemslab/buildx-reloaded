@@ -21,8 +21,10 @@ const ChangeMaterials = ({
   elementName: string
   onComplete?: () => void
 }) => {
-  const elements = useSystemElements({ systemId: "skylark" })
-  const materials = useSystemMaterials({ systemId: "skylark" })
+  const systemId = houses[houseId].systemId
+
+  const elements = useSystemElements({ systemId })
+  const materials = useSystemMaterials({ systemId })
 
   const house = useHouse(houseId)
 
@@ -39,9 +41,9 @@ const ChangeMaterials = ({
             materials.forEach((material) => {
               if (
                 material.systemId === house.systemId &&
-                element.materialOptions.includes(material.name)
+                element.materialOptions.includes(material.specification)
               ) {
-                record[material.name] = material.imageUrl
+                record[material.specification] = material.imageUrl
               }
             })
             return record

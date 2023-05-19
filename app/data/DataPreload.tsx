@@ -1,6 +1,5 @@
-import { useGLTF } from "@react-three/drei"
 import { pipe } from "fp-ts/lib/function"
-import { RA, RR } from "~/utils/functions"
+import { RA } from "~/utils/functions"
 import { useModules } from "./modules"
 
 const DataPreload = () => {
@@ -9,7 +8,10 @@ const DataPreload = () => {
   pipe(
     modules,
     RA.map((m) => {
-      useGLTF.preload(m.glbUrl)
+      // useSpeckleObject.preload(m.speckleBranchUrl)
+      // console.log(`preloaded ${m.speckleBranchUrl}`)
+      //
+      // useGLTF.preload(m.glbUrl)
       // useLoader.preload(IFCLoader, m.ifcUrl, (loader) => {
       //   if (loader instanceof IFCLoader) {
       //     loader.ifcManager.setWasmPath("../../../wasm/")

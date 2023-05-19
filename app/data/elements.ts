@@ -1,15 +1,15 @@
-import { hashGeometry } from "~/design/state/hashedGeometries"
+import { trpc } from "@/client/trpc"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useCallback } from "react"
-import { BufferGeometry, Mesh } from "three"
+import { BufferGeometry } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { proxy } from "valtio"
-import { trpc } from "@/client/trpc"
+import { hashGeometry } from "~/design/state/hashedGeometries"
+import { O, RA, RR } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
-import { O, R, RA, RR } from "~/utils/functions"
-import { isMesh, useGLTF } from "~/utils/three"
+import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()
@@ -24,29 +24,22 @@ export const useSystemElements = ({
   return useElements().filter((x) => x.systemId === systemId)
 }
 
-const useNodeTypeToElement = (systemId: string) => {
+const useIfcTagToElement = (systemId: string) => {
   const elements = useSystemElements({ systemId })
 
   return useCallback(
-    (nodeType: string) => {
-      const strippedNodeType = nodeType
-        .replace(/I?None.*/, "")
-        .replace(/Component.*/, "")
-        .replace(/Union.*/, "")
-        .replaceAll(/[0-9]/g, "")
-        .replace(/Object/, "")
-        .replace(/(Ifc.*)(Ifc.*)/, "$1")
+    (ifcTag: string) => {
       const result = pipe(
         elements,
         RA.findFirst((el) => {
-          return el.ifc4Variable === strippedNodeType
+          return el.ifc4Variable.toUpperCase() === ifcTag
         }),
         O.toUndefined
       )
 
-      if (result === undefined && nodeType.startsWith("Ifc")) {
+      if (result === undefined) {
         console.log({
-          unmatchedNodeType: { nodeType, strippedNodeType },
+          unmatchedNodeType: { ifcTag },
         })
       }
 
@@ -83,33 +76,34 @@ export const invertModuleElementGeometriesKey = (input: string) => {
 
 export const useModuleElements = ({
   systemId,
-  glbUrl,
+  speckleBranchUrl,
   dna,
 }: Module): ElementGeometryHashMap => {
-  const nodeTypeToElement = useNodeTypeToElement(systemId)
-  const gltf = useGLTF(glbUrl)
+  const ifcTagToElement = useIfcTagToElement(systemId)
+  const speckleObject = useSpeckleObject(speckleBranchUrl)
   const key = getModuleElementGeometriesKey({ systemId, dna })
   const maybeModuleElementGeometries = moduleElementGeometryHashMaps?.[key]
   if (maybeModuleElementGeometries) return maybeModuleElementGeometries
 
   return pipe(
-    gltf.nodes,
-    R.toArray,
-    RA.reduce({}, (acc: { [e: string]: Mesh[] }, [nodeType, node]) => {
-      const element = nodeTypeToElement(nodeType)
-      if (!element) return acc
-      return produce(acc, (draft) => {
-        node.traverse((child) => {
-          if (isMesh(child)) {
-            if (element.name in draft) draft[element.name].push(child)
-            else draft[element.name] = [child]
-          }
+    speckleObject,
+    RA.reduce(
+      {},
+      (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
+        const element = ifcTagToElement(ifcTag)
+        if (!element) return acc
+
+        return produce(acc, (draft) => {
+          if (element.name in draft) draft[element.name].push(geometry)
+          else draft[element.name] = [geometry]
+          // node.traverse((child) => {
+          //   if (isMesh(child)) {
+          //   }
+          // })
         })
-      })
-    }),
-    RR.map((meshes) =>
-      mergeBufferGeometries(meshes.map((mesh) => mesh.geometry))
+      }
     ),
+    RR.map((geoms) => mergeBufferGeometries(geoms)),
     RR.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
     (elementGeometries) => {
       const elements = new Map<ElementName, GeometryHash>()
