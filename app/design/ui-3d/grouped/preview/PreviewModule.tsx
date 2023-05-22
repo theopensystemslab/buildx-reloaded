@@ -1,12 +1,12 @@
 import { Module } from "@/server/data/modules"
+import { pipe } from "fp-ts/lib/function"
+import { useModuleElements } from "~/data/elements"
 import {
   indicesToKey,
   SystemHouseModuleIdentifier,
 } from "~/design/state/layouts"
-import { RM, S } from "~/utils/functions"
-import { pipe } from "fp-ts/lib/function"
+import { R, S } from "~/utils/functions"
 import PreviewElement from "./PreviewElement"
-import { useModuleElements } from "~/data/elements"
 
 export type PreviewModuleProps = SystemHouseModuleIdentifier & {
   module: Module
@@ -34,7 +34,7 @@ const PreviewModule = (props: PreviewModuleProps) => {
 
   const children = pipe(
     elements,
-    RM.collect(S.Ord)((elementName, geometryHash) => {
+    R.collect(S.Ord)((elementName, geometry) => {
       const key = indicesToKey({
         houseId,
         columnIndex,
@@ -53,7 +53,7 @@ const PreviewModule = (props: PreviewModuleProps) => {
             levelIndex,
             gridGroupIndex,
             elementName,
-            geometryHash,
+            geometry,
             levelY,
             moduleZ,
             startColumn,

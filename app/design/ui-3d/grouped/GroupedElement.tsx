@@ -1,13 +1,13 @@
 import { useMaterial } from "~/design/state/hashedMaterials"
 import { useRef } from "react"
-import { Mesh } from "three"
+import { BufferGeometry, Mesh } from "three"
 import { HouseElementIdentifier } from "../../state/gestures/drag"
 import { useGeometry } from "~/design/state/hashedGeometries"
 import { ModuleProps } from "./GroupedModule"
 
 type Props = ModuleProps & {
   elementName: string
-  geometryHash: string
+  geometry: BufferGeometry
 }
 
 const GroupedElement = (props: Props) => {
@@ -15,7 +15,7 @@ const GroupedElement = (props: Props) => {
     systemId,
     houseId,
     elementName,
-    geometryHash,
+    geometry,
     columnIndex,
     levelIndex,
     gridGroupIndex,
@@ -23,7 +23,6 @@ const GroupedElement = (props: Props) => {
 
   const meshRef = useRef<Mesh>(null!)
 
-  const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 
   const identifier: HouseElementIdentifier = {

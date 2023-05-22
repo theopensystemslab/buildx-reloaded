@@ -5,13 +5,15 @@ import { Group, Material, MeshBasicMaterial } from "three"
 import { Module } from "../../../../server/data/modules"
 import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
 import { O, R, S } from "../../../utils/functions"
-import { useSpeckleObject2 } from "../../../utils/speckle/useSpeckleObject"
+import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
 import DebugSpeckleElement from "./DebugSpeckleElement"
 
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
   // const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
 
-  const ifcGeometries = useSpeckleObject2(module.speckleBranchUrl)
+  const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
+
+  console.log(ifcGeometries)
 
   const getElementMaterial = useGetDefaultElementMaterial(module.systemId)
 

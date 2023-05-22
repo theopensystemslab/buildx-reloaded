@@ -49,6 +49,13 @@ const getSpeckleObject = async (speckleBranchUrl: string) => {
     serverUrl: "https://speckle.xyz",
     streamId,
     objectId,
+    options: {
+      enableCaching: false,
+      excludeProps: [],
+      customLogger: undefined,
+      customWarner: undefined,
+      fullyTraverseArrays: undefined,
+    },
   })
 
   return await loader.getAndConstructObject(() => {})
@@ -59,8 +66,8 @@ export const speckleModelQuery = async ({
 }: {
   input: SpeckleModelQueryInput
 }) => {
-  const foo = await getSpeckleObject(speckleBranchUrl)
-  const speckleObject = speckleIfcParser.parse(foo)
+  const data = await getSpeckleObject(speckleBranchUrl)
+  const speckleObject = speckleIfcParser.parse(data)
 
   return pipe(
     speckleObject,

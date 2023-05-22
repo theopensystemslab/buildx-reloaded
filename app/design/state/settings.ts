@@ -13,7 +13,7 @@ const settings = proxy<{
 }>({
   mapEnabled: false,
   sidebar: false,
-  preload: true,
+  preload: false,
   groundPlaneEnabled: true,
   verticalCuts: {
     width: false,

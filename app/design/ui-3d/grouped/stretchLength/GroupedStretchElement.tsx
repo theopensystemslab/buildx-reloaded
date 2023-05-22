@@ -1,21 +1,19 @@
-import { useGeometry } from "~/design/state/hashedGeometries"
-import { useMaterial } from "~/design/state/hashedMaterials"
 import { useRef } from "react"
-import { Mesh } from "three"
+import { BufferGeometry, Mesh } from "three"
+import { useMaterial } from "~/design/state/hashedMaterials"
 import { HouseElementIdentifier } from "../../../state/gestures/drag"
 import { StretchModuleProps } from "./GroupedStretchModule"
 
 type Props = StretchModuleProps & {
   elementName: string
-  geometryHash: string
+  geometry: BufferGeometry
 }
 
 const GroupedStretchElement = (props: Props) => {
-  const { systemId, houseId, elementName, geometryHash } = props
+  const { systemId, houseId, elementName, geometry } = props
 
   const meshRef = useRef<Mesh>(null)
 
-  const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 
   const identifier: Partial<HouseElementIdentifier> = {
