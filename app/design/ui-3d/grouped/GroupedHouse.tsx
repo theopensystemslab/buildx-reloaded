@@ -1,9 +1,9 @@
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef } from "react"
+import { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
 import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
-import { useHouseSystemId } from "../../state/houses"
+import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useHouseColumnLayout } from "~/design/state/layouts"
 import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
@@ -39,13 +39,25 @@ const GroupedHouse = (props: Props) => {
   const startColumnRef = useRef<Group>(null)
   const midColumnsRef = useRef<Group>(null)
   const endColumnRef = useRef<Group>(null)
-  const houseRefs = [startColumnRef, midColumnsRef, endColumnRef]
 
-  const setHouseVisible = (b: boolean) => {
-    for (let ref of houseRefs) {
-      if (ref.current) ref.current.visible = b
-    }
-  }
+  const houseRefs = useMemo(
+    () => [startColumnRef, midColumnsRef, endColumnRef],
+    []
+  )
+
+  const setHouseVisible = useCallback(
+    (b: boolean) => {
+      for (let ref of houseRefs) {
+        if (ref.current) ref.current.visible = b
+      }
+    },
+    [houseRefs]
+  )
+
+  const { dnas } = useHouse(houseId)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])
 
   usePreTransformsTransients(houseId)
   usePostTransformsTransients(houseId, houseGroupRef)
