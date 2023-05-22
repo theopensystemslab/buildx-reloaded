@@ -103,14 +103,10 @@ export const useSpeckleObjects = (
     return suspend(fetchGeometry, [url], { lifespan: 3600000 }) // cache for 1 hour
   })
 
-  const loaders = useMemo(
-    () => speckleBranchUrls.map(() => new BufferGeometryLoader()),
-    [speckleBranchUrls]
-  )
+  const loader = useMemo(() => new BufferGeometryLoader(), [])
 
   // Transform the JSON geometries into BufferGeometry objects
   return geometries.map((geometry, i) => {
-    const loader = loaders[i]
     const bufferGeometries: Record<string, BufferGeometry> = {}
     for (const key in geometry) {
       bufferGeometries[key] = loader.parse(geometry[key]) as BufferGeometry
