@@ -13,8 +13,6 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
 
   const ifcGeometries = useSpeckleObject(module.speckleBranchUrl)
 
-  console.log(ifcGeometries)
-
   const getElementMaterial = useGetDefaultElementMaterial(module.systemId)
 
   const defaultMaterial = useMemo(() => new MeshBasicMaterial(), [])
