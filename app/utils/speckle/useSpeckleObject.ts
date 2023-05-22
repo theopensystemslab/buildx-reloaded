@@ -5,6 +5,7 @@ import { useMemo } from "react"
 import { suspend } from "suspend-react"
 import { BufferGeometry, BufferGeometryLoader } from "three"
 import { trpc } from "../../../client/trpc"
+import { useModules } from "../../data/modules"
 import { R } from "../functions"
 
 // Define a TypeScript interface for the data stored in the database
@@ -31,12 +32,13 @@ class SpeckleGeometryDatabase extends Dexie {
 // Create Dexie database
 const db = new SpeckleGeometryDatabase()
 
-const useSpeckleObject = (
-  speckleBranchUrl: string
-): Record<string, BufferGeometry> => {
+// Extract the core logic to a new function
+const useFetchGeometry = () => {
   const { speckleModel } = trpc.useContext()
 
-  const getGeometry = async (speckleBranchUrl: string) => {
+  const fetchGeometry = async (
+    speckleBranchUrl: string
+  ): Promise<Record<string, any>> => {
     // Try to get geometry from IndexedDB
     const cachedJsonGeometries = await db.geometries.get(speckleBranchUrl)
 
@@ -68,8 +70,14 @@ const useSpeckleObject = (
       return ifcJsonGeometries
     }
   }
+  return fetchGeometry
+}
 
-  const ifcJsonGeometries = suspend(getGeometry, [speckleBranchUrl], {
+const useSpeckleObject = (
+  speckleBranchUrl: string
+): Record<string, BufferGeometry> => {
+  const fetchGeometry = useFetchGeometry()
+  const ifcJsonGeometries = suspend(fetchGeometry, [speckleBranchUrl], {
     lifespan: 3600000,
   }) // cache for 1 hour
 
@@ -83,6 +91,38 @@ const useSpeckleObject = (
       ),
     [ifcJsonGeometries, loader]
   )
+}
+
+export const useSpeckleObjects = (
+  speckleBranchUrls: string[]
+): Record<string, BufferGeometry>[] => {
+  const fetchGeometry = useFetchGeometry()
+
+  // Use suspend-react to fetch the geometries
+  const geometries = speckleBranchUrls.map((url) => {
+    return suspend(fetchGeometry, [url], { lifespan: 3600000 }) // cache for 1 hour
+  })
+
+  const loaders = useMemo(
+    () => speckleBranchUrls.map(() => new BufferGeometryLoader()),
+    [speckleBranchUrls]
+  )
+
+  // Transform the JSON geometries into BufferGeometry objects
+  return geometries.map((geometry, i) => {
+    const loader = loaders[i]
+    const bufferGeometries: Record<string, BufferGeometry> = {}
+    for (const key in geometry) {
+      bufferGeometries[key] = loader.parse(geometry[key]) as BufferGeometry
+    }
+    return bufferGeometries
+  })
+}
+
+export const PreloadSpeckleObjects = () => {
+  const modules = useModules()
+  useSpeckleObjects(modules.map((module) => module.speckleBranchUrl))
+  return null
 }
 
 export default useSpeckleObject

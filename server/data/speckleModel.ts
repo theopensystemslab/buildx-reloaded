@@ -12,7 +12,9 @@ export const speckleModelQueryInputParser = z.object({
   speckleBranchUrl: z.string().min(1),
 })
 
-type SpeckleModelQueryInput = z.infer<typeof speckleModelQueryInputParser>
+export type SpeckleModelQueryInput = z.infer<
+  typeof speckleModelQueryInputParser
+>
 
 const document = gql`
   query Stream($streamId: String!) {

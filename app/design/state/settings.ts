@@ -3,7 +3,6 @@ import { proxy, useSnapshot } from "valtio"
 const settings = proxy<{
   mapEnabled: boolean
   sidebar: boolean
-  preload: boolean
   groundPlaneEnabled: boolean
   verticalCuts: {
     width: boolean
@@ -13,7 +12,6 @@ const settings = proxy<{
 }>({
   mapEnabled: false,
   sidebar: false,
-  preload: false,
   groundPlaneEnabled: true,
   verticalCuts: {
     width: false,

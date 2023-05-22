@@ -14,10 +14,6 @@ import SiteCamControls from "../camera/SiteCamControls"
 import HtmlUi from "../../ui/HtmlUi"
 import { useDesignSettings } from "../../state/settings"
 
-const DataPreload = dynamic(() => import("~/data/DataPreload"), {
-  ssr: false,
-})
-
 const SiteBoundary = dynamic(() => import("../SiteBoundary"), {
   ssr: false,
 })
@@ -29,11 +25,10 @@ type Props = PropsWithChildren<{
 
 const Common = (props: Props) => {
   const { children } = props
-  const { preload, groundPlaneEnabled: groundPlane } = useDesignSettings()
+  const { groundPlaneEnabled: groundPlane } = useDesignSettings()
 
   return (
     <Fragment>
-      {preload && <DataPreload />}
       <axesHelper />
       {groundPlane && (
         <>
