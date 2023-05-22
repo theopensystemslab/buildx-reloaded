@@ -16,7 +16,6 @@ const inter = Inter({
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <TrpcProvider>
-      <PreloadSpeckleObjects />
       <html lang="en" className={inter.className}>
         <body>
           <div className="fixed flex h-full w-full flex-col">
@@ -58,6 +57,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
           </div>
         </body>
       </html>
+      <PreloadSpeckleObjects />
     </TrpcProvider>
   )
 }
