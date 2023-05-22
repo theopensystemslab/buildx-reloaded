@@ -21,7 +21,7 @@ export interface Material {
 
 export const materialSelector: QueryParams<any> = {
   // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
-  filterByFormula: 'specification!=""',
+  filterByFormula: 'AND(specification!="", default_colour!="")',
 }
 
 export const materialParser = z

@@ -39,7 +39,7 @@ const PreviewHouse = (props: Props) => {
 
   return (
     <group
-      name={`phonyHouse:${houseId}:${dna}`}
+      name={`phonyHouse:${houseId}:${key}`}
       ref={ref}
       scale={[0, 0, 0]}
       {...restProps}

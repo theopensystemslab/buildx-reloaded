@@ -1,9 +1,9 @@
-import { useModuleElements } from "~/data/elements"
 import { Module } from "@/server/data/modules"
-import { RM, S } from "~/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
+import { useModuleElements } from "~/data/elements"
 import { SystemHouseModuleIdentifier } from "~/design/state/layouts"
+import { R, S } from "~/utils/functions"
 import GroupedStretchElement from "./GroupedStretchElement"
 
 export type StretchModuleProps = Omit<
@@ -22,7 +22,7 @@ const GroupedStretchModule = (props: StretchModuleProps) => {
 
   const children = pipe(
     elements,
-    RM.collect(S.Ord)((elementName, geometryHash) => {
+    R.collect(S.Ord)((elementName, geometry) => {
       return (
         <GroupedStretchElement
           key={`${elementName}`}
@@ -33,7 +33,7 @@ const GroupedStretchModule = (props: StretchModuleProps) => {
             levelIndex,
             gridGroupIndex,
             elementName,
-            geometryHash,
+            geometry,
             levelY,
           }}
         />

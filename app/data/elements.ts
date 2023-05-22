@@ -1,12 +1,8 @@
 import { trpc } from "@/client/trpc"
 import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { useCallback } from "react"
+import { useMemo } from "react"
 import { BufferGeometry } from "three"
-import { mergeBufferGeometries } from "three-stdlib"
-import { proxy } from "valtio"
-import { hashGeometry } from "~/design/state/hashedGeometries"
-import { O, RA, RR } from "~/utils/functions"
+import { O, R, RA, S } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
 import useSpeckleObject from "../utils/speckle/useSpeckleObject"
@@ -24,42 +20,27 @@ export const useSystemElements = ({
   return useElements().filter((x) => x.systemId === systemId)
 }
 
-const useIfcTagToElement = (systemId: string) => {
+export const useIfcTagToElement = (systemId: string) => {
   const elements = useSystemElements({ systemId })
 
-  return useCallback(
-    (ifcTag: string) => {
-      const result = pipe(
-        elements,
-        RA.findFirst((el) => {
-          return el.ifc4Variable.toUpperCase() === ifcTag
-        }),
-        O.toUndefined
-      )
+  return (ifcTag: string) => {
+    const result = pipe(
+      elements,
+      RA.findFirst((el) => {
+        return el.ifc4Variable.toUpperCase() === ifcTag
+      }),
+      O.toUndefined
+    )
 
-      if (result === undefined) {
-        console.log({
-          unmatchedNodeType: { ifcTag },
-        })
-      }
+    if (result === undefined) {
+      console.log({
+        unmatchedIfcTag: { ifcTag },
+      })
+    }
 
-      return result
-    },
-    [elements]
-  )
+    return result
+  }
 }
-
-type ElementName = string
-type SystemIdModuleDna = string
-type GeometryHash = string
-
-type ElementGeometryHashMap = Map<
-  ElementName, // element ifc tag or element code
-  GeometryHash
->
-
-export const moduleElementGeometryHashMaps =
-  proxy<Record<SystemIdModuleDna, ElementGeometryHashMap>>()
 
 export const getModuleElementGeometriesKey = ({
   systemId,
@@ -77,44 +58,24 @@ export const invertModuleElementGeometriesKey = (input: string) => {
 export const useModuleElements = ({
   systemId,
   speckleBranchUrl,
-  dna,
-}: Module): ElementGeometryHashMap => {
+}: Module): Record<string, BufferGeometry> => {
   const ifcTagToElement = useIfcTagToElement(systemId)
   const speckleObject = useSpeckleObject(speckleBranchUrl)
-  const key = getModuleElementGeometriesKey({ systemId, dna })
-  const maybeModuleElementGeometries = moduleElementGeometryHashMaps?.[key]
-  if (maybeModuleElementGeometries) return maybeModuleElementGeometries
 
-  return pipe(
-    speckleObject,
-    RA.reduce(
-      {},
-      (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
-        const element = ifcTagToElement(ifcTag)
-        if (!element) return acc
-
-        return produce(acc, (draft) => {
-          if (element.name in draft) draft[element.name].push(geometry)
-          else draft[element.name] = [geometry]
-          // node.traverse((child) => {
-          //   if (isMesh(child)) {
-          //   }
-          // })
+  return useMemo(
+    () =>
+      pipe(
+        speckleObject,
+        R.reduceWithIndex(S.Ord)({}, (ifcTag, acc, geometry) => {
+          const el = ifcTagToElement(ifcTag)
+          if (!el) return acc
+          return {
+            ...acc,
+            [el.name]: geometry,
+          }
         })
-      }
-    ),
-    RR.map((geoms) => mergeBufferGeometries(geoms)),
-    RR.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
-    (elementGeometries) => {
-      const elements = new Map<ElementName, GeometryHash>()
-      Object.entries(elementGeometries).forEach(([k, geom]) => {
-        const hash = hashGeometry(geom)
-        elements.set(k, hash)
-      })
-
-      moduleElementGeometryHashMaps[key] = elements
-
-      return elements
-    }
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [speckleBranchUrl]
   )
 }

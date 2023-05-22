@@ -15,6 +15,10 @@ import { energyInfosQuery } from "../data/energyInfos"
 import { internalLayoutTypesQuery } from "../data/internalLayoutTypes"
 import { systemSettingsQuery } from "../data/settings"
 import { spaceTypesQuery } from "../data/spaceTypes"
+import {
+  speckleModelQuery,
+  speckleModelQueryInputParser,
+} from "../data/speckleModel"
 
 const t = initTRPC.create()
 
@@ -50,6 +54,9 @@ export const appRouter = router({
   energyInfos: procedure
     .input(systemIdsParser)
     .query(energyInfosQuery(airtable)),
+  speckleModel: procedure
+    .input(speckleModelQueryInputParser)
+    .query(speckleModelQuery),
 })
 
 // export type definition of API

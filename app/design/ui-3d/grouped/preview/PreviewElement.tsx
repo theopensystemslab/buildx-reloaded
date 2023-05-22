@@ -1,20 +1,18 @@
-import { useMaterial } from "~/design/state/hashedMaterials"
 import { useRef } from "react"
-import { Mesh } from "three"
-import { useGeometry } from "~/design/state/hashedGeometries"
+import { BufferGeometry, Mesh } from "three"
+import { useMaterial } from "~/design/state/hashedMaterials"
 import { PreviewModuleProps } from "./PreviewModule"
 
 type Props = PreviewModuleProps & {
   elementName: string
-  geometryHash: string
+  geometry: BufferGeometry
 }
 
 const PreviewElement = (props: Props) => {
-  const { systemId, houseId, elementName, geometryHash } = props
+  const { systemId, houseId, elementName, geometry } = props
 
   const meshRef = useRef<Mesh>(null!)
 
-  const geometry = useGeometry(geometryHash)
   const material = useMaterial({ systemId, houseId, elementName })
 
   return (
