@@ -74,7 +74,7 @@ export const useMaterialsListData = () => {
 
               const liningMaterial = getElementMaterial(
                 house.id,
-                "Internal wall lining"
+                "Internal lining"
               )
 
               const lining: MaterialsListRow = {
@@ -88,7 +88,7 @@ export const useMaterialsListData = () => {
                 quantity: areas.internalLining,
                 specification: getElementMaterialName(
                   house.id,
-                  "Internal wall lining"
+                  "Internal lining"
                 ),
               }
 

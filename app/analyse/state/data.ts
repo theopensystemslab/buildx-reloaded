@@ -290,7 +290,7 @@ export const matchSpecialMaterials = (
       element.name === claddingElementName
   )
 
-  const internalLiningElementName = "Internal wall lining"
+  const internalLiningElementName = "Internal lining"
 
   const internalLiningElement = context.elements.find(
     (element) =>
