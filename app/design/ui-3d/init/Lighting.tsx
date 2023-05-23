@@ -1,3 +1,4 @@
+import { SoftShadows } from "@react-three/drei"
 import { Fragment, useRef } from "react"
 import { DirectionalLight } from "three"
 
@@ -52,14 +53,19 @@ const Lighting = () => {
         position={[0, 150, -150]}
         color="#fffcdb"
         intensity={0.8 * intensityScale}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
         shadow-camera-far={300}
-        shadow-camera-top={21.5}
-        shadow-camera-bottom={-21.5}
         shadow-camera-left={-30.5}
         shadow-camera-right={30.5}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-camera-top={21.5}
+        shadow-camera-bottom={-21.5}
         castShadow
+      />
+      <SoftShadows
+        size={30}
+        // samples={20}
+        // focus={0}
       />
     </Fragment>
   )
