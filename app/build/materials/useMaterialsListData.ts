@@ -63,9 +63,9 @@ export const useMaterialsListData = () => {
               const cladding: MaterialsListRow = {
                 ...sharedProps,
                 carbonCost:
-                  claddingMaterial.embodiedCarbonPerM2 * areas.cladding,
+                  claddingMaterial.embodiedCarbonPerUnit * areas.cladding,
                 estimatedCost: costs.cladding,
-                estimatedCostPerUnit: claddingMaterial.costPerM2,
+                estimatedCostPerUnit: claddingMaterial.costPerUnit,
                 item: "Cladding",
                 linkUrl: "#",
                 quantity: areas.cladding,
@@ -80,9 +80,9 @@ export const useMaterialsListData = () => {
               const lining: MaterialsListRow = {
                 ...sharedProps,
                 carbonCost:
-                  liningMaterial.embodiedCarbonPerM2 * areas.internalLining,
+                  liningMaterial.embodiedCarbonPerUnit * areas.internalLining,
                 estimatedCost: costs.internalLining,
-                estimatedCostPerUnit: liningMaterial.costPerM2,
+                estimatedCostPerUnit: liningMaterial.costPerUnit,
                 item: "Internal Lining",
                 linkUrl: "#",
                 quantity: areas.internalLining,

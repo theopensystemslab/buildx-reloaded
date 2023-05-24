@@ -14,8 +14,8 @@ export interface Material {
   optionalFor: Array<string>
   imageUrl: string
   defaultColor: string
-  costPerM2: number
-  embodiedCarbonPerM2: number // kg
+  costPerUnit: number
+  embodiedCarbonPerUnit: number // kg
   threeMaterial?: MeshStandardMaterial
 }
 
@@ -39,8 +39,8 @@ export const materialParser = z
           })
         )
         .default([]),
-      material_cost_per_m2: z.number().default(0),
-      embodied_carbon_cost_per_m2: z.number().default(0),
+      material_cost_per_unit: z.number().default(0),
+      embodied_carbon_cost_per_unit: z.number().default(0),
     }),
   })
   .transform(
@@ -52,8 +52,8 @@ export const materialParser = z
         optional_material_for,
         material_image,
         default_colour,
-        material_cost_per_m2,
-        embodied_carbon_cost_per_m2,
+        material_cost_per_unit,
+        embodied_carbon_cost_per_unit,
       },
     }) => ({
       id,
@@ -62,8 +62,8 @@ export const materialParser = z
       optionalFor: optional_material_for ?? [],
       imageUrl: material_image?.[0]?.url,
       defaultColor: default_colour,
-      costPerM2: material_cost_per_m2,
-      embodiedCarbonPerM2: embodied_carbon_cost_per_m2,
+      costPerUnit: material_cost_per_unit,
+      embodiedCarbonPerUnit: embodied_carbon_cost_per_unit,
     })
   )
 

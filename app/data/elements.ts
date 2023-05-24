@@ -1,19 +1,15 @@
 import { trpc } from "@/client/trpc"
-import { findFirst } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"
 import { BufferGeometry } from "three"
 import { A, O, R, RA, S } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
-import { Module } from "../../server/data/modules"
+import { Module, useGetModuleWindowTypes } from "../../server/data/modules"
 import { useSelectedHouses } from "../analyse/ui/HousesPillsSelector"
 import { useGetElementMaterial } from "../design/state/hashedMaterials"
 import { useGetHouseModules } from "../design/state/houses"
 import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 import { House } from "./houses"
-import { useMaterials } from "./materials"
-import { useModules } from "./modules"
-import { useWindowTypes } from "./windowTypes"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()
@@ -124,9 +120,7 @@ export const useModuleElements = ({
 
 export const useHouseElementMaterialCalculations = () => {
   const selectedHouses = useSelectedHouses()
-  const modules = useModules()
-  const windowTypes = useWindowTypes()
-  const materials = useMaterials()
+  const getModuleWindowTypes = useGetModuleWindowTypes()
   const elements = useElements()
   const getElementMaterial = useGetElementMaterial()
 
@@ -141,23 +135,67 @@ export const useHouseElementMaterialCalculations = () => {
 
   const getQuantityCalculator = (item: string): QuantityCalculatorOutput => {
     switch (item) {
-      case "Windows":
+      case "In-situ concrete":
+        return {
+          reducer: (acc, module) => acc + module.concreteVolume,
+          unit: "m³",
+        }
+      case "Ridge beam":
+        return {
+          reducer: (acc, { lengthDims }) => acc + lengthDims,
+          unit: "m",
+        }
+      case "External breather membrance":
+        return {
+          reducer: (acc, { claddingArea, roofingArea, floorArea }) =>
+            acc + claddingArea + roofingArea + floorArea,
+          unit: "m²",
+        }
+      case "Cladding and battens":
+        return {
+          reducer: (acc, { claddingArea }) => acc + claddingArea,
+          unit: "m²",
+        }
+      case "Roofing":
+        return {
+          reducer: (acc, { roofingArea }) => acc + roofingArea,
+          unit: "m²",
+        }
+      case "Window trim":
         return {
           reducer: (acc, module) => {
-            const {
-              windowTypeEnd,
-              windowTypeSide1,
-              windowTypeSide2,
-              windowTypeTop,
-            } = module.structuredDna
-            return acc
+            const moduleWindowTypes = getModuleWindowTypes(module)
+            return (
+              acc +
+              moduleWindowTypes.reduce((acc, v) => acc + v.openingPerimeter, 0)
+            )
           },
           unit: "m²",
         }
-      case "In-situ concrete":
+      case "Windows":
         return {
-          reducer: (acc, module) => acc,
-          unit: "m3",
+          reducer: (acc, module) => {
+            const moduleWindowTypes = getModuleWindowTypes(module)
+            return (
+              acc + moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
+            )
+          },
+          unit: "m²",
+        }
+      case "Flashings":
+        return {
+          reducer: (acc, module) => acc + module.flashingArea,
+          unit: "m²",
+        }
+      case "Guttering":
+        return {
+          reducer: (acc, module) => acc + module.gutterLength,
+          unit: "m",
+        }
+      case "Downpipes":
+        return {
+          reducer: (acc, module) => acc + module.downpipeLength,
+          unit: "m",
         }
       case "Pile footings":
       default:
@@ -167,24 +205,36 @@ export const useHouseElementMaterialCalculations = () => {
 
   const houseMaterialCalculator = (house: House) => {
     const houseModules = getHouseModules(house)
-    pipe(
+    return pipe(
       elements,
-      A.map(({ category, name: item }) => {
+      A.filterMap(({ category, name: item }) => {
         const { reducer, unit } = getQuantityCalculator(item)
 
-        return {
-          buildingName: house.friendlyName,
-          item,
-          category,
-          specification: getElementMaterial(house.id, item),
-          quantity: {
-            value: pipe(houseModules, A.reduce(0, reducer)),
+        try {
+          const { specification, costPerUnit, embodiedCarbonPerUnit } =
+            getElementMaterial(house.id, item)
+
+          const quantity = pipe(houseModules, A.reduce(0, reducer))
+
+          const totalCost = costPerUnit * quantity
+
+          return O.some({
+            buildingName: house.friendlyName,
+            item,
+            category,
             unit,
-          },
+            quantity,
+            specification,
+            costPerUnit,
+            embodiedCarbonPerUnit,
+            totalCost,
+          })
+        } catch (e) {
+          return O.none
         }
       })
     )
   }
 
-  return pipe(selectedHouses, A.map(houseMaterialCalculator))
+  return selectedHouses.flatMap(houseMaterialCalculator)
 }

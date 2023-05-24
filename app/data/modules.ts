@@ -10,7 +10,8 @@ import { abs, hamming } from "~/utils/math"
 
 export const useModules = (): Module[] => {
   const { data = [] } = trpc.modules.useQuery()
-  return data
+
+  return data as Module[]
 }
 
 export const useSystemModules = ({

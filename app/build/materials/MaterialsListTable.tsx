@@ -6,6 +6,7 @@ import { pipe } from "fp-ts/lib/function"
 import { memo } from "react"
 import PaginatedTable from "../PaginatedTable"
 import { useMaterialsListData } from "./useMaterialsListData"
+import { useHouseElementMaterialCalculations } from "../../data/elements"
 
 type MaterialsListItem = {
   buildingName: string
@@ -25,6 +26,8 @@ const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
   const { data, fmt } = useMaterialsListData()
+
+  const houseElementMaterialCalculations = useHouseElementMaterialCalculations()
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     data,
