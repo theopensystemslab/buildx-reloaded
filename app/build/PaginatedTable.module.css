@@ -22,7 +22,7 @@
 }
 
 .paginationControls > * {
-  @apply px-2;
+  /* @apply px-2; */
 }
 
 .paginationControls > * + * {
@@ -34,12 +34,12 @@
 }
 
 .pageSizeSelect {
-  @apply flex;
-  @apply border-r border-black;
+  @apply flex flex-grow;
 }
 
 .pageSizeSelect > div {
-  @apply border-l border-black ml-1 px-2;
+  @apply border-x border-black ml-1 px-2;
+  @apply flex items-center flex-grow;
 }
 
 .paginationControls .carets {

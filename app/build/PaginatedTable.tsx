@@ -132,7 +132,6 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
           ))}
         </tfoot>
       </table>
-      {/* <div className="h-2" /> */}
       <div className={css.paginationControls}>
         <div className={css.pageSizeSelect}>
           <select
@@ -147,7 +146,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
               </option>
             ))}
           </select>
-          <div className="flex items-center gap-1 flex-grow">
+          <div>
             {firstRow}-{lastRow} of {itemCount} items
           </div>
         </div>
@@ -172,18 +171,6 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             of {table.getPageCount()} pages
           </span>
         </div>
-        {/* <span className="flex items-center gap-1">
-          Go to page:
-          <input
-            type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
-            onChange={(e) => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0
-              table.setPageIndex(page)
-            }}
-            className="border p-1 rounded w-16"
-          />
-        </span> */}
         <div className={css.carets}>
           <button
             onClick={() => table.previousPage()}
