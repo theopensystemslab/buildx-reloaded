@@ -92,15 +92,12 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             return (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => {
-                  const className = clsx(
-                    {
-                      [(row.original as any).colorClass]:
-                        // @ts-ignore
-                        cell.column.columnDef.accessorKey === "buildingName" &&
-                        "colorClass" in (row.original as any),
-                    }
-                    // "w-full h-full"
-                  )
+                  const className = clsx({
+                    [(row.original as any).colorClass]:
+                      // @ts-ignore
+                      cell.column.columnDef.accessorKey === "buildingName" &&
+                      "colorClass" in (row.original as any),
+                  })
 
                   return (
                     <td key={cell.id} className={className}>
@@ -155,7 +152,6 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             value={table.getState().pagination.pageIndex + 1}
             onChange={(e) => {
               table.setPageIndex(Number(e.target.value) - 1)
-              // table.setPageSize(Number(e.target.value))
             }}
           >
             {NEA.range(1, table.getPageCount()).map((pageNumber) => (
@@ -166,8 +162,6 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
           </select>
 
           <span className="flex items-center justify-end gap-1 flex-grow">
-            {/* <div>Page</div> */}
-            {/* {table.getState().pagination.pageIndex + 1} */}
             of {table.getPageCount()} pages
           </span>
         </div>

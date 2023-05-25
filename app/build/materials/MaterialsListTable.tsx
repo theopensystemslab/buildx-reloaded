@@ -1,5 +1,5 @@
 "use client"
-import { ArrowDown } from "@carbon/icons-react"
+import { ArrowDown, ArrowUp } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useMemo } from "react"
@@ -20,6 +20,8 @@ export type MaterialsListRow = {
   embodiedCarbonPerUnit: number
   embodiedCarbonCost: number
   linkUrl?: string
+  colorClass: string
+  staleColorClass: string
 }
 
 type Props = {
@@ -89,16 +91,19 @@ const MaterialsListTable = (props: Props) => {
         footer: () => <span>{totalCarbonCost}</span>,
       }),
       columnHelper.accessor("linkUrl", {
-        cell: (info) => (
-          <a href={info.getValue()}>
-            <div className="flex font-semibold items-center">
-              <span>{`Go to website`}</span>
-              <span>
-                <ArrowDown size="20" className="ml-1 rotate-[135deg]" />
-              </span>
-            </div>
-          </a>
-        ),
+        cell: (info) => {
+          const value = info.getValue()
+          return value ? (
+            <a href={value}>
+              <div className="flex font-semibold items-center">
+                <span>{`Go to website`}</span>
+                <span>
+                  <ArrowUp size="20" className="ml-1 rotate-[45deg]" />
+                </span>
+              </div>
+            </a>
+          ) : null
+        },
         header: () => <span>Link</span>,
       }),
     ],

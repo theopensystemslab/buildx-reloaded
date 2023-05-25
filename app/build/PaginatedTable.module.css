@@ -21,14 +21,6 @@
   @apply text-sm;
 }
 
-.paginationControls > * {
-  /* @apply px-2; */
-}
-
-.paginationControls > * + * {
-  /* @apply border-l border-black; */
-}
-
 .paginationControls select {
   @apply outline-none;
 }

@@ -1,16 +1,15 @@
+import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
+import { useCallback, useMemo } from "react"
 import {
+  useGetColorClass,
   useSelectedHouseIds,
-  useSelectedHouses,
 } from "~/analyse/ui/HousesPillsSelector"
+import { useElements } from "~/data/elements"
 import { useGetElementMaterial } from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
-import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { A, O } from "~/utils/functions"
-import { House } from "~/data/houses"
-import { useElements } from "~/data/elements"
 import { MaterialsListRow } from "./MaterialsListTable"
-import { useCallback, useMemo } from "react"
 
 // const elementCalculationPartitions = {
 //   zero: [
@@ -60,6 +59,7 @@ import { useCallback, useMemo } from "react"
 
 export const useMaterialsListRows = () => {
   const selectedHouseIds = useSelectedHouseIds()
+  const getColorClass = useGetColorClass()
   const getModuleWindowTypes = useGetModuleWindowTypes()
   const elements = useElements()
   const getElementMaterial = useGetElementMaterial()
@@ -186,6 +186,8 @@ export const useMaterialsListRows = () => {
               embodiedCarbonPerUnit,
               embodiedCarbonCost,
               linkUrl,
+              colorClass: getColorClass(houseId),
+              staleColorClass: getColorClass(houseId, { stale: true }),
             })
           } catch (e) {
             return O.none
@@ -193,7 +195,13 @@ export const useMaterialsListRows = () => {
         })
       )
     },
-    [elements, getElementMaterial, getHouseModules, getQuantityCalculator]
+    [
+      elements,
+      getColorClass,
+      getElementMaterial,
+      getHouseModules,
+      getQuantityCalculator,
+    ]
   )
 
   console.log(`useMaterialsListRows run`)
