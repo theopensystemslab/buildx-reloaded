@@ -1,7 +1,10 @@
 import { pipe } from "fp-ts/lib/function"
-import { useSelectedHouses } from "~/analyse/ui/HousesPillsSelector"
+import {
+  useSelectedHouseIds,
+  useSelectedHouses,
+} from "~/analyse/ui/HousesPillsSelector"
 import { useGetElementMaterial } from "~/design/state/hashedMaterials"
-import { useGetHouseModules } from "~/design/state/houses"
+import houses, { useGetHouseModules } from "~/design/state/houses"
 import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { A, O } from "~/utils/functions"
 import { House } from "~/data/houses"
@@ -56,7 +59,7 @@ import { useCallback, useMemo } from "react"
 // }
 
 export const useMaterialsListRows = () => {
-  const selectedHouses = useSelectedHouses()
+  const selectedHouseIds = useSelectedHouseIds()
   const getModuleWindowTypes = useGetModuleWindowTypes()
   const elements = useElements()
   const getElementMaterial = useGetElementMaterial()
@@ -72,6 +75,7 @@ export const useMaterialsListRows = () => {
 
   const getQuantityCalculator = useCallback(
     (item: string): QuantityCalculatorOutput => {
+      console.log(`getQuantityCalculator`)
       switch (item) {
         case "In-situ concrete":
           return {
@@ -148,7 +152,8 @@ export const useMaterialsListRows = () => {
   )
 
   const houseMaterialCalculator = useCallback(
-    (house: House) => {
+    (houseId: string) => {
+      const house = houses[houseId]
       const houseModules = getHouseModules(house)
       return pipe(
         elements,
@@ -191,10 +196,9 @@ export const useMaterialsListRows = () => {
     [elements, getElementMaterial, getHouseModules, getQuantityCalculator]
   )
 
-  console.log("hi")
+  console.log(`useMaterialsListRows run`)
 
-  return useMemo(
-    () => selectedHouses.flatMap(houseMaterialCalculator),
-    [houseMaterialCalculator, selectedHouses]
-  )
+  return useMemo(() => {
+    return selectedHouseIds.flatMap(houseMaterialCalculator)
+  }, [selectedHouseIds, houseMaterialCalculator])
 }

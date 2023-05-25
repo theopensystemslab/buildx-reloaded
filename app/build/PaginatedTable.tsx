@@ -1,3 +1,4 @@
+import { CaretLeft, CaretRight } from "@carbon/icons-react"
 import {
   ColumnDef,
   flexRender,
@@ -64,7 +65,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
   }, [columns, data, setCsvDownloadUrl])
 
   return (
-    <div>
+    <div className={css.root}>
       <table className={css.table}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -131,8 +132,8 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
           ))}
         </tfoot>
       </table>
-      <div className="h-2" />
-      <div className="flex justify-between gap-2">
+      {/* <div className="h-2" /> */}
+      <div className={css.paginationControls}>
         <select
           value={table.getState().pagination.pageSize}
           onChange={(e) => {
@@ -155,24 +156,22 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             {table.getPageCount()}
           </strong>
         </span>
-        <div>
+        <div className={css.carets}>
           <button
-            className="border rounded p-1"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            {"<"}
+            <CaretLeft />
           </button>
           <button
-            className="border rounded p-1"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            {">"}
+            <CaretRight />
           </button>
         </div>
-        <span className="flex items-center gap-1">
-          | Go to page:
+        {/* <span className="flex items-center gap-1">
+          Go to page:
           <input
             type="number"
             defaultValue={table.getState().pagination.pageIndex + 1}
@@ -182,7 +181,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             }}
             className="border p-1 rounded w-16"
           />
-        </span>
+        </span> */}
       </div>
     </div>
   )

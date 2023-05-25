@@ -1,5 +1,7 @@
-.table {
+.root {
   @apply w-full bg-grey-10;
+}
+.table {
 }
 
 .table th,
@@ -11,3 +13,39 @@
 .table tr {
   @apply border border-grey-20;
 }
+
+.paginationControls {
+  @apply flex justify-between gap-2;
+  @apply border-black border-t;
+  @apply text-sm;
+}
+
+.paginationControls > * {
+  @apply px-2;
+}
+
+.paginationControls > * + * {
+  /* @apply border-l border-black; */
+}
+
+.paginationControls select {
+  @apply outline-none;
+}
+
+.paginationControls .carets {
+  @apply flex items-center;
+  @apply px-0;
+}
+
+.paginationControls .carets button {
+  @apply flex justify-center items-center;
+  @apply w-8 h-full;
+  @apply border-l border-black;
+}
+
+/* .paginationControls .carets > button:nth-of-type(1) {
+  @apply border-l;
+}
+.paginationControls .carets > button:nth-of-type(2) {
+  @apply border-l;
+} */
