@@ -1,22 +1,24 @@
 "use client"
-import { A, capitalizeFirstLetters, R } from "~/utils/functions"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo } from "react"
+import { A, capitalizeFirstLetters } from "~/utils/functions"
 import PaginatedTable from "../PaginatedTable"
-import { useMaterialsListData } from "./useMaterialsListData"
-import { useHouseElementMaterialCalculations } from "../../data/elements"
+import { useMaterialsListRows } from "./useMaterialsListRows"
 
-type MaterialsListItem = {
+export type MaterialsListRow = {
   buildingName: string
   item: string
+  category: string
+  unit: string
   quantity: number
   specification: string
-  estimatedCostPerUnit: number
-  estimatedCost: number
-  carbonCost: number
-  linkUrl: string
+  costPerUnit: number
+  cost: number
+  embodiedCarbonPerUnit: number
+  embodiedCarbonCost: number
+  linkUrl?: string
 }
 
 type Props = {
@@ -25,25 +27,22 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const { data, fmt } = useMaterialsListData()
-
-  const houseElementMaterialCalculations = useHouseElementMaterialCalculations()
+  const materialsListRows = useMaterialsListRows()
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
-    data,
+    materialsListRows,
     A.reduce(
       { totalEstimatedCost: 0, totalCarbonCost: 0 },
       ({ totalEstimatedCost, totalCarbonCost }, row) => ({
-        totalEstimatedCost: totalEstimatedCost + row.estimatedCost,
-        totalCarbonCost: totalCarbonCost + row.carbonCost,
+        totalEstimatedCost: totalEstimatedCost + row.cost,
+        totalCarbonCost: totalCarbonCost + row.embodiedCarbonCost,
       })
-    ),
-    R.map(fmt)
+    )
   )
 
-  const columnHelper = createColumnHelper<MaterialsListItem>()
+  const columnHelper = createColumnHelper<MaterialsListRow>()
 
-  const columns: ColumnDef<MaterialsListItem, any>[] = [
+  const columns: ColumnDef<MaterialsListRow, any>[] = [
     columnHelper.accessor("buildingName", {
       id: "Building Name",
       cell: (info) => {
@@ -63,16 +62,16 @@ const MaterialsListTable = (props: Props) => {
       cell: (info) => <span>{info.getValue()}</span>,
       header: () => <span>Specification</span>,
     }),
-    columnHelper.accessor("estimatedCostPerUnit", {
-      cell: (info) => <span>{`${fmt(info.getValue())}m²`}</span>,
+    columnHelper.accessor("costPerUnit", {
+      cell: (info) => <span>{`${info.getValue()}`}</span>,
       header: () => <span>Estimated cost per unit</span>,
     }),
-    columnHelper.accessor("estimatedCost", {
-      cell: (info) => <span>{fmt(info.getValue())}</span>,
+    columnHelper.accessor("cost", {
+      cell: (info) => <span>{info.getValue()}</span>,
       header: () => <span>Estimated cost</span>,
       footer: () => <span>{totalEstimatedCost}</span>,
     }),
-    columnHelper.accessor("carbonCost", {
+    columnHelper.accessor("embodiedCarbonCost", {
       cell: (info) => (
         <span>{`${Number(info.getValue()).toFixed(1)}T CO₂`}</span>
       ),
@@ -96,7 +95,7 @@ const MaterialsListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={data}
+      data={materialsListRows}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />

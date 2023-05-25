@@ -13,6 +13,7 @@ export interface Material {
   defaultFor: Array<string>
   optionalFor: Array<string>
   imageUrl: string
+  linkUrl?: string
   defaultColor: string
   costPerUnit: number
   embodiedCarbonPerUnit: number // kg
@@ -41,6 +42,7 @@ export const materialParser = z
         .default([]),
       material_cost_per_unit: z.number().default(0),
       embodied_carbon_cost_per_unit: z.number().default(0),
+      link_url: z.string().optional(),
     }),
   })
   .transform(
@@ -54,6 +56,7 @@ export const materialParser = z
         default_colour,
         material_cost_per_unit,
         embodied_carbon_cost_per_unit,
+        link_url,
       },
     }) => ({
       id,
@@ -64,6 +67,7 @@ export const materialParser = z
       defaultColor: default_colour,
       costPerUnit: material_cost_per_unit,
       embodiedCarbonPerUnit: embodied_carbon_cost_per_unit,
+      linkUrl: link_url,
     })
   )
 
