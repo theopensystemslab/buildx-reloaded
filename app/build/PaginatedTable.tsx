@@ -11,7 +11,7 @@ import clsx from "clsx"
 import { csvFormatRows } from "d3-dsv"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect } from "react"
-import { A, O, R } from "~/utils/functions"
+import { A, NEA, O, R } from "~/utils/functions"
 import css from "./PaginatedTable.module.css"
 
 type Props<T extends {}> = {
@@ -134,28 +134,56 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
       </table>
       {/* <div className="h-2" /> */}
       <div className={css.paginationControls}>
-        <select
-          value={table.getState().pagination.pageSize}
-          onChange={(e) => {
-            table.setPageSize(Number(e.target.value))
-          }}
-        >
-          {[10, 25, 50, 100].map((pageSize) => (
-            <option key={pageSize} value={pageSize}>
-              {pageSize}
-            </option>
-          ))}
-        </select>
-        <span className="flex items-center gap-1 flex-grow">
-          {firstRow}-{lastRow} of {itemCount} items
-        </span>
-        <span className="flex items-center justify-end gap-1 flex-grow">
-          <div>Page</div>
-          <strong>
-            {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </strong>
-        </span>
+        <div className={css.pageSizeSelect}>
+          <select
+            value={table.getState().pagination.pageSize}
+            onChange={(e) => {
+              table.setPageSize(Number(e.target.value))
+            }}
+          >
+            {[10, 25, 50, 100].map((pageSize) => (
+              <option key={pageSize} value={pageSize}>
+                {pageSize}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center gap-1 flex-grow">
+            {firstRow}-{lastRow} of {itemCount} items
+          </div>
+        </div>
+        <div className={css.pageSelector}>
+          <select
+            value={table.getState().pagination.pageIndex + 1}
+            onChange={(e) => {
+              table.setPageIndex(Number(e.target.value) - 1)
+              // table.setPageSize(Number(e.target.value))
+            }}
+          >
+            {NEA.range(1, table.getPageCount()).map((pageNumber) => (
+              <option key={pageNumber} value={pageNumber}>
+                {pageNumber}
+              </option>
+            ))}
+          </select>
+
+          <span className="flex items-center justify-end gap-1 flex-grow">
+            {/* <div>Page</div> */}
+            {/* {table.getState().pagination.pageIndex + 1} */}
+            of {table.getPageCount()} pages
+          </span>
+        </div>
+        {/* <span className="flex items-center gap-1">
+          Go to page:
+          <input
+            type="number"
+            defaultValue={table.getState().pagination.pageIndex + 1}
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0
+              table.setPageIndex(page)
+            }}
+            className="border p-1 rounded w-16"
+          />
+        </span> */}
         <div className={css.carets}>
           <button
             onClick={() => table.previousPage()}
@@ -170,18 +198,6 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             <CaretRight />
           </button>
         </div>
-        {/* <span className="flex items-center gap-1">
-          Go to page:
-          <input
-            type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
-            onChange={(e) => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0
-              table.setPageIndex(page)
-            }}
-            className="border p-1 rounded w-16"
-          />
-        </span> */}
       </div>
     </div>
   )

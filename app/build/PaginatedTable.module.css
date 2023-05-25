@@ -2,6 +2,7 @@
   @apply w-full bg-grey-10;
 }
 .table {
+  @apply w-full;
 }
 
 .table th,
@@ -32,6 +33,15 @@
   @apply outline-none;
 }
 
+.pageSizeSelect {
+  @apply flex;
+  @apply border-r border-black;
+}
+
+.pageSizeSelect > div {
+  @apply border-l border-black ml-1 px-2;
+}
+
 .paginationControls .carets {
   @apply flex items-center;
   @apply px-0;
@@ -41,11 +51,9 @@
   @apply flex justify-center items-center;
   @apply w-8 h-full;
   @apply border-l border-black;
+  @apply py-2;
 }
 
-/* .paginationControls .carets > button:nth-of-type(1) {
-  @apply border-l;
+.pageSelector {
+  @apply flex;
 }
-.paginationControls .carets > button:nth-of-type(2) {
-  @apply border-l;
-} */
