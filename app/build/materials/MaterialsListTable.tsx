@@ -4,6 +4,7 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
+import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
 import { useMaterialsListRows } from "./useMaterialsListRows"
 
@@ -40,6 +41,8 @@ const MaterialsListTable = (props: Props) => {
     )
   )
 
+  const { formatWithSymbol } = useSiteCurrency()
+
   const columnHelper = createColumnHelper<MaterialsListRow>()
 
   const columns: ColumnDef<MaterialsListRow, any>[] = [
@@ -63,11 +66,15 @@ const MaterialsListTable = (props: Props) => {
       header: () => <span>Specification</span>,
     }),
     columnHelper.accessor("costPerUnit", {
-      cell: (info) => <span>{`${info.getValue()}`}</span>,
+      cell: (info) => (
+        <span>{`${formatWithSymbol(info.getValue())}/${
+          info.row.original.unit
+        }`}</span>
+      ),
       header: () => <span>Estimated cost per unit</span>,
     }),
     columnHelper.accessor("cost", {
-      cell: (info) => <span>{info.getValue()}</span>,
+      cell: (info) => <span>{formatWithSymbol(info.getValue())}</span>,
       header: () => <span>Estimated cost</span>,
       footer: () => <span>{totalEstimatedCost}</span>,
     }),

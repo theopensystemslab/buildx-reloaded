@@ -7,6 +7,7 @@ import { A, O } from "~/utils/functions"
 import { House } from "~/data/houses"
 import { useElements } from "~/data/elements"
 import { MaterialsListRow } from "./MaterialsListTable"
+import { useCallback, useMemo } from "react"
 
 // const elementCalculationPartitions = {
 //   zero: [
@@ -69,112 +70,131 @@ export const useMaterialsListRows = () => {
     unit: string
   }
 
-  const getQuantityCalculator = (item: string): QuantityCalculatorOutput => {
-    switch (item) {
-      case "In-situ concrete":
-        return {
-          reducer: (acc, module) => acc + module.concreteVolume,
-          unit: "m³",
-        }
-      case "Ridge beam":
-        return {
-          reducer: (acc, { lengthDims }) => acc + lengthDims,
-          unit: "m",
-        }
-      case "External breather membrance":
-        return {
-          reducer: (acc, { claddingArea, roofingArea, floorArea }) =>
-            acc + claddingArea + roofingArea + floorArea,
-          unit: "m²",
-        }
-      case "Cladding and battens":
-        return {
-          reducer: (acc, { claddingArea }) => acc + claddingArea,
-          unit: "m²",
-        }
-      case "Roofing":
-        return {
-          reducer: (acc, { roofingArea }) => acc + roofingArea,
-          unit: "m²",
-        }
-      case "Window trim":
-        return {
-          reducer: (acc, module) => {
-            const moduleWindowTypes = getModuleWindowTypes(module)
-            return (
-              acc +
-              moduleWindowTypes.reduce((acc, v) => acc + v.openingPerimeter, 0)
-            )
-          },
-          unit: "m²",
-        }
-      case "Windows":
-        return {
-          reducer: (acc, module) => {
-            const moduleWindowTypes = getModuleWindowTypes(module)
-            return (
-              acc + moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
-            )
-          },
-          unit: "m²",
-        }
-      case "Flashings":
-        return {
-          reducer: (acc, module) => acc + module.flashingArea,
-          unit: "m²",
-        }
-      case "Guttering":
-        return {
-          reducer: (acc, module) => acc + module.gutterLength,
-          unit: "m",
-        }
-      case "Downpipes":
-        return {
-          reducer: (acc, module) => acc + module.downpipeLength,
-          unit: "m",
-        }
-      case "Pile footings":
-      default:
-        return { reducer: () => 0, unit: "" }
-    }
-  }
+  const getQuantityCalculator = useCallback(
+    (item: string): QuantityCalculatorOutput => {
+      switch (item) {
+        case "In-situ concrete":
+          return {
+            reducer: (acc, module) => acc + module.concreteVolume,
+            unit: "m³",
+          }
+        case "Ridge beam":
+          return {
+            reducer: (acc, { lengthDims }) => acc + lengthDims,
+            unit: "m",
+          }
+        case "External breather membrance":
+          return {
+            reducer: (acc, { claddingArea, roofingArea, floorArea }) =>
+              acc + claddingArea + roofingArea + floorArea,
+            unit: "m²",
+          }
+        case "Cladding and battens":
+          return {
+            reducer: (acc, { claddingArea }) => acc + claddingArea,
+            unit: "m²",
+          }
+        case "Roofing":
+          return {
+            reducer: (acc, { roofingArea }) => acc + roofingArea,
+            unit: "m²",
+          }
+        case "Window trim":
+          return {
+            reducer: (acc, module) => {
+              const moduleWindowTypes = getModuleWindowTypes(module)
+              return (
+                acc +
+                moduleWindowTypes.reduce(
+                  (acc, v) => acc + v.openingPerimeter,
+                  0
+                )
+              )
+            },
+            unit: "m²",
+          }
+        case "Windows":
+          return {
+            reducer: (acc, module) => {
+              const moduleWindowTypes = getModuleWindowTypes(module)
+              return (
+                acc +
+                moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
+              )
+            },
+            unit: "m²",
+          }
+        case "Flashings":
+          return {
+            reducer: (acc, module) => acc + module.flashingArea,
+            unit: "m²",
+          }
+        case "Guttering":
+          return {
+            reducer: (acc, module) => acc + module.gutterLength,
+            unit: "m",
+          }
+        case "Downpipes":
+          return {
+            reducer: (acc, module) => acc + module.downpipeLength,
+            unit: "m",
+          }
+        case "Pile footings":
+        default:
+          return { reducer: () => 0, unit: "" }
+      }
+    },
+    [getModuleWindowTypes]
+  )
 
-  const houseMaterialCalculator = (house: House) => {
-    const houseModules = getHouseModules(house)
-    return pipe(
-      elements,
-      A.filterMap(({ category, name: item }) => {
-        const { reducer, unit } = getQuantityCalculator(item)
+  const houseMaterialCalculator = useCallback(
+    (house: House) => {
+      const houseModules = getHouseModules(house)
+      return pipe(
+        elements,
+        A.filterMap(({ category, name: item }) => {
+          const { reducer, unit } = getQuantityCalculator(item)
 
-        try {
-          const { specification, costPerUnit, embodiedCarbonPerUnit, linkUrl } =
-            getElementMaterial(house.id, item)
+          try {
+            const {
+              specification,
+              costPerUnit,
+              embodiedCarbonPerUnit,
+              linkUrl,
+            } = getElementMaterial(house.id, item)
 
-          const quantity = pipe(houseModules, A.reduce(0, reducer))
+            const quantity = pipe(houseModules, A.reduce(0, reducer))
 
-          const cost = costPerUnit * quantity
+            const cost = costPerUnit * quantity
 
-          const embodiedCarbonCost = embodiedCarbonPerUnit * quantity
+            const embodiedCarbonCost = embodiedCarbonPerUnit * quantity
 
-          return O.some<MaterialsListRow>({
-            buildingName: house.friendlyName,
-            item,
-            category,
-            unit,
-            quantity,
-            specification,
-            costPerUnit,
-            cost,
-            embodiedCarbonPerUnit,
-            embodiedCarbonCost,
-            linkUrl,
-          })
-        } catch (e) {
-          return O.none
-        }
-      })
-    )
-  }
+            return O.some<MaterialsListRow>({
+              buildingName: house.friendlyName,
+              item,
+              category,
+              unit,
+              quantity,
+              specification,
+              costPerUnit,
+              cost,
+              embodiedCarbonPerUnit,
+              embodiedCarbonCost,
+              linkUrl,
+            })
+          } catch (e) {
+            return O.none
+          }
+        })
+      )
+    },
+    [elements, getElementMaterial, getHouseModules, getQuantityCalculator]
+  )
 
-  return selectedHouses.flatMap(houseMaterialCalculator)
+  console.log("hi")
+
+  return useMemo(
+    () => selectedHouses.flatMap(houseMaterialCalculator),
+    [houseMaterialCalculator, selectedHouses]
+  )
 }
