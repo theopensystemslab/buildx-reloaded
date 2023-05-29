@@ -8,7 +8,7 @@ import {
 import { useElements } from "~/data/elements"
 import { useGetElementMaterial } from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
-import { A, O, pipeLogWith } from "~/utils/functions"
+import { A, O } from "~/utils/functions"
 import { MaterialsListRow } from "./MaterialsListTable"
 
 export const useMaterialsListRows = () => {
@@ -105,7 +105,6 @@ export const useMaterialsListRows = () => {
 
       return pipe(
         elements,
-        pipeLogWith((x) => x.map((y) => y.name)),
         A.filterMap(({ category, name: item }) => {
           if (["Insulation"].includes(item)) return O.none
 
@@ -155,8 +154,6 @@ export const useMaterialsListRows = () => {
       getQuantityReducer,
     ]
   )
-
-  console.log(`useMaterialsListRows run`)
 
   return useMemo(() => {
     return selectedHouseIds.flatMap(houseMaterialCalculator)
