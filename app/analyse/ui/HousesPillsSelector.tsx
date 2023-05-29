@@ -1,10 +1,10 @@
 "use client"
-import { useClickAway } from "~/ui/utils"
-import { Close } from "~/ui/icons"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
+import { Close } from "~/ui/icons"
+import { useClickAway } from "~/ui/utils"
 import { R } from "~/utils/functions"
 import houses, { useHouses } from "../../design/state/houses"
 

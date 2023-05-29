@@ -1,13 +1,13 @@
 import { QueryParams } from "airtable/lib/query_params"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
-import { A } from "~/utils/functions"
+import { A, O, R, S } from "~/utils/functions"
+import { useWindowTypes } from "../../app/data/windowTypes"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
+import { WindowType } from "./windowTypes"
 
 export const moduleSelector: QueryParams<any> = {
-  // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
-  // filterByFormula: 'GLB_model!=""',
   filterByFormula: 'speckle_branch_url!=""',
 }
 
@@ -65,9 +65,18 @@ export const moduleParser = z
       speckle_branch_url: z.string().min(1),
       section_width: z.array(z.number()),
       level_height: z.array(z.number()),
-      length_dims: z.number(),
-      floor_area: z.number(),
-      roofing_area: z.number(),
+      length_dims: z.number().default(0),
+      floor_area: z.number().default(0),
+      cladding_area: z.number().default(0),
+      lining_area: z.number().default(0),
+      roofing_area: z.number().default(0),
+      concrete_volume: z.number().default(0),
+      flashing_area: z.number().default(0),
+      gutter_length: z.number().default(0),
+      downpipe_length: z.number().default(0),
+      footings_count: z.number().default(0),
+      decking_area: z.number().default(0),
+      soleplate_length: z.number().default(0),
       space_type: z.array(z.string().optional()).optional(),
       baseline_module_cost: z.number().optional(),
       embodied_carbon: z.number().optional(),
@@ -87,7 +96,17 @@ export const moduleParser = z
         level_height: [height],
         length_dims: length,
         floor_area: floorArea,
+        cladding_area: claddingArea,
+        lining_area: liningArea,
         roofing_area: roofingArea,
+        concrete_volume: concreteVolume,
+        length_dims: lengthDims,
+        flashing_area: flashingArea,
+        gutter_length: gutterLength,
+        downpipe_length: downpipeLength,
+        footings_count: footingsCount,
+        decking_area: deckingArea,
+        soleplate_length: soleplateLength,
         space_type,
         baseline_module_cost,
         embodied_carbon,
@@ -103,10 +122,18 @@ export const moduleParser = z
       height,
       width,
       floorArea,
-      claddingArea: floorArea,
-      liningArea: floorArea,
+      claddingArea,
+      liningArea,
       roofingArea,
-      spaceType: space_type?.[0],
+      concreteVolume,
+      lengthDims,
+      flashingArea,
+      gutterLength,
+      downpipeLength,
+      footingsCount,
+      soleplateLength,
+      deckingArea,
+      spaceType: space_type?.[0] ?? "NONE",
       cost: baseline_module_cost ?? 1500,
       embodiedCarbon: embodied_carbon ?? -400,
       description,
@@ -114,25 +141,7 @@ export const moduleParser = z
     })
   )
 
-export type Module = {
-  id: string
-  systemId: string
-  dna: string
-  structuredDna: StructuredDna
-  speckleBranchUrl: string
-  width: number
-  height: number
-  length: number
-  cost: number // Euros
-  floorArea: number
-  claddingArea: number
-  liningArea: number
-  roofingArea: number
-  spaceType?: string
-  embodiedCarbon: number // kgCO2
-  visualReference?: string
-  description?: string
-}
+export type Module = { systemId: string } & z.infer<typeof moduleParser>
 
 export const modulesQuery: QueryFn<Module> =
   (airtable) =>
@@ -155,3 +164,29 @@ export const modulesQuery: QueryFn<Module> =
       (ps) => Promise.all(ps).then(A.flatten)
     )
   }
+
+export const useGetModuleWindowTypes = () => {
+  const windowTypes = useWindowTypes()
+
+  return (module: Module) =>
+    pipe(
+      module.structuredDna,
+      R.reduceWithIndex(S.Ord)([], (key, acc: WindowType[], value) => {
+        switch (key) {
+          case "windowTypeEnd":
+          case "windowTypeSide1":
+          case "windowTypeSide2":
+          case "windowTypeTop":
+            return pipe(
+              windowTypes,
+              A.findFirstMap((wt) =>
+                wt.code === value ? O.some([...acc, wt]) : O.none
+              ),
+              O.getOrElse(() => acc)
+            )
+          default:
+            return acc
+        }
+      })
+    )
+}

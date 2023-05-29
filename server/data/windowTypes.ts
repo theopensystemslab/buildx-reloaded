@@ -11,6 +11,8 @@ export type WindowType = {
   description: string
   imageUrl: string
   glazingArea: number
+  doorArea: number
+  openingPerimeter: number
 }
 
 export const windowTypeParser = z.object({
@@ -25,7 +27,9 @@ export const windowTypeParser = z.object({
         })
       )
       .default([]),
-    glazing_area: z.number(),
+    glazing_area: z.number().default(0),
+    opening_perimeter: z.number().default(0),
+    door_area: z.number().default(0),
   }),
 })
 
@@ -45,14 +49,23 @@ export const windowTypesQuery: QueryFn<WindowType> =
               windowTypeParser.transform(
                 ({
                   id,
-                  fields: { opening_set, description, image, glazing_area },
-                }) => ({
+                  fields: {
+                    opening_set,
+                    description,
+                    image,
+                    glazing_area,
+                    opening_perimeter: openingPerimeter,
+                    door_area: doorArea,
+                  },
+                }): WindowType => ({
                   id,
                   systemId,
                   code: opening_set,
                   description,
                   imageUrl: image?.[0]?.url,
                   glazingArea: glazing_area,
+                  openingPerimeter,
+                  doorArea,
                 })
               )
             ).parse

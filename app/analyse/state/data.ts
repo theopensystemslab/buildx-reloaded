@@ -290,7 +290,7 @@ export const matchSpecialMaterials = (
       element.name === claddingElementName
   )
 
-  const internalLiningElementName = "Internal wall lining"
+  const internalLiningElementName = "Internal lining"
 
   const internalLiningElement = context.elements.find(
     (element) =>
@@ -453,17 +453,18 @@ const calculateHouseInfo = (
   }
 
   const roofingCost = accumulateModuleData(
-    (module) => module.roofingArea * (specialMaterials.roofing?.costPerM2 || 0)
+    (module) =>
+      module.roofingArea * (specialMaterials.roofing?.costPerUnit || 0)
   )
 
   const internalLiningCost = accumulateModuleData(
     (module) =>
-      module.liningArea * (specialMaterials.internalLining?.costPerM2 || 0)
+      module.liningArea * (specialMaterials.internalLining?.costPerUnit || 0)
   )
 
   const claddingCost = accumulateModuleData(
     (module) =>
-      module.claddingArea * (specialMaterials.cladding?.costPerM2 || 0)
+      module.claddingArea * (specialMaterials.cladding?.costPerUnit || 0)
   )
 
   const costs: Costs = {
@@ -503,18 +504,19 @@ const calculateHouseInfo = (
   const claddingEmbodiedCo2 = accumulateModuleData(
     (module) =>
       module.claddingArea *
-      (specialMaterials.cladding?.embodiedCarbonPerM2 || 0)
+      (specialMaterials.cladding?.embodiedCarbonPerUnit || 0)
   )
 
   const roofingEmbodiedCo2 = accumulateModuleData(
     (module) =>
-      module.roofingArea * (specialMaterials.roofing?.embodiedCarbonPerM2 || 0)
+      module.roofingArea *
+      (specialMaterials.roofing?.embodiedCarbonPerUnit || 0)
   )
 
   const internalLiningEmbodiedCo2 = accumulateModuleData(
     (module) =>
       module.liningArea *
-      (specialMaterials.internalLining?.embodiedCarbonPerM2 || 0)
+      (specialMaterials.internalLining?.embodiedCarbonPerUnit || 0)
   )
 
   const foundationsEmbodiedCo2 = accumulateModuleDataIf(
