@@ -8,8 +8,6 @@ import { QueryFn } from "./types"
 import { WindowType } from "./windowTypes"
 
 export const moduleSelector: QueryParams<any> = {
-  // filterByFormula: 'OR(IFC_model!="",GLB_model!="")',
-  // filterByFormula: 'GLB_model!=""',
   filterByFormula: 'speckle_branch_url!=""',
 }
 
@@ -76,6 +74,9 @@ export const moduleParser = z
       flashing_area: z.number().default(0),
       gutter_length: z.number().default(0),
       downpipe_length: z.number().default(0),
+      footings_count: z.number().default(0),
+      decking_area: z.number().default(0),
+      soleplate_length: z.number().default(0),
       space_type: z.array(z.string().optional()).optional(),
       baseline_module_cost: z.number().optional(),
       embodied_carbon: z.number().optional(),
@@ -103,6 +104,9 @@ export const moduleParser = z
         flashing_area: flashingArea,
         gutter_length: gutterLength,
         downpipe_length: downpipeLength,
+        footings_count: footingsCount,
+        decking_area: deckingArea,
+        soleplate_length: soleplateLength,
         space_type,
         baseline_module_cost,
         embodied_carbon,
@@ -126,6 +130,9 @@ export const moduleParser = z
       flashingArea,
       gutterLength,
       downpipeLength,
+      footingsCount,
+      soleplateLength,
+      deckingArea,
       spaceType: space_type?.[0] ?? "NONE",
       cost: baseline_module_cost ?? 1500,
       embodiedCarbon: embodied_carbon ?? -400,

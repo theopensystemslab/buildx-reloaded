@@ -12,7 +12,7 @@ export type MaterialsListRow = {
   buildingName: string
   item: string
   category: string
-  unit: string
+  unit: string | null
   quantity: number
   specification: string
   costPerUnit: number
@@ -71,11 +71,16 @@ const MaterialsListTable = (props: Props) => {
         header: () => <span>Specification</span>,
       }),
       columnHelper.accessor("costPerUnit", {
-        cell: (info) => (
-          <span>{`${formatWithSymbol(info.getValue())}/${
-            info.row.original.unit
-          }`}</span>
-        ),
+        cell: (info) => {
+          const unit = info.row.original.unit
+
+          return (
+            <span>
+              {formatWithSymbol(info.getValue())}
+              {unit !== null ? `/${unit}` : null}
+            </span>
+          )
+        },
         header: () => <span>Estimated cost per unit</span>,
       }),
       columnHelper.accessor("cost", {

@@ -8,54 +8,8 @@ import {
 import { useElements } from "~/data/elements"
 import { useGetElementMaterial } from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
-import { A, O } from "~/utils/functions"
+import { A, O, pipeLogWith } from "~/utils/functions"
 import { MaterialsListRow } from "./MaterialsListTable"
-
-// const elementCalculationPartitions = {
-//   zero: [
-//     "Space heating",
-//     "Plumbing fixtures",
-//     "Electrical & lighting",
-//     "Mechanical ventilation",
-//     "Solar PV system",
-//   ],
-//   default: [
-//     "Internal vapour barrier",
-//     "Internal lining",
-//     "Flooring",
-//     "Decking",
-//     "Pile footings",
-//     "In-situ concrete",
-//     "Sole plate",
-//     "Ridge beam",
-//     "External breather membrane",
-//     "Cladding and battens",
-//     "Roofing",
-//     "Window trim",
-//     "Flashings",
-//     "Guttering",
-//     "Downpipes",
-//     "Windows",
-//     "Doors",
-//   ],
-// }
-
-// export const quantityGetters = {
-//   "Pile footings": (mod: Module) => 0,
-//   "In-situ concrete": (module: Module) => ({ value: module.cost, unit: "m2" }),
-// }
-
-// type MaterialsListRow = {
-//   buildingName: string
-//   item: string
-//   category: string
-//   unit: string
-//   quantity: number
-//   specification: string
-//   costPerUnit: number
-//   carbonCostPerUnit: number
-//   linkUrl: string
-// }
 
 export const useMaterialsListRows = () => {
   const selectedHouseIds = useSelectedHouseIds()
@@ -66,86 +20,79 @@ export const useMaterialsListRows = () => {
 
   const getHouseModules = useGetHouseModules()
 
-  type QuantityReducer = (acc: number, module: Module) => number
-
-  type QuantityCalculatorOutput = {
-    reducer: QuantityReducer
-    unit: string
-  }
-
-  const getQuantityCalculator = useCallback(
-    (item: string): QuantityCalculatorOutput => {
-      console.log(`getQuantityCalculator`)
+  const getQuantityReducer = useCallback(
+    (item: string): ((acc: number, module: Module) => number) => {
       switch (item) {
-        case "In-situ concrete":
-          return {
-            reducer: (acc, module) => acc + module.concreteVolume,
-            unit: "m³",
-          }
-        case "Ridge beam":
-          return {
-            reducer: (acc, { lengthDims }) => acc + lengthDims,
-            unit: "m",
-          }
-        case "External breather membrance":
-          return {
-            reducer: (acc, { claddingArea, roofingArea, floorArea }) =>
-              acc + claddingArea + roofingArea + floorArea,
-            unit: "m²",
-          }
-        case "Cladding and battens":
-          return {
-            reducer: (acc, { claddingArea }) => acc + claddingArea,
-            unit: "m²",
-          }
-        case "Roofing":
-          return {
-            reducer: (acc, { roofingArea }) => acc + roofingArea,
-            unit: "m²",
-          }
-        case "Window trim":
-          return {
-            reducer: (acc, module) => {
-              const moduleWindowTypes = getModuleWindowTypes(module)
-              return (
-                acc +
-                moduleWindowTypes.reduce(
-                  (acc, v) => acc + v.openingPerimeter,
-                  0
-                )
-              )
-            },
-            unit: "m²",
-          }
-        case "Windows":
-          return {
-            reducer: (acc, module) => {
-              const moduleWindowTypes = getModuleWindowTypes(module)
-              return (
-                acc +
-                moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
-              )
-            },
-            unit: "m²",
-          }
-        case "Flashings":
-          return {
-            reducer: (acc, module) => acc + module.flashingArea,
-            unit: "m²",
-          }
-        case "Guttering":
-          return {
-            reducer: (acc, module) => acc + module.gutterLength,
-            unit: "m",
-          }
-        case "Downpipes":
-          return {
-            reducer: (acc, module) => acc + module.downpipeLength,
-            unit: "m",
-          }
         case "Pile footings":
+          return (acc, module) => acc + module.footingsCount
+
+        case "In-situ concrete":
+          return (acc, module) => acc + module.concreteVolume
+
+        case "Ridge beam":
+          return (acc, { lengthDims }) => acc + lengthDims
+
+        case "External breather membrane":
+          return (acc, { claddingArea, roofingArea, floorArea }) =>
+            acc + claddingArea + roofingArea + floorArea
+
+        case "Cladding":
+        case "Battens":
+          return (acc, { claddingArea }) => acc + claddingArea
+
+        case "Roofing":
+          return (acc, { roofingArea }) => acc + roofingArea
+
+        case "Window trim":
+          return (acc, module) => {
+            const moduleWindowTypes = getModuleWindowTypes(module)
+            return (
+              acc +
+              moduleWindowTypes.reduce((acc, v) => acc + v.openingPerimeter, 0)
+            )
+          }
+
+        case "Windows":
+          return (acc, module) => {
+            const moduleWindowTypes = getModuleWindowTypes(module)
+            return (
+              acc + moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
+            )
+          }
+
+        case "Doors":
+          return (acc, module) => {
+            const moduleWindowTypes = getModuleWindowTypes(module)
+            return (
+              acc + moduleWindowTypes.reduce((acc, v) => acc + v.doorArea, 0)
+            )
+          }
+
+        case "Flashings":
+          return (acc, module) => acc + module.flashingArea
+
+        case "Gutters and downpipes":
+          return (acc, module) =>
+            acc + module.gutterLength + module.downpipeLength
+
+        case "Flooring":
+          return (acc, module) => acc + module.floorArea
+
+        case "Internal lining":
+          return (acc, module) => acc + module.liningArea
+
+        case "Decking":
+          return (acc, module) => acc + module.deckingArea
+
+        case "Sole plate":
+          return (acc, module) => acc + module.soleplateLength
+
+        case "Space heating":
+        case "Mechanical ventilation":
+        case "Electrical and lighting":
         default:
-          return { reducer: () => 0, unit: "" }
+          // console.log(`${item} defaulted`)
+          return (acc, module) => 0
       }
     },
     [getModuleWindowTypes]
@@ -155,10 +102,14 @@ export const useMaterialsListRows = () => {
     (houseId: string) => {
       const house = houses[houseId]
       const houseModules = getHouseModules(house)
+
       return pipe(
         elements,
+        pipeLogWith((x) => x.map((y) => y.name)),
         A.filterMap(({ category, name: item }) => {
-          const { reducer, unit } = getQuantityCalculator(item)
+          if (["Insulation"].includes(item)) return O.none
+
+          const reducer = getQuantityReducer(item)
 
           try {
             const {
@@ -166,6 +117,7 @@ export const useMaterialsListRows = () => {
               costPerUnit,
               embodiedCarbonPerUnit,
               linkUrl,
+              unit,
             } = getElementMaterial(house.id, item)
 
             const quantity = pipe(houseModules, A.reduce(0, reducer))
@@ -200,7 +152,7 @@ export const useMaterialsListRows = () => {
       getColorClass,
       getElementMaterial,
       getHouseModules,
-      getQuantityCalculator,
+      getQuantityReducer,
     ]
   )
 

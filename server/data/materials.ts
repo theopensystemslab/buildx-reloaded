@@ -17,6 +17,7 @@ export interface Material {
   defaultColor: string
   costPerUnit: number
   embodiedCarbonPerUnit: number // kg
+  unit: string | null
   threeMaterial?: MeshStandardMaterial
 }
 
@@ -43,6 +44,7 @@ export const materialParser = z
       material_cost_per_unit: z.number().default(0),
       embodied_carbon_cost_per_unit: z.number().default(0),
       link_url: z.string().optional(),
+      unit: z.string().nullable().default(null),
     }),
   })
   .transform(
@@ -57,6 +59,7 @@ export const materialParser = z
         material_cost_per_unit,
         embodied_carbon_cost_per_unit,
         link_url,
+        unit,
       },
     }) => ({
       id,
@@ -68,6 +71,7 @@ export const materialParser = z
       costPerUnit: material_cost_per_unit,
       embodiedCarbonPerUnit: embodied_carbon_cost_per_unit,
       linkUrl: link_url,
+      unit,
     })
   )
 
