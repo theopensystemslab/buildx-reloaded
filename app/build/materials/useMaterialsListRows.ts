@@ -1,8 +1,8 @@
 import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import {
+  buildingColorVariants,
   useGetColorClass,
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
@@ -14,8 +14,6 @@ import {
 } from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
 import { A, O } from "~/utils/functions"
-import { Element } from "../../../server/data/elements"
-import { Material } from "../../../server/data/materials"
 import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
 
@@ -108,26 +106,27 @@ export const useMaterialsListRows = () => {
 
   const { blockCountsByHouse } = useOrderListData()
 
+  let categories = useRef<string[]>([])
+
+  const getCategoryColorClass = useCallback((category: string): string => {
+    const index = categories.current.indexOf(category)
+    const maxIndex = Object.keys(buildingColorVariants).length
+    const reversedIndex = (maxIndex - 2 - index + maxIndex) % maxIndex
+    return buildingColorVariants[reversedIndex]
+  }, [])
+
   const houseMaterialCalculator = useCallback(
     (houseId: string): MaterialsListRow[] => {
       const house = houses[houseId]
       const houseModules = getHouseModules(house)
 
-      type E1 = Pick<Element, "category" | "name">
-
-      type M1 = Pick<
-        Material,
-        | "specification"
-        | "costPerUnit"
-        | "embodiedCarbonPerUnit"
-        | "linkUrl"
-        | "unit"
-      >
-
       const elementRows: MaterialsListRow[] = pipe(
         elements,
         A.filterMap(({ category, name: item }) => {
           if (["Insulation"].includes(item)) return O.none
+
+          if (!categories.current.includes(category))
+            categories.current.push(category)
 
           const reducer = getQuantityReducer(item)
 
@@ -159,7 +158,7 @@ export const useMaterialsListRows = () => {
               embodiedCarbonCost,
               linkUrl,
               colorClass: getColorClass(houseId),
-              staleColorClass: getColorClass(houseId, { stale: true }),
+              categoryColorClass: getCategoryColorClass(category),
             })
           } catch (e) {
             if (e instanceof MaterialNotFoundError) {
@@ -189,7 +188,7 @@ export const useMaterialsListRows = () => {
           embodiedCarbonCost: 0,
           linkUrl: "",
           colorClass: getColorClass(houseId),
-          staleColorClass: getColorClass(houseId, { stale: true }),
+          categoryColorClass: getCategoryColorClass("structure"),
         },
       ]
 
@@ -197,7 +196,9 @@ export const useMaterialsListRows = () => {
     },
     [
       blockCountsByHouse,
+      categories,
       elements,
+      getCategoryColorClass,
       getColorClass,
       getElementMaterial,
       getHouseModules,

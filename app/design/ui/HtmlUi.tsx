@@ -23,7 +23,9 @@ import {
   useCameraReset,
   useOrthographic,
 } from "../state/camera"
-import elementCategories from "../state/elementCategories"
+import elementCategories, {
+  useElementCategories,
+} from "../state/elementCategories"
 import { R, S } from "~/utils/functions"
 import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Breadcrumbs from "./Breadcrumbs"
@@ -43,7 +45,7 @@ const HtmlUi = (props: Props) => {
   const [universalMenu, setUniversalMenu] = useState(false)
   const cameraReset = useCameraReset()
 
-  const categories = useSnapshot(elementCategories) as typeof elementCategories
+  const categories = useElementCategories()
 
   const [verticalCuts, setVerticalCuts] = useVerticalCuts()
   // useInsert1000Skylarks()

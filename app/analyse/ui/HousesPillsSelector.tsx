@@ -67,10 +67,6 @@ export const staleColorVariants: Record<number, string> = {
   3: "bg-grey-80",
   4: "bg-grey-70",
   5: "bg-grey-60",
-  // 6: "bg-grey-70",
-  // 7: "bg-grey-80",
-  // 8: "bg-grey-90",
-  // 9: "bg-grey-100",
 }
 
 export const useGetColorClass = () => {

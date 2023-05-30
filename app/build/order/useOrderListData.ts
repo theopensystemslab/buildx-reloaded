@@ -2,8 +2,8 @@ import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useMemo } from "react"
+import { A, O, R, S } from "~/utils/functions"
 import { trpc } from "../../../client/trpc"
-import { A, O, pipeLog, R, S } from "~/utils/functions"
 import {
   useGetColorClass,
   useSelectedHouses,
@@ -139,12 +139,12 @@ export const useOrderListData = () => {
       ),
       A.filterMap(
         ({
+          houseId,
           buildingName,
           block,
           count,
           colorClass,
           staleColorClass,
-          houseId,
         }): O.Option<OrderListRow> =>
           block
             ? O.some({

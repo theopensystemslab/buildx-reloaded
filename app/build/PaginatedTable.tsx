@@ -97,6 +97,10 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
                       // @ts-ignore
                       cell.column.columnDef.accessorKey === "buildingName" &&
                       "colorClass" in (row.original as any),
+                    [(row.original as any).categoryColorClass]:
+                      // @ts-ignore
+                      cell.column.columnDef.accessorKey === "category" &&
+                      "categoryColorClass" in (row.original as any),
                   })
 
                   return (
