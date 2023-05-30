@@ -2,7 +2,7 @@ import { A, O, R, RA, someOrError } from "~/utils/functions"
 import { useSubscribe, useSubscribeKey } from "~/utils/hooks"
 import { createMaterial, isMesh } from "~/utils/three"
 import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
+import { identity, pipe } from "fp-ts/lib/function"
 import { MutableRefObject, useEffect, useMemo, useRef } from "react"
 import { Group, Material, Matrix4, Plane, Vector3 } from "three"
 import { proxy, ref } from "valtio"
@@ -53,12 +53,27 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
     )
 }
 
+export class ElementNotFoundError extends Error {
+  constructor(public elementName: string, public systemId: string) {
+    super(`No element found for ${elementName} in system ${systemId}`)
+    this.name = "ElementNotFoundError"
+  }
+}
+
+export class MaterialNotFoundError extends Error {
+  constructor(public elementName: string, public systemId: string) {
+    super(`No material found for ${elementName} in system ${systemId}`)
+    this.name = "MaterialNotFoundError"
+  }
+}
+
 export const useGetElementMaterial = () => {
   const elements = useElements()
   const materials = useMaterials()
 
   return (houseId: string, elementName: string) => {
     const house = houses[houseId]
+
     const materialName =
       elementName in house.modifiedMaterials
         ? house.modifiedMaterials[elementName]
@@ -67,17 +82,17 @@ export const useGetElementMaterial = () => {
             A.findFirstMap((el) =>
               el.name === elementName ? O.some(el.defaultMaterial) : O.none
             ),
-            someOrError(
-              `No element found for ${elementName} in system ${house.systemId}`
-            )
+            O.fold(() => {
+              throw new ElementNotFoundError(elementName, house.systemId)
+            }, identity)
           )
 
     return pipe(
       materials,
       A.findFirst((x) => x.specification === materialName),
-      someOrError(
-        `No material found for ${materialName} in system ${house.systemId}`
-      )
+      O.fold(() => {
+        throw new MaterialNotFoundError(elementName, house.systemId)
+      }, identity)
     )
   }
 }
@@ -87,6 +102,7 @@ export const useGetElementMaterialName = () => {
 
   return (houseId: string, elementName: string) => {
     const house = houses[houseId]
+
     const materialName =
       elementName in house.modifiedMaterials
         ? house.modifiedMaterials[elementName]
@@ -95,9 +111,9 @@ export const useGetElementMaterialName = () => {
             A.findFirstMap((el) =>
               el.name === elementName ? O.some(el.defaultMaterial) : O.none
             ),
-            someOrError(
-              `No element found for ${elementName} in system ${house.systemId}`
-            )
+            O.fold(() => {
+              throw new ElementNotFoundError(elementName, house.systemId)
+            }, identity)
           )
 
     return materialName
@@ -120,7 +136,9 @@ export const useMaterialName = (houseId: string, elementName: string) => {
       }
       return O.some(defaultMaterial)
     }),
-    someOrError(`no element found for ${elementName} in ${systemId}`)
+    O.fold(() => {
+      throw new ElementNotFoundError(elementName, systemId)
+    }, identity)
   )
 
   return useMemo(() => {
@@ -130,7 +148,7 @@ export const useMaterialName = (houseId: string, elementName: string) => {
       return modifiedMaterials[elementName]
     else {
       if (!defaultMaterialName) {
-        console.log(
+        console.error(
           `defaultMaterialName empty for ${elementName} in ${systemId}`
         )
       }
@@ -163,9 +181,14 @@ export const useMaterial = ({
       pipe(
         systemMaterials,
         RA.findFirst((m) => m.specification === materialName),
-        someOrError(`no material found for ${materialName} in ${systemId}`)
+        O.fold(
+          () => {
+            throw new MaterialNotFoundError(elementName, systemId)
+          },
+          (foundMaterial) => foundMaterial
+        )
       ),
-    [materialName, systemId, systemMaterials]
+    [elementName, materialName, systemId, systemMaterials]
   )
 
   return useMemo(() => {

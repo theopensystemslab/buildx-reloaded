@@ -1,14 +1,20 @@
 import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import {
+  buildingColorVariants,
   useGetColorClass,
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
 import { useElements } from "~/data/elements"
-import { useGetElementMaterial } from "~/design/state/hashedMaterials"
+import {
+  ElementNotFoundError,
+  MaterialNotFoundError,
+  useGetElementMaterial,
+} from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
 import { A, O } from "~/utils/functions"
+import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
 
 export const useMaterialsListRows = () => {
@@ -98,15 +104,29 @@ export const useMaterialsListRows = () => {
     [getModuleWindowTypes]
   )
 
+  const { blockCountsByHouse } = useOrderListData()
+
+  let categories = useRef<string[]>([])
+
+  const getCategoryColorClass = useCallback((category: string): string => {
+    const index = categories.current.indexOf(category)
+    const maxIndex = Object.keys(buildingColorVariants).length
+    const reversedIndex = (maxIndex - 2 - index + maxIndex) % maxIndex
+    return buildingColorVariants[reversedIndex]
+  }, [])
+
   const houseMaterialCalculator = useCallback(
-    (houseId: string) => {
+    (houseId: string): MaterialsListRow[] => {
       const house = houses[houseId]
       const houseModules = getHouseModules(house)
 
-      return pipe(
+      const elementRows: MaterialsListRow[] = pipe(
         elements,
         A.filterMap(({ category, name: item }) => {
           if (["Insulation"].includes(item)) return O.none
+
+          if (!categories.current.includes(category))
+            categories.current.push(category)
 
           const reducer = getQuantityReducer(item)
 
@@ -138,16 +158,47 @@ export const useMaterialsListRows = () => {
               embodiedCarbonCost,
               linkUrl,
               colorClass: getColorClass(houseId),
-              staleColorClass: getColorClass(houseId, { stale: true }),
+              categoryColorClass: getCategoryColorClass(category),
             })
           } catch (e) {
-            return O.none
+            if (e instanceof MaterialNotFoundError) {
+              console.log(`MaterialNotFoundError: ${e.message}`)
+              return O.none
+            } else if (e instanceof ElementNotFoundError) {
+              console.error(`ElementNotFoundError: ${e.message}`)
+              throw e
+            } else {
+              throw e
+            }
           }
         })
       )
+
+      const augmentedRows: MaterialsListRow[] = [
+        {
+          buildingName: house.friendlyName,
+          item: "WikiHouse blocks",
+          category: "Structure",
+          unit: null,
+          quantity: blockCountsByHouse[houseId],
+          specification: "Insulated WikiHouse blocks",
+          costPerUnit: 0,
+          cost: 0,
+          embodiedCarbonPerUnit: 0,
+          embodiedCarbonCost: 0,
+          linkUrl: "",
+          colorClass: getColorClass(houseId),
+          categoryColorClass: getCategoryColorClass("structure"),
+        },
+      ]
+
+      return [...elementRows, ...augmentedRows]
     },
     [
+      blockCountsByHouse,
+      categories,
       elements,
+      getCategoryColorClass,
       getColorClass,
       getElementMaterial,
       getHouseModules,

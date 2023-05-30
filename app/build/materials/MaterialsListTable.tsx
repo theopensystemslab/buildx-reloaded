@@ -1,5 +1,5 @@
 "use client"
-import { ArrowDown, ArrowUp } from "@carbon/icons-react"
+import { ArrowUp } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useMemo } from "react"
@@ -21,7 +21,7 @@ export type MaterialsListRow = {
   embodiedCarbonCost: number
   linkUrl?: string
   colorClass: string
-  staleColorClass: string
+  categoryColorClass: string
 }
 
 type Props = {
@@ -60,10 +60,19 @@ const MaterialsListTable = (props: Props) => {
         cell: (info) => <span>{info.getValue()}</span>,
         header: () => <span>Item</span>,
       }),
+      columnHelper.accessor("category", {
+        id: "Category",
+        cell: (info) => {
+          return <div>{info.getValue()}</div>
+        },
+        header: () => null,
+      }),
       columnHelper.accessor("quantity", {
-        cell: (info) => (
-          <span>{`${Number(info.getValue()).toFixed(1)}m²`}</span>
-        ),
+        cell: (info) => {
+          const unit = info.row.original.unit
+          const value = info.getValue()
+          return <span>{unit ? `${value.toFixed(1)}${unit}` : value}</span>
+        },
         header: () => <span>Quantity</span>,
       }),
       columnHelper.accessor("specification", {

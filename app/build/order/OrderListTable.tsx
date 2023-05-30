@@ -1,10 +1,8 @@
 "use client"
-import { A, capitalizeFirstLetters, R } from "~/utils/functions"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { csvFormat } from "d3-dsv"
-import { pipe } from "fp-ts/lib/function"
-import { memo, useEffect, useMemo } from "react"
+import { memo, useMemo } from "react"
+import { capitalizeFirstLetters } from "~/utils/functions"
 import PaginatedTable from "../PaginatedTable"
 import { OrderListRow, useOrderListData } from "./useOrderListData"
 
@@ -16,7 +14,7 @@ const OrderListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
   const {
-    orderListData,
+    orderListRows,
     totalMaterialCost,
     totalManufacturingCost,
     totalTotalCost,
@@ -94,7 +92,7 @@ const OrderListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={orderListData}
+      data={orderListRows}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />
