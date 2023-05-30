@@ -61,9 +61,15 @@ const MaterialsListTable = (props: Props) => {
         header: () => <span>Item</span>,
       }),
       columnHelper.accessor("quantity", {
-        cell: (info) => (
-          <span>{`${Number(info.getValue()).toFixed(1)}m²`}</span>
-        ),
+        cell: (info) => {
+          const unit = info.row.original.unit
+          return (
+            <span>
+              {Number(info.getValue()).toFixed(1)}
+              {unit}
+            </span>
+          )
+        },
         header: () => <span>Quantity</span>,
       }),
       columnHelper.accessor("specification", {

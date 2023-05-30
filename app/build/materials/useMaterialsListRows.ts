@@ -1,14 +1,22 @@
 import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
+import produce from "immer"
 import { useCallback, useMemo } from "react"
 import {
   useGetColorClass,
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
 import { useElements } from "~/data/elements"
-import { useGetElementMaterial } from "~/design/state/hashedMaterials"
+import {
+  ElementNotFoundError,
+  MaterialNotFoundError,
+  useGetElementMaterial,
+} from "~/design/state/hashedMaterials"
 import houses, { useGetHouseModules } from "~/design/state/houses"
 import { A, O } from "~/utils/functions"
+import { Element } from "../../../server/data/elements"
+import { Material } from "../../../server/data/materials"
+import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
 
 export const useMaterialsListRows = () => {
@@ -98,12 +106,25 @@ export const useMaterialsListRows = () => {
     [getModuleWindowTypes]
   )
 
+  const { blockCountsByHouse } = useOrderListData()
+
   const houseMaterialCalculator = useCallback(
-    (houseId: string) => {
+    (houseId: string): MaterialsListRow[] => {
       const house = houses[houseId]
       const houseModules = getHouseModules(house)
 
-      return pipe(
+      type E1 = Pick<Element, "category" | "name">
+
+      type M1 = Pick<
+        Material,
+        | "specification"
+        | "costPerUnit"
+        | "embodiedCarbonPerUnit"
+        | "linkUrl"
+        | "unit"
+      >
+
+      const elementRows: MaterialsListRow[] = pipe(
         elements,
         A.filterMap(({ category, name: item }) => {
           if (["Insulation"].includes(item)) return O.none
@@ -141,12 +162,41 @@ export const useMaterialsListRows = () => {
               staleColorClass: getColorClass(houseId, { stale: true }),
             })
           } catch (e) {
-            return O.none
+            if (e instanceof MaterialNotFoundError) {
+              console.log(`MaterialNotFoundError: ${e.message}`)
+              return O.none
+            } else if (e instanceof ElementNotFoundError) {
+              console.error(`ElementNotFoundError: ${e.message}`)
+              throw e
+            } else {
+              throw e
+            }
           }
         })
       )
+
+      const augmentedRows: MaterialsListRow[] = [
+        {
+          buildingName: house.friendlyName,
+          item: "WikiHouse blocks",
+          category: "Structure",
+          unit: null,
+          quantity: blockCountsByHouse[houseId],
+          specification: "Insulated WikiHouse blocks",
+          costPerUnit: 0,
+          cost: 0,
+          embodiedCarbonPerUnit: 0,
+          embodiedCarbonCost: 0,
+          linkUrl: "",
+          colorClass: getColorClass(houseId),
+          staleColorClass: getColorClass(houseId, { stale: true }),
+        },
+      ]
+
+      return [...elementRows, ...augmentedRows]
     },
     [
+      blockCountsByHouse,
       elements,
       getColorClass,
       getElementMaterial,

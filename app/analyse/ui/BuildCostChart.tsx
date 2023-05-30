@@ -13,7 +13,7 @@ import { Fragment } from "react"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 
 const BuildCostChart = () => {
-  const { orderListData, fmt } = useOrderListData()
+  const { orderListRows: orderListData, fmt } = useOrderListData()
 
   const orderListByBuilding = pipe(
     orderListData,

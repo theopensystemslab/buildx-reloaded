@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useMemo } from "react"
 import { trpc } from "../../../client/trpc"
-import { A, O, R, S } from "~/utils/functions"
+import { A, O, pipeLog, R, S } from "~/utils/functions"
 import {
   useGetColorClass,
   useSelectedHouses,
@@ -12,6 +12,7 @@ import { useSiteCurrency } from "../../design/state/siteCtx"
 
 export type OrderListRow = {
   buildingName: string
+  houseId: string
   blockName: string
   sheetsPerBlock: number
   count: number
@@ -49,7 +50,7 @@ export const useOrderListData = () => {
     ? "loading"
     : "success"
 
-  const data = useMemo(() => {
+  const orderListRows = useMemo(() => {
     const accum: Record<string, number> = {}
 
     for (const blockModuleEntry of blockModulesEntries) {
@@ -120,11 +121,11 @@ export const useOrderListData = () => {
               })
             })
           }),
+          (x) => x,
           R.collect(S.Ord)((blockId, count) => {
-            const index = selectedHouses.findIndex((x) => x.id === houseId)
-
             return {
               buildingName: house.friendlyName,
+              houseId,
               block: blocks.find(
                 (block) =>
                   block.systemId === house.systemId && block.id === blockId
@@ -136,7 +137,6 @@ export const useOrderListData = () => {
           })
         )
       ),
-
       A.filterMap(
         ({
           buildingName,
@@ -144,9 +144,11 @@ export const useOrderListData = () => {
           count,
           colorClass,
           staleColorClass,
+          houseId,
         }): O.Option<OrderListRow> =>
           block
             ? O.some({
+                houseId,
                 blockName: block.name,
                 buildingName,
                 count,
@@ -164,6 +166,18 @@ export const useOrderListData = () => {
     )
   }, [blockModulesEntries, blocks, getColorClass, modules, selectedHouses])
 
+  const blockCountsByHouse = pipe(
+    orderListRows,
+    A.reduce({}, (acc: Record<string, number>, row: OrderListRow) => {
+      if (row.houseId in acc) {
+        acc[row.houseId] += row.count
+      } else {
+        acc[row.houseId] = row.count
+      }
+      return acc
+    })
+  )
+
   const { code: currencyCode } = useSiteCurrency()
 
   const fmt = (value: number) =>
@@ -173,7 +187,7 @@ export const useOrderListData = () => {
     }).format(value)
 
   const { totalMaterialCost, totalManufacturingCost, totalTotalCost } = pipe(
-    data,
+    orderListRows,
     A.reduce(
       { totalMaterialCost: 0, totalManufacturingCost: 0, totalTotalCost: 0 },
       ({ totalMaterialCost, totalManufacturingCost, totalTotalCost }, row) => ({
@@ -189,7 +203,8 @@ export const useOrderListData = () => {
     totalMaterialCost,
     totalManufacturingCost,
     totalTotalCost,
-    orderListData: data,
+    orderListRows,
+    blockCountsByHouse,
     status,
     fmt,
   }

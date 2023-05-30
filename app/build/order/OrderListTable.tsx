@@ -16,7 +16,7 @@ const OrderListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
   const {
-    orderListData,
+    orderListRows: orderListData,
     totalMaterialCost,
     totalManufacturingCost,
     totalTotalCost,
