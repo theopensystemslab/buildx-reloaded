@@ -16,7 +16,7 @@ const OrderListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
   const {
-    orderListRows: orderListData,
+    orderListRows,
     totalMaterialCost,
     totalManufacturingCost,
     totalTotalCost,
@@ -94,7 +94,7 @@ const OrderListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={orderListData}
+      data={orderListRows}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />
