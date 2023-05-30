@@ -108,12 +108,7 @@ export const useRowLayout = (houseId: string): RowLayout =>
       ) => {
         const levelType = row[0].module.structuredDna.levelType
         const levelLetter = levelType[0]
-        const y =
-          levelLetter === "F"
-            ? -row[0].module.height
-            : levelLetter === "G"
-            ? 0
-            : b[i - 1].y + row[0].module.height
+        const y = levelLetter === "F" ? 0 : b[i - 1].y + row[0].module.height
 
         return [
           ...b,
@@ -290,11 +285,8 @@ const modulesToColumnLayout = (modules: Module[]) => {
             (levelIndex, positionedRows: PositionedRow[], modules) => {
               const levelType = modules[0].structuredDna.levelType
               const levelLetter = levelType[0]
-              const height = modules[0].height
               const y =
                 levelLetter === "F"
-                  ? -height
-                  : levelLetter === "G"
                   ? 0
                   : positionedRows[levelIndex - 1].y +
                     positionedRows[levelIndex - 1].modules[0].module.height
