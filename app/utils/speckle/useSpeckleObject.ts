@@ -1,3 +1,4 @@
+"use client"
 import CryptoJS from "crypto-js"
 import Dexie from "dexie"
 import { pipe } from "fp-ts/lib/function"

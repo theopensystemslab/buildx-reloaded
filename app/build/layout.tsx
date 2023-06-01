@@ -1,26 +1,35 @@
 import dynamic from "next/dynamic"
+import { PropsWithChildren } from "react"
+import Footer from "../ui/Footer"
 import { TrpcProvider } from "../ui/TrpcProvider"
+import { PreloadSpeckleObjects } from "../utils/speckle/useSpeckleObject"
 import BuildNav from "./common/BuildNav"
 
 const HousesPillsSelector = dynamic(
   () => import("../analyse/ui/HousesPillsSelector"),
-  { ssr: false }
+  {
+    ssr: false,
+  }
 )
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex-grow-0">
-        <HousesPillsSelector />
-      </div>
-      <div className="flex flex-auto">
-        <div className="flex-1 flex-grow-0 flex-shrink-0 h-full">
-          <BuildNav />
+    <TrpcProvider>
+      <div className="flex-auto overflow-y-auto flex flex-col">
+        <div className="flex-1 flex-grow-0">
+          <HousesPillsSelector />
         </div>
-        <div className="flex-auto">
-          <TrpcProvider>{children}</TrpcProvider>
+        <div className="flex flex-auto h-full overflow-y-auto">
+          <div className="flex-1 flex-grow-0 flex-shrink-0 h-full">
+            <BuildNav />
+          </div>
+          <div className="flex-auto border-l border-grey-20">{children}</div>
         </div>
       </div>
-    </div>
+      <Footer />
+      <PreloadSpeckleObjects />
+    </TrpcProvider>
   )
 }
+
+export default BuildLayout

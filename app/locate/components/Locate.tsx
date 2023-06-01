@@ -1,5 +1,6 @@
 "use client"
 import "mapbox-gl/dist/mapbox-gl.css"
+import { Fragment } from "react"
 import ReactMapGLMap from "react-map-gl"
 import HtmlPortalContainer from "~/ui//HtmlPortalContainer"
 import GeocoderControl from "./GeocoderControl"
@@ -16,7 +17,7 @@ const Locate = () => {
   const bottomRightContainerId = "bottom-right-container-id"
 
   return (
-    <div className={css.root}>
+    <Fragment>
       <ReactMapGLMap
         initialViewState={{
           ...gadheim,
@@ -49,7 +50,7 @@ const Locate = () => {
         id={bottomRightContainerId}
         className={css.bottomRightContainer}
       />
-    </div>
+    </Fragment>
   )
 }
 

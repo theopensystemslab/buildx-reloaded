@@ -1,0 +1,13 @@
+.expander {
+  @apply fixed z-10;
+  @apply transform transition-all duration-300;
+}
+
+.expandFromBottom {
+  composes: expander;
+  @apply w-full bottom-0 translate-y-full;
+}
+
+.expandFromBottom[data-expanded="true"] {
+  @apply translate-y-0;
+}

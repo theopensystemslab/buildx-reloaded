@@ -13,7 +13,7 @@ const links = [
 const BuildNav = () => {
   const pathname = usePathname()
   return (
-    <div className="border-r h-full w-60">
+    <div className="h-full w-60">
       {links.map(({ href, label }) => (
         <Link key={href} href={href}>
           <div

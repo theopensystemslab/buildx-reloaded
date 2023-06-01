@@ -180,15 +180,20 @@ const HtmlUi = (props: Props) => {
           />
         </IconMenu>
       </div>
+
       <SiteSidebar open={sidebar} close={() => void setSidebar(false)} />
+
       <UniversalMenu
         open={universalMenu}
         close={() => setUniversalMenu(false)}
       />
+
       <HeaderStartPortal>
         <Breadcrumbs />
       </HeaderStartPortal>
+
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
+
       <ExitMode />
     </Fragment>
   )

@@ -247,13 +247,14 @@ export const Info = () => (
     width="50"
     height="50"
     viewBox="0 0 50 50"
-    fill="none"
+    fill="currentColor"
+    stroke="currentColor"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect width="50" height="50" fill="none" fillOpacity="0.4" />
+    {/* <rect width="50" height="50" fill="none" fillOpacity="0.4" /> */}
     <path
       d="M22.0353 35H24.6898L26.9625 21.3636H24.308L22.0353 35ZM26.1812 19.233C27.1045 19.233 27.8947 18.5227 27.9302 17.6527C27.9746 16.7738 27.2466 16.0636 26.3322 16.0636C25.4089 16.0636 24.6187 16.7738 24.5832 17.6527C24.5388 18.5227 25.2668 19.233 26.1812 19.233Z"
-      fill="black"
+      fill="currentColor"
     />
   </svg>
 )
