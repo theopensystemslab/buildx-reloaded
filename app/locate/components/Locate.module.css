@@ -1,8 +1,4 @@
-.root {
-  @apply relative w-full h-full;
-}
-
-.root .topLeftContainer {
+.topLeftContainer {
   @apply text-white text-xl;
   @apply absolute top-0 left-0;
   @apply max-w-[14rem];
@@ -10,18 +6,18 @@
   @apply pointer-events-none;
 }
 
-.root .leftMenuContainer {
+.leftMenuContainer {
   @apply absolute left-0 inset-y-0;
   @apply flex flex-col items-center justify-center;
   @apply bg-transparent;
   @apply pointer-events-none;
 }
 
-.root .leftMenuContainer > div {
+.leftMenuContainer > div {
   @apply bg-white flex flex-col pointer-events-auto;
 }
 
-.root .bottomRightContainer {
+.bottomRightContainer {
   @apply absolute bottom-0 right-0;
   @apply pointer-events-none;
 }

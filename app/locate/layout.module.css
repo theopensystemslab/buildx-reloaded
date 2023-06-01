@@ -1,0 +1,9 @@
+.root {
+}
+
+.main {
+  @apply absolute;
+  @apply flex-auto;
+  @apply h-full w-full;
+  @apply overflow-x-hidden;
+}
