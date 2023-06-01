@@ -3,7 +3,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  @apply bg-grey-90 text-white text-sm p-8 tracking-wide;
+  @apply bg-grey-90 text-white text-sm p-8 pb-16 tracking-wide;
 }
 
 .column {

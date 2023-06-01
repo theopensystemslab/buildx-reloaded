@@ -5,10 +5,10 @@ import ExternalTextLink from "./ExternalTextLink"
 import css from "./Footer.module.css"
 
 const links = [
-  { href: "/terms-of-use", label: "Terms of use" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/cookies", label: "Cookies" },
-  { href: "/accessibility", label: "Accessibility" },
+  { href: "#", label: "Terms of use" },
+  { href: "#", label: "Privacy" },
+  { href: "#", label: "Cookies" },
+  { href: "#", label: "Accessibility" },
 ]
 
 const Footer = () => {

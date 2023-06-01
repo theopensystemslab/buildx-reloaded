@@ -1,14 +1,13 @@
 "use client"
-import { PropsWithChildren, useState } from "react"
-import { useInterval } from "react-use"
+import { PropsWithChildren } from "react"
 import css from "./expanders.module.css"
 
-export const ExpandFromBottom = (props: PropsWithChildren<{}>) => {
-  const { children } = props
+type Props = {
+  expanded: boolean
+}
 
-  const [expanded, setExpanded] = useState(true)
-
-  useInterval(() => setExpanded((p) => !p), 2000)
+export const ExpandFromBottom = (props: PropsWithChildren<Props>) => {
+  const { children, expanded = false } = props
 
   return (
     <div className={css.expandFromBottom} data-expanded={expanded}>
