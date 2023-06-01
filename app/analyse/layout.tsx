@@ -10,7 +10,7 @@ const HousesPillsSelector = dynamic(() => import("./ui/HousesPillsSelector"), {
 const AnalyseLayout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <TrpcProvider>
-      <div className="flex flex-col h-full pt-[5.5rem]">
+      <div className="flex flex-col h-full">
         <div className="flex-1 flex-grow-0">
           <HousesPillsSelector />
         </div>

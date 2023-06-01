@@ -188,11 +188,13 @@ export const useMaterialsListRows = () => {
           embodiedCarbonCost: 0,
           linkUrl: "",
           colorClass: getColorClass(houseId),
-          categoryColorClass: getCategoryColorClass("structure"),
+          categoryColorClass: getCategoryColorClass("Structure"),
         },
       ]
 
-      return [...elementRows, ...augmentedRows]
+      return [...elementRows, ...augmentedRows].sort((a, b) =>
+        a.category.localeCompare(b.category)
+      )
     },
     [
       blockCountsByHouse,
