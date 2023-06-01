@@ -1,5 +1,7 @@
 "use client"
+import clsx from "clsx"
 import { Inter } from "next/font/google"
+import { usePathname } from "next/navigation"
 import { PropsWithChildren } from "react"
 import "~/styles/globals.css"
 import NavIconButton from "~/ui//NavIconButton"
@@ -17,7 +19,11 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
     <TrpcProvider>
       <html lang="en" className={inter.className}>
         <body>
-          <div className="fixed w-full flex flex-1 flex-grow-0 top-0 z-10 justify-between bg-white shadow items-center">
+          <div
+            className={
+              "fixed z-10 w-full flex flex-1 flex-grow-0 top-0 justify-between bg-white shadow items-center"
+            }
+          >
             <div id="headerStart" className="flex-1" />
             <div className="flex flex-none">
               <NavIconButton
