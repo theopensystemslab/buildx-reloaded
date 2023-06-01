@@ -13,7 +13,9 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
     <html lang="en" className={inter.className}>
       <body className="h-screen flex flex-col">
         <Nav />
-        <div className="flex-auto overflow-auto">{children}</div>
+        <div className="flex-auto overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
       </body>
     </html>
   )
