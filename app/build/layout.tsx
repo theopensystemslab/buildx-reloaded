@@ -2,6 +2,7 @@ import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
 import Footer from "../ui/Footer"
 import { TrpcProvider } from "../ui/TrpcProvider"
+import { PreloadSpeckleObjects } from "../utils/speckle/useSpeckleObject"
 import BuildNav from "./common/BuildNav"
 
 const HousesPillsSelector = dynamic(
@@ -26,6 +27,7 @@ const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
         </div>
       </div>
       <Footer />
+      <PreloadSpeckleObjects />
     </TrpcProvider>
   )
 }
