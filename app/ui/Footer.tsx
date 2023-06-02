@@ -1,17 +1,46 @@
+"use client"
+import { ArrowDown, ArrowUp } from "@carbon/icons-react"
 import Link from "next/link"
-import { memo } from "react"
+import { Fragment, useState } from "react"
 import ExternalTextLink from "./ExternalTextLink"
-// import ExternalTextLink from "./ExternalTextLink"
 import css from "./Footer.module.css"
+import IconButton from "./IconButton"
 
-const links = [
+const mainLinks = [
+  { href: "#", label: "Feedback" },
   { href: "#", label: "Terms of use" },
   { href: "#", label: "Privacy" },
   { href: "#", label: "Cookies" },
   { href: "#", label: "Accessibility" },
 ]
 
-const Footer = () => {
+const FooterBar = ({ expanded }: { expanded: boolean }) => {
+  return (
+    <div className={css.bar} data-expanded={expanded}>
+      <div className={css.left}>
+        {[
+          {
+            label: "About",
+            href: "#",
+          },
+          {
+            label: "Feedback",
+            href: "#",
+          },
+        ].map((link) => (
+          <div key={link.href} className={css.linkWrapper}>
+            <Link href={link.href}>{link.label}</Link>
+          </div>
+        ))}
+      </div>
+      <div className={css.right}>
+        <Link href={`#`}>{`©️ Open Systems Lab`}</Link>
+      </div>
+    </div>
+  )
+}
+
+const FooterContent = () => {
   return (
     <footer className={`${css.footer} `}>
       <div className={`${css.column} ${css.column1}`}>
@@ -23,7 +52,7 @@ const Footer = () => {
         </p>
       </div>
       <div className={`${css.column} ${css.column2}`}>
-        {links.map((link) => (
+        {mainLinks.map((link) => (
           <div key={link.href} className={css.linkWrapper}>
             <Link href={link.href}>{link.label}</Link>
           </div>
@@ -45,4 +74,28 @@ const Footer = () => {
   )
 }
 
-export default memo(Footer)
+const Footer = () => {
+  const [expanded, setExpanded] = useState(false)
+
+  const size = "24"
+
+  return (
+    <Fragment>
+      <div className={css.root} data-expanded={expanded}>
+        <FooterBar expanded={expanded} />
+        <FooterContent />
+      </div>
+      <div className="absolute left-2 z-50 bottom-0 text-white">
+        <IconButton
+          onClick={() => {
+            setExpanded((prev) => !prev)
+          }}
+        >
+          {expanded ? <ArrowDown size={size} /> : <ArrowUp size={size} />}
+        </IconButton>
+      </div>
+    </Fragment>
+  )
+}
+
+export default Footer

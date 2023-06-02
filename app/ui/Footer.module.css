@@ -3,7 +3,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  @apply bg-grey-90 text-white text-sm p-8 pb-16 tracking-wide;
+  @apply tracking-wide;
+  @apply px-12 pb-16;
 }
 
 .column {
@@ -38,4 +39,39 @@
   .column1 {
     @apply mr-14;
   }
+}
+
+.expander {
+  @apply fixed z-10;
+  @apply transform transition-all duration-300;
+}
+
+.root {
+  composes: expander;
+  @apply w-full bottom-0;
+  transform: translateY(calc(100% - 50px));
+  @apply bg-grey-90;
+  @apply text-white text-sm;
+}
+
+.root[data-expanded="true"] {
+  @apply translate-y-0;
+}
+
+.bar {
+  @apply py-4 px-12;
+  @apply opacity-100 transition-opacity duration-300;
+  @apply flex justify-between;
+}
+
+.bar .left {
+  @apply space-x-8;
+  @apply flex;
+}
+
+.bar .right {
+}
+
+.bar[data-expanded="true"] {
+  @apply opacity-0;
 }
