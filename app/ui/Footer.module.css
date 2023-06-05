@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   @apply tracking-wide;
-  @apply px-12 py-16;
+  @apply px-12 pb-20 py-12;
   @apply translate-y-full;
 }
 

@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
-import Footer from "../ui/Footer"
 import { TrpcProvider } from "../ui/TrpcProvider"
 
 const HousesPillsSelector = dynamic(() => import("./ui/HousesPillsSelector"), {
@@ -14,13 +13,7 @@ const AnalyseLayout = ({ children }: PropsWithChildren<{}>) => {
         <div className="flex-1 flex-grow-0">
           <HousesPillsSelector />
         </div>
-        <div className="flex-auto">
-          {/* <div className="flex-1 flex-grow-0 flex-shrink-0">
-          <AnalyseNav />
-        </div> */}
-          {children}
-        </div>
-        <Footer />
+        <div className="flex-auto">{children}</div>
       </div>
     </TrpcProvider>
   )
