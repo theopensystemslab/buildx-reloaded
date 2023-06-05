@@ -26,7 +26,6 @@ const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
           <div className="flex-auto border-l border-grey-20">{children}</div>
         </div>
       </div>
-      <Footer />
       <PreloadSpeckleObjects />
     </TrpcProvider>
   )
