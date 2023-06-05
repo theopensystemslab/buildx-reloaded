@@ -9,7 +9,6 @@ const LocateLayout = (props: PropsWithChildren<{}>) => {
   return (
     <Fragment>
       <div className={css.main}>{children}</div>
-      <Footer />
     </Fragment>
   )
 }

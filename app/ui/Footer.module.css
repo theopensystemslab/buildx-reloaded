@@ -1,10 +1,24 @@
-/* Mobile styles */
-.footer {
+.root {
+  @apply relative overflow-y-hidden;
+  @apply w-full;
+  @apply bg-grey-90;
+  @apply text-white text-sm;
+}
+
+.footerContent[data-expanded="true"] {
+  @apply translate-y-0;
+}
+
+.footerContent {
+  @apply bg-grey-90 text-white;
+  @apply fixed bottom-0 z-50;
+  @apply transform transition-all duration-300;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   @apply tracking-wide;
-  @apply px-12 pb-16;
+  @apply px-12 py-16;
+  @apply translate-y-full;
 }
 
 .column {
@@ -26,7 +40,7 @@
 
 /* Medium screen and above */
 @screen md {
-  .footer {
+  .footerContent {
     justify-content: space-between;
     @apply flex-nowrap;
   }
@@ -41,24 +55,8 @@
   }
 }
 
-.expander {
-  @apply fixed z-10;
-  @apply transform transition-all duration-300;
-}
-
-.root {
-  composes: expander;
-  @apply w-full bottom-0;
-  transform: translateY(calc(100% - 50px));
-  @apply bg-grey-90;
-  @apply text-white text-sm;
-}
-
-.root[data-expanded="true"] {
-  @apply translate-y-0;
-}
-
 .bar {
+  @apply bg-grey-90 text-white;
   @apply py-4 px-12;
   @apply opacity-100 transition-opacity duration-300;
   @apply flex justify-between;
@@ -74,4 +72,8 @@
 
 .bar[data-expanded="true"] {
   @apply opacity-0;
+}
+
+.arrow {
+  @apply absolute left-2 bottom-1 z-50 text-white;
 }

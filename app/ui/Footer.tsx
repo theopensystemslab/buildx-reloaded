@@ -40,9 +40,9 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
   )
 }
 
-const FooterContent = () => {
+const FooterContent = ({ expanded }: { expanded: boolean }) => {
   return (
-    <footer className={`${css.footer} `}>
+    <footer className={`${css.footerContent} `} data-expanded={expanded}>
       <div className={`${css.column} ${css.column1}`}>
         <p className={`${css.text} `}>
           <strong>Disclaimer</strong> All designs and data provided are
@@ -81,11 +81,9 @@ const Footer = () => {
 
   return (
     <Fragment>
-      <div className={css.root} data-expanded={expanded}>
-        <FooterBar expanded={expanded} />
-        <FooterContent />
-      </div>
-      <div className="absolute left-2 z-50 bottom-0 text-white">
+      <FooterBar expanded={expanded} />
+      <FooterContent expanded={expanded} />
+      <div className={css.arrow}>
         <IconButton
           onClick={() => {
             setExpanded((prev) => !prev)

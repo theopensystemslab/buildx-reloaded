@@ -3,11 +3,7 @@ import NavIconButton from "./NavIconButton"
 
 const Nav = () => {
   return (
-    <div
-      className={
-        "w-full flex flex-1 flex-grow-0 justify-between bg-white shadow items-center"
-      }
-    >
+    <div className={"w-full flex justify-between bg-white shadow items-center"}>
       <div id="headerStart" className="flex-1" />
       <div className="flex flex-none">
         <NavIconButton

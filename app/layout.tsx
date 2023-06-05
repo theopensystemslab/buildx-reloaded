@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google"
 import { PropsWithChildren } from "react"
 import "~/styles/globals.css"
+import Footer from "./ui/Footer"
 import Nav from "./ui/Nav"
 
 const inter = Inter({
@@ -11,10 +12,13 @@ const inter = Inter({
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <html lang="en" className={inter.className}>
-      <body className="h-screen flex flex-col">
-        <Nav />
-        <div className="flex-auto overflow-y-auto overflow-x-hidden">
-          {children}
+      <body className="h-screen flex flex-col overflow-hidden">
+        <div className="flex-1 flex-grow-0">
+          <Nav />
+        </div>
+        <div className="flex-auto overflow-y-auto">{children}</div>
+        <div className="flex-1 flex-grow-0">
+          <Footer />
         </div>
       </body>
     </html>
