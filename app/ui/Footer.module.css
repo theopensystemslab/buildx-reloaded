@@ -1,13 +1,11 @@
 .footerContent[data-expanded="true"] {
   @apply translate-y-0;
-  /* @apply opacity-100; */
 }
 
 .footerContent {
   @apply bg-grey-90 text-white;
   @apply fixed bottom-0 z-50 w-full;
   @apply transform transition-all duration-300;
-  /* @apply opacity-0; */
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -37,7 +35,29 @@
   @apply hover:underline text-sm;
 }
 
-/* Medium screen and above */
+.bar {
+  @apply bg-grey-90 text-white;
+  @apply py-[0.8rem] px-12;
+  @apply opacity-100 transition-opacity duration-300;
+  @apply flex justify-between;
+}
+
+.bar .left {
+  @apply space-x-8 ml-3;
+  @apply flex items-center;
+}
+
+.bar .right {
+}
+
+.bar[data-expanded="true"] {
+  @apply opacity-0;
+}
+
+.arrow {
+  @apply absolute left-2 bottom-0  z-50 text-white;
+}
+
 @screen md {
   .footerContent {
     justify-content: space-between;
@@ -56,27 +76,4 @@
   .column2 {
     @apply ml-12;
   }
-}
-
-.bar {
-  @apply bg-grey-90 text-white;
-  @apply py-4 px-12;
-  @apply opacity-100 transition-opacity duration-300;
-  @apply flex justify-between;
-}
-
-.bar .left {
-  @apply space-x-8;
-  @apply flex;
-}
-
-.bar .right {
-}
-
-.bar[data-expanded="true"] {
-  @apply opacity-0;
-}
-
-.arrow {
-  @apply absolute left-2 bottom-1 z-50 text-white;
 }
