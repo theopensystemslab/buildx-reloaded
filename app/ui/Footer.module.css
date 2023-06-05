@@ -37,7 +37,7 @@
 
 .bar {
   @apply bg-grey-90 text-white;
-  @apply py-[0.8rem] px-12;
+  @apply py-[0.8rem] pl-12 pr-4;
   @apply opacity-100 transition-opacity duration-300;
   @apply flex justify-between;
 }
@@ -75,5 +75,9 @@
 
   .column2 {
     @apply ml-12;
+  }
+
+  .bar {
+    @apply px-12;
   }
 }
