@@ -7,12 +7,14 @@
 
 .footerContent[data-expanded="true"] {
   @apply translate-y-0;
+  @apply opacity-100;
 }
 
 .footerContent {
   @apply bg-grey-90 text-white;
   @apply fixed bottom-0 z-50;
   @apply transform transition-all duration-300;
+  @apply opacity-0;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;

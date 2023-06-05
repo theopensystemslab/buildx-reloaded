@@ -16,7 +16,9 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
         <div className="flex-1 flex-grow-0">
           <Nav />
         </div>
-        <div className="flex-auto overflow-y-auto">{children}</div>
+        <div className="flex-auto overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
         <div className="flex-1 flex-grow-0">
           <Footer />
         </div>
