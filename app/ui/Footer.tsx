@@ -34,7 +34,7 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
         ))}
       </div>
       <div className={css.right}>
-        <Link href={`#`}>{`©️ Open Systems Lab`}</Link>
+        <Link href="#">© Open Systems Lab</Link>
       </div>
     </div>
   )
