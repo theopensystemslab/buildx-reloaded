@@ -65,7 +65,7 @@ const MaterialsListTable = (props: Props) => {
         cell: (info) => {
           return <div>{info.getValue()}</div>
         },
-        header: () => null,
+        header: () => <span>Category</span>,
       }),
       columnHelper.accessor("quantity", {
         cell: (info) => {
