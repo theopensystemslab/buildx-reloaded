@@ -3,14 +3,24 @@ import { ArrowDown } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { A } from "~/utils/functions"
+import { useAnalyseData } from "../../analyse/state/data"
+import { useSiteCurrency } from "../../design/state/siteCtx"
 import HousesView from "./HousesView"
 import css from "./page.module.css"
 
 const OverviewIndex = () => {
+  const { formatWithSymbol } = useSiteCurrency()
+
+  const {
+    areas: { totalFloor },
+    costs: { superstructure, total },
+    operationalCo2: { lifetime },
+  } = useAnalyseData()
+
   const overviewFields = [
     {
       label: "Total floor area",
-      value: "160.3m²",
+      value: `${totalFloor}m²`,
     },
     {
       label: (
@@ -21,15 +31,15 @@ const OverviewIndex = () => {
           </div>
         </div>
       ),
-      value: "£80k",
+      value: formatWithSymbol(superstructure),
     },
     {
       label: "Total estimated build cost",
-      value: "£193k",
+      value: formatWithSymbol(total),
     },
     {
       label: "Total estimated carbon cost",
-      value: "-12.2t CO₂",
+      value: `${lifetime} CO₂`,
     },
   ]
 
