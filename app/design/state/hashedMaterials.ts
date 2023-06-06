@@ -342,9 +342,9 @@ export const useHouseMaterialOps = (
       const { levelIndex } = siteCtx
       Object.values(elementMaterials.current).forEach((material) => {
         material.clippingPlanes = [
-          width ? [clippingPlaneX] : [],
+          width ? [clippingPlaneZ] : [],
           levelIndex !== null ? [clippingPlaneY] : [],
-          length ? [clippingPlaneZ] : [],
+          length ? [clippingPlaneX] : [],
         ].flat()
       })
       invalidate()

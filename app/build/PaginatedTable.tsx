@@ -1,17 +1,15 @@
-import { CaretLeft, CaretRight } from "@carbon/icons-react"
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import clsx from "clsx"
 import { csvFormatRows } from "d3-dsv"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect } from "react"
-import { A, NEA, O, R } from "~/utils/functions"
+import { A, O, R } from "~/utils/functions"
 import css from "./PaginatedTable.module.css"
 
 type Props<T extends {}> = {
@@ -28,17 +26,17 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // getPaginationRowModel: getPaginationRowModel(),
   })
 
-  const {
-    pagination: { pageIndex, pageSize },
-  } = table.getState()
+  // const {
+  //   pagination: { pageIndex, pageSize },
+  // } = table.getState()
 
-  const firstRow = pageIndex * pageSize + 1
-  const lastRow = Math.min((pageIndex + 1) * pageSize, data.length)
+  // const firstRow = pageIndex * pageSize + 1
+  // const lastRow = Math.min((pageIndex + 1) * pageSize, data.length)
 
-  const itemCount = data.length
+  // const itemCount = data.length
 
   useEffect(() => {
     const headers: string[] = columns.map((column) => column.id as string)
@@ -97,10 +95,10 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
                       // @ts-ignore
                       cell.column.columnDef.accessorKey === "buildingName" &&
                       "colorClass" in (row.original as any),
-                    [(row.original as any).categoryColorClass]:
-                      // @ts-ignore
-                      cell.column.columnDef.accessorKey === "category" &&
-                      "categoryColorClass" in (row.original as any),
+                    // [(row.original as any).categoryColorClass]:
+                    //   // @ts-ignore
+                    //   cell.column.columnDef.accessorKey === "category" &&
+                    //   "categoryColorClass" in (row.original as any),
                   })
 
                   return (
@@ -133,7 +131,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
           ))}
         </tfoot>
       </table>
-      <div className={css.paginationControls}>
+      {/* <div className={css.paginationControls}>
         <div className={css.pageSizeSelect}>
           <select
             value={table.getState().pagination.pageSize}
@@ -183,7 +181,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
             <CaretRight />
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

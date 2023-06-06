@@ -7,11 +7,11 @@ import css from "./Footer.module.css"
 import IconButton from "./IconButton"
 
 const mainLinks = [
-  { href: "#", label: "Feedback" },
-  { href: "#", label: "Terms of use" },
-  { href: "#", label: "Privacy" },
-  { href: "#", label: "Cookies" },
-  { href: "#", label: "Accessibility" },
+  { href: "#feedback", label: "Feedback" },
+  { href: "#tos", label: "Terms of use" },
+  { href: "#privacy", label: "Privacy" },
+  { href: "#cookies", label: "Cookies" },
+  { href: "#accessibility", label: "Accessibility" },
 ]
 
 const FooterBar = ({ expanded }: { expanded: boolean }) => {
@@ -21,11 +21,11 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
         {[
           {
             label: "About",
-            href: "#",
+            href: "#about",
           },
           {
             label: "Feedback",
-            href: "#",
+            href: "#feedback",
           },
         ].map((link) => (
           <div key={link.href} className={css.linkWrapper}>
