@@ -17,7 +17,7 @@ const Locate = () => {
   const bottomRightContainerId = "bottom-right-container-id"
 
   return (
-    <Fragment>
+    <div className="w-full h-full relative">
       <ReactMapGLMap
         initialViewState={{
           ...gadheim,
@@ -50,7 +50,7 @@ const Locate = () => {
         id={bottomRightContainerId}
         className={css.bottomRightContainer}
       />
-    </Fragment>
+    </div>
   )
 }
 

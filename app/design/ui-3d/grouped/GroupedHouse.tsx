@@ -70,68 +70,66 @@ const GroupedHouse = (props: Props) => {
   useHouseMaterialOps(houseId, houseGroupRef)
 
   return (
-    <Fragment>
-      <group ref={houseGroupRef}>
-        <group ref={startRef}>
-          <StretchHandle
-            houseId={houseId}
-            axis="z"
-            direction={-1}
-            disable={!isStretchable}
-          />
-          <GroupedColumn
-            ref={startColumnRef}
-            key={`${houseId}:${startColumn.columnIndex}`}
-            column={startColumn}
-            {...{ systemId, houseId, start: true }}
-          />
-        </group>
-        <group ref={midColumnsRef}>
-          {pipe(
-            midColumns,
-            RA.map((column) => (
-              <GroupedColumn
-                key={`${houseId}:${column.columnIndex}`}
-                column={column}
-                {...{ systemId, houseId }}
-              />
-            ))
-          )}
-        </group>
-        <group ref={endRef}>
-          <GroupedColumn
-            ref={endColumnRef}
-            key={`${houseId}:${endColumn.columnIndex}`}
-            column={endColumn}
-            {...{ systemId, houseId, end: true }}
-          />
-          <StretchHandle
-            houseId={houseId}
-            axis="z"
-            direction={1}
-            disable={!isStretchable}
-          />
-        </group>
-
-        <StretchWidth
+    <group ref={houseGroupRef} key={dnas.toString()}>
+      <group ref={startRef}>
+        <StretchHandle
           houseId={houseId}
-          columnLayout={layout}
-          setHouseVisible={setHouseVisible}
+          axis="z"
+          direction={-1}
+          disable={!isStretchable}
         />
-
-        <RotateHandles
-          houseId={houseId}
-          scale={isMoveRotateable ? [1, 1, 1] : [0, 0, 0]}
+        <GroupedColumn
+          ref={startColumnRef}
+          key={`${houseId}:${startColumn.columnIndex}`}
+          column={startColumn}
+          {...{ systemId, houseId, start: true }}
         />
-
-        <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
-          {columnsUp}
-          {columnsDown}
-        </group>
-
-        <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
       </group>
-    </Fragment>
+      <group ref={midColumnsRef}>
+        {pipe(
+          midColumns,
+          RA.map((column) => (
+            <GroupedColumn
+              key={`${houseId}:${column.columnIndex}`}
+              column={column}
+              {...{ systemId, houseId }}
+            />
+          ))
+        )}
+      </group>
+      <group ref={endRef}>
+        <GroupedColumn
+          ref={endColumnRef}
+          key={`${houseId}:${endColumn.columnIndex}`}
+          column={endColumn}
+          {...{ systemId, houseId, end: true }}
+        />
+        <StretchHandle
+          houseId={houseId}
+          axis="z"
+          direction={1}
+          disable={!isStretchable}
+        />
+      </group>
+
+      <StretchWidth
+        houseId={houseId}
+        columnLayout={layout}
+        setHouseVisible={setHouseVisible}
+      />
+
+      <RotateHandles
+        houseId={houseId}
+        scale={isMoveRotateable ? [1, 1, 1] : [0, 0, 0]}
+      />
+
+      <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
+        {columnsUp}
+        {columnsDown}
+      </group>
+
+      <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
+    </group>
   )
 }
 
