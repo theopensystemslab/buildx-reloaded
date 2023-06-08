@@ -29,6 +29,7 @@
     "airtable": "^0.11.4",
     "camera-controls": "^1.37.2",
     "clsx": "^1.2.1",
+    "comlink": "^4.4.1",
     "crypto-js": "^4.1.1",
     "d3-dsv": "^3.0.1",
     "dexie": "^3.2.3",
