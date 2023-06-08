@@ -1,7 +1,7 @@
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { A, O, R, S } from "~/utils/functions"
 import { trpc } from "../../../client/trpc"
 import {
@@ -25,23 +25,29 @@ export type OrderListRow = {
   totalCost: number
 }
 
-export const useOrderListData = () => {
-  const selectedHouses = useSelectedHouses()
-  const getColorClass = useGetColorClass()
-
+export const useOrderListDataQueries = () => {
   const { data: modules = [], status: modulesQueryStatus } =
-    trpc.modules.useQuery()
-  const { data: blocks = [], status: blocksQueryStatus } =
-    trpc.blocks.useQuery()
-  const {
-    data: blockModulesEntries = [],
-    status: blockModulesEntriesQueryStatus,
-  } = trpc.blockModulesEntries.useQuery()
+    trpc.modules.useQuery(undefined, {
+      staleTime: 1000 * 60 * 10,
+      cacheTime: 1000 * 60 * 10,
+      refetchOnWindowFocus: false,
+      refetchInterval: false,
+      refetchOnMount: false,
+      refetchIntervalInBackground: false,
+      refetchOnReconnect: false,
+    })
+  // const { data: blocks = [], status: blocksQueryStatus } =
+  //   trpc.blocks.useQuery()
+
+  // const {
+  //   data: blockModulesEntries = [],
+  //   status: blockModulesEntriesQueryStatus,
+  // } = trpc.blockModulesEntries.useQuery()
 
   const allStatuses = [
     modulesQueryStatus,
-    blocksQueryStatus,
-    blockModulesEntriesQueryStatus,
+    // blocksQueryStatus,
+    // blockModulesEntriesQueryStatus,
   ]
 
   const status: typeof modulesQueryStatus = allStatuses.includes("error")
@@ -49,6 +55,21 @@ export const useOrderListData = () => {
     : allStatuses.includes("loading")
     ? "loading"
     : "success"
+
+  return {
+    modules,
+    // blocks,
+    // blockModulesEntries,
+    status,
+  }
+}
+
+export const useOrderListData = () => {
+  const selectedHouses = useSelectedHouses()
+  const getColorClass = useGetColorClass()
+
+  const { modules, blocks, blockModulesEntries, status } =
+    useOrderListDataQueries()
 
   const orderListRows = useMemo(() => {
     const accum: Record<string, number> = {}
@@ -180,11 +201,14 @@ export const useOrderListData = () => {
 
   const { code: currencyCode } = useSiteCurrency()
 
-  const fmt = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-    }).format(value)
+  const fmt = useCallback(
+    (value: number) =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currencyCode,
+      }).format(value),
+    [currencyCode]
+  )
 
   const { totalMaterialCost, totalManufacturingCost, totalTotalCost } = pipe(
     orderListRows,
@@ -199,13 +223,24 @@ export const useOrderListData = () => {
     R.map(fmt)
   )
 
-  return {
-    totalMaterialCost,
-    totalManufacturingCost,
-    totalTotalCost,
-    orderListRows,
-    blockCountsByHouse,
-    status,
-    fmt,
-  }
+  return useMemo(
+    () => ({
+      totalMaterialCost,
+      totalManufacturingCost,
+      totalTotalCost,
+      orderListRows,
+      blockCountsByHouse,
+      status,
+      fmt,
+    }),
+    [
+      blockCountsByHouse,
+      fmt,
+      orderListRows,
+      status,
+      totalManufacturingCost,
+      totalMaterialCost,
+      totalTotalCost,
+    ]
+  )
 }

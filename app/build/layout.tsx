@@ -1,6 +1,6 @@
+"use client"
 import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
-import Footer from "../ui/Footer"
 import { TrpcProvider } from "../ui/TrpcProvider"
 import { PreloadSpeckleObjects } from "../utils/speckle/useSpeckleObject"
 import BuildNav from "./common/BuildNav"
@@ -12,7 +12,13 @@ const HousesPillsSelector = dynamic(
   }
 )
 
+const HowManyTimesAmIRendered = () => {
+  console.log("how many times")
+  return <></>
+}
+
 const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
+  console.log("hi im layout")
   return (
     <TrpcProvider>
       <div className="flex-auto overflow-y-auto flex flex-col">
@@ -27,6 +33,7 @@ const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
         </div>
       </div>
       <PreloadSpeckleObjects />
+      <HowManyTimesAmIRendered />
     </TrpcProvider>
   )
 }

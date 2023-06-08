@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
 import { isSSR } from "~/utils/next"
@@ -40,7 +40,7 @@ export const getInitialSiteCtx = () =>
 
 const siteCtx = proxy<SiteCtx>(getInitialSiteCtx())
 
-export const useSiteCtx = () => useSnapshot(siteCtx)
+export const useSiteCtx = () => useSnapshot(siteCtx) as typeof siteCtx
 
 export const useIsBuilding = (houseId: string) => {
   const { houseId: buildingHouseId } = useSiteCtx()
@@ -136,12 +136,15 @@ export const useSiteCurrency = () => {
   const symbol = region === "UK" ? "£" : "€"
   const code = region === "UK" ? "GBP" : "EUR"
 
-  return {
-    symbol,
-    code,
-    formatWithSymbol: (x: number) => formatWithUnit(x, symbol),
-    formatWithCode: (x: number) => formatWithUnit(x, code),
-  }
+  return useMemo(
+    () => ({
+      symbol,
+      code,
+      formatWithSymbol: (x: number) => formatWithUnit(x, symbol),
+      formatWithCode: (x: number) => formatWithUnit(x, code),
+    }),
+    [code, symbol]
+  )
 }
 
 export const useSystemId = () => {

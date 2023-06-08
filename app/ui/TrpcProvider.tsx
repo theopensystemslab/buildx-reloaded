@@ -7,7 +7,18 @@ import { trpc } from "@/client/trpc"
 import { getBaseUrl } from "~/utils/next"
 
 export const TrpcProvider: React.FC<{ children: React.ReactNode }> = (p) => {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            cacheTime: 1000 * 60 * 10,
+            staleTime: 1000 * 60 * 10,
+          },
+        },
+      })
+  )
+
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
@@ -17,6 +28,7 @@ export const TrpcProvider: React.FC<{ children: React.ReactNode }> = (p) => {
       ],
     })
   )
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>

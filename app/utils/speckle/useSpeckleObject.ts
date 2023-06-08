@@ -2,7 +2,7 @@
 import CryptoJS from "crypto-js"
 import Dexie from "dexie"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { suspend } from "suspend-react"
 import { BufferGeometry, BufferGeometryLoader } from "three"
 import { trpc } from "../../../client/trpc"
@@ -71,6 +71,7 @@ const useFetchGeometry = () => {
       return ifcJsonGeometries
     }
   }
+
   return fetchGeometry
 }
 
@@ -116,10 +117,16 @@ export const useSpeckleObjects = (
   })
 }
 
-export const PreloadSpeckleObjects = () => {
+export const PreloadSpeckleObjects = memo(() => {
   const modules = useModules()
-  useSpeckleObjects(modules.map((module) => module.speckleBranchUrl))
+
+  const speckleBranchUrls = useMemo(
+    () => modules.map((module) => module.speckleBranchUrl),
+    [modules]
+  )
+
+  useSpeckleObjects(speckleBranchUrls)
   return null
-}
+})
 
 export default useSpeckleObject

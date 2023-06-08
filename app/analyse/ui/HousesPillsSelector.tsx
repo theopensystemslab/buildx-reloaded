@@ -9,22 +9,27 @@ import { R } from "~/utils/functions"
 import houses, { useHouses } from "../../design/state/houses"
 
 const store = proxy<{
-  selectedHouses: string[]
+  selectedHouseIds: string[]
 }>({
-  selectedHouses: [],
+  selectedHouseIds: [],
 })
 
 const setSelectedHouseIds = (f: (prev: string[]) => string[]) => {
-  store.selectedHouses = f(store.selectedHouses)
+  store.selectedHouseIds = f(store.selectedHouseIds)
 }
 
 export const useSelectedHouseIds = () => {
-  const { selectedHouses } = useSnapshot(store) as typeof store
+  const { selectedHouseIds: selectedHouses } = useSnapshot(
+    store
+  ) as typeof store
+
   return selectedHouses
 }
 
 export const useSelectedHouses = () => {
   const selectedHouseIds = useSelectedHouseIds()
+
+  console.log(`useSelectedHouses`)
 
   return useMemo(
     () =>
@@ -80,11 +85,13 @@ export const useGetColorClass = () => {
 }
 
 const HousesPillsSelector = () => {
-  const houses = useHouses()
+  // const houses = useHouses()
+
+  console.log(`HousePillsSelector`)
 
   useEffect(() => {
-    store.selectedHouses = Object.keys(houses)
-  }, [houses])
+    store.selectedHouseIds = Object.keys(houses)
+  }, [])
 
   const selectedHouses = useSelectedHouseIds()
 
