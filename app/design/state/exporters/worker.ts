@@ -1,20 +1,26 @@
 import { expose } from "comlink"
-import { ObjectLoader } from "three"
 import { OBJExporter } from "three-stdlib"
-import { ExportOBJEventDetail } from "."
+import { UpdateOBJEventDetail } from "."
+import { ObjectLoader } from "three"
 
-const exportObj = async ({ houseId, payload }: ExportOBJEventDetail) => {
-  console.log(`exportObj`)
+const OBJMap = new Map<string, string>()
+
+const updateOBJ = async ({ houseId, payload }: UpdateOBJEventDetail) => {
+  console.log(`updateOBJ`)
   const exporter = new OBJExporter()
   const loader = new ObjectLoader()
-  const group = loader.parse(payload) // payload should be the serialized Group
-  const parsed = await exporter.parse(group)
-  console.log({ parsed })
-  return parsed
+  const group = loader.parse(payload)
+  const OBJString = await exporter.parse(group)
+  OBJMap.set(houseId, OBJString)
+}
+
+const getOBJ = (houseId: string) => {
+  return OBJMap.get(houseId)
 }
 
 const api = {
-  exportObj,
+  updateOBJ,
+  getOBJ,
 }
 
 export type ExportersWorkerAPI = typeof api
