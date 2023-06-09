@@ -17,6 +17,7 @@ import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
 import StretchWidth from "./stretchWidth/StretchWidth"
 import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
+import { dispatchExportOBJEvent } from "../../state/exporters"
 
 type Props = {
   houseId: string
@@ -55,6 +56,11 @@ const GroupedHouse = (props: Props) => {
   )
 
   const { dnas } = useHouse(houseId)
+
+  useEffect(() => {
+    if (!houseGroupRef.current) return
+    dispatchExportOBJEvent({ houseId, payload: houseGroupRef.current.toJSON() })
+  }, [dnas, houseId])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])
