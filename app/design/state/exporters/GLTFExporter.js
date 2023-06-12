@@ -21,8 +21,10 @@ import {
   Scene,
   Source,
   SRGBColorSpace,
+  CompressedTexture,
   Vector3,
 } from "three"
+import { decompress } from "./TextureUtils"
 
 /**
  * The KHR_mesh_quantization extension allows these extra attribute component types
@@ -90,6 +92,10 @@ class GLTFExporter {
 
     this.register(function (writer) {
       return new GLTFMaterialsSheenExtension(writer)
+    })
+
+    this.register(function (writer) {
+      return new GLTFMaterialsAnisotropyExtension(writer)
     })
 
     this.register(function (writer) {
@@ -694,6 +700,14 @@ class GLTFWriter {
       "THREE.GLTFExporter: Merged metalnessMap and roughnessMap textures."
     )
 
+    if (metalnessMap instanceof CompressedTexture) {
+      metalnessMap = decompress(metalnessMap)
+    }
+
+    if (roughnessMap instanceof CompressedTexture) {
+      roughnessMap = decompress(roughnessMap)
+    }
+
     const metalness = metalnessMap ? metalnessMap.image : null
     const roughness = roughnessMap ? roughnessMap.image : null
 
@@ -954,7 +968,8 @@ class GLTFWriter {
       componentType = WEBGL_CONSTANTS.UNSIGNED_BYTE
     } else {
       throw new Error(
-        "THREE.GLTFExporter: Unsupported bufferAttribute component type."
+        "THREE.GLTFExporter: Unsupported bufferAttribute component type: " +
+          attribute.array.constructor.name
       )
     }
 
@@ -1044,7 +1059,7 @@ class GLTFWriter {
         // THREE.DataTexture
 
         if (format !== RGBAFormat) {
-          console.error("GLTFExporter: Only RGBAFormat is supported.")
+          console.error("GLTFExporter: Only RGBAFormat is supported.", format)
         }
 
         if (
@@ -1129,12 +1144,19 @@ class GLTFWriter {
    * @return {Integer} Index of the processed texture in the "textures" array
    */
   processTexture(map) {
+    const writer = this
+    const options = writer.options
     const cache = this.cache
     const json = this.json
 
     if (cache.textures.has(map)) return cache.textures.get(map)
 
     if (!json.textures) json.textures = []
+
+    // make non-readable textures (e.g. CompressedTexture) readable by blitting them into a new texture
+    if (map instanceof CompressedTexture) {
+      map = decompress(map, options.maxTextureSize)
+    }
 
     let mimeType = map.userData.mimeType
 
@@ -1883,6 +1905,8 @@ class GLTFWriter {
       }
 
       if (isIdentityMatrix(object.matrix) === false) {
+        // console.log(object.position, object.rotation, object.scale)
+        // console.log(object.matrix.elements)
         nodeDef.matrix = object.matrix.elements
       }
     }
@@ -2464,6 +2488,43 @@ class GLTFMaterialsSheenExtension {
 
     extensionDef.sheenRoughnessFactor = material.sheenRoughness
     extensionDef.sheenColorFactor = material.sheenColor.toArray()
+
+    materialDef.extensions = materialDef.extensions || {}
+    materialDef.extensions[this.name] = extensionDef
+
+    extensionsUsed[this.name] = true
+  }
+}
+
+/**
+ * Anisotropy Materials Extension
+ *
+ * Specification: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy
+ */
+class GLTFMaterialsAnisotropyExtension {
+  constructor(writer) {
+    this.writer = writer
+    this.name = "KHR_materials_anisotropy"
+  }
+
+  writeMaterial(material, materialDef) {
+    if (!material.isMeshPhysicalMaterial || material.anisotropy == 0.0) return
+
+    const writer = this.writer
+    const extensionsUsed = writer.extensionsUsed
+
+    const extensionDef = {}
+
+    if (material.anisotropyMap) {
+      const anisotropyMapDef = {
+        index: writer.processTexture(material.anisotropyMap),
+      }
+      writer.applyTextureTransform(anisotropyMapDef, material.anisotropyMap)
+      extensionDef.anisotropyTexture = anisotropyMapDef
+    }
+
+    extensionDef.anisotropyStrength = material.anisotropy
+    extensionDef.anisotropyRotation = material.anisotropyRotation
 
     materialDef.extensions = materialDef.extensions || {}
     materialDef.extensions[this.name] = extensionDef

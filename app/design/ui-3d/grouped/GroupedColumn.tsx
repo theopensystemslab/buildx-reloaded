@@ -39,7 +39,12 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
   const mergedRef = mergeRefs([ref, columnGroupRef])
 
   return (
-    <group ref={mergedRef} key={columnIndex} position-z={columnZ}>
+    <group
+      ref={mergedRef}
+      key={columnIndex}
+      position-z={columnZ}
+      name={`${houseId}:column-${columnIndex}`}
+    >
       {pipe(
         gridGroups,
         RA.chain(({ modules, levelIndex, y: levelY }) =>
