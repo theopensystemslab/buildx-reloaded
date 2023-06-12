@@ -1,9 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
-import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useHouseColumnLayout } from "~/design/state/layouts"
 import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
@@ -11,13 +10,13 @@ import {
   usePreTransformsTransients,
 } from "~/design/state/transients/transforms"
 import { RA } from "~/utils/functions"
+import { dispatchUpdateExportModelsEvent } from "../../state/exporters"
+import { useHouse, useHouseSystemId } from "../../state/houses"
+import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
-import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
 import StretchWidth from "./stretchWidth/StretchWidth"
-import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
-import { dispatchUpdateExportModelsEvent } from "../../state/exporters"
 
 type Props = {
   houseId: string
@@ -59,9 +58,12 @@ const GroupedHouse = (props: Props) => {
 
   useEffect(() => {
     if (!houseGroupRef.current) return
+
+    const houseJson = houseGroupRef.current.toJSON()
+
     dispatchUpdateExportModelsEvent({
       houseId,
-      payload: houseGroupRef.current.toJSON(),
+      payload: houseJson,
     })
   }, [dnas, houseId])
 
@@ -81,12 +83,12 @@ const GroupedHouse = (props: Props) => {
   return (
     <group ref={houseGroupRef} key={dnas.toString()}>
       <group ref={startRef}>
-        <StretchHandle
+        {/* <StretchHandle
           houseId={houseId}
           axis="z"
           direction={-1}
           disable={!isStretchable}
-        />
+        /> */}
         <GroupedColumn
           ref={startColumnRef}
           key={`${houseId}:${startColumn.columnIndex}`}
@@ -113,31 +115,31 @@ const GroupedHouse = (props: Props) => {
           column={endColumn}
           {...{ systemId, houseId, end: true }}
         />
-        <StretchHandle
+        {/* <StretchHandle
           houseId={houseId}
           axis="z"
           direction={1}
           disable={!isStretchable}
-        />
+        /> */}
       </group>
 
-      <StretchWidth
+      {/* <StretchWidth
         houseId={houseId}
         columnLayout={layout}
         setHouseVisible={setHouseVisible}
-      />
+      /> */}
 
-      <RotateHandles
+      {/* <RotateHandles
         houseId={houseId}
         scale={isMoveRotateable ? [1, 1, 1] : [0, 0, 0]}
-      />
+      /> */}
 
-      <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
+      {/* <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
         {columnsUp}
         {columnsDown}
-      </group>
+      </group> */}
 
-      <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
+      {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
     </group>
   )
 }

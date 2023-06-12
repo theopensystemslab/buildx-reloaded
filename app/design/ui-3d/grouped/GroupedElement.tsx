@@ -1,8 +1,7 @@
-import { useMaterial } from "~/design/state/hashedMaterials"
 import { useRef } from "react"
 import { BufferGeometry, Mesh } from "three"
+import { useMaterial } from "~/design/state/hashedMaterials"
 import { HouseElementIdentifier } from "../../state/gestures/drag"
-import { useGeometry } from "~/design/state/hashedGeometries"
 import { ModuleProps } from "./GroupedModule"
 
 type Props = ModuleProps & {
@@ -43,6 +42,7 @@ const GroupedElement = (props: Props) => {
       userData={{
         identifier,
       }}
+      name={identifier.toString()}
       castShadow
     />
   )

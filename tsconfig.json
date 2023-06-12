@@ -32,7 +32,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/utils/GLTFExporter.js"
+    "app/design/state/exporters/*.js"
   ],
   "exclude": ["node_modules"]
 }
