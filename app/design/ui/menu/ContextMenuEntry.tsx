@@ -21,7 +21,7 @@ import ChangeLayouts from "./interactions/ChangeLayouts"
 import ChangeLevelType from "./interactions/ChangeLevelType"
 import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
-import { dispatchGetOBJEvent } from "../../state/exporters"
+import { dispatchGetModelEvent } from "../../state/exporters"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()
@@ -192,8 +192,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
       <ContextMenuButton
         icon={<Pencil />}
-        text="Export OBJ"
-        onClick={() => void dispatchGetOBJEvent({ houseId })}
+        text="Export GLB"
+        onClick={() => void dispatchGetModelEvent({ houseId, format: "GLB" })}
       />
     </ContextMenu>
   )

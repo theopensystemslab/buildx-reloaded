@@ -17,7 +17,7 @@ import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
 import StretchWidth from "./stretchWidth/StretchWidth"
 import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
-import { dispatchUpdateOBJEvent } from "../../state/exporters"
+import { dispatchUpdateExportModelsEvent } from "../../state/exporters"
 
 type Props = {
   houseId: string
@@ -59,7 +59,10 @@ const GroupedHouse = (props: Props) => {
 
   useEffect(() => {
     if (!houseGroupRef.current) return
-    dispatchUpdateOBJEvent({ houseId, payload: houseGroupRef.current.toJSON() })
+    dispatchUpdateExportModelsEvent({
+      houseId,
+      payload: houseGroupRef.current.toJSON(),
+    })
   }, [dnas, houseId])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
