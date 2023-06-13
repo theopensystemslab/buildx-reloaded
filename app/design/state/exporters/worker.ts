@@ -1,5 +1,6 @@
 import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
+import { OBJExporter } from "three-stdlib"
 import { UpdateWorkerGroupEventDetail } from "."
 import { GLTFExporter } from "./GLTFExporter"
 
@@ -55,31 +56,41 @@ function flattenObject(root: Object3D): Group {
 const OBJMap = new Map<string, string>()
 const GLTFMap = new Map<string, any>()
 
+const parseAndSetGLTF = (houseId: string, object: Object3D) => {
+  const gltfExporter = new GLTFExporter() as any
+
+  gltfExporter.parse(
+    object,
+    function (gltf: any) {
+      GLTFMap.set(houseId, gltf)
+      console.log("GLB set")
+    },
+    function (e: any) {
+      console.log(e)
+    },
+    { binary: true, onlyVisible: true }
+  )
+}
+
+const parseAndSetOBJ = (houseId: string, object: Object3D) => {
+  const objExporter = new OBJExporter()
+  const parsedObj = objExporter.parse(object)
+  OBJMap.set(houseId, parsedObj)
+  console.log("OBJ set")
+}
+
 const updateModels = async ({
   houseId,
   payload,
 }: UpdateWorkerGroupEventDetail) => {
   const loader = new ObjectLoader()
-
   const parsed = loader.parse(payload)
-
   parsed.updateMatrixWorld(true)
 
   const flattened = flattenObject(parsed)
 
-  const glbExporter = new GLTFExporter() as any
-
-  glbExporter.parse(
-    flattened,
-    function (gltf: any) {
-      GLTFMap.set(houseId, gltf)
-      console.log("new gltf")
-    },
-    function (e: any) {
-      console.log(e)
-    },
-    { binary: false, onlyVisible: true }
-  )
+  parseAndSetGLTF(houseId, flattened)
+  parseAndSetOBJ(houseId, flattened)
 }
 
 const getOBJ = (houseId: string) => {
