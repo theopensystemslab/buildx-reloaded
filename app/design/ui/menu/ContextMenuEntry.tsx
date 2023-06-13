@@ -195,6 +195,11 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
         text="Export GLB"
         onClick={() => void dispatchGetModelEvent({ houseId, format: "GLB" })}
       />
+      <ContextMenuButton
+        icon={<Pencil />}
+        text="Export OBJ"
+        onClick={() => void dispatchGetModelEvent({ houseId, format: "OBJ" })}
+      />
     </ContextMenu>
   )
 }

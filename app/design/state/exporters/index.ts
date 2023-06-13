@@ -70,10 +70,10 @@ export const useOBJExporterWorker = () => {
           const gltfData = await ref.current?.getGLB(houseId)
           if (!gltfData) return
 
-          const stringified = JSON.stringify(gltfData)
+          // const stringified = JSON.stringify(gltfData)
 
-          const blob = new Blob([stringified], {
-            type: "application/json",
+          const blob = new Blob([gltfData], {
+            type: "model/gltf-binary",
           }) // Create a Blob from the OBJ data
 
           const url = URL.createObjectURL(blob) // Create a URL for the Blob
@@ -81,7 +81,7 @@ export const useOBJExporterWorker = () => {
           // Create a download link and click it
           const link = document.createElement("a")
           link.href = url
-          link.download = "model.gltf" // Set the file name
+          link.download = "model.glb" // Set the file name
           link.style.display = "none"
           document.body.appendChild(link)
           link.click()
