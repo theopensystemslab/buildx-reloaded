@@ -1,34 +1,21 @@
 import { expose } from "comlink"
-import { Group, Mesh, Object3D, ObjectLoader } from "three"
+import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { UpdateWorkerGroupEventDetail } from "."
 import { GLTFExporter } from "./GLTFExporter"
-
-// function flattenObject(root: Object3D): Group {
-//   const flatGroup = new Group()
-
-//   const inverter = root.matrixWorld.clone().invert()
-
-//   root.traverse((child: Object3D) => {
-//     if (child instanceof Mesh && child.name.length > 0) {
-//       child.updateMatrixWorld()
-//       // console.log(child.matrixWorld)
-//       const newChild = child.clone()
-//       newChild.matrix.copy(child.matrixWorld)
-//       newChild.updateMatrix()
-//       // newChild.matrix.multiply(inverter)
-//       // newChild.position.setFromMatrixPosition(newChild.matrix)
-//       // newChild.rotation.setFromRotationMatrix(newChild.matrix)
-//       // newChild.scale.setFromMatrixScale(newChild.matrix)
-//       flatGroup.add(newChild)
-//     }
-//   })
-
-//   return flatGroup
-// }
 
 function flattenObject(root: Object3D): Group {
   // Create a new group for the flattened objects
   const flatGroup = new Group()
+
+  // Create separate matrices for position and rotation
+  const positionMatrix = new Matrix4().setPosition(root.position)
+  const rotationMatrix = new Matrix4().makeRotationFromQuaternion(
+    root.quaternion
+  )
+
+  // Invert them separately
+  const positionInverter = positionMatrix.clone().invert()
+  const rotationInverter = rotationMatrix.clone().invert()
 
   // Traverse all children in the hierarchy
   root.traverse((child: Object3D) => {
@@ -42,6 +29,10 @@ function flattenObject(root: Object3D): Group {
 
       // Copy the world matrix of the child to the clone
       newChild.matrix.copy(child.matrixWorld)
+
+      // Apply the inverter matrices
+      newChild.matrix.premultiply(positionInverter)
+      newChild.matrix.premultiply(rotationInverter)
 
       // Decompose the matrix into position, quaternion, and scale
       newChild.matrix.decompose(
