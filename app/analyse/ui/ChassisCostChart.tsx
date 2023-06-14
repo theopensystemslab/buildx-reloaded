@@ -12,7 +12,7 @@ import css from "./charts.module.css"
 import { Fragment } from "react"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 
-const BuildCostChart = () => {
+const ChassisCostChart = () => {
   const { orderListRows, fmt } = useOrderListData()
 
   const orderListByBuilding = pipe(
@@ -50,12 +50,12 @@ const BuildCostChart = () => {
   return (
     <div className={clsx(css.chart)}>
       <div>
-        <h2>Build cost</h2>
+        <h2>Chassis cost</h2>
         <h5>Estimated £ GBP</h5>
       </div>
       <div>
         <div className="h-64">
-          <div className="grid grid-cols-4 gap-2 border-b border-black h-full">
+          <div className="grid grid-cols-3 border-b border-black h-full">
             <div />
             {Object.keys(orderListByBuilding).length > 0 && (
               <Fragment>
@@ -71,23 +71,10 @@ const BuildCostChart = () => {
                     </div>
                   )}
                 />
-                <ChartBar
-                  className="scale-90 translate-y-[5%] text-white"
-                  items={Object.values(orderListByBuilding)}
-                  itemToColorClass={(item) => item.staleColorClass}
-                  itemToValue={(item) => (item.totalCost / 100) * 90}
-                  itemToKey={(item) => item.buildingName}
-                  renderItem={(item) => (
-                    <div className="flex flex-col justify-center  items-center">
-                      {/* <div>{capitalizeFirstLetters(item.buildingName)}</div> */}
-                      <div>{fmt((item.totalCost / 100) * 90)}</div>
-                    </div>
-                  )}
-                />
               </Fragment>
             )}
+            <div />
           </div>
-          <div />
         </div>
         <div className={css.chartBottom}>
           <div>{`${symbol}${formatNumberWithK(totalCost)}`}</div>
@@ -108,4 +95,4 @@ const BuildCostChart = () => {
     </div>
   )
 }
-export default BuildCostChart
+export default ChassisCostChart

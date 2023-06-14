@@ -1,6 +1,6 @@
 .chart {
   @apply bg-grey-10;
-  @apply max-w-lg;
+  @apply max-w-sm;
   @apply px-4 py-6;
 }
 

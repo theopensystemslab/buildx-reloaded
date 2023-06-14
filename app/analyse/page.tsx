@@ -1,6 +1,6 @@
 "use client"
 import { useOrderListData } from "../build/order/useOrderListData"
-import BuildCostChart from "./ui/BuildCostChart"
+import ChassisCostChart from "./ui/ChassisCostChart"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
 import css from "./page.module.css"
@@ -17,7 +17,7 @@ const AnalyseIndex = () => {
     case "success":
       return (
         <div className={css.root}>
-          <BuildCostChart />
+          <ChassisCostChart />
           <FloorAreaChart />
           <CarbonEmissionsChart />
         </div>
