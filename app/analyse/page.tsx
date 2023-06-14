@@ -1,9 +1,11 @@
 "use client"
-import { useOrderListData } from "../build/order/useOrderListData"
-import ChassisCostChart from "./ui/ChassisCostChart"
-import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
-import FloorAreaChart from "./ui/FloorAreaChart"
+import { pipe } from "fp-ts/lib/function"
+import { A, O, R } from "~/utils/functions"
+import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
+import { useSiteCurrency } from "../design/state/siteCtx"
 import css from "./page.module.css"
+import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
+import ChassisCostChart from "./ui/ChassisCostChart"
 
 const AnalyseIndex = () => {
   const { status } = useOrderListData()
@@ -16,10 +18,10 @@ const AnalyseIndex = () => {
     default:
     case "success":
       return (
-        <div className={css.root}>
+        <div className={css.pageRoot}>
           <ChassisCostChart />
-          <FloorAreaChart />
           <CarbonEmissionsChart />
+          {/* <FloorAreaChart /> */}
         </div>
       )
   }

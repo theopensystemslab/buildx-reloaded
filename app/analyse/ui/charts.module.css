@@ -1,3 +1,7 @@
+.chartRoot {
+  @apply h-64;
+}
+
 .chart {
   @apply bg-grey-10;
   @apply max-w-sm;
@@ -17,4 +21,15 @@
   @apply flex justify-end;
   @apply mx-8 mt-2;
   @apply text-5xl font-normal;
+}
+
+.chartSectionRoot {
+  @apply bg-grey-10;
+  @apply max-w-sm;
+  @apply px-4 py-6;
+}
+
+.subchart {
+  @apply grid grid-cols-2 gap-0;
+  @apply mt-5;
 }

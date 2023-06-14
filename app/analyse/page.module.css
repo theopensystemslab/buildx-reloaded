@@ -1,4 +1,4 @@
-.root {
+.pageRoot {
   @apply w-full h-full;
   display: grid;
   grid-template-columns: 1fr;
@@ -6,7 +6,7 @@
 }
 
 @screen sm {
-  .root {
+  .pageRoot {
     grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
   }
 }
