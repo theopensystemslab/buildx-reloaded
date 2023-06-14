@@ -1,5 +1,6 @@
 "use client"
 import { useOrderListData } from "../build/order/useOrderListData"
+import Loader from "../ui/Loader"
 import css from "./page.module.css"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
@@ -10,9 +11,8 @@ const AnalyseIndex = () => {
 
   switch (status) {
     case "error":
-      return "error"
     case "loading":
-      return "loading"
+      return <Loader />
     default:
     case "success":
       return (

@@ -1,5 +1,5 @@
 .pageRoot {
-  @apply w-full h-full;
+  @apply w-full h-full p-5;
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 1rem;
