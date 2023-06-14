@@ -1,11 +1,9 @@
 "use client"
-import { pipe } from "fp-ts/lib/function"
-import { A, O, R } from "~/utils/functions"
-import { OrderListRow, useOrderListData } from "../build/order/useOrderListData"
-import { useSiteCurrency } from "../design/state/siteCtx"
+import { useOrderListData } from "../build/order/useOrderListData"
 import css from "./page.module.css"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
+import FloorAreaChart from "./ui/FloorAreaChart"
 
 const AnalyseIndex = () => {
   const { status } = useOrderListData()
@@ -20,8 +18,8 @@ const AnalyseIndex = () => {
       return (
         <div className={css.pageRoot}>
           <ChassisCostChart />
+          <FloorAreaChart />
           <CarbonEmissionsChart />
-          {/* <FloorAreaChart /> */}
         </div>
       )
   }

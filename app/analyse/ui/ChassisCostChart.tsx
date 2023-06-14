@@ -86,7 +86,7 @@ const ChassisCostChart = () => {
         </div>
       </ChartContainer>
       <ChartMetrics>
-        <div className="text-5xl font-normal flex justify-center">
+        <div className="text-5xl font-normal flex">
           {formatCurrencyWithK(totalCost)}
         </div>
         <div>
