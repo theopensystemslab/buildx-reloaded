@@ -51,7 +51,6 @@ export const useOBJExporterWorker = () => {
 
   useEffect(() => {
     const worker = new Worker(new URL("./worker.ts", import.meta.url))
-    console.log(`worker setup`)
     ref.current = wrap<ExportersWorkerAPI>(worker)
   }, [])
 

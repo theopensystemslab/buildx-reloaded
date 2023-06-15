@@ -59,7 +59,7 @@ const parseAndSetGLTF = (houseId: string, object: Object3D) => {
       GLTFMap.set(houseId, gltf)
     },
     function (e: any) {
-      console.log(e)
+      console.error(e)
     },
     { binary: true, onlyVisible: true }
   )

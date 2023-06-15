@@ -103,8 +103,6 @@ export const usePostTransformsTransients = (
 
       invalidate()
 
-      console.log(`calling debouncedExportUpdater`)
-
       debouncedExportUpdater()
     },
     true

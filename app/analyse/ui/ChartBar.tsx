@@ -44,8 +44,6 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
     )
   ).join(" ")}`
 
-  console.log({ gridTemplateRows, items })
-
   const style = {
     gridTemplateRows,
   }
