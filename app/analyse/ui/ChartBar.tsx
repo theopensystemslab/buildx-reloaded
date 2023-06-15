@@ -44,6 +44,8 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
     )
   ).join(" ")}`
 
+  console.log({ gridTemplateRows, items })
+
   const style = {
     gridTemplateRows,
   }
@@ -63,11 +65,13 @@ const ChartBar = <T extends unknown>(props: Props<T>) => {
             <div
               key={itemToKey(item)}
               className={clsx(
-                "flex flex-col justify-center items-center px-2",
+                "flex flex-col justify-center items-center px-2 relative",
                 itemToColorClass(item)
               )}
             >
-              {renderItem ? renderItem(item) : itemToString(item)}
+              <div className="absolute leading-3 text-xs">
+                {renderItem ? renderItem(item) : itemToString(item)}
+              </div>
             </div>
           )
         })

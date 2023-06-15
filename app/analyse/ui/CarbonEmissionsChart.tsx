@@ -26,7 +26,6 @@ const CarbonEmissionsChart = () => {
     <ChartColumn>
       <ChartTitles title="Upfront carbon emissions" subtitle="Estimated net" />
       <ChartContainer>
-        {/* <div className="grid grid-cols-3 h-32 border-t border-black"></div> */}
         <div
           className={clsx(
             "grid grid-cols-3 border-black h-full",
@@ -38,26 +37,35 @@ const CarbonEmissionsChart = () => {
           )}
         >
           <div />
-          <ChartBar
-            items={pipe(
-              analyseData.byHouse,
-              R.collect(S.Ord)((houseId, { operationalCo2 }) => ({
-                houseId,
-                value: operationalCo2.annualTotal,
-                buildingName: houses[houseId].friendlyName,
-              }))
-            )}
-            itemToColorClass={(item) => getColorClass(item.houseId)}
-            itemToValue={(item) => item.value}
-            itemToKey={(item) => item.houseId}
-            renderItem={(item) => (
-              <div className="flex flex-col justify-center  items-center px-2">
-                <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                <div>{formatWithUnit(item.value, "T")}</div>
-              </div>
-            )}
-            reverse
-          />
+
+          {Object.keys(analyseData.byHouse).length > 0 && (
+            <ChartBar
+              items={pipe(
+                analyseData.byHouse,
+                R.collect(S.Ord)((houseId, { operationalCo2 }) => ({
+                  houseId,
+                  value: operationalCo2.annualTotal,
+                  buildingName: houses[houseId].friendlyName,
+                }))
+              )}
+              itemToColorClass={(item) => getColorClass(item.houseId)}
+              itemToValue={(item) => item.value}
+              itemToKey={(item) => item.houseId}
+              // renderItem={(item) => (
+              //   <div className="flex flex-col justify-center  items-center">
+              //     <div>{capitalizeFirstLetters(item.buildingName)}</div>
+              //     {/* <div>{formatCurrencyWithK(item.totalCost)}</div> */}
+              //   </div>
+              // )}
+              renderItem={(item) => (
+                <div className="flex flex-col justify-center items-center flex-shrink">
+                  <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                  <div>{formatWithUnit(item.value, "T")}</div>
+                </div>
+              )}
+              reverse
+            />
+          )}
           <div />
         </div>
       </ChartContainer>

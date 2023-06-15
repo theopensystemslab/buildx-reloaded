@@ -1,7 +1,6 @@
 "use client"
 import { ArrowUp } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment } from "react"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import {
   OrderListRow,
@@ -54,7 +53,7 @@ const ChassisCostChart = () => {
   }
 
   function formatCurrencyWithK(number: number): string {
-    return `${currency.symbol}${formatNumberWithK(totalCost)}`
+    return `${currency.symbol}${formatNumberWithK(number)}`
   }
 
   return (
@@ -67,20 +66,18 @@ const ChassisCostChart = () => {
         <div className="grid grid-cols-3 border-b border-black h-full">
           <div />
           {Object.keys(orderListByBuilding).length > 0 && (
-            <Fragment>
-              <ChartBar
-                items={Object.values(orderListByBuilding)}
-                itemToColorClass={(item) => item.colorClass}
-                itemToValue={(item) => item.totalCost}
-                itemToKey={(item) => item.buildingName}
-                renderItem={(item) => (
-                  <div className="flex flex-col justify-center  items-center">
-                    <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                    <div>{formatCurrencyWithK(item.totalCost)}</div>
-                  </div>
-                )}
-              />
-            </Fragment>
+            <ChartBar
+              items={Object.values(orderListByBuilding)}
+              itemToColorClass={(item) => item.colorClass}
+              itemToValue={(item) => item.totalCost}
+              itemToKey={(item) => item.houseId}
+              renderItem={(item) => (
+                <div className="flex flex-col justify-center  items-center">
+                  <div>{capitalizeFirstLetters(item.buildingName)}</div>
+                  <div>{formatCurrencyWithK(item.totalCost)}</div>
+                </div>
+              )}
+            />
           )}
           <div />
         </div>
