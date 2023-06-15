@@ -1,6 +1,7 @@
 import { Remote, wrap } from "comlink"
 import { useEffect, useRef } from "react"
 import { useEvent } from "react-use"
+import houses from "../houses"
 import { ExportersWorkerAPI } from "./worker"
 
 export const UPDATE_EXPORT_MODELS_EVENT = "UpdateExportModels"
@@ -69,18 +70,15 @@ export const useOBJExporterWorker = () => {
           const gltfData = await ref.current?.getGLB(houseId)
           if (!gltfData) return
 
-          // const stringified = JSON.stringify(gltfData)
-
           const blob = new Blob([gltfData], {
             type: "model/gltf-binary",
-          }) // Create a Blob from the OBJ data
+          })
 
-          const url = URL.createObjectURL(blob) // Create a URL for the Blob
+          const url = URL.createObjectURL(blob)
 
-          // Create a download link and click it
           const link = document.createElement("a")
           link.href = url
-          link.download = "model.glb" // Set the file name
+          link.download = `${houses[houseId].friendlyName}.glb`
           link.style.display = "none"
           document.body.appendChild(link)
           link.click()
@@ -95,13 +93,12 @@ export const useOBJExporterWorker = () => {
           console.log(objData)
           if (!objData) return
 
-          const blob = new Blob([objData], { type: "text/plain" }) // Create a Blob from the OBJ data
-          const url = URL.createObjectURL(blob) // Create a URL for the Blob
+          const blob = new Blob([objData], { type: "text/plain" })
+          const url = URL.createObjectURL(blob)
 
-          // Create a download link and click it
           const link = document.createElement("a")
           link.href = url
-          link.download = "model.obj" // Set the file name
+          link.download = `${houses[houseId].friendlyName}.obj`
           link.style.display = "none"
           document.body.appendChild(link)
           link.click()

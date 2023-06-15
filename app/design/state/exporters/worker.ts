@@ -4,16 +4,13 @@ import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UpdateWorkerGroupEventDetail } from "."
 
 function flattenObject(root: Object3D): Group {
-  // Create a new group for the flattened objects
   const flatGroup = new Group()
 
-  // Create separate matrices for position and rotation
   const positionMatrix = new Matrix4().setPosition(root.position)
   const rotationMatrix = new Matrix4().makeRotationFromQuaternion(
     root.quaternion
   )
 
-  // Invert them separately
   const positionInverter = positionMatrix.clone().invert()
   const rotationInverter = rotationMatrix.clone().invert()
 

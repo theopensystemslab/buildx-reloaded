@@ -10,12 +10,12 @@ import {
   usePreTransformsTransients,
 } from "~/design/state/transients/transforms"
 import { RA } from "~/utils/functions"
-import { dispatchUpdateExportModelsEvent } from "../../state/exporters"
 import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
+import PreviewHouses from "./preview/PreviewHouses"
 import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
@@ -72,12 +72,12 @@ const GroupedHouse = (props: Props) => {
   return (
     <group ref={houseGroupRef} key={dnas.toString()}>
       <group ref={startRef}>
-        {/* <StretchHandle
+        <StretchHandle
           houseId={houseId}
           axis="z"
           direction={-1}
           disable={!isStretchable}
-        /> */}
+        />
         <GroupedColumn
           ref={startColumnRef}
           key={`${houseId}:${startColumn.columnIndex}`}
@@ -104,31 +104,31 @@ const GroupedHouse = (props: Props) => {
           column={endColumn}
           {...{ systemId, houseId, end: true }}
         />
-        {/* <StretchHandle
+        <StretchHandle
           houseId={houseId}
           axis="z"
           direction={1}
           disable={!isStretchable}
-        /> */}
+        />
       </group>
 
-      {/* <StretchWidth
+      <StretchWidth
         houseId={houseId}
         columnLayout={layout}
         setHouseVisible={setHouseVisible}
-      /> */}
+      />
 
-      {/* <RotateHandles
+      <RotateHandles
         houseId={houseId}
         scale={isMoveRotateable ? [1, 1, 1] : [0, 0, 0]}
-      /> */}
+      />
 
-      {/* <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
+      <group scale={isStretchable ? [1, 1, 1] : [0, 0, 0]}>
         {columnsUp}
         {columnsDown}
-      </group> */}
+      </group>
 
-      {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
+      <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
     </group>
   )
 }
