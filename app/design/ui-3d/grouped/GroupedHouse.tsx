@@ -1,9 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
-import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useHouseColumnLayout } from "~/design/state/layouts"
 import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
@@ -11,12 +10,13 @@ import {
   usePreTransformsTransients,
 } from "~/design/state/transients/transforms"
 import { RA } from "~/utils/functions"
+import { useHouse, useHouseSystemId } from "../../state/houses"
+import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
-import PreviewHouses from "./preview/PreviewHouses"
 import GroupedColumn from "./GroupedColumn"
+import PreviewHouses from "./preview/PreviewHouses"
 import StretchWidth from "./stretchWidth/StretchWidth"
-import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
 
 type Props = {
   houseId: string

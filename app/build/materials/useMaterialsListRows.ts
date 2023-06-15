@@ -97,7 +97,6 @@ export const useMaterialsListRows = () => {
         case "Mechanical ventilation":
         case "Electrical and lighting":
         default:
-          // console.log(`${item} defaulted`)
           return (acc, module) => 0
       }
     },
