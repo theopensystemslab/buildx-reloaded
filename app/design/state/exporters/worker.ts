@@ -17,34 +17,29 @@ function flattenObject(root: Object3D): Group {
   const positionInverter = positionMatrix.clone().invert()
   const rotationInverter = rotationMatrix.clone().invert()
 
-  // Traverse all children in the hierarchy
+  const skipObject = (object: Object3D): boolean =>
+    !(object instanceof Mesh) ||
+    object.userData?.identifier?.identifierType !== "HOUSE_ELEMENT"
+
   root.traverse((child: Object3D) => {
-    // Check if the child is a mesh with a name
-    if (child instanceof Mesh && child.name.length > 0) {
-      // Clone the child so that we don't modify the original
+    if (!skipObject(child)) {
       const newChild = child.clone()
 
-      // Ensure the world matrix of the child is up-to-date
       child.updateMatrixWorld()
 
-      // Copy the world matrix of the child to the clone
       newChild.matrix.copy(child.matrixWorld)
 
-      // Apply the inverter matrices
       newChild.matrix.premultiply(positionInverter)
       newChild.matrix.premultiply(rotationInverter)
 
-      // Decompose the matrix into position, quaternion, and scale
       newChild.matrix.decompose(
         newChild.position,
         newChild.quaternion,
         newChild.scale
       )
 
-      // Reset the matrix of the clone to identity (not required if matrixAutoUpdate is true)
       newChild.matrix.identity()
 
-      // Add the clone to the flattened group
       flatGroup.add(newChild)
     }
   })
@@ -62,7 +57,6 @@ const parseAndSetGLTF = (houseId: string, object: Object3D) => {
     object,
     function (gltf: any) {
       GLTFMap.set(houseId, gltf)
-      console.log("GLB set")
     },
     function (e: any) {
       console.log(e)
@@ -75,7 +69,6 @@ const parseAndSetOBJ = (houseId: string, object: Object3D) => {
   const objExporter = new OBJExporter()
   const parsedObj = objExporter.parse(object)
   OBJMap.set(houseId, parsedObj)
-  console.log("OBJ set")
 }
 
 const updateModels = async ({

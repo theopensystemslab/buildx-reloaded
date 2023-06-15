@@ -22,6 +22,7 @@ import ChangeLevelType from "./interactions/ChangeLevelType"
 import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
 import { dispatchGetModelEvent } from "../../state/exporters"
+import Exporters from "./interactions/Exporters"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { mode } = useSiteCtx()
@@ -190,16 +191,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
         </Fragment>
       )}
 
-      <ContextMenuButton
-        icon={<Pencil />}
-        text="Export GLB"
-        onClick={() => void dispatchGetModelEvent({ houseId, format: "GLB" })}
-      />
-      <ContextMenuButton
-        icon={<Pencil />}
-        text="Export OBJ"
-        onClick={() => void dispatchGetModelEvent({ houseId, format: "OBJ" })}
-      />
+      <Exporters houseId={houseId} />
     </ContextMenu>
   )
 }
