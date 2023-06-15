@@ -1,9 +1,9 @@
-import scope, { useScope } from "~/design/state/scope"
 import { Reset, TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
 import { House } from "~/data/houses"
 import { useHouseTypes } from "~/data/houseTypes"
+import scope, { useScope } from "~/design/state/scope"
 import { Pencil, TextCursor } from "~/ui/icons"
 import houses, { useHouse } from "../../state/houses"
 import { closeMenu } from "../../state/menu"
@@ -21,7 +21,6 @@ import ChangeLayouts from "./interactions/ChangeLayouts"
 import ChangeLevelType from "./interactions/ChangeLevelType"
 import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
-import { dispatchGetModelEvent } from "../../state/exporters"
 import Exporters from "./interactions/Exporters"
 
 const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
