@@ -1,0 +1,36 @@
+.chartColumn {
+  @apply bg-grey-10;
+  @apply max-w-sm;
+  @apply px-4 py-6;
+}
+
+.chartContainer {
+  @apply h-64 overflow-hidden my-16;
+}
+
+.chartMetrics {
+  @apply grid grid-cols-2 gap-0;
+  @apply mt-5;
+}
+
+.whatIsThis {
+  @apply mt-16;
+}
+
+.whatIsThis,
+.howIsItCalculated {
+  @apply leading-relaxed text-grey-90;
+}
+
+.whatIsThis p,
+.howIsItCalculated p {
+  @apply mt-1;
+}
+.whatIsThis h4,
+.howIsItCalculated h4 {
+  @apply font-semibold text-grey-80;
+}
+
+.howIsItCalculated {
+  @apply mt-8;
+}

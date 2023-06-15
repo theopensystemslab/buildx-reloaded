@@ -1,12 +1,12 @@
-.root {
-  @apply w-full h-full;
+.pageRoot {
+  @apply w-full h-full p-5;
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 1rem;
 }
 
 @screen sm {
-  .root {
+  .pageRoot {
     grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
   }
 }

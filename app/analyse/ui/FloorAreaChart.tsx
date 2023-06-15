@@ -1,13 +1,23 @@
 "use client"
-import { A, capitalizeFirstLetters, O, R, S } from "~/utils/functions"
-import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
-import { useSiteCurrency } from "../../design/state/siteCtx"
+import { A, capitalizeFirstLetters, O, R, S } from "~/utils/functions"
 import { floor } from "~/utils/math"
-import { useGetColorClass, useSelectedHouses } from "./HousesPillsSelector"
-import { formatWithUnit, useHouseFloorAreas } from "../state/data"
+import { useSiteCurrency } from "../../design/state/siteCtx"
+import {
+  formatWithUnit,
+  useAnalyseData,
+  useHouseFloorAreas,
+} from "../state/data"
 import ChartBar from "./ChartBar"
-import css from "./charts.module.css"
+import {
+  ChartColumn,
+  ChartContainer,
+  ChartMetrics,
+  ChartTitles,
+  HowIsItCalculated,
+  WhatIsThis,
+} from "./chartComponents"
+import { useGetColorClass, useSelectedHouses } from "./HousesPillsSelector"
 
 const FloorAreaChart = () => {
   const selectedHouses = useSelectedHouses()
@@ -16,21 +26,22 @@ const FloorAreaChart = () => {
 
   const houseFloorAreas = useHouseFloorAreas()
 
+  const {
+    areas: { firstFloor },
+  } = useAnalyseData()
+
   const totalFloorArea = pipe(
     houseFloorAreas,
     R.reduce(S.Ord)(0, (b, a) => b + a)
   )
 
-  const { formatWithSymbol } = useSiteCurrency()
+  const { formatWithSymbol, ...currency } = useSiteCurrency()
 
   return (
-    <div className={clsx(css.chart)}>
-      <div>
-        <h2>Floor area</h2>
-        <h5>Gross internal m²</h5>
-      </div>
-      <div className="h-64">
-        {selectedHouses.length > 0 && (
+    <ChartColumn>
+      <ChartTitles title="Floor area" subtitle="Gross internal m²" />
+      <ChartContainer>
+        <div className="grid grid-cols-1 h-full">
           <ChartBar
             className="h-full"
             items={pipe(
@@ -65,24 +76,36 @@ const FloorAreaChart = () => {
               </div>
             )}
           />
-        )}
-      </div>
-      <div className={css.chartBottom}>
-        <div className="flex justify-end mx-8 mt-2">
+        </div>
+      </ChartContainer>
+      <ChartMetrics>
+        <div className="flex">
           <div className="text-5xl font-normal">
             {formatWithUnit(floor(totalFloorArea), "m²")}
           </div>
         </div>
         <div>
           <div>
-            <span className="text-3xl">{`${formatWithSymbol(1200)}/m²`}</span>
+            <span className="text-3xl">{`${formatWithSymbol(0)}/m²`}</span>
           </div>
-          <div className="">
-            <span>Cost per floor area</span>
+          <div className="mt-4">
+            <span>Estimated per floor area</span>
           </div>
         </div>
-      </div>
-    </div>
+      </ChartMetrics>
+      <WhatIsThis>
+        <p>This is the internal floor area of your project.</p>
+      </WhatIsThis>
+      <HowIsItCalculated>
+        <p>
+          {`
+          This is what is known as the 'gross internal floor area'. It is the
+          entire floor area within the building. This includes internal walls
+          and voids.
+`}
+        </p>
+      </HowIsItCalculated>
+    </ChartColumn>
   )
 }
 
