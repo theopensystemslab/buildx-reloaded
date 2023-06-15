@@ -56,22 +56,6 @@ const GroupedHouse = (props: Props) => {
 
   const { dnas } = useHouse(houseId)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!houseGroupRef.current) return
-      const houseJson = houseGroupRef.current.toJSON()
-
-      console.log("dispatching export models event")
-
-      dispatchUpdateExportModelsEvent({
-        houseId,
-        payload: houseJson,
-      })
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [dnas, houseId])
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])
 

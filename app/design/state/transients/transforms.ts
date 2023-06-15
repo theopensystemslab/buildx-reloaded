@@ -1,11 +1,13 @@
-import { proxy } from "valtio"
-import houses from "../houses"
-import { useSubscribeKey } from "~/utils/hooks"
-import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
+import { invalidate } from "@react-three/fiber"
 import { MutableRefObject, useRef } from "react"
 import { Group, Vector3 } from "three"
+import { useDebouncedCallback } from "use-debounce"
+import { proxy } from "valtio"
+import { useSubscribeKey } from "~/utils/hooks"
 import { yAxis } from "~/utils/three"
-import { invalidate } from "@react-three/fiber"
+import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
+import { dispatchUpdateExportModelsEvent } from "../exporters"
+import houses from "../houses"
 
 export type Transforms = {
   position?: DeltaV3
@@ -62,6 +64,19 @@ export const usePostTransformsTransients = (
 ) => {
   const tPosV = useRef(new Vector3())
 
+  const debouncedExportUpdater = useDebouncedCallback(
+    () => {
+      const houseJson = houseGroupRef.current.toJSON()
+
+      dispatchUpdateExportModelsEvent({
+        houseId,
+        payload: houseJson,
+      })
+    },
+    2000,
+    { leading: false, trailing: true }
+  )
+
   useSubscribeKey(
     postTransformsTransients,
     houseId,
@@ -87,6 +102,10 @@ export const usePostTransformsTransients = (
       houseGroupRef.current.position.add(tPosV.current)
 
       invalidate()
+
+      console.log(`calling debouncedExportUpdater`)
+
+      debouncedExportUpdater()
     },
     true
   )
