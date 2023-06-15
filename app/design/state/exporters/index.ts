@@ -47,7 +47,7 @@ export const dispatchGetModelEvent = ({
   )
 }
 
-export const useOBJExporterWorker = () => {
+export const useExportersWorker = () => {
   const ref = useRef<Remote<ExportersWorkerAPI> | null>(null)
 
   useEffect(() => {

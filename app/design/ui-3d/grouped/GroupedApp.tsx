@@ -4,7 +4,7 @@ import { Fragment, Suspense } from "react"
 import { usePreviews } from "~/design/state/previews"
 import { useRouting } from "~/design/state/routing"
 import { RA } from "~/utils/functions"
-import { useOBJExporterWorker } from "../../state/exporters"
+import { useExportersWorker } from "../../state/exporters"
 import { useDragHandler, useGestures } from "../../state/gestures"
 import { useHouseKeys } from "../../state/houses"
 import XZPlane from "../XZPlane"
@@ -18,7 +18,7 @@ const GroupedApp = () => {
   useDragHandler()
   useRouting()
 
-  useOBJExporterWorker()
+  useExportersWorker()
 
   return (
     <Fragment>
