@@ -90,7 +90,6 @@ export const useExportersWorker = () => {
         }
         case "OBJ": {
           const objData = await ref.current?.getOBJ(houseId)
-          console.log(objData)
           if (!objData) return
 
           const blob = new Blob([objData], { type: "text/plain" })
