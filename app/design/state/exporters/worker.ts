@@ -1,8 +1,8 @@
 import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
-import { OBJExporter } from "three-stdlib"
+import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UpdateWorkerGroupEventDetail } from "."
-import { GLTFExporter } from "./GLTFExporter"
+// import { GLTFExporter } from "./GLTFExporter"
 
 function flattenObject(root: Object3D): Group {
   // Create a new group for the flattened objects
