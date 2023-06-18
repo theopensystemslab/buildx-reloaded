@@ -21,6 +21,15 @@ type SiteCtx = {
   region: "UK" | "EU"
 }
 
+export const siteCtxParser = z.object({
+  mode: SiteCtxModeEnum,
+  editMode: EditModeEnum.nullable(),
+  houseId: z.string().nullable(),
+  levelIndex: z.number().nullable(),
+  projectName: z.string().nullable(),
+  region: z.union([z.literal("UK"), z.literal("EU")]),
+})
+
 const defaults = {
   houseId: null,
   levelIndex: null,
