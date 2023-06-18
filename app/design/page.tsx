@@ -1,3 +1,4 @@
+"use client"
 import DataInit from "~/data/DataInit"
 import { TrpcProvider } from "../ui/TrpcProvider"
 import GroupedApp from "./ui-3d/grouped/GroupedApp"

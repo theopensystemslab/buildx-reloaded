@@ -8,14 +8,16 @@ import { useExportersWorker } from "../../state/exporters"
 import { useDragHandler, useGestures } from "../../state/gestures"
 import { useHouseKeys, useLocallyStoredHouses } from "../../state/houses"
 import { useSharingWorker } from "../../state/sharing"
+import { useLocallyStoredSiteCtx } from "../../state/siteCtx"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import GroupedHouse from "./GroupedHouse"
 
 const GroupedApp = () => {
-  useLocallyStoredHouses()
-
   const houseKeys = useHouseKeys()
+
+  useLocallyStoredHouses()
+  useLocallyStoredSiteCtx()
 
   usePreviews()
   const bindAll = useGestures()

@@ -1,14 +1,14 @@
 "use client"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import { decodeEncodedStoragePayload } from "./design/state/sharing"
-import Loader from "./ui/Loader"
+import { useEffect } from "react"
 import { z } from "zod"
 import { housesParser, saveHouses } from "./data/houses"
-import { polygonGeometryParser } from "./locate/state/geojson"
-import { siteCtxParser } from "./design/state/siteCtx"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./design/state/constants"
+import { decodeEncodedStoragePayload } from "./design/state/sharing"
+import { siteCtxParser } from "./design/state/siteCtx"
 import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "./locate/state/constants"
+import { polygonGeometryParser } from "./locate/state/geojson"
+import Loader from "./ui/Loader"
 
 const Index = () => {
   const router = useRouter()
@@ -33,8 +33,6 @@ const Index = () => {
       const { houses, polygon, siteCtx } = parser.parse(decoded)
 
       saveHouses(houses)
-
-      console.log(houses)
 
       localStorage.setItem(
         BUILDX_LOCAL_STORAGE_CONTEXT_KEY,

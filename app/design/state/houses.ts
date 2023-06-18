@@ -1,3 +1,4 @@
+import { Module } from "@/server/data/modules"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
@@ -8,12 +9,11 @@ import { useEffect, useMemo } from "react"
 import { useKey } from "react-use"
 import { Vector3 } from "three"
 import { proxy, subscribe, useSnapshot } from "valtio"
-import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "./constants"
+import { A, R, RA, RR, S } from "~/utils/functions"
 import { getHousesFromLocalStorage, House, Houses } from "../../data/houses"
-import { Module } from "@/server/data/modules"
-import { A, R, RA, RNEA, RR, S } from "~/utils/functions"
-import { useModules, useSystemModules } from "../../data/modules"
 import { useHouseTypes } from "../../data/houseTypes"
+import { useModules, useSystemModules } from "../../data/modules"
+import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "./constants"
 
 const houses = proxy<Houses>(getHousesFromLocalStorage())
 
