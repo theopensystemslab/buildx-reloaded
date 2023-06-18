@@ -30,6 +30,10 @@ export const useMapPolygon = () => {
   return polygon
 }
 
+export const getMapPolygon = () => {
+  return prox.polygon
+}
+
 export const setMapPolygon = (polygon: Polygon) => {
   prox.polygon = polygon
   localStorage.setItem(

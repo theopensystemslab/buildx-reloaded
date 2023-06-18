@@ -1,12 +1,17 @@
 "use client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
 
 const Index = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const q = searchParams.get("q")
+
   useEffect(() => {
-    router.push("/locate")
-  }, [router])
+    console.log({ q })
+    console.log("push")
+    // router.push("/locate")
+  }, [q, router])
   return <div></div>
 }
 

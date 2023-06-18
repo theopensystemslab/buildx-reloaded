@@ -6,19 +6,22 @@ import { useRouting } from "~/design/state/routing"
 import { RA } from "~/utils/functions"
 import { useExportersWorker } from "../../state/exporters"
 import { useDragHandler, useGestures } from "../../state/gestures"
-import { useHouseKeys } from "../../state/houses"
+import houses, { useHouseKeys } from "../../state/houses"
+import { useSharingWorker } from "../../state/sharing"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import GroupedHouse from "./GroupedHouse"
 
 const GroupedApp = () => {
   const houseKeys = useHouseKeys()
+
   usePreviews()
   const bindAll = useGestures()
   useDragHandler()
   useRouting()
 
   useExportersWorker()
+  useSharingWorker()
 
   return (
     <Fragment>
