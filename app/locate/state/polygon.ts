@@ -1,9 +1,12 @@
 "use client"
 import { Polygon } from "@turf/turf"
 import { proxy, useSnapshot } from "valtio"
+import { isSSR } from "../../utils/next"
 import { BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY } from "./constants"
 
 function getInitialPolygon() {
+  if (isSSR()) return null
+
   const rawStoragePayload = localStorage.getItem(
     BUILDX_LOCAL_STORAGE_MAP_POLYGON_KEY
   )

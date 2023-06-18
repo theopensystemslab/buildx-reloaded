@@ -30,12 +30,10 @@ export const useLocallyStoredHouses = () =>
   )
 
 export const useHouses = () => {
-  // useLocallyStoredHouses()
   return useSnapshot(houses) as typeof houses
 }
 
 export const useHouseKeys = () => {
-  // useLocallyStoredHouses()
   return pipe(useSnapshot(houses) as typeof houses, RR.keys)
 }
 
