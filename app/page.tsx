@@ -15,12 +15,9 @@ const Index = () => {
   const searchParams = useSearchParams()
   const q = searchParams.get("q")
 
-  const [loading, setLoading] = useState(true)
-
   useEffect(() => {
-    if (!loading) router.push("/locate")
     if (!q) {
-      setLoading(false)
+      router.push("/locate")
       return
     }
 
@@ -37,6 +34,8 @@ const Index = () => {
 
       saveHouses(houses)
 
+      console.log(houses)
+
       localStorage.setItem(
         BUILDX_LOCAL_STORAGE_CONTEXT_KEY,
         JSON.stringify(siteCtx)
@@ -47,11 +46,11 @@ const Index = () => {
         JSON.stringify(polygon)
       )
 
-      setLoading(false)
+      router.push("/design")
     } catch (e) {
-      setLoading(false)
+      router.push("/locate")
     }
-  }, [loading, q, router])
+  }, [q, router])
 
   return <Loader />
 }
