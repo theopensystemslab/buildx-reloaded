@@ -14,23 +14,25 @@
   /* box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); */
 }
 
-.dropdown {
-  position: absolute;
-  top: 0;
-  z-index: 20;
-  /* background-color: white; */
-  width: 10rem;
-  left: 100%;
-}
-
-.active {
-  @apply bg-white;
-}
-
-.hovered {
+.menuButton {
+  composes: button;
   @apply bg-white-60;
 }
 
-.idle {
-  @apply bg-white-30;
+.toggleButton {
+  composes: button;
+  @apply bg-white-30 hover:bg-white-60;
+}
+
+.toggleButton[data-active="true"] {
+  @apply bg-white-60;
+}
+
+.dropdown {
+  @apply bg-white-60;
+  position: absolute;
+  top: 0;
+  z-index: 20;
+  width: 10rem;
+  left: 100%;
 }

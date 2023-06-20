@@ -50,7 +50,6 @@ function Checklist<T>(props: Props<T>) {
         </div>
       )}
       {props.options.map((option, index) => {
-        console.log(option)
         return (
           <label
             key={index}

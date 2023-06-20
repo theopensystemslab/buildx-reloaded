@@ -4,21 +4,20 @@ import IconButton from "~/ui/IconButton"
 import IconMenu from "~/ui/IconMenu"
 import { GroundPlane2, Menu, SectionCuts } from "~/ui/icons"
 import UniversalMenu from "~/ui/UniversalMenu"
-import settings, {
-  setGroundPlaneEnabled,
+import {
   setSidebar,
   toggleGroundPlaneEnabled,
   useDesignSettings,
   useVerticalCuts,
 } from "../state/settings"
 import SiteSidebar from "./SiteSidebar"
-// import Checklist from "./Checklist"
 import { pipe } from "fp-ts/lib/function"
 import { keys } from "fp-ts/lib/Record"
 import usePortal from "react-cool-portal"
-import { useSnapshot } from "valtio"
 import Checklist from "~/ui/Checklist"
 import Radio from "~/ui/Radio"
+import { R, S } from "~/utils/functions"
+import IconToggle from "../../ui/IconToggle"
 import {
   setOrthographic,
   useCameraReset,
@@ -27,12 +26,10 @@ import {
 import elementCategories, {
   useElementCategories,
 } from "../state/elementCategories"
-import { R, S } from "~/utils/functions"
-import ContextMenuEntry from "./menu/ContextMenuEntry"
+import { useMenu } from "../state/menu"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
-import { useMenu } from "../state/menu"
-import IconToggle from "../../ui/IconToggle"
+import ContextMenuEntry from "./menu/ContextMenuEntry"
 
 type Props = {
   controlsEnabled: boolean

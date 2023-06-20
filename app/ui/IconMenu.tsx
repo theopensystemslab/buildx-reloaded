@@ -11,12 +11,6 @@ type Props = {
 const IconMenu = ({ icon, children, active = false }: Props) => {
   const [hovered, setHovered] = useState(false)
 
-  const activityClass = clsx({
-    [css.idle]: !active && !hovered,
-    [css.hovered]: !active && hovered,
-    [css.active]: active,
-  })
-
   return (
     <div
       className={css.container}
@@ -27,10 +21,8 @@ const IconMenu = ({ icon, children, active = false }: Props) => {
         setHovered(false)
       }}
     >
-      <button className={clsx(css.button, activityClass)}>{icon}</button>
-      {hovered && (
-        <div className={clsx(css.dropdown, activityClass)}>{children}</div>
-      )}
+      <button className={css.menuButton}>{icon}</button>
+      {hovered && <div className={css.dropdown}>{children}</div>}
     </div>
   )
 }

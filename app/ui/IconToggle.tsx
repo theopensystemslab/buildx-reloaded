@@ -9,26 +9,20 @@ type Props = {
 }
 
 const IconToggle = ({ icon, active = false, onClick }: Props) => {
-  const [hovered, setHovered] = useState(false)
+  // const [hovered, setHovered] = useState(false)
 
   return (
     <div
       className={css.container}
-      onMouseEnter={() => {
-        setHovered(true)
-      }}
-      onMouseLeave={() => {
-        setHovered(false)
-      }}
+      // onMouseEnter={() => {
+      //   setHovered(true)
+      // }}
+      // onMouseLeave={() => {
+      //   setHovered(false)
+      // }}
       onClick={onClick}
     >
-      <button
-        className={clsx(css.button, {
-          [css.idle]: !active && !hovered,
-          [css.hovered]: !active && hovered,
-          [css.active]: active,
-        })}
-      >
+      <button className={css.toggleButton} data-active={active}>
         {icon}
       </button>
     </div>
