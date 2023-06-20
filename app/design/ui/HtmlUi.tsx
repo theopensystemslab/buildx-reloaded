@@ -2,11 +2,12 @@ import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
 import { Fragment, useState } from "react"
 import IconButton from "~/ui/IconButton"
 import IconMenu from "~/ui/IconMenu"
-import { Menu, SectionCuts } from "~/ui/icons"
+import { GroundPlane2, Menu, SectionCuts } from "~/ui/icons"
 import UniversalMenu from "~/ui/UniversalMenu"
-import {
+import settings, {
   setGroundPlaneEnabled,
   setSidebar,
+  toggleGroundPlaneEnabled,
   useDesignSettings,
   useVerticalCuts,
 } from "../state/settings"
@@ -31,13 +32,14 @@ import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
 import { useMenu } from "../state/menu"
+import IconToggle from "../../ui/IconToggle"
 
 type Props = {
   controlsEnabled: boolean
 }
 
 const HtmlUi = (props: Props) => {
-  const { sidebar, groundPlaneEnabled: groundPlane } = useDesignSettings()
+  const { sidebar, groundPlaneEnabled } = useDesignSettings()
   const orthographic = useOrthographic()
 
   // const { mapboxEnabled } = useMapboxStore()
@@ -83,7 +85,7 @@ const HtmlUi = (props: Props) => {
           </IconButton>
         </div>
       </HeaderEndPortal>
-      <div className="absolute left-0 top-1/2 z-10 flex -translate-y-1/2 transform flex-col justify-center bg-white shadow">
+      <div className="absolute left-0 top-1/2 z-10 flex -translate-y-1/2 transform flex-col justify-center">
         {/* <IconMenu icon={() => <ChoroplethMap size={24} className="m-auto" />}>
           <Radio
             id="map"
@@ -102,7 +104,7 @@ const HtmlUi = (props: Props) => {
             onChange={setMapboxEnabled}
           />
         </IconMenu> */}
-        <IconMenu icon={() => <View size={24} className="m-auto" />}>
+        <IconMenu icon={<View size={24} className="m-auto" />}>
           <Radio
             id="camera"
             label="Camera"
@@ -124,7 +126,7 @@ const HtmlUi = (props: Props) => {
           </IconButton>
         </IconMenu>
 
-        <IconMenu icon={SectionCuts}>
+        <IconMenu icon={<SectionCuts />}>
           <Checklist
             label="Vertical cuts"
             options={[
@@ -138,22 +140,8 @@ const HtmlUi = (props: Props) => {
             )}
             onChange={setVerticalCuts}
           />
-          <Radio
-            id="ground-plane"
-            label="Ground Plane"
-            options={[
-              { value: false, label: "None" },
-              { value: true, label: "Regular" },
-            ]}
-            selected={groundPlane}
-            onChange={(newValue) => {
-              setGroundPlaneEnabled(newValue)
-            }}
-          />
         </IconMenu>
-        <IconMenu
-          icon={() => <WatsonHealthSubVolume size={24} className="m-auto" />}
-        >
+        <IconMenu icon={<WatsonHealthSubVolume size={24} className="m-auto" />}>
           <Checklist
             label="Building elements"
             options={pipe(
@@ -179,6 +167,11 @@ const HtmlUi = (props: Props) => {
             }
           />
         </IconMenu>
+        <IconToggle
+          icon={<GroundPlane2 />}
+          active={groundPlaneEnabled}
+          onClick={toggleGroundPlaneEnabled}
+        />
       </div>
 
       <SiteSidebar open={sidebar} close={() => void setSidebar(false)} />

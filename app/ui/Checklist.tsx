@@ -49,28 +49,31 @@ function Checklist<T>(props: Props<T>) {
           )}
         </div>
       )}
-      {props.options.map((option, index) => (
-        <label
-          key={index}
-          className="flex w-full cursor-pointer items-center justify-between space-x-2 py-2 pl-3 pr-1 hover:bg-grey-10"
-        >
-          <p className="flex break-all text-sm">{option.label}</p>
-          <ChecklistButton active={props.selected.includes(option.value)} />
-          <input
-            type="checkbox"
-            className="sr-only"
-            onChange={() => {
-              if (props.selected.includes(option.value)) {
-                props.onChange(
-                  props.selected.filter((val) => val !== option.value)
-                )
-              } else {
-                props.onChange([...props.selected, option.value])
-              }
-            }}
-          />
-        </label>
-      ))}
+      {props.options.map((option, index) => {
+        console.log(option)
+        return (
+          <label
+            key={index}
+            className="flex w-full cursor-pointer items-center justify-between space-x-2 py-2 pl-3 pr-1 hover:bg-grey-10"
+          >
+            <p className="flex break-all text-sm">{option.label}</p>
+            <ChecklistButton active={props.selected.includes(option.value)} />
+            <input
+              type="checkbox"
+              className="sr-only"
+              onChange={() => {
+                if (props.selected.includes(option.value)) {
+                  props.onChange(
+                    props.selected.filter((val) => val !== option.value)
+                  )
+                } else {
+                  props.onChange([...props.selected, option.value])
+                }
+              }}
+            />
+          </label>
+        )
+      })}
     </div>
   )
 }

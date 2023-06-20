@@ -1,16 +1,25 @@
-import React, { useState } from "react"
-import type { ReactNode, FC } from "react"
+import React, { useState, ReactNode } from "react"
+import css from "./IconMenu.module.css"
+import clsx from "clsx"
 
-export interface Props {
-  icon: FC<any>
+type Props = {
+  icon: ReactNode
   children?: ReactNode
+  active?: boolean
 }
 
-export default function IconMenu(props: Props) {
+const IconMenu = ({ icon, children, active = false }: Props) => {
   const [hovered, setHovered] = useState(false)
+
+  const activityClass = clsx({
+    [css.idle]: !active && !hovered,
+    [css.hovered]: !active && hovered,
+    [css.active]: active,
+  })
+
   return (
     <div
-      className="inline-block relative w-12 h-12"
+      className={css.container}
       onMouseEnter={() => {
         setHovered(true)
       }}
@@ -18,14 +27,12 @@ export default function IconMenu(props: Props) {
         setHovered(false)
       }}
     >
-      <button className="inline-block w-full h-full transition-colors duration-200 ease-in-out focus:outline-none focus:shadow-[0 0 0 3px rgba(0,0,0,0.2))]">
-        <props.icon />
-      </button>
+      <button className={clsx(css.button, activityClass)}>{icon}</button>
       {hovered && (
-        <div className="absolute top-0 z-20 bg-white w-40 left-full">
-          {props.children}
-        </div>
+        <div className={clsx(css.dropdown, activityClass)}>{children}</div>
       )}
     </div>
   )
 }
+
+export default IconMenu

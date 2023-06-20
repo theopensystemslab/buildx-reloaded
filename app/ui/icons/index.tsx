@@ -354,3 +354,33 @@ export const ChangeLevel = () => (
     <rect x="0.5" y="0.5" width="11" height="9" strokeDasharray="2 1" />
   </svg>
 )
+
+export const GroundPlane = () => (
+  <svg
+    width="34"
+    height="20"
+    viewBox="0 0 34 20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M17 2L3 10L17 18L31 10L17 2Z" />
+  </svg>
+)
+
+export const GroundPlane2 = () => (
+  <svg
+    width="50"
+    height="50"
+    viewBox="0 0 50 50"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M25 17L11 25L25 33L39 25L25 17Z" />
+    <line x1="18.5241" y1="21.1483" x2="31.5241" y2="29.1483" />
+    <line x1="17.5039" y1="29.1318" x2="31.5039" y2="21.1318" />
+  </svg>
+)
