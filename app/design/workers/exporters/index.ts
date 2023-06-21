@@ -1,7 +1,7 @@
 import { Remote, wrap } from "comlink"
 import { useEffect, useRef } from "react"
 import { useEvent } from "react-use"
-import houses from "../houses"
+import houses from "../../state/houses"
 import { ExportersWorkerAPI } from "./worker"
 
 export const UPDATE_EXPORT_MODELS_EVENT = "UpdateExportModels"
