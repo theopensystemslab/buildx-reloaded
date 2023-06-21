@@ -6,7 +6,7 @@ import { proxy } from "valtio"
 import { useSubscribeKey } from "~/utils/hooks"
 import { yAxis } from "~/utils/three"
 import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
-import { dispatchUpdateExportModelsEvent } from "../exporters"
+import { dispatchUpdateExportModelsEvent } from "../../workers/exporters"
 import houses from "../houses"
 
 export type Transforms = {
