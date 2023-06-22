@@ -1,21 +1,21 @@
-import { TRPCContext } from "@trpc/react-query/shared"
-import Airtable from "airtable"
 import { expose } from "comlink"
-import Dexie from "dexie"
-import { trpc, vanillaTrpc } from "../../../client/trpc"
-import { Block, blocksQuery } from "../../../server/data/blocks"
-
-console.log("HI IM A WORKER")
+import Dexie, { liveQuery } from "dexie"
+import { vanillaTrpc } from "../../../client/trpc"
+import { Block } from "../../../server/data/blocks"
+import { Module } from "../../../server/data/modules"
 
 class SystemsDatabase extends Dexie {
   blocks: Dexie.Table<Block, string> // "string" is the type of the primary key
+  modules: Dexie.Table<Module, string> // "string" is the type of the primary key
 
   constructor() {
     super("SystemsDatabase")
     this.version(1).stores({
       blocks: "id,systemId,name",
+      modules: "id,systemId,dna",
     })
     this.blocks = this.table("blocks")
+    this.modules = this.table("modules")
   }
 }
 
@@ -23,8 +23,11 @@ class SystemsDatabase extends Dexie {
 const db = new SystemsDatabase()
 
 const init = async () => {
-  const blocks = await vanillaTrpc.blocks.query()
-  console.log(blocks)
+  const blocks: Block[] = await vanillaTrpc.blocks.query()
+  const modules = (await vanillaTrpc.modules.query()) as Module[]
+
+  db.blocks.bulkAdd(blocks)
+  db.modules.bulkAdd(modules)
 }
 
 init()
@@ -38,8 +41,11 @@ const getBlocks = async (systemIds: string[] = []) => {
   }
 }
 
+const modulesObservable = liveQuery(() => db.modules.toArray())
+
 const api = {
   getBlocks,
+  modulesObservable,
 }
 
 export type SystemsAPI = typeof api

@@ -945,32 +945,20 @@
   resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.7.9.tgz#0e975f8a5079972f1827a569079943d43257c42f"
   integrity sha512-4RkayPMV1oS2SKDXfQbFoct1w5k+pvGpmX18tCXMofK/VDRdA2hhxfsQlMvsJ4oTX8b0CI4Y3GDKn5T425jBCw==
 
-"@trpc/client@^10.7.0":
-  version "10.7.0"
-  resolved "https://registry.yarnpkg.com/@trpc/client/-/client-10.7.0.tgz#73793dfdfd1a0b8d0484c69bfc558dfd28843fe6"
-  integrity sha512-xCPc2hp37REJst6TXMkJvdc85CHvxpVY6YVdZIjl7uCYoQcrstwy8AWi7ElB3x7e19Cweke+9CAaUXKwAE1AKQ==
+"@trpc/client@^10.31.0":
+  version "10.31.0"
+  resolved "https://registry.yarnpkg.com/@trpc/client/-/client-10.31.0.tgz#64f6198741a0b96f21671e0c3c0e2e211bae3cc9"
+  integrity sha512-VCqbJEvFJb8C4hQFw7AD+dkQTjgEdV/QAzO4D+/cX5e93u5NpfNXI+PKS0QFXwG/zqgwQwVV6OkYc/D/MFwA6g==
 
-"@trpc/next@^10.7.0":
-  version "10.7.0"
-  resolved "https://registry.yarnpkg.com/@trpc/next/-/next-10.7.0.tgz#33ec7d134f9d3093e59cba1170dcb75bc9b914c0"
-  integrity sha512-ZLY4J9IgEHN2op0UM14NCwCDyodRUw8Pmxgnpr62+UMIhDll6uggb2an8Op87l9EeYdKhKe2VavDWphI8vFGgw==
-  dependencies:
-    react-ssr-prepass "^1.5.0"
+"@trpc/react-query@^10.31.0":
+  version "10.31.0"
+  resolved "https://registry.yarnpkg.com/@trpc/react-query/-/react-query-10.31.0.tgz#d12042b73138eafafd9efffc6b215a2712595731"
+  integrity sha512-+M8sIsbf6e4H5XYvHlzDqhaf+ybfUigA/9OL3wXRp2vXhCedEiIERCnwNuHWFDRASl9vjOcM33AuJ4sbOOINEA==
 
-"@trpc/react-query@^10.7.0":
-  version "10.7.0"
-  resolved "https://registry.yarnpkg.com/@trpc/react-query/-/react-query-10.7.0.tgz#37cd9a3ab5db0e9bcf012cfec3669ce0ecc055e1"
-  integrity sha512-dSSmYid6NWocU32QMsH6qWEqnW4mbp7hX01hxsBfAA2mGYD8b4Kgc9ripw4MpPNbsJElJFyWDHfb/UHnhywWbA==
-
-"@trpc/react@^10.0.0-proxy-alpha.63":
-  version "10.0.0-proxy-alpha.63"
-  resolved "https://registry.yarnpkg.com/@trpc/react/-/react-10.0.0-proxy-alpha.63.tgz#a39dd34b4efb0e8c59bad880cb4267e8ee4e9fe6"
-  integrity sha512-D+tIg9a7CVoUOmd8hZTiTuC2hDcpB7surC0eFdcooCbWb2pERE/5xPdiyB6Kze5H5BvzxiRt9ttrKbVQnhvQYw==
-
-"@trpc/server@^10.7.0":
-  version "10.7.0"
-  resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.7.0.tgz#97c451cb5963c70fba68f4813c56111331baec3c"
-  integrity sha512-kFhlqhzZt5PwVRRDci8oJKMMFGjjq9189stT6bvS9xuuLjRzzwhMShRi99sm/jqhdjWmlXyO3Ncx0rnghUvH+w==
+"@trpc/server@^10.31.0":
+  version "10.31.0"
+  resolved "https://registry.yarnpkg.com/@trpc/server/-/server-10.31.0.tgz#2a757e814d9a779d6faa8b4fd6bda80691179a19"
+  integrity sha512-9EnRTSDE9nF11LZsvSOqNKqkRYzHqFX4ch5AJ6VIu8uta2vxVTN4FxxsNRSOluTzVYZDeaCISbwmOJ5iihCCIg==
 
 "@turf/along@^6.5.0":
   version "6.5.0"
@@ -5107,11 +5095,6 @@ react-reconciler@^0.27.0:
   dependencies:
     loose-envify "^1.1.0"
     scheduler "^0.21.0"
-
-react-ssr-prepass@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/react-ssr-prepass/-/react-ssr-prepass-1.5.0.tgz#bc4ca7fcb52365e6aea11cc254a3d1bdcbd030c5"
-  integrity sha512-yFNHrlVEReVYKsLI5lF05tZoHveA5pGzjFbFJY/3pOqqjGOmMmqx83N4hIjN2n6E1AOa+eQEUxs3CgRnPmT0RQ==
 
 react-universal-interface@^0.6.2:
   version "0.6.2"
