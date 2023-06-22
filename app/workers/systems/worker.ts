@@ -1,5 +1,6 @@
 import { expose } from "comlink"
 import Dexie, { liveQuery } from "dexie"
+import { pipe } from "fp-ts/lib/function"
 import { vanillaTrpc } from "../../../client/trpc"
 import { Block } from "../../../server/data/blocks"
 import { Module } from "../../../server/data/modules"
@@ -22,12 +23,31 @@ class SystemsDatabase extends Dexie {
 // Create Dexie database
 const db = new SystemsDatabase()
 
-const init = async () => {
-  const blocks: Block[] = await vanillaTrpc.blocks.query()
-  const modules = (await vanillaTrpc.modules.query()) as Module[]
+const initModules = async () => {
+  const remoteModules = await vanillaTrpc.modules.query()
 
-  db.blocks.bulkAdd(blocks)
-  db.modules.bulkAdd(modules)
+  const promises = remoteModules.map(async (remoteModule) => {
+    const remoteDate = new Date(remoteModule.lastModified)
+    const localModule = await db.modules.get(remoteModule.id)
+
+    if (!localModule) {
+      await db.modules.put(remoteModule as Module)
+      return
+    }
+
+    const localDate = new Date(localModule.lastModified)
+
+    if (remoteDate > localDate) {
+      await db.modules.put(remoteModule as Module)
+      return
+    }
+  })
+
+  await Promise.all(promises)
+}
+
+const init = async () => {
+  await initModules()
 }
 
 init()

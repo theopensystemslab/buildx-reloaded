@@ -11,7 +11,7 @@ import { proxy, subscribe, useSnapshot } from "valtio"
 import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "./constants"
 import { getHousesFromLocalStorage, House, Houses } from "../../data/houses"
 import { Module } from "@/server/data/modules"
-import { A, R, RA, RNEA, RR, S } from "~/utils/functions"
+import { A, pipeLog, R, RA, RNEA, RR, S } from "~/utils/functions"
 import { useModules, useSystemModules } from "../../data/modules"
 import { useHouseTypes } from "../../data/houseTypes"
 
@@ -68,7 +68,8 @@ export const useHouseModules = (houseId: string) => {
                 systemModule.systemId === systemId && systemModule.dna === dna
             )
           )
-        )
+        ),
+        pipeLog
       ),
     [dna, systemId, systemModules]
   )

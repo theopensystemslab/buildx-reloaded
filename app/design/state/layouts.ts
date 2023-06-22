@@ -8,6 +8,7 @@ import { proxy, ref } from "valtio"
 import { usePadColumn } from "../../data/modules"
 import { Module } from "@/server/data/modules"
 import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
+import { pipeLog } from "../../utils/functions"
 
 export type PositionedModule = {
   module: Module
