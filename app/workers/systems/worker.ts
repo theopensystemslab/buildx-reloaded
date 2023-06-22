@@ -1,46 +1,14 @@
 import { expose } from "comlink"
-import Dexie, { liveQuery } from "dexie"
+import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { BufferGeometry } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { vanillaTrpc } from "../../../client/trpc"
-import { Block } from "../../../server/data/blocks"
-import { Module } from "../../../server/data/modules"
 import { getSpeckleObject } from "../../../server/data/speckleModel"
+import db, { IndexedModule } from "../../db"
 import { A, R } from "../../utils/functions"
 import speckleIfcParser from "../../utils/speckle/speckleIfcParser"
-
-type IndexedModule = Module & {
-  lastFetched: string
-}
-
-type IndexedModel = {
-  speckleBranchUrl: string
-  lastFetched: string
-  geometries: any
-}
-
-class SystemsDatabase extends Dexie {
-  blocks: Dexie.Table<Block, string> // "string" is the type of the primary key
-  modules: Dexie.Table<IndexedModule, string> // "string" is the type of the primary key
-  models: Dexie.Table<IndexedModel, string>
-
-  constructor() {
-    super("SystemsDatabase")
-    this.version(1).stores({
-      blocks: "id,systemId,name",
-      modules: "id,systemId,dna",
-      models: "speckleBranchUrl",
-    })
-    this.blocks = this.table("blocks")
-    this.modules = this.table("modules")
-    this.models = this.table("models")
-  }
-}
-
-// Create Dexie database
-const db = new SystemsDatabase()
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()

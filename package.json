@@ -31,6 +31,7 @@
     "crypto-js": "^4.1.1",
     "d3-dsv": "^3.0.1",
     "dexie": "^3.2.3",
+    "dexie-react-hooks": "^1.1.6",
     "encoding": "^0.1.13",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
