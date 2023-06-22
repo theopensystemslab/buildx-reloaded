@@ -68,8 +68,7 @@ export const useHouseModules = (houseId: string) => {
                 systemModule.systemId === systemId && systemModule.dna === dna
             )
           )
-        ),
-        pipeLog
+        )
       ),
     [dna, systemId, systemModules]
   )

@@ -116,10 +116,4 @@ export const useSpeckleObjects = (
   })
 }
 
-export const PreloadSpeckleObjects = () => {
-  const modules = useModules()
-  useSpeckleObjects(modules.map((module) => module.speckleBranchUrl))
-  return null
-}
-
 export default useSpeckleObject
