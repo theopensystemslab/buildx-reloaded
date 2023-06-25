@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
-import { IndexedModel, IndexedModule } from "../../../db/system"
+import { IndexedModel, IndexedModule } from "../../../db/systems"
 import userDB from "../../../db/user"
 import { A } from "../../../utils/functions"
 import ProppedHouse from "./ProppedHouse"
@@ -19,7 +19,7 @@ const ProppedSystem = (props: Props) => {
       userDB.houses.filter((x) => x.systemId === systemId).toArray()
     ) ?? []
 
-  console.log(houses)
+  console.log(`new houses ${systemId}`)
 
   return (
     <group>

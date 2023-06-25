@@ -1,14 +1,7 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
-import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { BufferGeometry } from "three"
-import { mergeBufferGeometries } from "three-stdlib"
 import { vanillaTrpc } from "../../../client/trpc"
-import { getSpeckleObject } from "../../../server/data/speckleModel"
-import systemsDB, { IndexedModule } from "../../db/system"
-import { A, R } from "../../utils/functions"
-import speckleIfcParser from "../../utils/speckle/speckleIfcParser"
+import systemsDB, { IndexedModule } from "../../db/systems"
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()
@@ -58,25 +51,29 @@ modulesObservable.subscribe((modules) => {
       return
     }
 
-    const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
-    const speckleObject = speckleIfcParser.parse(speckleObjectData)
-    const geometries = pipe(
-      speckleObject,
-      A.reduce(
-        {},
-        (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
-          return produce(acc, (draft) => {
-            if (ifcTag in draft) draft[ifcTag].push(geometry)
-            else draft[ifcTag] = [geometry]
-          })
-        }
-      ),
-      R.map((geoms) => mergeBufferGeometries(geoms)),
-      R.filter((bg: BufferGeometry | null): bg is BufferGeometry =>
-        Boolean(bg)
-      ),
-      R.map((x) => x.toJSON())
-    )
+    const geometries = await vanillaTrpc.speckleModel.query({
+      speckleBranchUrl,
+    })
+
+    // const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
+    // const speckleObject = speckleIfcParser.parse(speckleObjectData)
+    // const geometries = pipe(
+    //   speckleObject,
+    //   A.reduce(
+    //     {},
+    //     (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
+    //       return produce(acc, (draft) => {
+    //         if (ifcTag in draft) draft[ifcTag].push(geometry)
+    //         else draft[ifcTag] = [geometry]
+    //       })
+    //     }
+    //   ),
+    //   R.map((geoms) => mergeBufferGeometries(geoms)),
+    //   R.filter((bg: BufferGeometry | null): bg is BufferGeometry =>
+    //     Boolean(bg)
+    //   ),
+    //   R.map((x) => x.toJSON())
+    // )
 
     systemsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
   })
