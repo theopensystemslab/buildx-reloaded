@@ -6,7 +6,7 @@ import { BufferGeometry } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { vanillaTrpc } from "../../../client/trpc"
 import { getSpeckleObject } from "../../../server/data/speckleModel"
-import db, { IndexedModule } from "../../db"
+import systemsDB, { IndexedModule } from "../../db/system"
 import { A, R } from "../../utils/functions"
 import speckleIfcParser from "../../utils/speckle/speckleIfcParser"
 
@@ -15,7 +15,7 @@ const initModules = async () => {
 
   const promises = remoteModules.map(async (remoteModule) => {
     const remoteDate = new Date(remoteModule.lastModified)
-    const localModule = await db.modules.get(remoteModule.id)
+    const localModule = await systemsDB.modules.get(remoteModule.id)
 
     const indexedModule: IndexedModule = {
       ...remoteModule,
@@ -23,14 +23,14 @@ const initModules = async () => {
     } as any
 
     if (!localModule) {
-      await db.modules.put(indexedModule)
+      await systemsDB.modules.put(indexedModule)
       return
     }
 
     const localDate = new Date(localModule.lastModified)
 
     if (remoteDate > localDate) {
-      await db.modules.put(indexedModule)
+      await systemsDB.modules.put(indexedModule)
       return
     }
   })
@@ -44,12 +44,12 @@ const init = async () => {
 
 init()
 
-const modulesObservable = liveQuery(() => db.modules.toArray())
+const modulesObservable = liveQuery(() => systemsDB.modules.toArray())
 
 modulesObservable.subscribe((modules) => {
   modules.map(async (nextModule) => {
     const { speckleBranchUrl, lastFetched } = nextModule
-    const maybeModel = await db.models.get(speckleBranchUrl)
+    const maybeModel = await systemsDB.models.get(speckleBranchUrl)
 
     if (
       maybeModel &&
@@ -78,7 +78,7 @@ modulesObservable.subscribe((modules) => {
       R.map((x) => x.toJSON())
     )
 
-    db.models.put({ speckleBranchUrl, lastFetched, geometries })
+    systemsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
   })
 })
 

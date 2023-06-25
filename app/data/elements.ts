@@ -6,7 +6,7 @@ import { BufferGeometry, BufferGeometryLoader } from "three"
 import { O, R, RA, S } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
-import db from "../db"
+import systemsDB from "../db/system"
 // import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 
 export const useElements = (): Element[] => {
@@ -61,7 +61,7 @@ const useSpeckleObject = (speckleBranchUrl: string) => {
   const loader = useMemo(() => new BufferGeometryLoader(), [])
 
   const geometries = useLiveQuery(async () => {
-    const model = await db.models.get(speckleBranchUrl)
+    const model = await systemsDB.models.get(speckleBranchUrl)
     return model?.geometries
   })
 

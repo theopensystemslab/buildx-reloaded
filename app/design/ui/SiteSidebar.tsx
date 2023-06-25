@@ -1,7 +1,5 @@
-import { useCameraGroundRaycast } from "../state/camera"
 import { System, systems } from "@/server/data/system"
-// import houses from "@/src/stores/houses"
-import Sidebar from "~/ui//Sidebar"
+import { useCameraGroundRaycast } from "../state/camera"
 import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
@@ -10,8 +8,9 @@ import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
 import { useHouseTypes } from "~/data/houseTypes"
 import houses from "~/design/state/houses"
+import Sidebar from "~/ui//Sidebar"
+import userDB from "../../db/user"
 import HouseThumbnail from "./HouseThumbnail"
-// import HouseThumbnail from "./HouseThumbnail"
 
 type Props = {
   open: boolean
@@ -78,7 +77,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                         const position =
                           cameraGroundRaycast() ?? new Vector3(0, 0, 0)
 
-                        houses[id] = {
+                        userDB.houses.add({
                           id,
                           houseTypeId: houseType.id,
                           systemId: houseType.systemId,
@@ -87,7 +86,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                           dnas: houseType.dnas as string[],
                           modifiedMaterials: {},
                           friendlyName: `Building ${keys(houses).length + 1}`,
-                        }
+                        })
 
                         close()
                       }}

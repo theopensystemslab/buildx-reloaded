@@ -31,6 +31,6 @@ class SystemsDatabase extends Dexie {
 }
 
 // Create Dexie database
-const db = new SystemsDatabase()
+const systemsDB = new SystemsDatabase()
 
-export default db
+export default systemsDB
