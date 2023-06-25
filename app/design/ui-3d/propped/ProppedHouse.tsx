@@ -22,7 +22,27 @@ const ProppedHouse = (props: Props) => {
   }, [dnas, houseId, systemId])
 
   useHouseLayoutEvents(houseId, (layout) => {
-    console.log(JSON.stringify(layout))
+    // console.log(
+    //   JSON.stringify(
+    //     layout.map(({ columnIndex, gridGroups, length, z }) => ({
+    //       columnIndex,
+    //       length,
+    //       z,
+    //       gridGroups: gridGroups.map(
+    //         ({ length, levelIndex, levelType, modules, y }) => ({
+    //           length,
+    //           levelIndex,
+    //           levelType,
+    //           y,
+    //           modules: modules.map(({ gridGroupIndex, z }) => ({
+    //             gridGroupIndex,
+    //             z,
+    //           })),
+    //         })
+    //       ),
+    //     }))
+    //   )
+    // )
   })
 
   return <group name={houseId}></group>
