@@ -1,3 +1,4 @@
+import { Module } from "@/server/data/modules"
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"

@@ -6,7 +6,7 @@ import { vanillaTrpc } from "../../../client/trpc"
 import { Module } from "../../../server/data/modules"
 import systemsDB, { IndexedModule } from "../../db/systems"
 import { modulesToColumnLayout } from "../../design/state/layouts"
-import { A, pipeLog, RA } from "../../utils/functions"
+import { A } from "../../utils/functions"
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()
@@ -95,7 +95,6 @@ export const computeLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
     A.filterMap((dna) =>
       pipe(
         allSystemsModules,
-        pipeLog,
         A.findFirst(
           (systemModule: Module) =>
             systemModule.systemId === systemId && systemModule.dna === dna
