@@ -1,3 +1,4 @@
+import { Module } from "@/server/data/modules"
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"
@@ -6,9 +7,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
 import { usePadColumn } from "../../data/modules"
-import { Module } from "@/server/data/modules"
 import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
-import { pipeLog } from "../../utils/functions"
 
 export type PositionedModule = {
   module: Module
