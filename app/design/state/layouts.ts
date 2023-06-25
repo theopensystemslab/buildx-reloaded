@@ -193,7 +193,7 @@ const columnify =
     return pipe(acc, transposeRA)
   }
 
-const modulesToColumnLayout = (modules: Module[]) => {
+export const modulesToColumnLayout = (modules: Module[]) => {
   const columns = pipe(
     modules,
     modulesToRows,
