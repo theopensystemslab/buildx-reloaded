@@ -19,8 +19,6 @@ const ProppedSystem = (props: Props) => {
       userDB.houses.filter((x) => x.systemId === systemId).toArray()
     ) ?? []
 
-  console.log(`new houses ${systemId}`)
-
   return (
     <group>
       {pipe(

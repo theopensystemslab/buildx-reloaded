@@ -1,7 +1,12 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
+import { pipe } from "fp-ts/lib/function"
+import { ComputeLayoutEventDetail } from "."
 import { vanillaTrpc } from "../../../client/trpc"
+import { Module } from "../../../server/data/modules"
 import systemsDB, { IndexedModule } from "../../db/systems"
+import { modulesToColumnLayout } from "../../design/state/layouts"
+import { A, pipeLog, RA } from "../../utils/functions"
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()
@@ -39,7 +44,11 @@ init()
 
 const modulesObservable = liveQuery(() => systemsDB.modules.toArray())
 
+let allSystemsModules: Module[] = []
+
 modulesObservable.subscribe((modules) => {
+  allSystemsModules = modules
+
   modules.map(async (nextModule) => {
     const { speckleBranchUrl, lastFetched } = nextModule
     const maybeModel = await systemsDB.models.get(speckleBranchUrl)
@@ -79,7 +88,31 @@ modulesObservable.subscribe((modules) => {
   })
 })
 
-const api = {}
+export const computeLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
+  // dnas to modules array
+  const modules = pipe(
+    dnas,
+    A.filterMap((dna) =>
+      pipe(
+        allSystemsModules,
+        pipeLog,
+        A.findFirst(
+          (systemModule: Module) =>
+            systemModule.systemId === systemId && systemModule.dna === dna
+        )
+      )
+    )
+  )
+
+  // modules to rows
+  const columnLayout = modulesToColumnLayout(modules)
+
+  return columnLayout
+}
+
+const api = {
+  computeLayout,
+}
 
 export type SystemsAPI = typeof api
 
