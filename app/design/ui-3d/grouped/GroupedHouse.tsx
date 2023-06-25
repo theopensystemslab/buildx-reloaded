@@ -54,7 +54,12 @@ const GroupedHouse = (props: Props) => {
     [houseRefs]
   )
 
-  const { dnas } = useHouse(houseId)
+  const house = useHouse(houseId)
+
+  const houseDnasKey = JSON.stringify(house.dnas)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const dnas = useMemo(() => house.dnas, [houseDnasKey])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])

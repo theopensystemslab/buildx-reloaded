@@ -43,7 +43,7 @@ const ChangeLevelType = (props: Props) => {
       levelTypeOptions,
       A.map(({ value: { houseDna } }) => {
         const key = houseDna.toString()
-        previews[houseId].dna[key] = {
+        previews[houseId].dnas[key] = {
           active: false,
           value: ref(houseDna),
         }
@@ -55,7 +55,7 @@ const ChangeLevelType = (props: Props) => {
         levelTypeOptions,
         A.map(({ value: { houseDna } }) => {
           const key = houseDna.toString()
-          delete previews[houseId].dna[key]
+          delete previews[houseId].dnas[key]
         })
       )
       lastKey.current = null
@@ -66,16 +66,16 @@ const ChangeLevelType = (props: Props) => {
     if (incoming === null) {
       if (
         lastKey.current !== null &&
-        lastKey.current in previews[houseId].dna
+        lastKey.current in previews[houseId].dnas
       ) {
-        previews[houseId].dna[lastKey.current].active = false
+        previews[houseId].dnas[lastKey.current].active = false
         lastKey.current = null
       }
     } else {
       const { houseDna } = incoming
       const key = houseDna.toString()
       lastKey.current = key
-      previews[houseId].dna[key].active = true
+      previews[houseId].dnas[key].active = true
     }
   }
 

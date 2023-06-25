@@ -10,7 +10,7 @@ import houses from "./houses"
 
 type Preview = {
   materials: Record<string, string>
-  dna: Record<
+  dnas: Record<
     string,
     {
       value: string[]
@@ -30,7 +30,7 @@ export const usePreviews = () => {
       for (let houseId of Object.keys(houses)) {
         previews[houseId] = {
           materials: {},
-          dna: {},
+          dnas: {},
         }
       }
     },
@@ -44,7 +44,7 @@ export const useHousePreviews = (houseId: string) => {
   return (
     housesSnap[houseId] ?? {
       materials: {},
-      dna: {},
+      dnas: {},
     }
   )
 }
@@ -52,7 +52,7 @@ export const useHousePreviews = (houseId: string) => {
 export const setPreviews = () => {
   for (let houseId of Object.keys(previews)) {
     pipe(
-      previews[houseId].dna,
+      previews[houseId].dnas,
       R.toEntries,
       A.findFirst(([_, { active }]) => active),
       O.map(([_, { value }]) => {
@@ -60,7 +60,7 @@ export const setPreviews = () => {
       })
     )
 
-    previews[houseId].dna = {}
+    previews[houseId].dnas = {}
 
     delete stretchWidthRaw[houseId]
     delete stretchWidthClamped[houseId]

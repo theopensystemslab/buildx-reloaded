@@ -14,7 +14,7 @@ type Props = GroupProps & {
 const PreviewHouses = (props: Props) => {
   const { houseId, setHouseVisible } = props
   const systemId = houses[houseId].systemId
-  const { dna: dnaPreviews } = useHousePreviews(houseId)
+  const { dnas: dnaPreviews } = useHousePreviews(houseId)
 
   return (
     <Fragment key={houseId}>
@@ -26,7 +26,7 @@ const PreviewHouses = (props: Props) => {
               key={`${houseId}:${k}`}
               houseId={houseId}
               systemId={systemId}
-              dna={value}
+              dnas={value}
               setHouseVisible={setHouseVisible}
             />
           )

@@ -135,13 +135,13 @@ const AddRemoveLevels = (props: Props) => {
   useEffect(() => {
     if (!canAddFloorAbove) return
 
-    previews[houseId].dna[key] = {
+    previews[houseId].dnas[key] = {
       active: false,
       value: ref(floorAboveDna),
     }
 
     return () => {
-      delete previews[houseId].dna[key]
+      delete previews[houseId].dnas[key]
     }
   }, [canAddFloorAbove, floorAboveDna, houseId, key])
 
@@ -151,7 +151,7 @@ const AddRemoveLevels = (props: Props) => {
         <ContextMenuButton
           onClick={addFloorAbove}
           onHover={(hovered) => {
-            previews[houseId].dna[key].active = hovered
+            previews[houseId].dnas[key].active = hovered
           }}
           icon={<AddLevel />}
           text="Add level"

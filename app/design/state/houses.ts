@@ -74,13 +74,13 @@ export const useHouseModules = (houseId: string) => {
   )
 }
 
-export const useDnaModules = (systemId: string, dna: string[]) => {
+export const useDnasModules = (systemId: string, dnas: string[]) => {
   const systemModules = useSystemModules({ systemId })
 
   return useMemo(
     () =>
       pipe(
-        dna,
+        dnas,
         A.filterMap((dna) =>
           pipe(
             systemModules,
@@ -91,7 +91,7 @@ export const useDnaModules = (systemId: string, dna: string[]) => {
           )
         )
       ),
-    [dna, systemId, systemModules]
+    [dnas, systemId, systemModules]
   )
 }
 

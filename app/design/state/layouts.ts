@@ -7,7 +7,7 @@ import produce from "immer"
 import { proxy, ref } from "valtio"
 import { usePadColumn } from "../../data/modules"
 import { Module } from "@/server/data/modules"
-import { modulesToRows, useDnaModules, useHouseModules } from "./houses"
+import { modulesToRows, useDnasModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -352,8 +352,8 @@ export const useHouseColumnLayout = (houseId: string) => {
   return columnLayout
 }
 
-export const useDnaColumnLayout = (systemId: string, dna: string[]) => {
-  const houseModules = useDnaModules(systemId, dna)
+export const useDnasColumnLayout = (systemId: string, dnas: string[]) => {
+  const houseModules = useDnasModules(systemId, dnas)
   const columnLayout = modulesToColumnLayout(houseModules)
   return columnLayout
 }

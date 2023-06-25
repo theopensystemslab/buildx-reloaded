@@ -1,4 +1,4 @@
-import { useDnaColumnLayout } from "~/design/state/layouts"
+import { useDnasColumnLayout } from "~/design/state/layouts"
 import { A } from "~/utils/functions"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
@@ -11,24 +11,24 @@ import PreviewColumn from "./PreviewColumn"
 type Props = {
   houseId: string
   systemId: string
-  dna: string[]
+  dnas: string[]
   setHouseVisible: (b: boolean) => void
 }
 
 const PreviewHouse = (props: Props) => {
   const ref = useRef<Group>(null)
 
-  const { houseId, systemId, dna, setHouseVisible, ...restProps } = props
+  const { houseId, systemId, dnas, setHouseVisible, ...restProps } = props
 
-  const layout = useDnaColumnLayout(systemId, dna)
+  const layout = useDnasColumnLayout(systemId, dnas)
 
-  const key = dna.toString()
+  const key = dnas.toString()
 
   useSubscribeKey(
-    previews[houseId].dna,
+    previews[houseId].dnas,
     key,
     () => {
-      const { active } = previews[houseId].dna?.[key] ?? { active: false }
+      const { active } = previews[houseId].dnas?.[key] ?? { active: false }
       const v = active ? 1 : 0
       ref.current?.scale.set(v, v, v)
       setHouseVisible(!active)

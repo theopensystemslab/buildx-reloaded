@@ -254,7 +254,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
 
         const key = augSectionType.houseDna.toString()
 
-        previews[houseId].dna[key] = {
+        previews[houseId].dnas[key] = {
           active: false,
           value: ref(augSectionType.houseDna),
         }
@@ -268,7 +268,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
           if (i === currentIndex) return
 
           const key = augSectionType.houseDna.toString()
-          delete previews[houseId].dna[key]
+          delete previews[houseId].dnas[key]
         })
       )
     }
@@ -295,8 +295,8 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
         if (i !== -1) {
           if (previewIndex.current !== null) {
             const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
-            if (lastKey in previews[houseId].dna)
-              previews[houseId].dna[lastKey].active = false
+            if (lastKey in previews[houseId].dnas)
+              previews[houseId].dnas[lastKey].active = false
           }
 
           if (i === currentIndex) {
@@ -305,8 +305,8 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
           previewIndex.current = i
 
           const key = augSectionTypes[i].houseDnaKey
-          if (key in previews[houseId].dna)
-            previews[houseId].dna[key].active = true
+          if (key in previews[houseId].dnas)
+            previews[houseId].dnas[key].active = true
         }
         break
       }
@@ -317,8 +317,8 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
         if (i !== -1) {
           if (previewIndex.current !== null) {
             const lastKey = augSectionTypes[previewIndex.current].houseDnaKey
-            if (lastKey in previews[houseId].dna)
-              previews[houseId].dna[lastKey].active = false
+            if (lastKey in previews[houseId].dnas)
+              previews[houseId].dnas[lastKey].active = false
           }
 
           if (i === currentIndex) {
@@ -327,8 +327,8 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
           previewIndex.current = i
 
           const key = augSectionTypes[i].houseDnaKey
-          if (key in previews[houseId].dna)
-            previews[houseId].dna[key].active = true
+          if (key in previews[houseId].dnas)
+            previews[houseId].dnas[key].active = true
         }
         break
       }
