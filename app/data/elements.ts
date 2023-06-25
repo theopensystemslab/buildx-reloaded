@@ -6,7 +6,7 @@ import { BufferGeometry, BufferGeometryLoader } from "three"
 import { O, R, RA, S } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
 import { Module } from "../../server/data/modules"
-import systemsDB from "../db/system"
+import systemsDB from "../db/systems"
 // import useSpeckleObject from "../utils/speckle/useSpeckleObject"
 
 export const useElements = (): Element[] => {

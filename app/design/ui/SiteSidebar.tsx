@@ -7,9 +7,8 @@ import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
 import { useHouseTypes } from "~/data/houseTypes"
-import houses from "~/design/state/houses"
 import Sidebar from "~/ui//Sidebar"
-import userDB from "../../db/user"
+import userDB, { useHouses } from "../../db/user"
 import HouseThumbnail from "./HouseThumbnail"
 
 type Props = {
@@ -32,6 +31,8 @@ const SiteSidebar = ({ open, close }: Props) => {
   }, [selectedSystemId])
 
   const cameraGroundRaycast = useCameraGroundRaycast()
+
+  const houses = useHouses()
 
   return (
     <Sidebar expanded={open} onClose={close}>
@@ -85,7 +86,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                           rotation: 0,
                           dnas: houseType.dnas as string[],
                           modifiedMaterials: {},
-                          friendlyName: `Building ${keys(houses).length + 1}`,
+                          friendlyName: `Building ${houses.length + 1}`,
                         })
 
                         close()
