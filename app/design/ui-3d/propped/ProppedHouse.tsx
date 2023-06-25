@@ -1,5 +1,5 @@
 import React from "react"
-import { IndexedModel, IndexedModule } from "../../../db/system"
+import { IndexedModel, IndexedModule } from "../../../db/systems"
 import { House } from "../../../db/user"
 
 type Props = {

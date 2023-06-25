@@ -1,4 +1,5 @@
 import Dexie from "dexie"
+import { useLiveQuery } from "dexie-react-hooks"
 import { z } from "zod"
 
 export const houseParser = z.object({
@@ -31,5 +32,7 @@ class UserDatabase extends Dexie {
 }
 
 const userDB = new UserDatabase()
+
+export const useHouses = () => useLiveQuery(() => userDB.houses.toArray()) ?? []
 
 export default userDB
