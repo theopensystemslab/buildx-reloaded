@@ -5,37 +5,55 @@ import { none, some } from "fp-ts/lib/Option"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import produce from "immer"
 import { nanoid } from "nanoid"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useKey } from "react-use"
 import { Vector3 } from "three"
-import { proxy, subscribe, useSnapshot } from "valtio"
-import { A, R, RA, RR, S } from "~/utils/functions"
-import { getHousesFromLocalStorage, House, Houses } from "../../data/houses"
+import { proxy, snapshot, subscribe, useSnapshot } from "valtio"
+import { A, clearRecord, R, RA, RR, S } from "~/utils/functions"
+import { House, Houses } from "../../data/houses"
 import { useHouseTypes } from "../../data/houseTypes"
 import { useModules, useSystemModules } from "../../data/modules"
-import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "./constants"
+import userDB from "../../db/user"
+import { isSSR } from "../../utils/next"
 
-const houses = proxy<Houses>(getHousesFromLocalStorage())
+const houses = proxy<Houses>({})
 
-export const useLocallyStoredHouses = () =>
-  useEffect(
-    () =>
-      subscribe(houses, () => {
-        localStorage.setItem(
-          BUILDX_LOCAL_STORAGE_HOUSES_KEY,
-          JSON.stringify(houses)
-        )
-      }),
-    []
-  )
+const initHouses = async () => {
+  if (isSSR()) return
+
+  const housesArray = await userDB.houses.toArray()
+  if (!A.isNonEmpty(housesArray)) {
+    clearRecord(houses)
+  }
+
+  housesArray.forEach((house) => {
+    houses[house.id] = house
+  })
+}
+
+initHouses().then(() => {
+  const unsubscribe = subscribe(houses, () => {
+    // This will run every time `houses` changes
+    Object.values(houses).forEach(async (house) => {
+      const snapshotHouse = snapshot(house) as typeof house
+      // Check if house exists in the DB
+      const existingHouse = await userDB.houses.get(house.id)
+      if (existingHouse) {
+        // If it exists, update it
+        userDB.houses.update(house.id, snapshotHouse)
+      } else {
+        // If it doesn't exist, add it
+        userDB.houses.add(snapshotHouse)
+      }
+    })
+  })
+})
 
 export const useHouses = () => {
-  useLocallyStoredHouses()
   return useSnapshot(houses) as typeof houses
 }
 
 export const useHouseKeys = () => {
-  useLocallyStoredHouses()
   return pipe(useSnapshot(houses) as typeof houses, RR.keys)
 }
 

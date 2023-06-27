@@ -102,3 +102,11 @@ export const capitalizeFirstLetters = (str: string): string =>
     .split(" ")
     .map((x) => x.charAt(0).toUpperCase())
     .join("")
+
+export const clearRecord = (obj: Record<string, any>) => {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      delete obj[key]
+    }
+  }
+}

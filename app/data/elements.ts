@@ -57,7 +57,7 @@ export const invertModuleElementGeometriesKey = (input: string) => {
   return { systemId, dna }
 }
 
-const useSpeckleObject = (speckleBranchUrl: string) => {
+export const useSpeckleObject = (speckleBranchUrl: string) => {
   const loader = useMemo(() => new BufferGeometryLoader(), [])
 
   const geometries = useLiveQuery(async () => {

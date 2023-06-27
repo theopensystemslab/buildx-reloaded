@@ -3,9 +3,9 @@ import { pipe } from "fp-ts/lib/function"
 import { useMemo, useRef } from "react"
 import { Group, Material, MeshBasicMaterial } from "three"
 import { Module } from "../../../../server/data/modules"
+import { useSpeckleObject } from "../../../data/elements"
 import { useGetDefaultElementMaterial } from "../../../design/state/hashedMaterials"
 import { O, R, S } from "../../../utils/functions"
-import useSpeckleObject from "../../../utils/speckle/useSpeckleObject"
 import DebugSpeckleElement from "./DebugSpeckleElement"
 
 const DebugSpeckleModule = ({ module }: { module: Module }) => {
