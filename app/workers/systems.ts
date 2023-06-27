@@ -4,14 +4,13 @@ import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { BufferGeometry } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
-import { ComputeLayoutEventDetail } from "."
-import { vanillaTrpc } from "../../../client/trpc"
-import { Module } from "../../../server/data/modules"
-import { getSpeckleObject } from "../../../server/data/speckleModel"
-import systemsDB, { IndexedModule } from "../../db/systems"
-import { modulesToColumnLayout } from "../../design/state/layouts"
-import { A, R } from "../../utils/functions"
-import speckleIfcParser from "../../utils/speckle/speckleIfcParser"
+import { vanillaTrpc } from "../../client/trpc"
+import { Module } from "../../server/data/modules"
+import { getSpeckleObject } from "../../server/data/speckleModel"
+import layoutsDB from "../db/layouts"
+import systemsDB, { IndexedModule } from "../db/systems"
+import { A, R } from "../utils/functions"
+import speckleIfcParser from "../utils/speckle/speckleIfcParser"
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()
@@ -56,7 +55,7 @@ modulesObservable.subscribe((modules) => {
 
   modules.map(async (nextModule) => {
     const { speckleBranchUrl, lastFetched } = nextModule
-    const maybeModel = await systemsDB.models.get(speckleBranchUrl)
+    const maybeModel = await layoutsDB.models.get(speckleBranchUrl)
 
     if (
       maybeModel &&
@@ -86,35 +85,35 @@ modulesObservable.subscribe((modules) => {
       R.map((x) => x.toJSON())
     )
 
-    systemsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
+    layoutsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
   })
 })
 
-export const getLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
-  // TODO: cache in the db!
+// export const getLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
+//   // TODO: cache in the db!
 
-  // dnas to modules array
-  const modules = pipe(
-    dnas,
-    A.filterMap((dna) =>
-      pipe(
-        allSystemsModules,
-        A.findFirst(
-          (systemModule: Module) =>
-            systemModule.systemId === systemId && systemModule.dna === dna
-        )
-      )
-    )
-  )
+//   // dnas to modules array
+//   const modules = pipe(
+//     dnas,
+//     A.filterMap((dna) =>
+//       pipe(
+//         allSystemsModules,
+//         A.findFirst(
+//           (systemModule: Module) =>
+//             systemModule.systemId === systemId && systemModule.dna === dna
+//         )
+//       )
+//     )
+//   )
 
-  // modules to rows
-  const columnLayout = modulesToColumnLayout(modules)
+//   // modules to rows
+//   const columnLayout = modulesToColumnLayout(modules)
 
-  return columnLayout
-}
+//   return columnLayout
+// }
 
 const api = {
-  getLayout: getLayout,
+  // getLayout: getLayout,
 }
 
 export type SystemsAPI = typeof api

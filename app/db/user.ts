@@ -1,6 +1,8 @@
 import Dexie from "dexie"
 import { useLiveQuery } from "dexie-react-hooks"
+import { useSnapshot } from "valtio"
 import { z } from "zod"
+import houses from "../design/state/houses"
 
 export const houseParser = z.object({
   id: z.string().min(1),
@@ -33,6 +35,6 @@ class UserDatabase extends Dexie {
 
 const userDB = new UserDatabase()
 
-export const useHouses = () => useLiveQuery(() => userDB.houses.toArray()) ?? []
+export const useHouses = () => useSnapshot(houses)
 
 export default userDB

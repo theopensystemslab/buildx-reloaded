@@ -10,6 +10,7 @@ import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
 import userDB, { useHouses } from "../../db/user"
 import HouseThumbnail from "./HouseThumbnail"
+import houses from "../state/houses"
 
 type Props = {
   open: boolean
@@ -31,8 +32,6 @@ const SiteSidebar = ({ open, close }: Props) => {
   }, [selectedSystemId])
 
   const cameraGroundRaycast = useCameraGroundRaycast()
-
-  const houses = useHouses()
 
   return (
     <Sidebar expanded={open} onClose={close}>
@@ -78,7 +77,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                         const position =
                           cameraGroundRaycast() ?? new Vector3(0, 0, 0)
 
-                        userDB.houses.add({
+                        houses[id] = {
                           id,
                           houseTypeId: houseType.id,
                           systemId: houseType.systemId,
@@ -86,8 +85,10 @@ const SiteSidebar = ({ open, close }: Props) => {
                           rotation: 0,
                           dnas: houseType.dnas as string[],
                           modifiedMaterials: {},
-                          friendlyName: `Building ${houses.length + 1}`,
-                        })
+                          friendlyName: `Building ${
+                            Object.keys(houses).length + 1
+                          }`,
+                        }
 
                         close()
                       }}

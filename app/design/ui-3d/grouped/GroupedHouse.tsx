@@ -74,6 +74,8 @@ const GroupedHouse = (props: Props) => {
 
   useHouseMaterialOps(houseId, houseGroupRef)
 
+  console.log("hi")
+
   return (
     <group ref={houseGroupRef} key={dnas.toString()}>
       <group ref={startRef}>
