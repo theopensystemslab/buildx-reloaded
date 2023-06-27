@@ -73,7 +73,7 @@ export const SystemsWorker = () => {
   useEvent(
     COMPUTE_LAYOUT_EVENT,
     async ({ detail: { houseId, systemId, dnas } }: ComputeLayoutEvent) => {
-      const layout = await ref.current?.computeLayout({
+      const layout = await ref.current?.getLayout({
         houseId,
         systemId,
         dnas,
