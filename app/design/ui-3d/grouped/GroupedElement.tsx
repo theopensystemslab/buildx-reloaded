@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { useMaterial } from "~/design/state/hashedMaterials"
 import { HouseElementIdentifier } from "../../state/gestures/drag"
@@ -18,6 +18,7 @@ const GroupedElement = (props: Props) => {
     columnIndex,
     levelIndex,
     gridGroupIndex,
+    endColumn,
   } = props
 
   const meshRef = useRef<Mesh>(null!)
@@ -34,6 +35,10 @@ const GroupedElement = (props: Props) => {
     elementName,
   }
 
+  useEffect(() => {
+    meshRef.current.geometry.computeVertexNormals()
+  }, [])
+
   return (
     <mesh
       ref={meshRef}
@@ -43,6 +48,7 @@ const GroupedElement = (props: Props) => {
         identifier,
       }}
       name={identifier.toString()}
+      scale={endColumn ? [1, 1, 1] : [1, 1, -1]}
       castShadow
     />
   )

@@ -43,6 +43,7 @@ export const createMaterial = (config: Material) => {
       // transparent: true,
       emissive: "#000",
       side: DoubleSide,
+      // shadowSide: DoubleSide,
       // wireframe: true,
       // opacity: 0.6,
       // depthTest: false,
