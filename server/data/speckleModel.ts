@@ -38,7 +38,7 @@ const extractStreamId = (urlString: string) => {
   return pathParts[streamIdIndex]
 }
 
-const getSpeckleObject = async (speckleBranchUrl: string) => {
+export const getSpeckleObject = async (speckleBranchUrl: string) => {
   const streamId = extractStreamId(speckleBranchUrl)
 
   const data: any = await request("https://speckle.xyz/graphql", document, {
@@ -54,8 +54,8 @@ const getSpeckleObject = async (speckleBranchUrl: string) => {
     options: {
       enableCaching: false,
       excludeProps: [],
-      customLogger: undefined,
-      customWarner: undefined,
+      customLogger: () => {},
+      customWarner: () => {},
       fullyTraverseArrays: undefined,
     },
   })

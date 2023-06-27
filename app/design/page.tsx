@@ -1,9 +1,13 @@
+"use client"
 import DataInit from "~/data/DataInit"
 import { TrpcProvider } from "../ui/TrpcProvider"
+import getSystemsWorker from "../workers/systems/global"
 import GroupedApp from "./ui-3d/grouped/GroupedApp"
 import AppInit from "./ui-3d/init/AppInit"
+// import ProppedApp from "./ui-3d/propped/ProppedApp"
 
 const IndexPage = () => {
+  getSystemsWorker()
   return (
     <TrpcProvider>
       <DataInit>

@@ -1,3 +1,4 @@
+import { Module } from "@/server/data/modules"
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"
@@ -6,7 +7,6 @@ import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { proxy, ref } from "valtio"
 import { usePadColumn } from "../../data/modules"
-import { Module } from "@/server/data/modules"
 import { modulesToRows, useDnasModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {
@@ -192,7 +192,7 @@ const columnify =
     return pipe(acc, transposeRA)
   }
 
-const modulesToColumnLayout = (modules: Module[]) => {
+export const modulesToColumnLayout = (modules: Module[]) => {
   const columns = pipe(
     modules,
     modulesToRows,
