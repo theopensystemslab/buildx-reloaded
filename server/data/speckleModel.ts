@@ -54,8 +54,8 @@ export const getSpeckleObject = async (speckleBranchUrl: string) => {
     options: {
       enableCaching: false,
       excludeProps: [],
-      customLogger: undefined,
-      customWarner: undefined,
+      customLogger: () => {},
+      customWarner: () => {},
       fullyTraverseArrays: undefined,
     },
   })
