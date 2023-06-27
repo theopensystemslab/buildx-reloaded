@@ -71,7 +71,6 @@ const GroupedModule = (props: ModuleProps) => {
         levelY,
         endColumn ? moduleZ + module.length / 2 : moduleZ - module.length / 2,
       ]}
-      scale-z={endColumn ? 1 : -1}
       name={`${houseId}:${module.dna}`}
     >
       {children}

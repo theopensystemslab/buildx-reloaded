@@ -71,7 +71,6 @@ const PreviewModule = (props: PreviewModuleProps) => {
         levelY,
         endColumn ? moduleZ + module.length / 2 : moduleZ - module.length / 2,
       ]}
-      scale-z={endColumn ? 1 : -1}
     >
       {children}
     </group>

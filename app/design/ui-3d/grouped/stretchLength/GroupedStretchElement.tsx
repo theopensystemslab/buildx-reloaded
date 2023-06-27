@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { BufferGeometry, Mesh } from "three"
 import { useMaterial } from "~/design/state/hashedMaterials"
 import { HouseElementIdentifier } from "../../../state/gestures/drag"
@@ -12,7 +12,7 @@ type Props = StretchModuleProps & {
 const GroupedStretchElement = (props: Props) => {
   const { systemId, houseId, elementName, geometry } = props
 
-  const meshRef = useRef<Mesh>(null)
+  const meshRef = useRef<Mesh>(null!)
 
   const material = useMaterial({ systemId, houseId, elementName })
 
@@ -21,6 +21,10 @@ const GroupedStretchElement = (props: Props) => {
     houseId,
     elementName,
   }
+
+  useEffect(() => {
+    meshRef.current.geometry.computeVertexNormals()
+  }, [])
 
   return (
     <mesh
