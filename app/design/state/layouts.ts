@@ -60,7 +60,7 @@ export type SystemHouseModuleIdentifier = HouseModuleIdentifier & {
 export type ColumnLayout = Array<PositionedColumn>
 
 export const layouts = proxy<
-  Record<string, ColumnLayout> // houseId
+  Record<string, ColumnLayout> // systemId:dnas : Layout
 >({})
 
 export const useRowLayout = (houseId: string): RowLayout =>
