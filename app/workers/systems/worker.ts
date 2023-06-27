@@ -88,7 +88,9 @@ modulesObservable.subscribe((modules) => {
   })
 })
 
-export const computeLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
+export const getLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
+  // TODO: cache in the db!
+
   // dnas to modules array
   const modules = pipe(
     dnas,
@@ -110,7 +112,7 @@ export const computeLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
 }
 
 const api = {
-  computeLayout,
+  getLayout: getLayout,
 }
 
 export type SystemsAPI = typeof api
