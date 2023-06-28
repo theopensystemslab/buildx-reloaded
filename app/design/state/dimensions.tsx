@@ -5,7 +5,8 @@ import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "~/utils/hooks"
 import { yAxis } from "~/utils/three"
-import houses from "./houses"
+import { serializeLayoutsKey } from "../../db/layouts"
+import houses, { useHouse } from "./houses"
 import { layouts } from "./layouts"
 import { postTransformsTransients, Transforms } from "./transients/transforms"
 
@@ -68,9 +69,17 @@ export const usePostTransMatrix = (houseId: string) => {
   }
 }
 
+export const useLayoutsKey = (houseId: string) => {
+  const { systemId, dnas } = useHouse(houseId)
+
+  return serializeLayoutsKey({ systemId, dnas })
+}
+
 export const useComputeDimensions = (houseId: string) => {
   const translationMatrix = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
+
+  const layoutsKey = useLayoutsKey(houseId)
 
   return (transients: Transforms = {}): Dimensions => {
     const {
@@ -78,7 +87,7 @@ export const useComputeDimensions = (houseId: string) => {
       position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
     } = transients
 
-    const columns = layouts[houseId]
+    const columns = layouts[layoutsKey]
 
     const width = columns[0].gridGroups[0].modules[0].module.width
     const height = columns[0].gridGroups.reduce(

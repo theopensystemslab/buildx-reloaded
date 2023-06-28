@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
-import { useHouseColumnLayout } from "~/design/state/layouts"
+import { useDnasLayout, useHouseColumnLayout } from "~/design/state/layouts"
 import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
   usePostTransformsTransients,
@@ -30,8 +30,12 @@ const GroupedHouse = (props: Props) => {
   const endRef = useRef<Group>(null!)
 
   const systemId = useHouseSystemId(houseId)
+  const house = useHouse(houseId)
+  const houseDnasKey = JSON.stringify(house.dnas)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const dnas = useMemo(() => house.dnas, [houseDnasKey])
 
-  const layout = useHouseColumnLayout(houseId)
+  const layout = useDnasLayout({ systemId, dnas })
 
   const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
     useStretchLength({ houseId, layout, startRef, endRef })
@@ -53,13 +57,6 @@ const GroupedHouse = (props: Props) => {
     },
     [houseRefs]
   )
-
-  const house = useHouse(houseId)
-
-  const houseDnasKey = JSON.stringify(house.dnas)
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dnas = useMemo(() => house.dnas, [houseDnasKey])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])

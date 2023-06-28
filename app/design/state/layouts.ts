@@ -1,12 +1,14 @@
 import { Module } from "@/server/data/modules"
+import { liveQuery } from "dexie"
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { proxy, ref } from "valtio"
+import { proxy, ref, snapshot, useSnapshot } from "valtio"
 import { usePadColumn } from "../../data/modules"
+import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../../db/layouts"
 import { modulesToRows, useDnasModules, useHouseModules } from "./houses"
 
 export type PositionedModule = {
@@ -62,6 +64,14 @@ export type ColumnLayout = Array<PositionedColumn>
 export const layouts = proxy<
   Record<string, ColumnLayout> // systemId:dnas : Layout
 >({})
+
+liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
+  for (let { layoutsKey, layout } of dbLayouts) {
+    if (!(layoutsKey in layouts)) {
+      layouts[layoutsKey] = ref(layout)
+    }
+  }
+})
 
 export const useRowLayout = (houseId: string): RowLayout =>
   pipe(
@@ -343,6 +353,11 @@ export const modulesToColumnLayout = (modules: Module[]) => {
       }
     )
   )
+}
+
+export const useDnasLayout = (layoutsKey: LayoutsKey) => {
+  const snap = useSnapshot(layouts) as typeof layouts
+  return snap[serializeLayoutsKey(layoutsKey)]
 }
 
 export const useHouseColumnLayout = (houseId: string) => {
