@@ -150,7 +150,7 @@ export const moduleParser = z
       embodiedCarbon: embodied_carbon ?? -400,
       description,
       visualReference: visual_reference?.[0]?.url,
-      lastModified: last_modified,
+      lastModified: new Date(last_modified).getTime(),
     })
   )
 

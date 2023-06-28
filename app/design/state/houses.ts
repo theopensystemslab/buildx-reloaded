@@ -10,13 +10,12 @@ import { useKey } from "react-use"
 import { Vector3 } from "three"
 import { proxy, snapshot, subscribe, useSnapshot } from "valtio"
 import { A, clearRecord, R, RA, RR, S } from "~/utils/functions"
-import { House, Houses } from "../../data/houses"
 import { useHouseTypes } from "../../data/houseTypes"
 import { useModules, useSystemModules } from "../../data/modules"
-import userDB from "../../db/user"
+import userDB, { House } from "../../db/user"
 import { isSSR } from "../../utils/next"
 
-const houses = proxy<Houses>({})
+const houses = proxy<Record<string, House>>({})
 
 const initHouses = async () => {
   if (isSSR()) return
@@ -32,7 +31,7 @@ const initHouses = async () => {
 }
 
 initHouses().then(() => {
-  const unsubscribe = subscribe(houses, () => {
+  subscribe(houses, () => {
     // This will run every time `houses` changes
     Object.values(houses).forEach(async (house) => {
       const snapshotHouse = snapshot(house) as typeof house

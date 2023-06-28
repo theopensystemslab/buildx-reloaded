@@ -1,7 +1,6 @@
 import { Reset, TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
-import { House } from "~/data/houses"
 import { useHouseTypes } from "~/data/houseTypes"
 import scope, { useScope } from "~/design/state/scope"
 import { Pencil, TextCursor } from "~/ui/icons"
@@ -42,7 +41,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   const { houseId, columnIndex, levelIndex, gridGroupIndex, elementName } =
     selected
 
-  const house = useHouse(houseId) as House
+  const house = useHouse(houseId)
 
   const editBuilding = () => {
     downMode(selected)

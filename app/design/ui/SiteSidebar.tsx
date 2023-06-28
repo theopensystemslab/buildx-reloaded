@@ -1,16 +1,14 @@
 import { System, systems } from "@/server/data/system"
-import { useCameraGroundRaycast } from "../state/camera"
 import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
-import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
 import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
-import userDB, { useHouses } from "../../db/user"
-import HouseThumbnail from "./HouseThumbnail"
+import { useCameraGroundRaycast } from "../state/camera"
 import houses from "../state/houses"
+import HouseThumbnail from "./HouseThumbnail"
 
 type Props = {
   open: boolean

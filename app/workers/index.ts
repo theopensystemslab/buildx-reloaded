@@ -1,17 +1,21 @@
 "use client"
 import { Remote, wrap } from "comlink"
 import { isSSR } from "../utils/next"
-import { SystemsAPI } from "./systems"
+import { LayoutsAPI } from "./layouts"
 
-let worker: Remote<SystemsAPI> | null = null
+let systemsWorker: Worker | null = null
+let layoutsWorker: Remote<LayoutsAPI> | null = null
 
-const getSystemsWorker = () => {
-  if (!isSSR() && worker === null) {
-    worker = wrap<SystemsAPI>(
-      new Worker(new URL("./systems.ts", import.meta.url))
-    )
+export const getSystemsWorker = () => {
+  if (!isSSR() && systemsWorker === null) {
+    systemsWorker = new Worker(new URL("./systems.ts", import.meta.url))
   }
-  return worker
+  return systemsWorker
 }
 
-export default getSystemsWorker
+export const getLayoutsWorker = () => {
+  if (!isSSR() && layoutsWorker === null) {
+    layoutsWorker = wrap(new Worker(new URL("./layouts.ts", import.meta.url)))
+  }
+  return layoutsWorker
+}

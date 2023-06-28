@@ -1,27 +1,17 @@
-import { expose } from "comlink"
-import { liveQuery } from "dexie"
-import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { BufferGeometry } from "three"
-import { mergeBufferGeometries } from "three-stdlib"
 import { vanillaTrpc } from "../../client/trpc"
+import { HouseType } from "../../server/data/houseTypes"
 import { Module } from "../../server/data/modules"
-import { getSpeckleObject } from "../../server/data/speckleModel"
-import layoutsDB from "../db/layouts"
-import systemsDB, { IndexedModule } from "../db/systems"
-import { A, R } from "../utils/functions"
-import speckleIfcParser from "../utils/speckle/speckleIfcParser"
+import systemsDB, { LastFetchStamped } from "../db/systems"
 
 const initModules = async () => {
   const remoteModules = await vanillaTrpc.modules.query()
 
   const promises = remoteModules.map(async (remoteModule) => {
-    const remoteDate = new Date(remoteModule.lastModified)
     const localModule = await systemsDB.modules.get(remoteModule.id)
 
-    const indexedModule: IndexedModule = {
+    const indexedModule: LastFetchStamped<Module> = {
       ...remoteModule,
-      lastFetched: new Date().toISOString(),
+      lastFetched: new Date().getTime(),
     } as any
 
     if (!localModule) {
@@ -29,9 +19,7 @@ const initModules = async () => {
       return
     }
 
-    const localDate = new Date(localModule.lastModified)
-
-    if (remoteDate > localDate) {
+    if (remoteModule.lastModified > localModule.lastModified) {
       await systemsDB.modules.put(indexedModule)
       return
     }
@@ -40,82 +28,34 @@ const initModules = async () => {
   await Promise.all(promises)
 }
 
-const init = async () => {
-  await initModules()
-}
+const initHouseTypes = async () => {
+  const remoteHouseTypes = await vanillaTrpc.houseTypes.query()
 
-init()
+  const promises = remoteHouseTypes.map(async (remoteHouseType) => {
+    const localHouseType = await systemsDB.houseTypes.get(remoteHouseType.id)
 
-const modulesObservable = liveQuery(() => systemsDB.modules.toArray())
+    const indexedHouseType: LastFetchStamped<HouseType> = {
+      ...remoteHouseType,
+      lastFetched: new Date().getTime(),
+    }
 
-let allSystemsModules: Module[] = []
-
-modulesObservable.subscribe((modules) => {
-  allSystemsModules = modules
-
-  modules.map(async (nextModule) => {
-    const { speckleBranchUrl, lastFetched } = nextModule
-    const maybeModel = await layoutsDB.models.get(speckleBranchUrl)
-
-    if (
-      maybeModel &&
-      new Date(maybeModel.lastFetched).getTime() ===
-        new Date(lastFetched).getTime()
-    ) {
+    if (!localHouseType) {
+      await systemsDB.houseTypes.put(indexedHouseType)
       return
     }
 
-    const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
-    const speckleObject = speckleIfcParser.parse(speckleObjectData)
-    const geometries = pipe(
-      speckleObject,
-      A.reduce(
-        {},
-        (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
-          return produce(acc, (draft) => {
-            if (ifcTag in draft) draft[ifcTag].push(geometry)
-            else draft[ifcTag] = [geometry]
-          })
-        }
-      ),
-      R.map((geoms) => mergeBufferGeometries(geoms)),
-      R.filter((bg: BufferGeometry | null): bg is BufferGeometry =>
-        Boolean(bg)
-      ),
-      R.map((x) => x.toJSON())
-    )
-
-    layoutsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
+    if (remoteHouseType.lastModified > localHouseType.lastModified) {
+      await systemsDB.houseTypes.put(indexedHouseType)
+      return
+    }
   })
-})
 
-// export const getLayout = ({ systemId, dnas }: ComputeLayoutEventDetail) => {
-//   // TODO: cache in the db!
-
-//   // dnas to modules array
-//   const modules = pipe(
-//     dnas,
-//     A.filterMap((dna) =>
-//       pipe(
-//         allSystemsModules,
-//         A.findFirst(
-//           (systemModule: Module) =>
-//             systemModule.systemId === systemId && systemModule.dna === dna
-//         )
-//       )
-//     )
-//   )
-
-//   // modules to rows
-//   const columnLayout = modulesToColumnLayout(modules)
-
-//   return columnLayout
-// }
-
-const api = {
-  // getLayout: getLayout,
+  await Promise.all(promises)
 }
 
-export type SystemsAPI = typeof api
+const init = () => {
+  initModules()
+  initHouseTypes()
+}
 
-expose(api)
+init()
