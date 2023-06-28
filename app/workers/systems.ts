@@ -14,14 +14,8 @@ const initModules = async () => {
       lastFetched: new Date().getTime(),
     } as any
 
-    if (!localModule) {
+    if (!localModule || remoteModule.lastModified > localModule.lastModified) {
       await systemsDB.modules.put(indexedModule)
-      return
-    }
-
-    if (remoteModule.lastModified > localModule.lastModified) {
-      await systemsDB.modules.put(indexedModule)
-      return
     }
   })
 
@@ -39,14 +33,11 @@ const initHouseTypes = async () => {
       lastFetched: new Date().getTime(),
     }
 
-    if (!localHouseType) {
+    if (
+      !localHouseType ||
+      remoteHouseType.lastModified > localHouseType.lastModified
+    ) {
       await systemsDB.houseTypes.put(indexedHouseType)
-      return
-    }
-
-    if (remoteHouseType.lastModified > localHouseType.lastModified) {
-      await systemsDB.houseTypes.put(indexedHouseType)
-      return
     }
   })
 
