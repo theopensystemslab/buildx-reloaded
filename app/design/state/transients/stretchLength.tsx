@@ -26,6 +26,7 @@ import {
   useGetVanillaModule,
   vanillaColumns,
 } from "../vanilla"
+import { serializeLayoutsKey } from "../../../db/layouts"
 
 export type StretchLength = {
   direction: 1 | -1
@@ -300,7 +301,9 @@ export const useStretchLength = ({
 
 export const setStretchLength = () => {
   for (let houseId of Object.keys(stretchLengthClamped)) {
-    const layout = layouts[houseId]
+    const { systemId, dnas } = houses[houseId]
+    const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+    const layout = layouts[layoutsKey]
     const { startColumn, midColumns, endColumn } = splitColumns(layout)
     const vanillaColumn = vanillaColumns[houseId]
     const vanillaColumnLength = getVanillaColumnLength(vanillaColumn)

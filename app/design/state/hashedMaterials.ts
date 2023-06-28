@@ -15,6 +15,7 @@ import { useHousePreviews } from "./previews"
 import settings from "./settings"
 import siteCtx from "./siteCtx"
 import { postTransformsTransients } from "./transients/transforms"
+import { LayoutsKey } from "../../db/layouts"
 
 const getMaterialHash = ({
   systemId,
@@ -232,10 +233,15 @@ const usePlaneMatrix = (houseId: string) => {
   }
 }
 
-export const useHouseMaterialOps = (
-  houseId: string,
+export const useHouseMaterialOps = ({
+  houseGroupRef,
+  houseId,
+  serializedLayoutsKey,
+}: {
+  houseId: string
   houseGroupRef: MutableRefObject<Group>
-) => {
+  serializedLayoutsKey: string
+}) => {
   const systemId = houses[houseId].systemId
   const elementMaterials = useRef<Record<string, Material>>({})
   const categoryElements = useRef<Record<string, string[]>>({})
@@ -254,9 +260,9 @@ export const useHouseMaterialOps = (
   const levelHeight =
     siteCtx.levelIndex === null
       ? Infinity
-      : layouts[houseId][0].gridGroups[siteCtx.levelIndex].y +
-        layouts[houseId][0].gridGroups[siteCtx.levelIndex].modules[0].module
-          .height /
+      : layouts[serializedLayoutsKey][0].gridGroups[siteCtx.levelIndex].y +
+        layouts[serializedLayoutsKey][0].gridGroups[siteCtx.levelIndex]
+          .modules[0].module.height /
           2
 
   const updateMatrices = () => {

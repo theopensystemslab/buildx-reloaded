@@ -3,13 +3,14 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
-import { useDnasLayout, useHouseColumnLayout } from "~/design/state/layouts"
+import { useDnasLayout } from "~/design/state/layouts"
 import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
   usePostTransformsTransients,
   usePreTransformsTransients,
 } from "~/design/state/transients/transforms"
 import { RA } from "~/utils/functions"
+import { serializeLayoutsKey } from "../../../db/layouts"
 import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useIsMoveRotateable, useIsStretchable } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
@@ -69,7 +70,11 @@ const GroupedHouse = (props: Props) => {
   const isStretchable = useIsStretchable(houseId)
   const isMoveRotateable = useIsMoveRotateable(houseId)
 
-  useHouseMaterialOps(houseId, houseGroupRef)
+  useHouseMaterialOps({
+    houseId,
+    houseGroupRef,
+    serializedLayoutsKey: serializeLayoutsKey({ systemId, dnas }),
+  })
 
   return (
     <group ref={houseGroupRef} key={dnas.toString()}>

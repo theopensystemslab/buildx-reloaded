@@ -1,4 +1,5 @@
 import { vanillaTrpc } from "../../client/trpc"
+import { Element } from "../../server/data/elements"
 import { HouseType } from "../../server/data/houseTypes"
 import { Module } from "../../server/data/modules"
 import systemsDB, { LastFetchStamped } from "../db/systems"
@@ -44,9 +45,32 @@ const initHouseTypes = async () => {
   await Promise.all(promises)
 }
 
+const initElements = async () => {
+  const remoteElements = await vanillaTrpc.elements.query()
+
+  const promises = remoteElements.map(async (remoteElement) => {
+    const localElement = await systemsDB.elements.get(remoteElement.id)
+
+    const indexedElement: LastFetchStamped<Element> = {
+      ...remoteElement,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localElement ||
+      remoteElement.lastModified > localElement.lastModified
+    ) {
+      await systemsDB.elements.put(indexedElement)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
 const init = () => {
   initModules()
   initHouseTypes()
+  initElements()
 }
 
 init()

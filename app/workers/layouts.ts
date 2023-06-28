@@ -10,6 +10,7 @@ import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../db/layouts"
 import systemsDB, { LastFetchStamped } from "../db/systems"
 import { modulesToColumnLayout } from "../design/state/layouts"
 import { A, R } from "../utils/functions"
+import { isSSR } from "../utils/next"
 import speckleIfcParser from "../utils/speckle/speckleIfcParser"
 
 const syncModels = (modules: LastFetchStamped<Module>[]) => {
@@ -41,7 +42,12 @@ const syncModels = (modules: LastFetchStamped<Module>[]) => {
       R.map((x) => x.toJSON())
     )
 
-    layoutsDB.models.put({ speckleBranchUrl, lastFetched, geometries })
+    layoutsDB.models.put({
+      speckleBranchUrl,
+      lastFetched,
+      geometries,
+      systemId: nextModule.systemId,
+    })
   })
 }
 
@@ -85,19 +91,23 @@ const processLayoutsQueue = async () => {
   }
 }
 
-liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) => {
-  syncModels(modules)
-  modulesCache = modules
-  processLayoutsQueue()
-})
+if (!isSSR()) {
+  liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) => {
+    syncModels(modules)
+    modulesCache = modules
+    processLayoutsQueue()
+  })
+}
 
 const postLayout = (key: LayoutsKey) => layoutsQueue.push(key)
 const postLayouts = (keys: LayoutsKey[]) => keys.map(postLayout)
 
-liveQuery(() => systemsDB.houseTypes.toArray()).subscribe((houseTypes) => {
-  postLayouts(houseTypes)
-  processLayoutsQueue()
-})
+if (!isSSR()) {
+  liveQuery(() => systemsDB.houseTypes.toArray()).subscribe((houseTypes) => {
+    postLayouts(houseTypes)
+    processLayoutsQueue()
+  })
+}
 
 const api = {
   postLayout,

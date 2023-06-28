@@ -5,6 +5,7 @@ import { LastFetchStamped } from "./systems"
 export type ParsedModel = {
   speckleBranchUrl: string
   geometries: any
+  systemId: string
 }
 
 export type IndexedLayout = {
@@ -27,7 +28,7 @@ class LayoutsDatabase extends Dexie {
   constructor() {
     super("LayoutsDatabase")
     this.version(1).stores({
-      models: "speckleBranchUrl",
+      models: "speckleBranchUrl,systemId",
       layouts: "layoutsKey",
     })
     this.layouts = this.table("layouts")

@@ -9,7 +9,13 @@ import produce from "immer"
 import { proxy, ref, snapshot, useSnapshot } from "valtio"
 import { usePadColumn } from "../../data/modules"
 import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../../db/layouts"
-import { modulesToRows, useDnasModules, useHouseModules } from "./houses"
+import { isSSR } from "../../utils/next"
+import houses, {
+  modulesToRows,
+  useDnasModules,
+  useHouse,
+  useHouseModules,
+} from "./houses"
 
 export type PositionedModule = {
   module: Module
@@ -65,13 +71,15 @@ export const layouts = proxy<
   Record<string, ColumnLayout> // systemId:dnas : Layout
 >({})
 
-liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
-  for (let { layoutsKey, layout } of dbLayouts) {
-    if (!(layoutsKey in layouts)) {
-      layouts[layoutsKey] = ref(layout)
+if (!isSSR()) {
+  liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
+    for (let { layoutsKey, layout } of dbLayouts) {
+      if (!(layoutsKey in layouts)) {
+        layouts[layoutsKey] = ref(layout)
+      }
     }
-  }
-})
+  })
+}
 
 export const useRowLayout = (houseId: string): RowLayout =>
   pipe(
@@ -360,13 +368,6 @@ export const useDnasLayout = (layoutsKey: LayoutsKey) => {
   return snap[serializeLayoutsKey(layoutsKey)]
 }
 
-export const useHouseColumnLayout = (houseId: string) => {
-  const houseModules = useHouseModules(houseId)
-  const columnLayout = modulesToColumnLayout(houseModules)
-  layouts[houseId] = ref(columnLayout)
-  return columnLayout
-}
-
 export const useDnasColumnLayout = (systemId: string, dnas: string[]) => {
   const houseModules = useDnasModules(systemId, dnas)
   const columnLayout = modulesToColumnLayout(houseModules)
@@ -411,6 +412,14 @@ export const columnLayoutToMatrix = (columnLayout: ColumnLayout) => {
   )
 }
 
+export const useColumnMatrix = (houseId: string) => {
+  const { systemId, dnas } = useHouse(houseId)
+  const layoutsSnap = useSnapshot(layouts) as typeof layouts
+  return columnLayoutToMatrix(
+    layoutsSnap[serializeLayoutsKey({ systemId, dnas })]
+  )
+}
+
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
     columnMatrix,
@@ -419,11 +428,6 @@ export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
     A.flatten,
     A.flatten
   )
-
-export const useColumnMatrix = (houseId: string) => {
-  const columnLayout = useHouseColumnLayout(houseId)
-  return columnLayoutToMatrix(columnLayout)
-}
 
 export const rowLayoutToMatrix = (rowLayout: RowLayout) =>
   pipe(

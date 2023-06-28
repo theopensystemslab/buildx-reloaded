@@ -13,6 +13,7 @@ export type Element = {
   defaultMaterial: string
   materialOptions: Array<string>
   category: string
+  lastModified: number
 }
 
 export const elementParser = z.object({
@@ -25,6 +26,20 @@ export const elementParser = z.object({
     ifc4_variable: z.string().min(1),
     default_material: z.array(z.string().min(1)).optional(),
     element_category: z.string().min(1),
+    last_modified: z
+      .string()
+      .refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      )
+      .transform((x) => new Date(x).getTime()),
   }),
 })
 
@@ -47,7 +62,12 @@ export const elementsQuery: QueryFn<Element> =
                 elementParser.transform(
                   ({
                     id,
-                    fields: { element_code, ifc4_variable, element_category },
+                    fields: {
+                      element_code,
+                      ifc4_variable,
+                      element_category,
+                      last_modified,
+                    },
                   }) => {
                     const defaultMaterials = materials.filter(
                       ({ defaultFor }) => defaultFor.includes(id)
@@ -71,6 +91,7 @@ export const elementsQuery: QueryFn<Element> =
                       defaultMaterial,
                       materialOptions,
                       category: element_category,
+                      lastModified: last_modified,
                     }
                   }
                 )

@@ -22,6 +22,7 @@ import {
 import { StairType } from "@/server/data/stairTypes"
 import { Module } from "@/server/data/modules"
 import { useSystemStairTypes } from "~/data/stairTypes"
+import { serializeLayoutsKey } from "../../../db/layouts"
 
 export const useChangeModuleLayout = ({
   houseId,
@@ -32,7 +33,8 @@ export const useChangeModuleLayout = ({
   const systemId = houses[houseId].systemId
   const getVanillaModule = useGetVanillaModule(systemId)
 
-  const columnLayout = layouts[houseId]
+  const columnLayout =
+    layouts[serializeLayoutsKey({ systemId, dnas: houses[houseId].dnas })]
 
   const oldModule =
     columnLayout[columnIndex].gridGroups[levelIndex].modules[gridGroupIndex]
@@ -144,7 +146,8 @@ export const useLayoutOptions = ({
   selected: LayoutOpt["value"]
 } => {
   const systemId = houses[houseId].systemId
-  const layout = layouts[houseId]
+  const layout =
+    layouts[serializeLayoutsKey({ systemId, dnas: houses[houseId].dnas })]
   const m =
     layout[columnIndex].gridGroups[levelIndex].modules[gridGroupIndex].module
 
@@ -207,7 +210,8 @@ export const useStairsOptions = ({
   selected: StairsOpt["value"]
 } => {
   const systemId = houses[houseId].systemId
-  const layout = layouts[houseId]
+  const layout =
+    layouts[serializeLayoutsKey({ systemId, dnas: houses[houseId].dnas })]
 
   const stairTypes = useSystemStairTypes({ systemId })
 
