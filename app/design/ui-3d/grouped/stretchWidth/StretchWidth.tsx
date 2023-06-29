@@ -38,7 +38,7 @@ import { proxy, ref } from "valtio"
 import houses, { useHouse } from "../../../state/houses"
 import previews from "~/design/state/previews"
 import StretchHandle from "../../handles/StretchHandle"
-import { useIsStretchable } from "../../../state/siteCtx"
+import { useTransformabilityBooleans } from "../../../state/siteCtx"
 
 export type StretchWidthRaw = {
   direction: 1 | -1
@@ -66,7 +66,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   const rightHandleRef = useRef<Group>(null!)
   const leftHandleRef = useRef<Group>(null!)
 
-  const isStretchable = useIsStretchable(houseId)
+  const { stretchEnabled } = useTransformabilityBooleans(houseId)
 
   const systemId = houses[houseId].systemId
 
@@ -347,7 +347,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   return (
     <group
       ref={rootRef}
-      scale={isStretchable && canStretchWidth ? [1, 1, 1] : [0, 0, 0]}
+      scale={stretchEnabled && canStretchWidth ? [1, 1, 1] : [0, 0, 0]}
       {...groupProps}
     >
       <StretchHandle

@@ -1,18 +1,13 @@
 import { pipe } from "fp-ts/lib/function"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import React, { useRef } from "react"
 import { Group } from "three"
-import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
-import { useHouseElementOutline } from "~/design/state/highlights"
-import { useDnasLayout } from "~/design/state/layouts"
-import { useStretchLength } from "~/design/state/transients/stretchLength"
-import {
-  usePostTransformsTransients,
-  usePreTransformsTransients,
-} from "~/design/state/transients/transforms"
-import { RA } from "~/utils/functions"
 import { serializeLayoutsKey } from "../../../db/layouts"
-import { useHouse, useHouseSystemId } from "../../state/houses"
+import { House } from "../../../db/user"
+import { RA } from "../../../utils/functions"
+import { useHouseMaterialOps } from "../../state/hashedMaterials"
+import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
+import { useStretchLength } from "../../state/transients/stretchLength"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -20,64 +15,44 @@ import PreviewHouses from "./preview/PreviewHouses"
 import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
-  houseId: string
+  house: House
 }
 
-const GroupedHouse = (props: Props) => {
-  const { houseId } = props
+const GroupedHouse2 = (props: Props) => {
+  const { house } = props
+  const { systemId, id: houseId, dnas, position, rotation } = house
 
-  const houseGroupRef = useRef<Group>(null!)
+  const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+
+  const rootRef = useRef<Group>(null!)
   const startRef = useRef<Group>(null!)
   const endRef = useRef<Group>(null!)
-
-  const systemId = useHouseSystemId(houseId)
-  const house = useHouse(houseId)
-  const houseDnasKey = JSON.stringify(house.dnas)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dnas = useMemo(() => house.dnas, [houseDnasKey])
-
-  const layout = useDnasLayout({ systemId, dnas })
-
-  const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
-    useStretchLength({ houseId, layout, startRef, endRef })
-
-  const startColumnRef = useRef<Group>(null)
-  const midColumnsRef = useRef<Group>(null)
-  const endColumnRef = useRef<Group>(null)
-
-  const houseRefs = useMemo(
-    () => [startColumnRef, midColumnsRef, endColumnRef],
-    []
-  )
-
-  const setHouseVisible = useCallback(
-    (b: boolean) => {
-      for (let ref of houseRefs) {
-        if (ref.current) ref.current.visible = b
-      }
-    },
-    [houseRefs]
-  )
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setHouseVisible(true), [dnas, setHouseVisible])
-
-  usePreTransformsTransients(houseId)
-  usePostTransformsTransients(houseId, houseGroupRef)
-
-  useHouseElementOutline(houseId, houseGroupRef)
 
   const { stretchEnabled, moveRotateEnabled } =
     useTransformabilityBooleans(houseId)
 
+  const layout = useDnasLayout(house)
+
+  const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
+    useStretchLength({ houseId, layout, startRef, endRef })
+
   useHouseMaterialOps({
     houseId,
-    ref: houseGroupRef,
-    layoutsKey: serializeLayoutsKey({ systemId, dnas }),
+    ref: rootRef,
+    layoutsKey,
   })
 
+  const startColumnRef = useRef<Group>(null!)
+  const midColumnsRef = useRef<Group>(null!)
+  const endColumnRef = useRef<Group>(null!)
+
+  const setHouseVisible = (b: boolean) =>
+    [startColumnRef, midColumnsRef, endColumnRef].forEach((ref) => {
+      ref.current.visible = b
+    })
+
   return (
-    <group ref={houseGroupRef} key={houseDnasKey}>
+    <group ref={rootRef}>
       <group ref={startRef}>
         <StretchHandle
           houseId={houseId}
@@ -134,10 +109,9 @@ const GroupedHouse = (props: Props) => {
         {columnsUp}
         {columnsDown}
       </group>
-
       <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
     </group>
   )
 }
 
-export default GroupedHouse
+export default GroupedHouse2

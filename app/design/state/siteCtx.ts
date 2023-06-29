@@ -47,23 +47,19 @@ export const useIsBuilding = (houseId: string) => {
   return houseId === buildingHouseId
 }
 
-export const useIsStretchable = (houseId: string) => {
-  const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
-  return (
-    mode === SiteCtxModeEnum.Enum.BUILDING &&
-    editMode === EditModeEnum.Enum.STRETCH &&
-    houseId === ctxHouseId
-  )
-}
-
-export const useIsMoveRotateable = (houseId: string) => {
+export const useTransformabilityBooleans = (houseId: string) => {
   const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
 
-  return (
-    mode === SiteCtxModeEnum.Enum.SITE &&
-    editMode === EditModeEnum.Enum.MOVE_ROTATE &&
-    houseId === ctxHouseId
-  )
+  return {
+    stretchEnabled:
+      mode === SiteCtxModeEnum.Enum.BUILDING &&
+      editMode === EditModeEnum.Enum.STRETCH &&
+      houseId === ctxHouseId,
+    moveRotateEnabled:
+      mode === SiteCtxModeEnum.Enum.SITE &&
+      editMode === EditModeEnum.Enum.MOVE_ROTATE &&
+      houseId === ctxHouseId,
+  }
 }
 
 export const useLocallyStoredSiteCtx = () =>

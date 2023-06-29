@@ -234,13 +234,13 @@ const usePlaneMatrix = (houseId: string) => {
 }
 
 export const useHouseMaterialOps = ({
-  houseGroupRef,
+  ref,
   houseId,
-  serializedLayoutsKey,
+  layoutsKey,
 }: {
   houseId: string
-  houseGroupRef: MutableRefObject<Group>
-  serializedLayoutsKey: string
+  ref: MutableRefObject<Group>
+  layoutsKey: string
 }) => {
   const systemId = houses[houseId].systemId
   const elementMaterials = useRef<Record<string, Material>>({})
@@ -260,9 +260,9 @@ export const useHouseMaterialOps = ({
   const levelHeight =
     siteCtx.levelIndex === null
       ? Infinity
-      : layouts[serializedLayoutsKey][0].gridGroups[siteCtx.levelIndex].y +
-        layouts[serializedLayoutsKey][0].gridGroups[siteCtx.levelIndex]
-          .modules[0].module.height /
+      : layouts[layoutsKey][0].gridGroups[siteCtx.levelIndex].y +
+        layouts[layoutsKey][0].gridGroups[siteCtx.levelIndex].modules[0].module
+          .height /
           2
 
   const updateMatrices = () => {
@@ -280,7 +280,7 @@ export const useHouseMaterialOps = ({
   useSubscribeKey(postTransformsTransients, houseId, updateMatrices, true)
 
   useEffect(() => {
-    houseGroupRef.current?.traverse((o3) => {
+    ref.current?.traverse((o3) => {
       if (
         !isMesh(o3) ||
         Array.isArray(o3.material) ||
@@ -313,7 +313,7 @@ export const useHouseMaterialOps = ({
       elementMaterials.current = {}
       categoryElements.current = {}
     }
-  }, [elements, houseGroupRef])
+  }, [elements, ref])
 
   useSubscribe(
     elementCategories,
