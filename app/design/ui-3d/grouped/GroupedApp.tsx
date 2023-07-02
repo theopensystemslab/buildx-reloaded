@@ -1,15 +1,16 @@
 "use client"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment } from "react"
+import { Fragment, Suspense } from "react"
 import { usePreviews } from "~/design/state/previews"
 import { useRouting } from "~/design/state/routing"
 import { A, R } from "~/utils/functions"
 import { useDragHandler, useGestures } from "../../state/gestures"
 import { useHouses } from "../../state/houses"
-import { useExportersWorker } from "../../workers/exporters"
+import { useExportersWorker } from "../../../workers/exporters/hook"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
 import GroupedHouse2 from "./GroupedHouse2"
+import GroupedHouse from "./GroupedHouse"
 
 const GroupedApp = () => {
   const houses = useHouses()
@@ -20,6 +21,8 @@ const GroupedApp = () => {
 
   useExportersWorker()
 
+  // <GroupedHouse2 key={houseId} house={house} />
+
   return (
     <Fragment>
       <group {...bindAll()}>
@@ -27,7 +30,9 @@ const GroupedApp = () => {
           houses,
           R.toArray,
           A.map(([houseId, house]) => (
-            <GroupedHouse2 key={houseId} house={house} />
+            <Suspense key={houseId} fallback={null}>
+              <GroupedHouse2 house={house} />
+            </Suspense>
           ))
         )}
       </group>

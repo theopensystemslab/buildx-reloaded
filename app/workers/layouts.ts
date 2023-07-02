@@ -76,7 +76,12 @@ const processLayout = async ({ systemId, dnas }: LayoutsKey) => {
     layout,
     layoutsKey,
   })
+
+  console.log({ layout })
+
+  return layout
 }
+
 const processLayoutsQueue = async () => {
   if (modulesCache.length === 0) {
     return
@@ -99,8 +104,13 @@ if (!isSSR()) {
   })
 }
 
-const postLayout = (key: LayoutsKey) => layoutsQueue.push(key)
-const postLayouts = (keys: LayoutsKey[]) => keys.map(postLayout)
+const postLayout = (key: LayoutsKey) => {
+  layoutsQueue.push(key)
+}
+
+const postLayouts = (keys: LayoutsKey[]) => {
+  keys.map(postLayout)
+}
 
 if (!isSSR()) {
   liveQuery(() => systemsDB.houseTypes.toArray()).subscribe((houseTypes) => {
@@ -112,6 +122,7 @@ if (!isSSR()) {
 const api = {
   postLayout,
   postLayouts,
+  processLayout,
 }
 
 export type LayoutsAPI = typeof api

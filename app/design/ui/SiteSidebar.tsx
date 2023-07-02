@@ -4,6 +4,7 @@ import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
+import { ref } from "valtio"
 import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
 import { useCameraGroundRaycast } from "../state/camera"
@@ -81,7 +82,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                           systemId: houseType.systemId,
                           position,
                           rotation: 0,
-                          dnas: houseType.dnas as string[],
+                          dnas: ref(houseType.dnas),
                           modifiedMaterials: {},
                           friendlyName: `Building ${
                             Object.keys(houses).length + 1

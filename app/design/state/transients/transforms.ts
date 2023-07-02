@@ -5,8 +5,8 @@ import { useDebouncedCallback } from "use-debounce"
 import { proxy } from "valtio"
 import { useSubscribeKey } from "~/utils/hooks"
 import { yAxis } from "~/utils/three"
+import { dispatchUpdateExportModelsEvent } from "../../../workers/exporters/events"
 import dimensions, { collideOBB, useComputeDimensions } from "../dimensions"
-import { dispatchUpdateExportModelsEvent } from "../../workers/exporters"
 import houses from "../houses"
 
 export type Transforms = {

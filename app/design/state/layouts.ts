@@ -6,11 +6,13 @@ import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
+import { suspend } from "suspend-react"
 import { proxy, ref, snapshot, useSnapshot } from "valtio"
 import { usePadColumn } from "../../data/modules"
 import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../../db/layouts"
 import { isSSR } from "../../utils/next"
-import houses, {
+import { getLayoutsWorker } from "../../workers"
+import {
   modulesToRows,
   useDnasModules,
   useHouse,
@@ -363,9 +365,21 @@ export const modulesToColumnLayout = (modules: Module[]) => {
   )
 }
 
-export const useDnasLayout = (layoutsKey: LayoutsKey) => {
+export const useDnasLayout = (layoutsKey: LayoutsKey): ColumnLayout => {
   const snap = useSnapshot(layouts) as typeof layouts
-  return snap[serializeLayoutsKey(layoutsKey)]
+  const serialKey = serializeLayoutsKey(layoutsKey)
+  const maybeLayout: ColumnLayout | undefined = snap?.[serialKey]
+
+  return suspend(async () => {
+    if (maybeLayout) return maybeLayout
+
+    const layoutsWorker = getLayoutsWorker()
+
+    if (layoutsWorker === null)
+      throw new Error(`layoutsWorker null in useDnasLayout`)
+
+    return await layoutsWorker.processLayout(layoutsKey)
+  }, [maybeLayout])
 }
 
 export const useDnasColumnLayout = (systemId: string, dnas: string[]) => {

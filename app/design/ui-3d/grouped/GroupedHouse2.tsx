@@ -1,6 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import React, { useRef } from "react"
 import { Group } from "three"
+import { snapshot } from "valtio"
 import { serializeLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
@@ -31,7 +32,10 @@ const GroupedHouse2 = (props: Props) => {
   const { stretchEnabled, moveRotateEnabled } =
     useTransformabilityBooleans(houseId)
 
-  const layout = useDnasLayout(house)
+  const layout = useDnasLayout({
+    systemId,
+    dnas: [...dnas],
+  })
 
   const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
     useStretchLength({ houseId, layout, startRef, endRef })

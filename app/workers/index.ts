@@ -1,7 +1,7 @@
 "use client"
 import { Remote, wrap } from "comlink"
 import { isSSR } from "../utils/next"
-import { LayoutsAPI } from "./layouts"
+import type { LayoutsAPI } from "./layouts"
 
 let systemsWorker: Worker | null = null
 let layoutsWorker: Remote<LayoutsAPI> | null = null
