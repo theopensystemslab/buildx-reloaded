@@ -378,7 +378,10 @@ export const useDnasLayout = (layoutsKey: LayoutsKey): ColumnLayout => {
     if (layoutsWorker === null)
       throw new Error(`layoutsWorker null in useDnasLayout`)
 
-    return await layoutsWorker.processLayout(layoutsKey)
+    const layout = await layoutsWorker.processLayout(layoutsKey)
+    layouts[serialKey] = layout
+
+    return layout
   }, [maybeLayout])
 }
 

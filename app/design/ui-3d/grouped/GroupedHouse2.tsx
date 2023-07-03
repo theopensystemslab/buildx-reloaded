@@ -1,14 +1,25 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import React, { useRef } from "react"
-import { Group } from "three"
+import React, { useEffect, useMemo, useRef } from "react"
+import { Group, Matrix4, Vector3 } from "three"
+import { OBB } from "three-stdlib"
 import { snapshot } from "valtio"
 import { serializeLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
+import dimensions, { collideOBB, Dimensions } from "../../state/dimensions"
+import {
+  dispatchMoveHouse,
+  useMoveHouseIntentListener,
+  useMoveHouseListener,
+} from "../../state/events"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
-import { useStretchLength } from "../../state/transients/stretchLength"
+import {
+  splitColumns,
+  useStretchLength,
+} from "../../state/transients/stretchLength"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -21,11 +32,25 @@ type Props = {
 
 const GroupedHouse2 = (props: Props) => {
   const { house } = props
-  const { systemId, id: houseId, dnas, position, rotation } = house
+  const { systemId, id: houseId, position, rotation } = house
+  const dnas = [...house.dnas]
 
-  const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+  const translationMatrix = useMemo(() => {
+    const m = new Matrix4()
+    const { x, y, z } = position
+    m.makeTranslation(x, y, z)
+    return m
+  }, [position])
 
-  const rootRef = useRef<Group>(null!)
+  const rotationMatrix = useMemo(() => {
+    const m = new Matrix4()
+    m.makeRotationY(rotation)
+    return m
+  }, [rotation])
+
+  const reactHouseMatrix = translationMatrix.multiply(rotationMatrix)
+
+  const rootRef = useRef<Group>(null)
   const startRef = useRef<Group>(null!)
   const endRef = useRef<Group>(null!)
 
@@ -34,16 +59,86 @@ const GroupedHouse2 = (props: Props) => {
 
   const layout = useDnasLayout({
     systemId,
-    dnas: [...dnas],
+    dnas,
   })
 
-  const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
-    useStretchLength({ houseId, layout, startRef, endRef })
+  const { width, length, height, obb }: Dimensions = useMemo(() => {
+    const width = layout[0].gridGroups[0].modules[0].module.width
+    const height = layout[0].gridGroups.reduce(
+      (acc, gg) => acc + gg.modules[0].module.height,
+      0
+    )
+    const z0 = layout[0].gridGroups[0].modules[0].z
+    const lastColumn = layout[layout.length - 1]
+    const lastGridGroup =
+      lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
+    const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
+    const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+
+    const length = z1 - z0
+
+    const halfSize = new Vector3(width / 2, height / 2, length / 2)
+    const center = new Vector3(0, 0, 0)
+    const obb = new OBB(center, halfSize)
+
+    obb.applyMatrix4(reactHouseMatrix)
+
+    dimensions[houseId] = {
+      height,
+      length,
+      width,
+      obb,
+    }
+
+    return {
+      height,
+      length,
+      width,
+      obb,
+    }
+  }, [layout, reactHouseMatrix, houseId])
+
+  useEffect(() => {
+    if (!rootRef.current) return
+    rootRef.current.matrixAutoUpdate = false
+    rootRef.current.matrix.copy(reactHouseMatrix)
+  }, [reactHouseMatrix])
+
+  const frameOBB = useRef(new OBB())
+  const frameHouseMatrix = useRef(new Matrix4())
+
+  useMoveHouseIntentListener((detail) => {
+    if (detail.houseId !== houseId) return
+
+    const { x, z } = detail.delta
+
+    const deltaMatrix = new Matrix4().makeTranslation(x, 0, z)
+    frameHouseMatrix.current = reactHouseMatrix.clone()
+    frameHouseMatrix.current.multiply(deltaMatrix)
+
+    frameOBB.current.copy(obb)
+    frameOBB.current.applyMatrix4(frameHouseMatrix.current)
+
+    const collision = collideOBB(frameOBB.current, [houseId])
+    if (collision) return
+
+    dispatchMoveHouse({ houseId, delta: detail.delta })
+  })
+
+  useMoveHouseListener((detail) => {
+    if (!rootRef.current || houseId !== detail.houseId) return
+
+    rootRef.current.matrix.copy(frameHouseMatrix.current)
+    rootRef.current.updateMatrixWorld()
+    invalidate()
+  })
+
+  const { startColumn, endColumn, midColumns } = splitColumns(layout)
 
   useHouseMaterialOps({
     houseId,
     ref: rootRef,
-    layoutsKey,
+    layoutsKey: serializeLayoutsKey({ systemId, dnas }),
   })
 
   const startColumnRef = useRef<Group>(null!)
@@ -109,11 +204,11 @@ const GroupedHouse2 = (props: Props) => {
         scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
       />
 
-      <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
+      {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
         {columnsUp}
         {columnsDown}
-      </group>
-      <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
+      </group> */}
+      {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
     </group>
   )
 }

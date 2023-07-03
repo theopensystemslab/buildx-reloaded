@@ -22,6 +22,7 @@ import { openMenu } from "../menu"
 import pointer from "../pointer"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
 import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
+import { dispatchMoveHouseIntent } from "../events"
 
 export const useDragHandler = () => {
   const { rotateV2, unrotateV2 } = useRotations()
@@ -40,16 +41,26 @@ export const useDragHandler = () => {
     } = dragProxy
     switch (identifierType) {
       case "HOUSE_ELEMENT": {
-        preTransformsTransients[houseId] = {
-          position: {
-            dx: x1 - x0,
-            dy: 0,
-            dz: z1 - z0,
+        dispatchMoveHouseIntent({
+          houseId,
+          delta: {
+            x: x1 - x0,
+            y: 0,
+            z: z1 - z0,
           },
-        }
+        })
+        // dispatch event move house intent
+        // preTransformsTransients[houseId] = {
+        //   position: {
+        //     dx: x1 - x0,
+        //     dy: 0,
+        //     dz: z1 - z0,
+        //   },
+        // }
         return
       }
       case "ROTATE_HANDLE": {
+        // dispatch event rotate house intent
         const { x: cx, z: cz } = getHouseCenter(houseId)
         const angle0 = Math.atan2(cz - z0, cx - x0)
         const angle = Math.atan2(cz - z1, cx - x1)
@@ -59,6 +70,7 @@ export const useDragHandler = () => {
         return
       }
       case "STRETCH_HANDLE": {
+        // dispatch event stretch house intent
         const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
         const [dx, dz] = rotateV2(houseId, [0, distanceZ])
 

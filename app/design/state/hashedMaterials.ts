@@ -3,7 +3,7 @@ import { useSubscribe, useSubscribeKey } from "~/utils/hooks"
 import { createMaterial, isMesh } from "~/utils/three"
 import { invalidate } from "@react-three/fiber"
 import { identity, pipe } from "fp-ts/lib/function"
-import { MutableRefObject, useEffect, useMemo, useRef } from "react"
+import { MutableRefObject, RefObject, useEffect, useMemo, useRef } from "react"
 import { Group, Material, Matrix4, Plane, Vector3 } from "three"
 import { proxy, ref } from "valtio"
 import { useElements, useSystemElements } from "~/data/elements"
@@ -239,7 +239,7 @@ export const useHouseMaterialOps = ({
   layoutsKey,
 }: {
   houseId: string
-  ref: MutableRefObject<Group>
+  ref: RefObject<Group>
   layoutsKey: string
 }) => {
   const systemId = houses[houseId].systemId
