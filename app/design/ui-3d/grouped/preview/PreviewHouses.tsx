@@ -21,7 +21,7 @@ const PreviewHouses = (props: Props) => {
       {pipe(
         dnaPreviews,
         R.collect(S.Ord)((k, { value }) => {
-          console.log({ houseId, k })
+          // console.log({ houseId, k })
           return (
             <PreviewHouse
               // is k not houseId?

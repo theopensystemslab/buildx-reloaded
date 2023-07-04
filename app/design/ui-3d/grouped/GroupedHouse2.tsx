@@ -1,9 +1,8 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import React, { useEffect, useMemo, useRef } from "react"
-import { Group, Matrix4, Vector3 } from "three"
+import { Fragment, useEffect, useMemo, useRef } from "react"
+import { Box3, Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { snapshot } from "valtio"
 import { serializeLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
@@ -17,14 +16,10 @@ import { useHouseMaterialOps } from "../../state/hashedMaterials"
 import houses from "../../state/houses"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
-import {
-  splitColumns,
-  useStretchLength,
-} from "../../state/transients/stretchLength"
+import { splitColumns } from "../../state/transients/stretchLength"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
-import PreviewHouses from "./preview/PreviewHouses"
 import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
@@ -79,7 +74,7 @@ const GroupedHouse2 = (props: Props) => {
     const length = z1 - z0
 
     const halfSize = new Vector3(width / 2, height / 2, length / 2)
-    const center = new Vector3(0, 0, 0)
+    const center = new Vector3(0, height / 2, length / 2)
     const obb = new OBB(center, halfSize)
 
     obb.applyMatrix4(reactHouseMatrix)
@@ -98,6 +93,22 @@ const GroupedHouse2 = (props: Props) => {
       obb,
     }
   }, [layout, reactHouseMatrix, houseId])
+
+  const obbBox = useMemo(() => {
+    const box3 = new Box3().setFromCenterAndSize(
+      obb.center,
+      obb.halfSize.clone().multiplyScalar(2)
+    )
+    box3.applyMatrix4(rotationMatrix)
+    return box3
+  }, [obb.center, obb.halfSize, rotationMatrix])
+
+  // const box3HelperRef = useRef<Box3Helper>(null)
+
+  // useEffect(() => {
+  //   box3HelperRef.current?.layers.disableAll()
+  //   box3HelperRef.current?.layers.enable(CameraLayer.VISIBLE)
+  // }, [])
 
   useEffect(() => {
     if (!rootRef.current) return
@@ -118,7 +129,7 @@ const GroupedHouse2 = (props: Props) => {
     frameHouseMatrix.current.multiply(deltaMatrix)
 
     frameOBB.current.copy(obb)
-    frameOBB.current.applyMatrix4(frameHouseMatrix.current)
+    frameOBB.current.applyMatrix4(deltaMatrix)
 
     const collision = collideOBB(frameOBB.current, [houseId])
     if (collision) return
@@ -162,71 +173,75 @@ const GroupedHouse2 = (props: Props) => {
     })
 
   return (
-    <group
-      ref={rootRef}
-      position-x={position.x}
-      position-y={position.y}
-      position-z={position.z}
-      rotation-y={rotation}
-    >
-      <group ref={startRef}>
-        <StretchHandle
+    <Fragment>
+      <group
+        ref={rootRef}
+        position-x={position.x}
+        position-y={position.y}
+        position-z={position.z}
+        rotation-y={rotation}
+      >
+        <group ref={startRef}>
+          <StretchHandle
+            houseId={houseId}
+            axis="z"
+            direction={-1}
+            disable={!stretchEnabled}
+          />
+          <GroupedColumn
+            ref={startColumnRef}
+            key={`${houseId}:${startColumn.columnIndex}`}
+            column={startColumn}
+            {...{ systemId, houseId, start: true }}
+          />
+        </group>
+        <group ref={midColumnsRef}>
+          {pipe(
+            midColumns,
+            RA.map((column) => (
+              <GroupedColumn
+                key={`${houseId}:${column.columnIndex}`}
+                column={column}
+                {...{ systemId, houseId }}
+              />
+            ))
+          )}
+        </group>
+        <group ref={endRef}>
+          <GroupedColumn
+            ref={endColumnRef}
+            key={`${houseId}:${endColumn.columnIndex}`}
+            column={endColumn}
+            {...{ systemId, houseId, end: true }}
+          />
+          <StretchHandle
+            houseId={houseId}
+            axis="z"
+            direction={1}
+            disable={!stretchEnabled}
+          />
+        </group>
+
+        <StretchWidth
           houseId={houseId}
-          axis="z"
-          direction={-1}
-          disable={!stretchEnabled}
+          columnLayout={layout}
+          setHouseVisible={setHouseVisible}
         />
-        <GroupedColumn
-          ref={startColumnRef}
-          key={`${houseId}:${startColumn.columnIndex}`}
-          column={startColumn}
-          {...{ systemId, houseId, start: true }}
-        />
-      </group>
-      <group ref={midColumnsRef}>
-        {pipe(
-          midColumns,
-          RA.map((column) => (
-            <GroupedColumn
-              key={`${houseId}:${column.columnIndex}`}
-              column={column}
-              {...{ systemId, houseId }}
-            />
-          ))
-        )}
-      </group>
-      <group ref={endRef}>
-        <GroupedColumn
-          ref={endColumnRef}
-          key={`${houseId}:${endColumn.columnIndex}`}
-          column={endColumn}
-          {...{ systemId, houseId, end: true }}
-        />
-        <StretchHandle
+
+        <RotateHandles
           houseId={houseId}
-          axis="z"
-          direction={1}
-          disable={!stretchEnabled}
+          scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
         />
-      </group>
 
-      <StretchWidth
-        houseId={houseId}
-        columnLayout={layout}
-        setHouseVisible={setHouseVisible}
-      />
-
-      <RotateHandles
-        houseId={houseId}
-        scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
-      />
-
-      {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
+        {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
         {columnsUp}
         {columnsDown}
       </group> */}
-      {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
-    </group>
+        {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
+      </group>
+
+      {/* <box3Helper ref={box3HelperRef} args={[obbBox]} /> */}
+    </Fragment>
   )
 }
 

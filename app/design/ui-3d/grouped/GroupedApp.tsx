@@ -17,8 +17,6 @@ const GroupedApp = () => {
   useDragHandler()
   useExportersWorker()
 
-  // <GroupedHouse2 key={houseId} house={house} />
-
   return (
     <Fragment>
       <group {...bindAll()}>
