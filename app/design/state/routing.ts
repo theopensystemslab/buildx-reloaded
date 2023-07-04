@@ -1,3 +1,4 @@
+"use client"
 import { useRoute } from "~/utils/wouter"
 import { useEffect, useRef } from "react"
 import { useLocation } from "wouter"
@@ -51,10 +52,17 @@ export const useRouting = () => {
         enterLevelMode(levelIndex)
         break
       }
-      case !("houseId" in params):
+      case !("houseId" in params): {
         exitBuildingMode()
+        break
+      }
     }
 
     urlChangingLock.current = false
   }, [params])
+}
+
+export const Routing = () => {
+  useRouting()
+  return null
 }

@@ -68,16 +68,14 @@ const processLayout = async ({ systemId, dnas }: LayoutsKey) => {
     )
   )
 
-  // modules to rows
   const layout = modulesToColumnLayout(modules)
+
   const layoutsKey = serializeLayoutsKey({ systemId, dnas })
 
   layoutsDB.layouts.put({
     layout,
     layoutsKey,
   })
-
-  console.log({ layout })
 
   return layout
 }

@@ -48,6 +48,7 @@ export const useDragHandler = () => {
             y: 0,
             z: z1 - z0,
           },
+          last: false,
         })
         // dispatch event move house intent
         // preTransformsTransients[houseId] = {
@@ -98,13 +99,52 @@ export const useDragHandler = () => {
   })
 
   useSubscribeKey(dragProxy, "end", () => {
-    if (dragProxy.end) {
-      setTransforms()
-      setStretchLength()
-      setPreviews()
+    if (!dragProxy.end) return
+    const cleanup = () => {
       dragProxy.start = null
       dragProxy.drag = null
+      dragProxy.end = false
     }
+
+    if (dragProxy.drag === null || dragProxy.start === null) {
+      cleanup()
+      return
+    }
+
+    const {
+      start: {
+        identifier: { houseId, identifierType },
+        point: { x: x0, y: y0, z: z0 },
+      },
+      drag: {
+        point: { x: x1, y: y1, z: z1 },
+      },
+    } = dragProxy
+
+    const delta = {
+      x: x1 - x0,
+      y: 0,
+      z: z1 - z0,
+    }
+
+    if (dragProxy.end) {
+      switch (siteCtx.editMode) {
+        case EditModeEnum.Enum.MOVE_ROTATE:
+          dispatchMoveHouseIntent({
+            houseId,
+            delta,
+            last: true,
+          })
+          // setTransforms()
+          break
+        case EditModeEnum.Enum.STRETCH:
+          // setStretchLength()
+          // setPreviews()
+          break
+      }
+    }
+
+    cleanup()
   })
 }
 
@@ -151,10 +191,12 @@ export const useGestures = (): any =>
             ...identifier,
           }
 
-          if (siteCtx.editMode === null)
+          if (siteCtx.editMode === null) {
             siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
-          if (siteCtx.houseId !== identifier.houseId)
+          }
+          if (siteCtx.houseId !== identifier.houseId) {
             siteCtx.houseId = identifier.houseId
+          }
 
           dragProxy.start = {
             identifier,

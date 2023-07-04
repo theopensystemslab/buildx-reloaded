@@ -15,6 +15,7 @@ const HousesPillsSelector = dynamic(
 const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
   getSystemsWorker()
   getLayoutsWorker()
+
   return (
     <TrpcProvider>
       <div className="flex-auto overflow-y-auto flex flex-col">

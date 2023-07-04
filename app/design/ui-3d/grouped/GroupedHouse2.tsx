@@ -14,6 +14,7 @@ import {
   useMoveHouseListener,
 } from "../../state/events"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
+import houses from "../../state/houses"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
 import {
@@ -122,7 +123,7 @@ const GroupedHouse2 = (props: Props) => {
     const collision = collideOBB(frameOBB.current, [houseId])
     if (collision) return
 
-    dispatchMoveHouse({ houseId, delta: detail.delta })
+    dispatchMoveHouse(detail)
   })
 
   useMoveHouseListener((detail) => {
@@ -131,6 +132,16 @@ const GroupedHouse2 = (props: Props) => {
     rootRef.current.matrix.copy(frameHouseMatrix.current)
     rootRef.current.updateMatrixWorld()
     invalidate()
+
+    if (detail.last) {
+      const { x, y, z } = detail.delta
+
+      houses[houseId].position = {
+        x: position.x + x,
+        y: position.y + y,
+        z: position.z + z,
+      }
+    }
   })
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
@@ -151,7 +162,13 @@ const GroupedHouse2 = (props: Props) => {
     })
 
   return (
-    <group ref={rootRef}>
+    <group
+      ref={rootRef}
+      position-x={position.x}
+      position-y={position.y}
+      position-z={position.z}
+      rotation-y={rotation}
+    >
       <group ref={startRef}>
         <StretchHandle
           houseId={houseId}
