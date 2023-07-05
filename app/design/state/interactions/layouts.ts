@@ -11,10 +11,7 @@ import { NEA, O, RA, S, upperFirst } from "~/utils/functions"
 import houses from "~/design/state/houses"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
-  HouseModuleIdentifier,
   layouts,
-  ColumnLayout,
-  PositionedModule,
   columnLayoutToDNA,
   columnLayoutToMatrix,
   columnMatrixToDna,
@@ -23,6 +20,11 @@ import { StairType } from "@/server/data/stairTypes"
 import { Module } from "@/server/data/modules"
 import { useSystemStairTypes } from "~/data/stairTypes"
 import { serializeLayoutsKey } from "../../../db/layouts"
+import {
+  ColumnLayout,
+  HouseModuleIdentifier,
+  PositionedModule,
+} from "../../../workers/layouts"
 
 export const useChangeModuleLayout = ({
   houseId,

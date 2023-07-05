@@ -16,17 +16,18 @@ import dimensions, {
 } from "~/design/state/dimensions"
 import houses, { useHouse } from "~/design/state/houses"
 import {
-  ColumnLayout,
-  columnLayoutToDNA,
-  layouts,
-  PositionedRow,
-} from "~/design/state/layouts"
-import {
   getVanillaColumnLength,
   useGetVanillaModule,
   vanillaColumns,
 } from "../vanilla"
-import { serializeLayoutsKey } from "../../../db/layouts"
+import layoutsDB, { serializeLayoutsKey } from "../../../db/layouts"
+import { suspend } from "suspend-react"
+import {
+  ColumnLayout,
+  PositionedRow,
+  splitColumns,
+} from "../../../workers/layouts"
+import { columnLayoutToDNA, layouts } from "../layouts"
 
 export type StretchLength = {
   direction: 1 | -1
@@ -37,20 +38,6 @@ export type StretchLength = {
 
 export const stretchLengthRaw = proxy<Record<string, StretchLength>>({})
 export const stretchLengthClamped = proxy<Record<string, StretchLength>>({})
-
-export const splitColumns = (layout: ColumnLayout) =>
-  pipe(
-    layout,
-    RA.partition(
-      ({ columnIndex }) =>
-        columnIndex === 0 || columnIndex === layout.length - 1
-    ),
-    ({ left: midColumns, right: [startColumn, endColumn] }) => ({
-      startColumn,
-      endColumn,
-      midColumns,
-    })
-  )
 
 export const useStretchLength = ({
   houseId,

@@ -1,24 +1,9 @@
-"use client"
-import DataInit from "~/data/DataInit"
-import { TrpcProvider } from "../ui/TrpcProvider"
-import { getLayoutsWorker, getSystemsWorker } from "../workers"
-import { Routing } from "./state/routing"
-import GroupedApp from "./ui-3d/grouped/GroupedApp"
-import AppInit from "./ui-3d/init/AppInit"
+import dynamic from "next/dynamic"
+
+const App = dynamic(() => import("./app"), { ssr: false })
 
 const IndexPage = () => {
-  getSystemsWorker()
-  getLayoutsWorker()
-  return (
-    <TrpcProvider>
-      <DataInit>
-        <AppInit controlsEnabled={true} mapEnabled={false}>
-          <Routing />
-          <GroupedApp />
-        </AppInit>
-      </DataInit>
-    </TrpcProvider>
-  )
+  return <App />
 }
 
 export default IndexPage

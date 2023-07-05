@@ -6,8 +6,8 @@ import { Matrix4, Plane, Vector3 } from "three"
 import { useSnapshot } from "valtio"
 import { R } from "~/utils/functions"
 import houses from "~/design/state/houses"
-import { ColumnLayout } from "~/design/state/layouts"
 import { useVerticalCuts } from "~/design/state/settings"
+import { ColumnLayout } from "../../workers/layouts"
 
 export const useVerticalCutPlanes = (
   columnLayout: ColumnLayout,

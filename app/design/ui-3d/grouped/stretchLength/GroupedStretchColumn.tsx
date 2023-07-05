@@ -1,4 +1,3 @@
-import { GridGroup } from "~/design/state/layouts"
 import { RA } from "~/utils/functions"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
@@ -6,6 +5,7 @@ import { Group } from "three"
 import { stretchLengthClamped } from "~/design/state/transients/stretchLength"
 import { useSubscribeKey } from "~/utils/hooks"
 import GroupedStretchModule from "./GroupedStretchModule"
+import { GridGroup } from "../../../../workers/layouts"
 
 type Props = {
   systemId: string

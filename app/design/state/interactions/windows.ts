@@ -6,15 +6,12 @@ import { WindowType } from "@/server/data/windowTypes"
 import { useSystemWindowTypes } from "~/data/windowTypes"
 import { A, O, S } from "~/utils/functions"
 import { getSide, Side } from "~/design/state/camera"
-import {
-  columnLayoutToDNA,
-  HouseModuleIdentifier,
-  layouts,
-} from "~/design/state/layouts"
+import { columnLayoutToDNA, layouts } from "~/design/state/layouts"
 import siteCtx from "~/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
 import { serializeLayoutsKey } from "../../../db/layouts"
 import houses from "../houses"
+import { HouseModuleIdentifier } from "../../../workers/layouts"
 
 export type WindowTypeOption = {
   label: string

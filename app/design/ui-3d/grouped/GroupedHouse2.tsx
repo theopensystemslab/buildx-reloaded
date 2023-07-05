@@ -6,6 +6,7 @@ import { OBB } from "three-stdlib"
 import { serializeLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
+import { splitColumns } from "../../../workers/layouts"
 import dimensions, { collideOBB, Dimensions } from "../../state/dimensions"
 import {
   dispatchMoveHouse,
@@ -16,7 +17,7 @@ import { useHouseMaterialOps } from "../../state/hashedMaterials"
 import houses from "../../state/houses"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
-import { splitColumns } from "../../state/transients/stretchLength"
+import { useVanillaColumn } from "../../state/vanilla"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -157,6 +158,8 @@ const GroupedHouse2 = (props: Props) => {
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
 
+  const vanillaColumn = useVanillaColumn(houseId)
+
   useHouseMaterialOps({
     houseId,
     ref: rootRef,
@@ -234,9 +237,10 @@ const GroupedHouse2 = (props: Props) => {
         />
 
         {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
-        {columnsUp}
-        {columnsDown}
-      </group> */}
+          {columnsUp}
+          {columnsDown}
+        </group> */}
+
         {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
       </group>
 

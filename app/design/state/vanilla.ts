@@ -3,7 +3,9 @@ import { proxy } from "valtio"
 import { useSystemModules } from "../../data/modules"
 import { Module } from "@/server/data/modules"
 import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
-import { PositionedRow } from "./layouts"
+import { suspend } from "suspend-react"
+import layoutsDB from "../../db/layouts"
+import { PositionedRow } from "../../workers/layouts"
 
 export const vanillaColumns = proxy<Record<string, PositionedRow[]>>({})
 
@@ -71,4 +73,10 @@ export const useGetVanillaModule = (systemId: string) => {
 
     return vanillaModule
   }
+}
+
+export const useVanillaColumn = (houseId: string) => {
+  return suspend(() => {
+    return layoutsDB.vanillaColumns.get(houseId)
+  }, [houseId])
 }

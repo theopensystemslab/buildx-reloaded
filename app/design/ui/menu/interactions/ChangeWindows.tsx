@@ -6,12 +6,12 @@ import {
   useWindowOptions,
   WindowTypeOption,
 } from "~/design/state/interactions/windows"
-import { HouseModuleIdentifier } from "~/design/state/layouts"
 import previews from "~/design/state/previews"
 import { A } from "~/utils/functions"
 import { Opening } from "~/ui/icons"
 import Radio from "~/ui//Radio"
 import ContextMenuNested from "../ContextMenuNested"
+import { HouseModuleIdentifier } from "../../../../workers/layouts"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

@@ -130,33 +130,6 @@ export const useGetHouseModules = () => {
   }
 }
 
-export const modulesToRows = (
-  modules: readonly Module[]
-): readonly Module[][] => {
-  const jumpIndices = pipe(
-    modules,
-    RA.filterMapWithIndex((i, m) =>
-      m.structuredDna.positionType === "END" ? some(i) : none
-    ),
-    RA.filterWithIndex((i) => i % 2 === 0)
-  )
-
-  return pipe(
-    modules,
-    RA.reduceWithIndex(
-      [],
-      (moduleIndex, modules: Module[][], module: Module) => {
-        return jumpIndices.includes(moduleIndex)
-          ? [...modules, [{ ...module, moduleIndex }]]
-          : produce(
-              (draft) =>
-                void draft[draft.length - 1].push({ ...module, moduleIndex })
-            )(modules)
-      }
-    )
-  )
-}
-
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses
   return pipe(

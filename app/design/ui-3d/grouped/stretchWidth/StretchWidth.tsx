@@ -9,13 +9,7 @@ import { useSystemSectionTypes } from "~/data/sectionTypes"
 import dimensions, {
   useHouseDimensionsUpdates,
 } from "../../../state/dimensions"
-import {
-  ColumnLayout,
-  columnLayoutToDNA,
-  GridGroup,
-  PositionedColumn,
-  PositionedModule,
-} from "~/design/state/layouts"
+import { columnLayoutToDNA } from "~/design/state/layouts"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   A,
@@ -39,6 +33,12 @@ import houses, { useHouse } from "../../../state/houses"
 import previews from "~/design/state/previews"
 import StretchHandle from "../../handles/StretchHandle"
 import { useTransformabilityBooleans } from "../../../state/siteCtx"
+import {
+  ColumnLayout,
+  GridGroup,
+  PositionedColumn,
+  PositionedModule,
+} from "../../../../workers/layouts"
 
 export type StretchWidthRaw = {
   direction: 1 | -1

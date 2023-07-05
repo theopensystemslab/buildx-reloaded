@@ -2,8 +2,8 @@ import { Module } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useModuleElements } from "~/data/elements"
-import { SystemHouseModuleIdentifier } from "~/design/state/layouts"
 import { R, S } from "~/utils/functions"
+import { SystemHouseModuleIdentifier } from "../../../../workers/layouts"
 import GroupedStretchElement from "./GroupedStretchElement"
 
 export type StretchModuleProps = Omit<
