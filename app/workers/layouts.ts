@@ -1,8 +1,6 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import { sequenceS } from "fp-ts/lib/Apply"
-import { sequence } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
@@ -12,7 +10,6 @@ import { Module } from "../../server/data/modules"
 import { getSpeckleObject } from "../../server/data/speckleModel"
 import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../db/layouts"
 import systemsDB, { LastFetchStamped } from "../db/systems"
-import userDB from "../db/user"
 import { A, all, O, Ord, R, S } from "../utils/functions"
 import { isSSR } from "../utils/next"
 import speckleIfcParser from "../utils/speckle/speckleIfcParser"
@@ -468,8 +465,14 @@ const processLayout = async ({ systemId, dnas }: LayoutsKey) => {
           }))
         )
     ),
-    O.map((vanillaColumn) => {
-      // layoutsDB.vanillaColumns.put
+    O.map((gridGroups) => {
+      layoutsDB.vanillaColumns.put({
+        layoutsKey,
+        vanillaColumn: {
+          gridGroups,
+          length: gridGroups[0].length,
+        },
+      })
     })
   )
 
@@ -512,14 +515,6 @@ if (!isSSR()) {
     processLayoutsQueue()
   })
 }
-
-// liveQuery(() => userDB.houses.toArray()).subscribe(houses => {
-//   pipe(houses, A.map(house => {
-//     const layout =
-//     const vanillaColumn = getVanillaColumn(house.)
-//   }))
-//   // layoutsDB.vanillaColumns
-// })
 
 const api = {
   postLayout,

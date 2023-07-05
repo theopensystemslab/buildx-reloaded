@@ -18,8 +18,8 @@ export type LayoutsKey = {
   dnas: string[]
 }
 
-export type VanillaColumn = {
-  houseId: string
+export type IndexedVanillaColumn = {
+  layoutsKey: string
   vanillaColumn: Omit<PositionedColumn, "z" | "columnIndex">
 }
 
@@ -29,14 +29,14 @@ export const serializeLayoutsKey = ({ systemId, dnas }: LayoutsKey) =>
 class LayoutsDatabase extends Dexie {
   models: Dexie.Table<LastFetchStamped<ParsedModel>, string>
   layouts: Dexie.Table<IndexedLayout, string>
-  vanillaColumns: Dexie.Table<VanillaColumn, string>
+  vanillaColumns: Dexie.Table<IndexedVanillaColumn, string>
 
   constructor() {
     super("LayoutsDatabase")
     this.version(1).stores({
       models: "speckleBranchUrl,systemId",
       layouts: "layoutsKey",
-      vanillaColumns: "houseId",
+      vanillaColumns: "layoutsKey",
     })
     this.layouts = this.table("layouts")
     this.models = this.table("models")
