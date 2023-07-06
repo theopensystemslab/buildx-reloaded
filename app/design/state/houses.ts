@@ -8,12 +8,14 @@ import { nanoid } from "nanoid"
 import { useMemo } from "react"
 import { useKey } from "react-use"
 import { Vector3 } from "three"
-import { proxy, snapshot, subscribe, useSnapshot } from "valtio"
+import { useDebouncedCallback } from "use-debounce"
+import { proxy, ref, snapshot, subscribe, useSnapshot } from "valtio"
 import { A, clearRecord, R, RA, RR, S } from "~/utils/functions"
 import { useHouseTypes } from "../../data/houseTypes"
 import { useModules, useSystemModules } from "../../data/modules"
 import userDB, { House } from "../../db/user"
 import { isSSR } from "../../utils/next"
+import Dexie from "dexie"
 
 const houses = proxy<Record<string, House>>({})
 
@@ -26,27 +28,33 @@ const initHouses = async () => {
   }
 
   housesArray.forEach((house) => {
-    houses[house.id] = house
+    houses[house.id] = ref(house)
   })
 }
 
 initHouses().then(() => {
   subscribe(houses, () => {
-    // This will run every time `houses` changes
     Object.values(houses).forEach(async (house) => {
-      const snapshotHouse = snapshot(house) as typeof house
-      // Check if house exists in the DB
       const existingHouse = await userDB.houses.get(house.id)
+
       if (existingHouse) {
-        // If it exists, update it
-        userDB.houses.update(house.id, snapshotHouse)
+        userDB.houses.update(house.id, Dexie.deepClone(house))
       } else {
-        // If it doesn't exist, add it
-        userDB.houses.add(snapshotHouse)
+        userDB.houses.add(Dexie.deepClone(house))
       }
     })
   })
 })
+
+export const useSetHouse = (houseId: string) => {
+  return useDebouncedCallback((nextHouse: House) => {
+    houses[houseId] = ref({
+      ...nextHouse,
+      position: ref(nextHouse.position),
+      dnas: ref(nextHouse.dnas),
+    })
+  }, 300)
+}
 
 export const useHouses = () => {
   return useSnapshot(houses) as typeof houses
@@ -181,7 +189,7 @@ export const useInsert1000Skylarks = () => {
       for (let x = startX; x < incX * count; x += incX) {
         for (let z = startZ; z < incZ * count; z += incZ) {
           const id = nanoid()
-          houses[id] = {
+          houses[id] = ref({
             id,
             houseTypeId,
             systemId: houseType.systemId,
@@ -190,7 +198,7 @@ export const useInsert1000Skylarks = () => {
             dnas: houseType.dnas as string[],
             modifiedMaterials: {},
             friendlyName: `Building ${keys(houses).length + 1}`,
-          }
+          })
         }
       }
     },

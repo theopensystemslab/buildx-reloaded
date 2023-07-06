@@ -63,6 +63,28 @@ export type SystemHouseModuleIdentifier = HouseModuleIdentifier & {
 }
 
 export type ColumnLayout = Array<PositionedColumn>
+
+const getSpeckleModelGeometries = async (speckleBranchUrl: string) => {
+  const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
+  const speckleObject = speckleIfcParser.parse(speckleObjectData)
+
+  return pipe(
+    speckleObject,
+    A.reduce(
+      {},
+      (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
+        return produce(acc, (draft) => {
+          if (ifcTag in draft) draft[ifcTag].push(geometry)
+          else draft[ifcTag] = [geometry]
+        })
+      }
+    ),
+    R.map((geoms) => mergeBufferGeometries(geoms)),
+    R.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
+    R.map((x) => x.toJSON())
+  )
+}
+
 const syncModels = (modules: LastFetchStamped<Module>[]) => {
   modules.map(async (nextModule) => {
     const { speckleBranchUrl, lastFetched } = nextModule
@@ -72,25 +94,7 @@ const syncModels = (modules: LastFetchStamped<Module>[]) => {
       return
     }
 
-    const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
-    const speckleObject = speckleIfcParser.parse(speckleObjectData)
-    const geometries = pipe(
-      speckleObject,
-      A.reduce(
-        {},
-        (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
-          return produce(acc, (draft) => {
-            if (ifcTag in draft) draft[ifcTag].push(geometry)
-            else draft[ifcTag] = [geometry]
-          })
-        }
-      ),
-      R.map((geoms) => mergeBufferGeometries(geoms)),
-      R.filter((bg: BufferGeometry | null): bg is BufferGeometry =>
-        Boolean(bg)
-      ),
-      R.map((x) => x.toJSON())
-    )
+    const geometries = await getSpeckleModelGeometries(speckleBranchUrl)
 
     layoutsDB.models.put({
       speckleBranchUrl,
@@ -103,6 +107,14 @@ const syncModels = (modules: LastFetchStamped<Module>[]) => {
 
 let modulesCache: LastFetchStamped<Module>[] = []
 let layoutsQueue: LayoutKey[] = []
+
+// const getSpeckleModel = async (module: Module) => {
+//   const { speckleBranchUrl } = module
+//     const maybeModel = await layoutsDB.models.get(speckleBranchUrl)
+//     if (maybeModel && maybeModel.lastFetched === lastFetched) {
+//       return
+//     }
+// }
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -352,7 +364,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
     layout,
-    RA.partition(
+    A.partition(
       ({ columnIndex }) =>
         columnIndex === 0 || columnIndex === layout.length - 1
     ),
@@ -383,6 +395,7 @@ const getVanillaModule = (
     modulesCache,
     A.filter((sysModule) =>
       all(
+        sysModule.systemId === module.systemId,
         sectionType
           ? sysModule.structuredDna.sectionType === sectionType
           : sysModule.structuredDna.sectionType ===
@@ -520,6 +533,7 @@ const api = {
   postLayout,
   postLayouts,
   processLayout,
+  syncModels,
 }
 
 export type LayoutsAPI = typeof api

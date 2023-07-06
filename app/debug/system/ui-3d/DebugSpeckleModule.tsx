@@ -23,6 +23,7 @@ const DebugSpeckleModule = ({ module }: { module: Module }) => {
     <group ref={groupRef}>
       {pipe(
         ifcGeometries,
+        O.getOrElse(() => ({})),
         // A.takeLeft(1),
         R.collect(S.Ord)((ifcTag, geometry) => {
           const material = pipe(

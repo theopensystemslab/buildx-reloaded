@@ -1,13 +1,14 @@
 "use client"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, memo, MutableRefObject, useMemo } from "react"
+import { Fragment, memo, RefObject, useMemo } from "react"
 import { suspend } from "suspend-react"
 import { Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import layoutsDB, { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
 import { A, NEA } from "../../../utils/functions"
-import { floor, max } from "../../../utils/math"
+import { floor, max, round, sign } from "../../../utils/math"
+import { yAxis } from "../../../utils/three"
 import { getLayoutsWorker } from "../../../workers"
 import { PositionedColumn } from "../../../workers/layouts"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretchLength/GroupedStretchColumn"
@@ -15,7 +16,10 @@ import { collideOBB } from "../dimensions"
 import {
   dispatchZStretchHouse,
   useZStretchHouseIntentListener,
+  useZStretchHouseListener,
 } from "../events"
+import houses, { useSetHouse } from "../houses"
+import { columnLayoutToDNA } from "../layouts"
 import { vanillaColumns } from "../vanilla"
 
 type Props = {
@@ -27,8 +31,9 @@ type Props = {
   length: number
   startColumn: PositionedColumn
   endColumn: PositionedColumn
-  startRef: MutableRefObject<Group>
-  endRef: MutableRefObject<Group>
+  midColumns: PositionedColumn[]
+  startRef: RefObject<Group>
+  endRef: RefObject<Group>
 }
 
 const ZStretch = ({
@@ -40,13 +45,12 @@ const ZStretch = ({
   length,
   startColumn,
   endColumn,
+  midColumns,
   startRef,
   endRef,
 }: Props) => {
   const { systemId } = layoutKey
   const strLayoutKey = serializeLayoutKey(layoutKey)
-
-  console.log(`stretchLength ${houseId}`)
 
   const vanillaColumn = suspend(async () => {
     if (strLayoutKey in vanillaColumns) {
@@ -193,13 +197,15 @@ const ZStretch = ({
   useZStretchHouseIntentListener((detail) => {
     if (detail.houseId !== houseId) return
 
+    // if (!startRef.current || !endRef.current) return
+
     const { distance, direction, dx, dz, last } = detail
 
     switch (direction) {
       case 1: {
         const clamped = -distance > length || distance > maxStretchLengthUp
         if (!clamped) {
-          endRef.current.position.set(0, 0, distance)
+          endRef.current?.position.set(0, 0, distance)
           dispatchZStretchHouse(detail)
         }
         break
@@ -208,8 +214,102 @@ const ZStretch = ({
       case -1: {
         const clamped = distance > length || distance < maxStretchLengthDown
         if (!clamped) {
-          startRef.current.position.set(0, 0, distance)
+          startRef.current?.position.set(0, 0, distance)
           dispatchZStretchHouse(detail)
+        }
+        break
+      }
+    }
+
+    invalidate()
+  })
+
+  const setHouse = useSetHouse(houseId)
+
+  useZStretchHouseListener((detail) => {
+    if (detail.houseId !== houseId || !detail.last) return
+
+    const { direction, distance } = detail
+
+    const delta = round(distance / vanillaColumn.length)
+
+    const dxdz = new Vector3(0, 0, delta * vanillaColumn.length)
+
+    dxdz.applyAxisAngle(yAxis, houses[houseId].rotation)
+
+    const { x: dx, z: dz } = dxdz
+
+    const { x, y, z } = houses[houseId].position
+
+    switch (direction) {
+      case 1: {
+        if (sign(delta) === 1) {
+          setHouse({
+            ...houses[houseId],
+            dnas: columnLayoutToDNA([
+              startColumn,
+              ...midColumns,
+              ...A.replicate(delta, {
+                gridGroups: vanillaColumn.gridGroups,
+              }),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          })
+        } else if (sign(delta) === -1) {
+          setHouse({
+            ...houses[houseId],
+            dnas: columnLayoutToDNA([
+              startColumn,
+              ...midColumns.slice(0, midColumns.length + delta),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          })
+        }
+        break
+      }
+      case -1: {
+        if (sign(delta) === -1) {
+          const { x, y, z } = houses[houseId].position
+          houses[houseId] = {
+            ...houses[houseId],
+            dnas: columnLayoutToDNA([
+              startColumn,
+              ...A.replicate(-delta, {
+                gridGroups: vanillaColumn.gridGroups,
+              }),
+              ...midColumns,
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
+        } else if (sign(delta) === 1) {
+          houses[houseId] = {
+            ...houses[houseId],
+            dnas: columnLayoutToDNA([
+              startColumn,
+              ...midColumns.slice(0, midColumns.length - delta),
+              endColumn,
+            ]),
+            position: {
+              x: x + dx / 2,
+              y,
+              z: z + dz / 2,
+            },
+          }
         }
         break
       }

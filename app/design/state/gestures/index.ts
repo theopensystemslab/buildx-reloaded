@@ -1,32 +1,24 @@
-import { setPreviews } from "~/design/state/previews"
+import { invalidate, ThreeEvent } from "@react-three/fiber"
+import { useGesture } from "@use-gesture/react"
+import { pipe } from "fp-ts/lib/function"
+import { useDebouncedCallback } from "use-debounce"
+import { useSnapshot } from "valtio"
 import scope from "~/design/state/scope"
-import {
-  setStretchLength,
-  stretchLengthRaw,
-} from "~/design/state/transients/stretchLength"
-import {
-  preTransformsTransients,
-  setTransforms,
-} from "~/design/state/transients/transforms"
+import { preTransformsTransients } from "~/design/state/transients/transforms"
 import { A, O } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import { isMesh, useRotations } from "~/utils/three"
-import { ThreeEvent } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
-import { pipe } from "fp-ts/lib/function"
-import { useSnapshot } from "valtio"
-import { stretchWidthRaw } from "../../ui-3d/grouped/stretchWidth/StretchWidth"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
-import { openMenu } from "../menu"
-import pointer from "../pointer"
-import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
-import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
 import {
   dispatchMoveHouseIntent,
   dispatchXStretchHouseIntent,
   dispatchZStretchHouseIntent,
 } from "../events"
+import { openMenu } from "../menu"
+import pointer from "../pointer"
+import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
+import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
 
 export const useDragHandler = () => {
   const { rotateV2, unrotateV2 } = useRotations()
@@ -78,6 +70,7 @@ export const useDragHandler = () => {
           const { direction = 1, axis } = identifier as StretchHandleIdentifier
 
           if (axis === "z") {
+            console.log("dispatching NORMAL")
             dispatchZStretchHouseIntent({
               houseId,
               direction,
@@ -86,9 +79,7 @@ export const useDragHandler = () => {
               dz,
               last: false,
             })
-          }
-
-          if (axis === "x") {
+          } else if (axis === "x") {
             dispatchXStretchHouseIntent({
               houseId,
               direction,
@@ -105,81 +96,90 @@ export const useDragHandler = () => {
     false
   )
 
-  useSubscribeKey(dragProxy, "end", () => {
-    if (!dragProxy.end) return
+  useSubscribeKey(
+    dragProxy,
+    "end",
+    () => {
+      if (!dragProxy.end) return
 
-    const cleanup = () => {
-      dragProxy.start = null
-      dragProxy.drag = null
-      dragProxy.end = false
-    }
-
-    if (dragProxy.drag === null || dragProxy.start === null) {
-      cleanup()
-      return
-    }
-
-    const {
-      start: {
-        identifier,
-        identifier: { houseId },
-        point: { x: x0, z: z0 },
-      },
-      drag: {
-        point: { x: x1, z: z1 },
-      },
-    } = dragProxy
-
-    const delta = {
-      x: x1 - x0,
-      y: 0,
-      z: z1 - z0,
-    }
-
-    if (dragProxy.end) {
-      switch (siteCtx.editMode) {
-        case EditModeEnum.Enum.MOVE_ROTATE:
-          dispatchMoveHouseIntent({
-            houseId,
-            delta,
-            last: true,
-          })
-          break
-        case EditModeEnum.Enum.STRETCH:
-          const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
-          const [dx, dz] = rotateV2(houseId, [0, distanceZ])
-
-          const { direction = 1, axis } = identifier as StretchHandleIdentifier
-
-          if (axis === "z") {
-            dispatchZStretchHouseIntent({
-              houseId,
-              direction,
-              distance: distanceZ,
-              dx,
-              dz,
-              last: true,
-            })
-          }
-
-          if (axis === "x") {
-            dispatchXStretchHouseIntent({
-              houseId,
-              direction,
-              distance: distanceX,
-              dx,
-              dz,
-              last: true,
-            })
-          }
-          return
-        // setStretchLength()
-        // setPreviews()
+      const cleanup = () => {
+        console.log("cleaning up")
+        dragProxy.start = null
+        dragProxy.drag = null
+        dragProxy.end = false
       }
-    }
 
-    cleanup()
-  })
+      if (dragProxy.drag === null || dragProxy.start === null) {
+        cleanup()
+        return
+      }
+
+      const {
+        start: {
+          identifier,
+          identifier: { houseId },
+          point: { x: x0, z: z0 },
+        },
+        drag: {
+          point: { x: x1, z: z1 },
+        },
+      } = dragProxy
+
+      const delta = {
+        x: x1 - x0,
+        y: 0,
+        z: z1 - z0,
+      }
+
+      if (dragProxy.end) {
+        switch (siteCtx.editMode) {
+          case EditModeEnum.Enum.MOVE_ROTATE:
+            dispatchMoveHouseIntent({
+              houseId,
+              delta,
+              last: true,
+            })
+            break
+          case EditModeEnum.Enum.STRETCH:
+            const [distanceX, distanceZ] = unrotateV2(houseId, [
+              x1 - x0,
+              z1 - z0,
+            ])
+            const [dx, dz] = rotateV2(houseId, [0, distanceZ])
+
+            const { direction = 1, axis } =
+              identifier as StretchHandleIdentifier
+
+            if (axis === "z") {
+              console.log("dispatching LAST")
+              dispatchZStretchHouseIntent({
+                houseId,
+                direction,
+                distance: distanceZ,
+                dx,
+                dz,
+                last: true,
+              })
+            } else if (axis === "x") {
+              dispatchXStretchHouseIntent({
+                houseId,
+                direction,
+                distance: distanceX,
+                dx,
+                dz,
+                last: true,
+              })
+            }
+            return
+          // setStretchLength()
+          // setPreviews()
+        }
+      }
+
+      cleanup()
+    },
+    false
+  )
 }
 
 export const useGestures = (): any =>
@@ -280,6 +280,7 @@ export const useGestures = (): any =>
       if (hovering) {
         document.body.style.cursor = "grab"
       }
+      invalidate()
     },
     onDoubleClick: ({ event, event: { intersections } }) => {
       event.stopPropagation()
@@ -294,6 +295,8 @@ export const useGestures = (): any =>
           downMode({ ...userData.identifier })
         }
       }
+
+      invalidate()
     },
   })
 

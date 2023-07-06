@@ -1,10 +1,9 @@
 import { indicesToKey } from "~/design/state/layouts"
 import { GroupProps } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { forwardRef, useRef } from "react"
+import { forwardRef, memo, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
-import { useStretchLengthStartEndColumn } from "~/design/state/transients/stretchLength"
 import { RA } from "~/utils/functions"
 import GroupedModule from "./GroupedModule"
 import { PositionedColumn } from "../../../workers/layouts"
@@ -21,21 +20,21 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
   const {
     systemId,
     houseId,
-    column: { gridGroups, columnIndex, z: columnZ, length: columnLength },
+    column: { gridGroups, columnIndex, z: columnZ },
     start = false,
     end = false,
   } = props
 
   const columnGroupRef = useRef<Group>(null!)
 
-  useStretchLengthStartEndColumn({
-    houseId,
-    columnGroupRef,
-    columnZ,
-    columnLength,
-    start,
-    end,
-  })
+  // useStretchLengthStartEndColumn({
+  //   houseId,
+  //   columnGroupRef,
+  //   columnZ,
+  //   columnLength,
+  //   start,
+  //   end,
+  // })
 
   const mergedRef = mergeRefs([ref, columnGroupRef])
 
@@ -83,4 +82,4 @@ const GroupedColumn = forwardRef<Group, Props>((props, ref) => {
   )
 })
 
-export default GroupedColumn
+export default memo(GroupedColumn)

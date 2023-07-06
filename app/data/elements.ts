@@ -2,6 +2,7 @@ import { trpc } from "@/client/trpc"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"
+import { suspend } from "suspend-react"
 import { BufferGeometry, BufferGeometryLoader } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { O, R, RA, S } from "~/utils/functions"
@@ -10,6 +11,7 @@ import { Module } from "../../server/data/modules"
 import layoutsDB from "../db/layouts"
 import systemsDB from "../db/systems"
 import { isSSR } from "../utils/next"
+import { getLayoutsWorker } from "../workers"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()
@@ -121,21 +123,9 @@ if (!isSSR()) {
   })
 }
 
-export const useSpeckleObject = (speckleBranchUrl: string) => {
+export const useSpeckleObject = (
+  speckleBranchUrl: string
+): O.Option<Record<string, BufferGeometry>> => {
   const snap = useSnapshot(models) as typeof models
-
-  return snap[speckleBranchUrl]
-}
-
-export const useModuleElements = ({
-  systemId,
-  speckleBranchUrl,
-}: Module): Record<string, BufferGeometry> => {
-  const speckleObject = useSpeckleObject(speckleBranchUrl)
-
-  return useMemo(
-    () => pipe(speckleObject),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [speckleBranchUrl, speckleObject]
-  )
+  return R.lookup(speckleBranchUrl)(snap)
 }

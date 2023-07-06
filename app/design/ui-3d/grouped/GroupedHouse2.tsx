@@ -14,14 +14,13 @@ import {
   useMoveHouseListener,
 } from "../../state/events"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
-import houses from "../../state/houses"
+import houses, { useSetHouse } from "../../state/houses"
 import ZStretch from "../../state/interactions/ZStretch"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
-import StretchWidth from "./stretchWidth/StretchWidth"
 
 type Props = {
   house: House
@@ -52,8 +51,8 @@ const GroupedHouse2 = (props: Props) => {
   const reactHouseMatrix = translationMatrix.multiply(rotationMatrix)
 
   const rootRef = useRef<Group>(null)
-  const startRef = useRef<Group>(null!)
-  const endRef = useRef<Group>(null!)
+  const startRef = useRef<Group>(null)
+  const endRef = useRef<Group>(null)
 
   const { stretchEnabled, moveRotateEnabled } =
     useTransformabilityBooleans(houseId)
@@ -98,9 +97,6 @@ const GroupedHouse2 = (props: Props) => {
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
 
-  // const ZStretch = ZStretch({
-  // })
-
   const obbBox = useMemo(() => {
     const box3 = new Box3().setFromCenterAndSize(
       obb.center,
@@ -121,6 +117,7 @@ const GroupedHouse2 = (props: Props) => {
     if (!rootRef.current) return
     rootRef.current.matrixAutoUpdate = false
     rootRef.current.matrix.copy(reactHouseMatrix)
+    invalidate()
   }, [reactHouseMatrix])
 
   const frameOBB = useRef(new OBB())
@@ -144,25 +141,29 @@ const GroupedHouse2 = (props: Props) => {
     dispatchMoveHouse(detail)
   })
 
+  const setHouse = useSetHouse(houseId)
+
   useMoveHouseListener((detail) => {
     if (!rootRef.current || houseId !== detail.houseId) return
 
     rootRef.current.matrix.copy(frameHouseMatrix.current)
     rootRef.current.updateMatrixWorld()
-    invalidate()
 
     if (detail.last) {
       const { x, y, z } = detail.delta
 
-      houses[houseId].position = {
-        x: position.x + x,
-        y: position.y + y,
-        z: position.z + z,
-      }
+      setHouse({
+        ...house,
+        position: {
+          x: position.x + x,
+          y: position.y + y,
+          z: position.z + z,
+        },
+      })
     }
-  })
 
-  // const { columnsUp, columnsDown } = useStretchLength({ startColumn, endColumn, midColumns })
+    invalidate()
+  })
 
   useHouseMaterialOps({
     houseId,
@@ -229,11 +230,11 @@ const GroupedHouse2 = (props: Props) => {
           />
         </group>
 
-        <StretchWidth
+        {/* <StretchWidth
           houseId={houseId}
           columnLayout={layout}
           setHouseVisible={setHouseVisible}
-        />
+        /> */}
 
         <RotateHandles
           houseId={houseId}
@@ -251,6 +252,7 @@ const GroupedHouse2 = (props: Props) => {
               length,
               startColumn,
               endColumn,
+              midColumns,
               startRef,
               endRef,
             }}
@@ -261,10 +263,11 @@ const GroupedHouse2 = (props: Props) => {
       </group>
 
       {/* <box3Helper ref={box3HelperRef} args={[obbBox]} /> */}
-      <mesh>
+
+      {/* <mesh>
         <boxBufferGeometry />
         <meshBasicMaterial color="tomato" />
-      </mesh>
+      </mesh> */}
     </Fragment>
   )
 }

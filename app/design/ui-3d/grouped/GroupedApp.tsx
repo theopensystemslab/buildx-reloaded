@@ -25,7 +25,7 @@ const GroupedApp = () => {
           R.toArray,
           A.map(([houseId, house]) => (
             <Suspense key={houseId} fallback={null}>
-              <GroupedHouse2 house={house} />
+              <GroupedHouse2 house={{ ...house }} />
             </Suspense>
           ))
         )}

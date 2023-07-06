@@ -4,7 +4,7 @@ import { Group } from "three"
 import { useHouseMaterialOps } from "~/design/state/hashedMaterials"
 import { useHouseElementOutline } from "~/design/state/highlights"
 import { useDnasLayout } from "~/design/state/layouts"
-import { useStretchLength } from "~/design/state/transients/stretchLength"
+// import { useStretchLength } from "~/design/state/transients/stretchLength"
 import {
   usePostTransformsTransients,
   usePreTransformsTransients,
@@ -38,8 +38,8 @@ const GroupedHouse = (props: Props) => {
 
   const layout = useDnasLayout({ systemId, dnas })
 
-  const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
-    useStretchLength({ houseId, layout, startRef, endRef })
+  // const { startColumn, midColumns, endColumn, columnsUp, columnsDown } =
+  //   useStretchLength({ houseId, layout, startRef, endRef })
 
   const startColumnRef = useRef<Group>(null)
   const midColumnsRef = useRef<Group>(null)
@@ -76,68 +76,70 @@ const GroupedHouse = (props: Props) => {
     layoutsKey: serializeLayoutKey({ systemId, dnas }),
   })
 
-  return (
-    <group ref={houseGroupRef} key={houseDnasKey}>
-      <group ref={startRef}>
-        <StretchHandle
-          houseId={houseId}
-          axis="z"
-          direction={-1}
-          disable={!stretchEnabled}
-        />
-        <GroupedColumn
-          ref={startColumnRef}
-          key={`${houseId}:${startColumn.columnIndex}`}
-          column={startColumn}
-          {...{ systemId, houseId, start: true }}
-        />
-      </group>
-      <group ref={midColumnsRef}>
-        {pipe(
-          midColumns,
-          RA.map((column) => (
-            <GroupedColumn
-              key={`${houseId}:${column.columnIndex}`}
-              column={column}
-              {...{ systemId, houseId }}
-            />
-          ))
-        )}
-      </group>
-      <group ref={endRef}>
-        <GroupedColumn
-          ref={endColumnRef}
-          key={`${houseId}:${endColumn.columnIndex}`}
-          column={endColumn}
-          {...{ systemId, houseId, end: true }}
-        />
-        <StretchHandle
-          houseId={houseId}
-          axis="z"
-          direction={1}
-          disable={!stretchEnabled}
-        />
-      </group>
+  return null
 
-      <StretchWidth
-        houseId={houseId}
-        columnLayout={layout}
-        setHouseVisible={setHouseVisible}
-      />
+  // return (
+  //   <group ref={houseGroupRef} key={houseDnasKey}>
+  //     <group ref={startRef}>
+  //       <StretchHandle
+  //         houseId={houseId}
+  //         axis="z"
+  //         direction={-1}
+  //         disable={!stretchEnabled}
+  //       />
+  //       <GroupedColumn
+  //         ref={startColumnRef}
+  //         key={`${houseId}:${startColumn.columnIndex}`}
+  //         column={startColumn}
+  //         {...{ systemId, houseId, start: true }}
+  //       />
+  //     </group>
+  //     <group ref={midColumnsRef}>
+  //       {pipe(
+  //         midColumns,
+  //         RA.map((column) => (
+  //           <GroupedColumn
+  //             key={`${houseId}:${column.columnIndex}`}
+  //             column={column}
+  //             {...{ systemId, houseId }}
+  //           />
+  //         ))
+  //       )}
+  //     </group>
+  //     <group ref={endRef}>
+  //       <GroupedColumn
+  //         ref={endColumnRef}
+  //         key={`${houseId}:${endColumn.columnIndex}`}
+  //         column={endColumn}
+  //         {...{ systemId, houseId, end: true }}
+  //       />
+  //       <StretchHandle
+  //         houseId={houseId}
+  //         axis="z"
+  //         direction={1}
+  //         disable={!stretchEnabled}
+  //       />
+  //     </group>
 
-      <RotateHandles
-        houseId={houseId}
-        scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
-      />
+  //     <StretchWidth
+  //       houseId={houseId}
+  //       columnLayout={layout}
+  //       setHouseVisible={setHouseVisible}
+  //     />
 
-      <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
-        {columnsUp}
-        {columnsDown}
-      </group>
+  //     <RotateHandles
+  //       houseId={houseId}
+  //       scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
+  //     />
 
-      <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
-    </group>
-  )
+  //     <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
+  //       {columnsUp}
+  //       {columnsDown}
+  //     </group>
+
+  //     <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} />
+  //   </group>
+  // )
 }
 
 export default GroupedHouse

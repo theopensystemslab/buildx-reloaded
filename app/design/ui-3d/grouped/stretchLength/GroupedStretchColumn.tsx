@@ -1,12 +1,11 @@
-import { RA } from "~/utils/functions"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
-import { stretchLengthClamped } from "~/design/state/transients/stretchLength"
-import { useSubscribeKey } from "~/utils/hooks"
-import GroupedStretchModule from "./GroupedStretchModule"
+import { RA } from "~/utils/functions"
 import { GridGroup } from "../../../../workers/layouts"
 import { useZStretchHouseListener } from "../../../state/events"
+import GroupedStretchModule from "./GroupedStretchModule"
 
 type Props = {
   systemId: string
@@ -41,6 +40,8 @@ const GroupedStretchColumn = (props: Props) => {
     } else {
       groupRef.current?.scale.set(0, 0, 0)
     }
+
+    invalidate()
   })
 
   return (

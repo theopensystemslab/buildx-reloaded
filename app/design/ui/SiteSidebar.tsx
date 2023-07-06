@@ -73,10 +73,11 @@ const SiteSidebar = ({ open, close }: Props) => {
                       houseType={houseType}
                       onAdd={() => {
                         const id = nanoid()
-                        const position =
+                        const position = ref(
                           cameraGroundRaycast() ?? new Vector3(0, 0, 0)
+                        )
 
-                        houses[id] = {
+                        houses[id] = ref({
                           id,
                           houseTypeId: houseType.id,
                           systemId: houseType.systemId,
@@ -87,7 +88,7 @@ const SiteSidebar = ({ open, close }: Props) => {
                           friendlyName: `Building ${
                             Object.keys(houses).length + 1
                           }`,
-                        }
+                        })
 
                         close()
                       }}
