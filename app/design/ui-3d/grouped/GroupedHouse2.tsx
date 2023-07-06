@@ -15,10 +15,9 @@ import {
 } from "../../state/events"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
 import houses from "../../state/houses"
-import { useStretchLength2 } from "../../state/interactions/stretchLength"
+import ZStretch from "../../state/interactions/ZStretch"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
-import { useStretchLength } from "../../state/transients/stretchLength"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -99,16 +98,8 @@ const GroupedHouse2 = (props: Props) => {
 
   const { startColumn, endColumn, midColumns } = splitColumns(layout)
 
-  const stretchLength = useStretchLength2({
-    houseId,
-    layoutKey,
-    reactHouseMatrix,
-    width,
-    height,
-    length,
-    startColumn,
-    endColumn,
-  })
+  // const ZStretch = ZStretch({
+  // })
 
   const obbBox = useMemo(() => {
     const box3 = new Box3().setFromCenterAndSize(
@@ -250,8 +241,20 @@ const GroupedHouse2 = (props: Props) => {
         />
 
         <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
-          {stretchLength.columnsUp}
-          {stretchLength.columnsDown}
+          <ZStretch
+            {...{
+              houseId,
+              layoutKey,
+              reactHouseMatrix,
+              width,
+              height,
+              length,
+              startColumn,
+              endColumn,
+              startRef,
+              endRef,
+            }}
+          />
         </group>
 
         {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}

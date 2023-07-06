@@ -1,7 +1,9 @@
+"use client"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
+import { Fragment, memo, MutableRefObject, useMemo } from "react"
 import { suspend } from "suspend-react"
-import { Matrix4, Vector3 } from "three"
+import { Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import layoutsDB, { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
 import { A, NEA } from "../../../utils/functions"
@@ -10,18 +12,13 @@ import { getLayoutsWorker } from "../../../workers"
 import { PositionedColumn } from "../../../workers/layouts"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretchLength/GroupedStretchColumn"
 import { collideOBB } from "../dimensions"
+import {
+  dispatchZStretchHouse,
+  useZStretchHouseIntentListener,
+} from "../events"
 import { vanillaColumns } from "../vanilla"
 
-export const useStretchLength2 = ({
-  houseId,
-  layoutKey,
-  reactHouseMatrix,
-  width,
-  height,
-  length,
-  startColumn,
-  endColumn,
-}: {
+type Props = {
   houseId: string
   layoutKey: LayoutKey
   reactHouseMatrix: Matrix4
@@ -30,9 +27,26 @@ export const useStretchLength2 = ({
   length: number
   startColumn: PositionedColumn
   endColumn: PositionedColumn
-}) => {
+  startRef: MutableRefObject<Group>
+  endRef: MutableRefObject<Group>
+}
+
+const ZStretch = ({
+  houseId,
+  layoutKey,
+  reactHouseMatrix,
+  width,
+  height,
+  length,
+  startColumn,
+  endColumn,
+  startRef,
+  endRef,
+}: Props) => {
   const { systemId } = layoutKey
   const strLayoutKey = serializeLayoutKey(layoutKey)
+
+  console.log(`stretchLength ${houseId}`)
 
   const vanillaColumn = suspend(async () => {
     if (strLayoutKey in vanillaColumns) {
@@ -176,10 +190,40 @@ export const useStretchLength2 = ({
     (columns) => <group position={[0, 0, startColumn.length]}>{columns}</group>
   )
 
-  return {
-    columnsUp,
-    columnsDown,
-    maxStretchLengthDown,
-    maxStretchLengthUp,
-  }
+  useZStretchHouseIntentListener((detail) => {
+    if (detail.houseId !== houseId) return
+
+    const { distance, direction, dx, dz, last } = detail
+
+    switch (direction) {
+      case 1: {
+        const clamped = -distance > length || distance > maxStretchLengthUp
+        if (!clamped) {
+          endRef.current.position.set(0, 0, distance)
+          dispatchZStretchHouse(detail)
+        }
+        break
+      }
+
+      case -1: {
+        const clamped = distance > length || distance < maxStretchLengthDown
+        if (!clamped) {
+          startRef.current.position.set(0, 0, distance)
+          dispatchZStretchHouse(detail)
+        }
+        break
+      }
+    }
+
+    invalidate()
+  })
+
+  return (
+    <Fragment>
+      {columnsUp}
+      {columnsDown}
+    </Fragment>
+  )
 }
+
+export default memo(ZStretch)

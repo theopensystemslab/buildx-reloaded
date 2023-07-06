@@ -22,84 +22,92 @@ import { openMenu } from "../menu"
 import pointer from "../pointer"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
 import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
-import { dispatchMoveHouseIntent } from "../events"
+import {
+  dispatchMoveHouseIntent,
+  dispatchXStretchHouseIntent,
+  dispatchZStretchHouseIntent,
+} from "../events"
 
 export const useDragHandler = () => {
   const { rotateV2, unrotateV2 } = useRotations()
 
-  useSubscribeKey(dragProxy, "drag", () => {
-    if (dragProxy.drag === null || dragProxy.start === null) return
-    const {
-      start: {
-        identifier,
-        identifier: { houseId, identifierType },
-        point: { x: x0, y: y0, z: z0 },
-      },
-      drag: {
-        point: { x: x1, y: y1, z: z1 },
-      },
-    } = dragProxy
-    switch (identifierType) {
-      case "HOUSE_ELEMENT": {
-        dispatchMoveHouseIntent({
-          houseId,
-          delta: {
-            x: x1 - x0,
-            y: 0,
-            z: z1 - z0,
-          },
-          last: false,
-        })
-        // dispatch event move house intent
-        // preTransformsTransients[houseId] = {
-        //   position: {
-        //     dx: x1 - x0,
-        //     dy: 0,
-        //     dz: z1 - z0,
-        //   },
-        // }
-        return
-      }
-      case "ROTATE_HANDLE": {
-        // dispatch event rotate house intent
-        const { x: cx, z: cz } = getHouseCenter(houseId)
-        const angle0 = Math.atan2(cz - z0, cx - x0)
-        const angle = Math.atan2(cz - z1, cx - x1)
-        preTransformsTransients[houseId] = {
-          rotation: -(angle - angle0),
+  useSubscribeKey(
+    dragProxy,
+    "drag",
+    () => {
+      if (dragProxy.drag === null || dragProxy.start === null) return
+
+      const {
+        start: {
+          identifier,
+          identifier: { houseId, identifierType },
+          point: { x: x0, y: y0, z: z0 },
+        },
+        drag: {
+          point: { x: x1, y: y1, z: z1 },
+        },
+      } = dragProxy
+
+      switch (identifierType) {
+        case "HOUSE_ELEMENT": {
+          dispatchMoveHouseIntent({
+            houseId,
+            delta: {
+              x: x1 - x0,
+              y: 0,
+              z: z1 - z0,
+            },
+            last: false,
+          })
+          return
         }
-        return
-      }
-      case "STRETCH_HANDLE": {
-        // dispatch event stretch house intent
-        const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
-        const [dx, dz] = rotateV2(houseId, [0, distanceZ])
-
-        const { direction = 1, axis } = identifier as StretchHandleIdentifier
-
-        if (axis === "z") {
-          stretchLengthRaw[houseId] = {
-            direction,
-            distance: distanceZ,
-            dx,
-            dz,
+        case "ROTATE_HANDLE": {
+          // dispatch event rotate house intent
+          const { x: cx, z: cz } = getHouseCenter(houseId)
+          const angle0 = Math.atan2(cz - z0, cx - x0)
+          const angle = Math.atan2(cz - z1, cx - x1)
+          preTransformsTransients[houseId] = {
+            rotation: -(angle - angle0),
           }
+          return
         }
+        case "STRETCH_HANDLE": {
+          const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
+          const [dx, dz] = rotateV2(houseId, [0, distanceZ])
 
-        if (axis === "x") {
-          stretchWidthRaw[houseId] = {
-            direction,
-            distance: distanceX,
-            dx,
-            dz,
+          const { direction = 1, axis } = identifier as StretchHandleIdentifier
+
+          if (axis === "z") {
+            dispatchZStretchHouseIntent({
+              houseId,
+              direction,
+              distance: distanceZ,
+              dx,
+              dz,
+              last: false,
+            })
           }
+
+          if (axis === "x") {
+            dispatchXStretchHouseIntent({
+              houseId,
+              direction,
+              distance: distanceX,
+              dx,
+              dz,
+              last: false,
+            })
+          }
+          return
         }
       }
-    }
-  })
+    },
+    false
+  )
 
   useSubscribeKey(dragProxy, "end", () => {
     if (!dragProxy.end) return
+
     const cleanup = () => {
       dragProxy.start = null
       dragProxy.drag = null
@@ -113,11 +121,12 @@ export const useDragHandler = () => {
 
     const {
       start: {
-        identifier: { houseId, identifierType },
-        point: { x: x0, y: y0, z: z0 },
+        identifier,
+        identifier: { houseId },
+        point: { x: x0, z: z0 },
       },
       drag: {
-        point: { x: x1, y: y1, z: z1 },
+        point: { x: x1, z: z1 },
       },
     } = dragProxy
 
@@ -135,12 +144,37 @@ export const useDragHandler = () => {
             delta,
             last: true,
           })
-          // setTransforms()
           break
         case EditModeEnum.Enum.STRETCH:
-          // setStretchLength()
-          // setPreviews()
-          break
+          const [distanceX, distanceZ] = unrotateV2(houseId, [x1 - x0, z1 - z0])
+          const [dx, dz] = rotateV2(houseId, [0, distanceZ])
+
+          const { direction = 1, axis } = identifier as StretchHandleIdentifier
+
+          if (axis === "z") {
+            dispatchZStretchHouseIntent({
+              houseId,
+              direction,
+              distance: distanceZ,
+              dx,
+              dz,
+              last: true,
+            })
+          }
+
+          if (axis === "x") {
+            dispatchXStretchHouseIntent({
+              houseId,
+              direction,
+              distance: distanceX,
+              dx,
+              dz,
+              last: true,
+            })
+          }
+          return
+        // setStretchLength()
+        // setPreviews()
       }
     }
 

@@ -6,6 +6,7 @@ import { stretchLengthClamped } from "~/design/state/transients/stretchLength"
 import { useSubscribeKey } from "~/utils/hooks"
 import GroupedStretchModule from "./GroupedStretchModule"
 import { GridGroup } from "../../../../workers/layouts"
+import { useZStretchHouseListener } from "../../../state/events"
 
 type Props = {
   systemId: string
@@ -21,13 +22,15 @@ const GroupedStretchColumn = (props: Props) => {
 
   const groupRef = useRef<Group>(null)
 
-  useSubscribeKey(stretchLengthClamped, houseId, () => {
-    if (!stretchLengthClamped[houseId]) {
-      groupRef.current?.scale.set(0, 0, 0)
-      return
-    }
+  useZStretchHouseListener((detail) => {
+    if (houseId !== detail.houseId) return
 
-    const { distance, direction } = stretchLengthClamped[houseId]
+    const { distance, direction, dx, dz, last } = detail
+
+    // if (!stretchLengthClamped[houseId]) {
+    //   groupRef.current?.scale.set(0, 0, 0)
+    //   return
+    // }
 
     if (direction !== props.direction) return
 
