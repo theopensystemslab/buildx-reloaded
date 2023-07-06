@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useMemo, useRef } from "react"
 import { Box3, Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { serializeLayoutsKey } from "../../../db/layouts"
+import { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
 import { splitColumns } from "../../../workers/layouts"
@@ -15,9 +15,10 @@ import {
 } from "../../state/events"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
 import houses from "../../state/houses"
+import { useStretchLength2 } from "../../state/interactions/stretchLength"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
-import { useVanillaColumn } from "../../state/vanilla"
+import { useStretchLength } from "../../state/transients/stretchLength"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -31,6 +32,10 @@ const GroupedHouse2 = (props: Props) => {
   const { house } = props
   const { systemId, id: houseId, position, rotation } = house
   const dnas = [...house.dnas]
+
+  const layoutKey: LayoutKey = { systemId, dnas }
+
+  const strLayoutKey = serializeLayoutKey(layoutKey)
 
   const translationMatrix = useMemo(() => {
     const m = new Matrix4()
@@ -54,10 +59,7 @@ const GroupedHouse2 = (props: Props) => {
   const { stretchEnabled, moveRotateEnabled } =
     useTransformabilityBooleans(houseId)
 
-  const layout = useDnasLayout({
-    systemId,
-    dnas,
-  })
+  const layout = useDnasLayout(layoutKey)
 
   const { width, length, height, obb }: Dimensions = useMemo(() => {
     const width = layout[0].gridGroups[0].modules[0].module.width
@@ -94,6 +96,19 @@ const GroupedHouse2 = (props: Props) => {
       obb,
     }
   }, [layout, reactHouseMatrix, houseId])
+
+  const { startColumn, endColumn, midColumns } = splitColumns(layout)
+
+  const stretchLength = useStretchLength2({
+    houseId,
+    layoutKey,
+    reactHouseMatrix,
+    width,
+    height,
+    length,
+    startColumn,
+    endColumn,
+  })
 
   const obbBox = useMemo(() => {
     const box3 = new Box3().setFromCenterAndSize(
@@ -156,14 +171,12 @@ const GroupedHouse2 = (props: Props) => {
     }
   })
 
-  const { startColumn, endColumn, midColumns } = splitColumns(layout)
-
-  const vanillaColumn = useVanillaColumn(houseId)
+  // const { columnsUp, columnsDown } = useStretchLength({ startColumn, endColumn, midColumns })
 
   useHouseMaterialOps({
     houseId,
     ref: rootRef,
-    layoutsKey: serializeLayoutsKey({ systemId, dnas }),
+    layoutsKey: serializeLayoutKey({ systemId, dnas }),
   })
 
   const startColumnRef = useRef<Group>(null!)
@@ -236,15 +249,19 @@ const GroupedHouse2 = (props: Props) => {
           scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
         />
 
-        {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
-          {columnsUp}
-          {columnsDown}
-        </group> */}
+        <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
+          {stretchLength.columnsUp}
+          {stretchLength.columnsDown}
+        </group>
 
         {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
       </group>
 
       {/* <box3Helper ref={box3HelperRef} args={[obbBox]} /> */}
+      <mesh>
+        <boxBufferGeometry />
+        <meshBasicMaterial color="tomato" />
+      </mesh>
     </Fragment>
   )
 }

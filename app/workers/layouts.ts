@@ -8,7 +8,7 @@ import { BufferGeometry } from "three"
 import { mergeBufferGeometries } from "three-stdlib"
 import { Module } from "../../server/data/modules"
 import { getSpeckleObject } from "../../server/data/speckleModel"
-import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../db/layouts"
+import layoutsDB, { LayoutKey, serializeLayoutKey } from "../db/layouts"
 import systemsDB, { LastFetchStamped } from "../db/systems"
 import { A, all, O, Ord, R, S } from "../utils/functions"
 import { isSSR } from "../utils/next"
@@ -102,7 +102,7 @@ const syncModels = (modules: LastFetchStamped<Module>[]) => {
 }
 
 let modulesCache: LastFetchStamped<Module>[] = []
-let layoutsQueue: LayoutsKey[] = []
+let layoutsQueue: LayoutKey[] = []
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -409,7 +409,7 @@ const getVanillaModule = (
   )
 }
 
-const processLayout = async ({ systemId, dnas }: LayoutsKey) => {
+const processLayout = async ({ systemId, dnas }: LayoutKey) => {
   const modules = pipe(
     dnas,
     A.filterMap((dna) =>
@@ -425,7 +425,7 @@ const processLayout = async ({ systemId, dnas }: LayoutsKey) => {
 
   const layout = modulesToColumnLayout(modules)
 
-  const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+  const layoutsKey = serializeLayoutKey({ systemId, dnas })
 
   layoutsDB.layouts.put({
     layout,
@@ -501,11 +501,11 @@ if (!isSSR()) {
   })
 }
 
-const postLayout = (key: LayoutsKey) => {
+const postLayout = (key: LayoutKey) => {
   layoutsQueue.push(key)
 }
 
-const postLayouts = (keys: LayoutsKey[]) => {
+const postLayouts = (keys: LayoutKey[]) => {
   keys.map(postLayout)
 }
 

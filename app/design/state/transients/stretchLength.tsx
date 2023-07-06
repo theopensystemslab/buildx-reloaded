@@ -20,7 +20,7 @@ import {
   useGetVanillaModule,
   vanillaColumns,
 } from "../vanilla"
-import layoutsDB, { serializeLayoutsKey } from "../../../db/layouts"
+import layoutsDB, { serializeLayoutKey } from "../../../db/layouts"
 import { suspend } from "suspend-react"
 import {
   ColumnLayout,
@@ -173,7 +173,6 @@ export const useStretchLength = ({
           return !collision
         })
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       computeMatrix,
       houseHeight,
@@ -182,8 +181,6 @@ export const useStretchLength = ({
       houseWidth,
       maxColumnZs,
       vanillaColumnLength,
-      position,
-      rotation,
     ]
   )
   const maxStretchLengthDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
@@ -289,7 +286,7 @@ export const useStretchLength = ({
 export const setStretchLength = () => {
   for (let houseId of Object.keys(stretchLengthClamped)) {
     const { systemId, dnas } = houses[houseId]
-    const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+    const layoutsKey = serializeLayoutKey({ systemId, dnas })
     const layout = layouts[layoutsKey]
     const { startColumn, midColumns, endColumn } = splitColumns(layout)
     const vanillaColumn = vanillaColumns[houseId]

@@ -1,13 +1,26 @@
-import { pipe } from "fp-ts/lib/function"
-import { proxy } from "valtio"
-import { useSystemModules } from "../../data/modules"
 import { Module } from "@/server/data/modules"
+import { liveQuery } from "dexie"
+import { pipe } from "fp-ts/lib/function"
+import { proxy, ref } from "valtio"
 import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
-import { suspend } from "suspend-react"
-import layoutsDB from "../../db/layouts"
+import { useSystemModules } from "../../data/modules"
+import layoutsDB, { VanillaColumn } from "../../db/layouts"
+import { isSSR } from "../../utils/next"
 import { PositionedRow } from "../../workers/layouts"
 
-export const vanillaColumns = proxy<Record<string, PositionedRow[]>>({})
+export const vanillaColumns = proxy<Record<string, VanillaColumn>>({})
+
+if (!isSSR()) {
+  liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
+    (dbVanillaColumns) => {
+      for (let { layoutsKey, vanillaColumn } of dbVanillaColumns) {
+        if (!(layoutsKey in dbVanillaColumns)) {
+          vanillaColumns[layoutsKey] = ref(vanillaColumn)
+        }
+      }
+    }
+  )
+}
 
 export const getVanillaColumnLength = (column: PositionedRow[]) =>
   pipe(
@@ -73,10 +86,4 @@ export const useGetVanillaModule = (systemId: string) => {
 
     return vanillaModule
   }
-}
-
-export const useVanillaColumn = (houseId: string) => {
-  return suspend(() => {
-    return layoutsDB.vanillaColumns.get(houseId)
-  }, [houseId])
 }

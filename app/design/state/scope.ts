@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { proxy, useSnapshot } from "valtio"
 import { A, O } from "~/utils/functions"
 import { columnLayoutToMatrix, layouts } from "~/design/state/layouts"
-import { serializeLayoutsKey } from "../../db/layouts"
+import { serializeLayoutKey } from "../../db/layouts"
 import houses from "./houses"
 
 export type ScopeItem = {
@@ -32,7 +32,7 @@ export const getSelectedModule = () => {
 
   const { systemId, dnas } = houses[houseId]
 
-  const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+  const layoutsKey = serializeLayoutKey({ systemId, dnas })
 
   return layouts[layoutsKey][columnIndex].gridGroups[levelIndex].modules[
     gridGroupIndex
@@ -46,7 +46,7 @@ export const getSelectedColumnMatrix = () => {
   if (scope.selected === null) return null
   const { houseId } = scope.selected
   const { systemId, dnas } = houses[houseId]
-  const layoutsKey = serializeLayoutsKey({ systemId, dnas })
+  const layoutsKey = serializeLayoutKey({ systemId, dnas })
   return columnLayoutToMatrix(layouts[layoutsKey])
 }
 export const getSelectedLevelModules = () => {

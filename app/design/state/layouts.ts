@@ -8,7 +8,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import { suspend } from "suspend-react"
 import { proxy, ref, useSnapshot } from "valtio"
 import { usePadColumn } from "../../data/modules"
-import layoutsDB, { LayoutsKey, serializeLayoutsKey } from "../../db/layouts"
+import layoutsDB, { LayoutKey, serializeLayoutKey } from "../../db/layouts"
 import { isSSR } from "../../utils/next"
 import { getLayoutsWorker } from "../../workers"
 import {
@@ -33,9 +33,9 @@ if (!isSSR()) {
   })
 }
 
-export const useDnasLayout = (layoutsKey: LayoutsKey): ColumnLayout => {
+export const useDnasLayout = (layoutsKey: LayoutKey): ColumnLayout => {
   const snap = useSnapshot(layouts) as typeof layouts
-  const serialKey = serializeLayoutsKey(layoutsKey)
+  const serialKey = serializeLayoutKey(layoutsKey)
   const maybeLayout: ColumnLayout | undefined = snap?.[serialKey]
 
   return suspend(async () => {
@@ -95,7 +95,7 @@ export const useColumnMatrix = (houseId: string) => {
   const { systemId, dnas } = useHouse(houseId)
   const layoutsSnap = useSnapshot(layouts) as typeof layouts
   return columnLayoutToMatrix(
-    layoutsSnap[serializeLayoutsKey({ systemId, dnas })]
+    layoutsSnap[serializeLayoutKey({ systemId, dnas })]
   )
 }
 

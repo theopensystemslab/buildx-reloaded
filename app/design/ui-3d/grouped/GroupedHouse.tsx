@@ -10,7 +10,7 @@ import {
   usePreTransformsTransients,
 } from "~/design/state/transients/transforms"
 import { RA } from "~/utils/functions"
-import { serializeLayoutsKey } from "../../../db/layouts"
+import { serializeLayoutKey } from "../../../db/layouts"
 import { useHouse, useHouseSystemId } from "../../state/houses"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
 import RotateHandles from "../handles/RotateHandles"
@@ -73,7 +73,7 @@ const GroupedHouse = (props: Props) => {
   useHouseMaterialOps({
     houseId,
     ref: houseGroupRef,
-    layoutsKey: serializeLayoutsKey({ systemId, dnas }),
+    layoutsKey: serializeLayoutKey({ systemId, dnas }),
   })
 
   return (

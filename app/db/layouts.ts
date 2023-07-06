@@ -13,17 +13,19 @@ export type IndexedLayout = {
   layout: ColumnLayout
 }
 
-export type LayoutsKey = {
+export type LayoutKey = {
   systemId: string
   dnas: string[]
 }
 
+export type VanillaColumn = Omit<PositionedColumn, "z" | "columnIndex">
+
 export type IndexedVanillaColumn = {
   layoutsKey: string
-  vanillaColumn: Omit<PositionedColumn, "z" | "columnIndex">
+  vanillaColumn: VanillaColumn
 }
 
-export const serializeLayoutsKey = ({ systemId, dnas }: LayoutsKey) =>
+export const serializeLayoutKey = ({ systemId, dnas }: LayoutKey) =>
   `${systemId}:${dnas}`
 
 class LayoutsDatabase extends Dexie {
