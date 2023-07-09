@@ -55,7 +55,7 @@ export const createVanillaModuleGetter =
   }
 
 liveQuery(() => systemsDB.modules.toArray()).subscribe(
-  async (modules: LastFetchStamped<Module>[]) => {
+  (modules: LastFetchStamped<Module>[]) => {
     const getVanillaModule = createVanillaModuleGetter(modules)()
 
     pipe(
@@ -68,11 +68,10 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
           A.map(
             async ({
               systemId,
-              id,
               structuredDna: { sectionType, positionType, levelType, gridType },
               dna,
-            }: LastFetchStamped<Module>) => {
-              return await layoutsDB.vanillaModules.put({
+            }: LastFetchStamped<Module>) =>
+              layoutsDB.vanillaModules.put({
                 systemId,
                 sectionType,
                 positionType,
@@ -80,7 +79,6 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
                 gridType,
                 moduleDna: dna,
               })
-            }
           )
         )
       )
@@ -88,27 +86,56 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
   }
 )
 
-// ideas
-// -----
-// get each level type and iter that?
-// vanilla modules by level type (with grid type 1)?
-// -----
-// positionType: MID
-// gridType: {{ the lowest }}
-// systemId: { for each }
-// levelType: { this is what we group by }
-// -----
-// so Record<systemId, Record<levelTypeCode, VanillaModule>>
-// -----
-// then a getter function to get the vanilla module of some height
+export const getIndexedVanillaModule = ({
+  systemId,
+  sectionType,
+  positionType,
+  levelType,
+  gridType,
+}: {
+  systemId: string
+  sectionType: string
+  positionType: string
+  levelType: string
+  gridType: string
+}) =>
+  layoutsDB.vanillaModules.get([
+    systemId,
+    sectionType,
+    positionType,
+    levelType,
+    gridType,
+  ])
 
+liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
+  for (let dbLayout of dbLayouts) {
+    const { layoutsKey } = dbLayout
+  }
+})
+
+// this actually needs to SUBSCRIBE TO HOUSES
+// get their `dnas`
+// get their column layout (maybe we're subscribing to layouts actually)
+// layoutKey -> vanillaColumn we post
+//
+// ---------------------------------------------------------------------
+//
 // liveQuery(() => layoutsDB.vanillaModules.toArray()).subscribe(
-//   (dbVanillaModules) => {
-//     for (const systemId of allSystemIds) {
-//       pipe(dbVanillaModules, A.reduce({}, (acc,{systemId, levelType}) => {
+//   async (dbVanillaMods) => {
+//     if (dbVanillaMods.length > 0) {
+//       const {
+//         systemId,
+//         sectionType,
+//         positionType,
+//         levelType,
+//         gridType,
+//         moduleDna,
+//       } = dbVanillaMods[0]
 
-//         return acc
-//       }))
+//       console.log(
+//         [systemId, sectionType, positionType, levelType, gridType].toString()
+//       )
 //     }
+
 //   }
 // )

@@ -1,21 +1,33 @@
 import { Module } from "@/server/data/modules"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
-import { proxy, ref } from "valtio"
+import { proxy } from "valtio"
 import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
 import { useSystemModules } from "../../data/modules"
-import layoutsDB, { PositionedRow, VanillaColumn } from "../../db/layouts"
+import layoutsDB, { PositionedRow } from "../../db/layouts"
 import { isSSR } from "../../utils/next"
 
-export const vanillaColumns = proxy<Record<string, VanillaColumn>>({})
+export const vanillaModules = proxy<Record<string, string>>({})
+
+export const getVanillaModulesKey = ({
+  systemId,
+  sectionType,
+  positionType,
+  levelType,
+  gridType,
+}: {
+  systemId: string
+  sectionType: string
+  positionType: string
+  levelType: string
+  gridType: string
+}) => [systemId, sectionType, positionType, levelType, gridType].toString()
 
 if (!isSSR()) {
-  liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
-    (dbVanillaColumns) => {
-      for (let { layoutsKey, vanillaColumn } of dbVanillaColumns) {
-        if (!(layoutsKey in dbVanillaColumns)) {
-          vanillaColumns[layoutsKey] = ref(vanillaColumn)
-        }
+  liveQuery(() => layoutsDB.vanillaModules.toArray()).subscribe(
+    (dbVanillaModules) => {
+      for (let { moduleDna, ...dbVanillaModule } of dbVanillaModules) {
+        vanillaModules[getVanillaModulesKey(dbVanillaModule)] = moduleDna
       }
     }
   )
