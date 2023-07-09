@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { useSpeckleObject } from "~/data/elements"
 import { indicesToKey } from "~/design/state/layouts"
 import { O, R, S } from "~/utils/functions"
-import { SystemHouseModuleIdentifier } from "../../../../workers/layouts"
+import { SystemHouseModuleIdentifier } from "../../../../db/layouts"
 import PreviewElement from "./PreviewElement"
 
 export type PreviewModuleProps = SystemHouseModuleIdentifier & {

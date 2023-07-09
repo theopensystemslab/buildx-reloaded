@@ -6,7 +6,7 @@ import mergeRefs from "react-merge-refs"
 import { Group } from "three"
 import { RA } from "~/utils/functions"
 import GroupedModule from "./GroupedModule"
-import { PositionedColumn } from "../../../workers/layouts"
+import { PositionedColumn } from "../../../db/layouts"
 
 type Props = GroupProps & {
   systemId: string

@@ -7,7 +7,7 @@ import { useSnapshot } from "valtio"
 import { R } from "~/utils/functions"
 import houses from "~/design/state/houses"
 import { useVerticalCuts } from "~/design/state/settings"
-import { ColumnLayout } from "../../workers/layouts"
+import { ColumnLayout } from "../../db/layouts"
 
 export const useVerticalCutPlanes = (
   columnLayout: ColumnLayout,

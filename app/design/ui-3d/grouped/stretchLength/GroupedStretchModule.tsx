@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
 import { useSpeckleObject } from "~/data/elements"
 import { O, R, S } from "~/utils/functions"
-import { SystemHouseModuleIdentifier } from "../../../../workers/layouts"
+import { SystemHouseModuleIdentifier } from "../../../../db/layouts"
 import GroupedStretchElement from "./GroupedStretchElement"
 
 export type StretchModuleProps = Omit<

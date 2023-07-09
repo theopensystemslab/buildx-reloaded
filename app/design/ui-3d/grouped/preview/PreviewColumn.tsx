@@ -6,7 +6,7 @@ import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Group } from "three"
 import PreviewModule from "./PreviewModule"
-import { PositionedColumn } from "../../../../workers/layouts"
+import { PositionedColumn } from "../../../../db/layouts"
 
 type Props = GroupProps & {
   systemId: string

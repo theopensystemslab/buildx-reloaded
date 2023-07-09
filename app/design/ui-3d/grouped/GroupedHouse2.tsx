@@ -6,7 +6,7 @@ import { OBB } from "three-stdlib"
 import { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { RA } from "../../../utils/functions"
-import { splitColumns } from "../../../workers/layouts"
+import { splitColumns } from "../../../workers/layouts/worker"
 import dimensions, { collideOBB, Dimensions } from "../../state/dimensions"
 import {
   dispatchMoveHouse,

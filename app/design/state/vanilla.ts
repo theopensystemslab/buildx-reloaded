@@ -4,9 +4,8 @@ import { pipe } from "fp-ts/lib/function"
 import { proxy, ref } from "valtio"
 import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
 import { useSystemModules } from "../../data/modules"
-import layoutsDB, { VanillaColumn } from "../../db/layouts"
+import layoutsDB, { PositionedRow, VanillaColumn } from "../../db/layouts"
 import { isSSR } from "../../utils/next"
-import { PositionedRow } from "../../workers/layouts"
 
 export const vanillaColumns = proxy<Record<string, VanillaColumn>>({})
 

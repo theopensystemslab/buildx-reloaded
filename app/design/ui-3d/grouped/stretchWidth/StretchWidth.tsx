@@ -9,7 +9,6 @@ import { useSystemSectionTypes } from "~/data/sectionTypes"
 import dimensions, {
   useHouseDimensionsUpdates,
 } from "../../../state/dimensions"
-import { columnLayoutToDNA } from "~/design/state/layouts"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   A,
@@ -38,7 +37,8 @@ import {
   GridGroup,
   PositionedColumn,
   PositionedModule,
-} from "../../../../workers/layouts"
+} from "../../../../db/layouts"
+import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
 
 export type StretchWidthRaw = {
   direction: 1 | -1
@@ -192,7 +192,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
             )
         ),
         O.map((columnLayout): AugSectionType => {
-          const houseDna = columnLayoutToDNA(columnLayout)
+          const houseDna = columnLayoutToDnas(columnLayout)
           return {
             ...st,
             dx: (st.width - houseWidth) / 2,

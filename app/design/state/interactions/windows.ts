@@ -6,12 +6,12 @@ import { WindowType } from "@/server/data/windowTypes"
 import { useSystemWindowTypes } from "~/data/windowTypes"
 import { A, O, S } from "~/utils/functions"
 import { getSide, Side } from "~/design/state/camera"
-import { columnLayoutToDNA, layouts } from "~/design/state/layouts"
+import { layouts } from "~/design/state/layouts"
 import siteCtx from "~/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
-import { serializeLayoutKey } from "../../../db/layouts"
+import { HouseModuleIdentifier, serializeLayoutKey } from "../../../db/layouts"
 import houses from "../houses"
-import { HouseModuleIdentifier } from "../../../workers/layouts"
+import { columnLayoutToDnas } from "../../../workers/layouts/worker"
 
 export type WindowTypeOption = {
   label: string
@@ -111,7 +111,7 @@ export const useWindowOptions = ({
   const selected = pipe(
     options,
     A.findFirstMap(({ value }) => {
-      const houseDna = columnLayoutToDNA(layouts[layoutsKey])
+      const houseDna = columnLayoutToDnas(layouts[layoutsKey])
       return eq.equals(value.houseDna, houseDna) ? O.some(value) : O.none
     }),
     O.getOrElse(() => {

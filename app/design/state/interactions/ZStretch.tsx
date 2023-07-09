@@ -5,12 +5,16 @@ import { Fragment, memo, RefObject, useMemo } from "react"
 import { suspend } from "suspend-react"
 import { Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import layoutsDB, { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
+import layoutsDB, {
+  LayoutKey,
+  PositionedColumn,
+  serializeLayoutKey,
+} from "../../../db/layouts"
 import { A, NEA } from "../../../utils/functions"
 import { floor, max, round, sign } from "../../../utils/math"
 import { yAxis } from "../../../utils/three"
 import { getLayoutsWorker } from "../../../workers"
-import { PositionedColumn } from "../../../workers/layouts"
+import { columnLayoutToDnas } from "../../../workers/layouts/worker"
 import GroupedStretchColumn from "../../ui-3d/grouped/stretchLength/GroupedStretchColumn"
 import { collideOBB } from "../dimensions"
 import {
@@ -19,7 +23,6 @@ import {
   useZStretchHouseListener,
 } from "../events"
 import houses, { useSetHouse } from "../houses"
-import { columnLayoutToDNA } from "../layouts"
 import { vanillaColumns } from "../vanilla"
 
 type Props = {
@@ -152,9 +155,11 @@ const ZStretch = ({
   )
   const maxStretchLengthDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
 
+  console.log([...columnZsUp, ...columnZsUp])
+
   const columnsUp = pipe(
     columnZsUp,
-    A.map((columnZ) => (
+    A.mapWithIndex((i, columnZ) => (
       <group key={columnZ} position={[0, 0, columnZ]}>
         <GroupedStretchColumn
           key={columnZ}
@@ -165,6 +170,8 @@ const ZStretch = ({
             direction: 1,
             columnZ,
             columnLength: vanillaColumn.length,
+            i,
+            layoutKey,
           }}
         />
       </group>
@@ -176,7 +183,7 @@ const ZStretch = ({
 
   const columnsDown = pipe(
     columnZsDown,
-    A.map((columnZ) => (
+    A.mapWithIndex((i, columnZ) => (
       <group key={columnZ} position={[0, 0, columnZ]}>
         <GroupedStretchColumn
           key={columnZ}
@@ -187,6 +194,8 @@ const ZStretch = ({
             direction: -1,
             columnZ,
             columnLength: vanillaColumn.length,
+            i: i + 1,
+            layoutKey,
           }}
         />
       </group>
@@ -200,6 +209,8 @@ const ZStretch = ({
     // if (!startRef.current || !endRef.current) return
 
     const { distance, direction, dx, dz, last } = detail
+
+    console.log(distance)
 
     switch (direction) {
       case 1: {
@@ -246,7 +257,7 @@ const ZStretch = ({
         if (sign(delta) === 1) {
           setHouse({
             ...houses[houseId],
-            dnas: columnLayoutToDNA([
+            dnas: columnLayoutToDnas([
               startColumn,
               ...midColumns,
               ...A.replicate(delta, {
@@ -263,7 +274,7 @@ const ZStretch = ({
         } else if (sign(delta) === -1) {
           setHouse({
             ...houses[houseId],
-            dnas: columnLayoutToDNA([
+            dnas: columnLayoutToDnas([
               startColumn,
               ...midColumns.slice(0, midColumns.length + delta),
               endColumn,
@@ -282,7 +293,7 @@ const ZStretch = ({
           const { x, y, z } = houses[houseId].position
           houses[houseId] = {
             ...houses[houseId],
-            dnas: columnLayoutToDNA([
+            dnas: columnLayoutToDnas([
               startColumn,
               ...A.replicate(-delta, {
                 gridGroups: vanillaColumn.gridGroups,
@@ -299,7 +310,7 @@ const ZStretch = ({
         } else if (sign(delta) === 1) {
           houses[houseId] = {
             ...houses[houseId],
-            dnas: columnLayoutToDNA([
+            dnas: columnLayoutToDnas([
               startColumn,
               ...midColumns.slice(0, midColumns.length - delta),
               endColumn,

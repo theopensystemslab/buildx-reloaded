@@ -1,7 +1,11 @@
 "use client"
 import { Download } from "@carbon/icons-react"
+import dynamic from "next/dynamic"
 import { useState } from "react"
-import MaterialsListTable from "./MaterialsListTable"
+
+const MaterialsListTable = dynamic(() => import("./MaterialsListTable"), {
+  ssr: false,
+})
 
 const MaterialsListIndexPage = () => {
   const [csvDownloadUrl, setCsvDownloadUrl] = useState<string | null>(null)

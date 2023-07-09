@@ -1,9 +1,10 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Group } from "three"
 import { RA } from "~/utils/functions"
-import { GridGroup } from "../../../../workers/layouts"
+import { GridGroup, LayoutKey } from "../../../../db/layouts"
+import { getLayoutsWorker } from "../../../../workers"
 import { useZStretchHouseListener } from "../../../state/events"
 import GroupedStretchModule from "./GroupedStretchModule"
 
@@ -14,12 +15,32 @@ type Props = {
   direction: number
   columnZ: number
   columnLength: number
+  i: number
+  layoutKey: LayoutKey
 }
 
 const GroupedStretchColumn = (props: Props) => {
-  const { systemId, houseId, gridGroups: rows, columnZ, columnLength } = props
+  const {
+    systemId,
+    houseId,
+    gridGroups: rows,
+    columnZ,
+    columnLength,
+    i,
+    direction,
+    layoutKey,
+  } = props
 
   const groupRef = useRef<Group>(null)
+
+  useEffect(() => {
+    const layoutsWorker = getLayoutsWorker()
+    if (!layoutsWorker) {
+      console.log("no layouts workers")
+      return
+    }
+    layoutsWorker.processZStretchLayout({ direction, i, layoutKey })
+  }, [direction, houseId, i, layoutKey])
 
   useZStretchHouseListener((detail) => {
     if (houseId !== detail.houseId) return

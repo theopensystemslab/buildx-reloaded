@@ -8,15 +8,14 @@ import * as RA from "fp-ts/ReadonlyArray"
 import { suspend } from "suspend-react"
 import { proxy, ref, useSnapshot } from "valtio"
 import { usePadColumn } from "../../data/modules"
-import layoutsDB, { LayoutKey, serializeLayoutKey } from "../../db/layouts"
-import { isSSR } from "../../utils/next"
-import { getLayoutsWorker } from "../../workers"
-import {
+import layoutsDB, {
   ColumnLayout,
   HouseModuleIdentifier,
-  PositionedColumn,
-  RowLayout,
-} from "../../workers/layouts"
+  LayoutKey,
+  serializeLayoutKey,
+} from "../../db/layouts"
+import { isSSR } from "../../utils/next"
+import { getLayoutsWorker } from "../../workers"
 import { useHouse } from "./houses"
 
 export const layouts = proxy<
@@ -53,27 +52,6 @@ export const useDnasLayout = (layoutsKey: LayoutKey): ColumnLayout => {
   }, [maybeLayout])
 }
 
-export const columnLayoutToDNA = (
-  columnLayout: Omit<PositionedColumn, "length" | "z" | "columnIndex">[]
-) =>
-  pipe(
-    columnLayout,
-    RA.map(({ gridGroups }) =>
-      pipe(
-        gridGroups,
-        RA.map(({ modules }) =>
-          pipe(
-            modules,
-            RA.map(({ module }) => module.dna)
-          )
-        )
-      )
-    ),
-    transposeRA,
-    RA.flatten,
-    RA.flatten
-  ) as string[]
-
 export const columnLayoutToMatrix = (columnLayout: ColumnLayout) => {
   return pipe(
     columnLayout,
@@ -106,17 +84,6 @@ export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
     transposeA,
     A.flatten,
     A.flatten
-  )
-
-export const rowLayoutToMatrix = (rowLayout: RowLayout) =>
-  pipe(
-    rowLayout,
-    A.map(({ modules }) =>
-      pipe(
-        modules,
-        RA.map(({ module }) => module)
-      )
-    )
   )
 
 export const rowMatrixToDna = (rowMatrix: Module[][]) =>

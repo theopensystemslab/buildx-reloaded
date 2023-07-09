@@ -12,19 +12,19 @@ import houses from "~/design/state/houses"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   layouts,
-  columnLayoutToDNA,
   columnLayoutToMatrix,
   columnMatrixToDna,
 } from "~/design/state/layouts"
 import { StairType } from "@/server/data/stairTypes"
 import { Module } from "@/server/data/modules"
 import { useSystemStairTypes } from "~/data/stairTypes"
-import { serializeLayoutKey } from "../../../db/layouts"
 import {
   ColumnLayout,
   HouseModuleIdentifier,
   PositionedModule,
-} from "../../../workers/layouts"
+  serializeLayoutKey,
+} from "../../../db/layouts"
+import { columnLayoutToDnas } from "../../../workers/layouts/worker"
 
 export const useChangeModuleLayout = ({
   houseId,
@@ -76,7 +76,7 @@ export const useChangeModuleLayout = ({
                 ),
               ]
             }),
-            columnLayoutToDNA
+            columnLayoutToDnas
           )
         )
       }
@@ -112,7 +112,7 @@ export const useChangeModuleLayout = ({
               })
             })
           }),
-          columnLayoutToDNA
+          columnLayoutToDnas
         )
       }
 
@@ -126,7 +126,7 @@ export const useChangeModuleLayout = ({
               gridGroupIndex
             ].module.dna = newModule.dna
           }),
-          columnLayoutToDNA
+          columnLayoutToDnas
         ) as string[]
     }
   }
@@ -225,7 +225,7 @@ export const useStairsOptions = ({
 
   const selected: StairsOpt["value"] = {
     stairType: m.structuredDna.stairsType,
-    houseDna: columnLayoutToDNA(layout),
+    houseDna: columnLayoutToDnas(layout),
   }
 
   const columnMatrix = columnLayoutToMatrix(layout)

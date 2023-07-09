@@ -4,117 +4,23 @@ import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import { pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
-import { BufferGeometry } from "three"
-import { mergeBufferGeometries } from "three-stdlib"
-import { Module } from "../../server/data/modules"
-import { getSpeckleObject } from "../../server/data/speckleModel"
-import layoutsDB, { LayoutKey, serializeLayoutKey } from "../db/layouts"
-import systemsDB, { LastFetchStamped } from "../db/systems"
-import { A, all, O, Ord, R, S } from "../utils/functions"
-import { isSSR } from "../utils/next"
-import speckleIfcParser from "../utils/speckle/speckleIfcParser"
-
-export type PositionedModule = {
-  module: Module
-  z: number
-  gridGroupIndex: number
-}
-
-export type PositionedInstancedModule = {
-  module: Module
-  y: number
-  z: number
-  columnIndex: number
-  levelIndex: number
-  gridGroupIndex: number
-}
-
-export type PositionedRow = {
-  levelIndex: number
-  levelType: string
-  y: number
-  modules: Array<PositionedModule>
-  length: number
-}
-
-export type GridGroup = PositionedRow
-
-export type RowLayout = Array<PositionedRow>
-
-export type PositionedColumn = {
-  gridGroups: Array<PositionedRow>
-  z: number
-  columnIndex: number
-  length: number
-}
-
-export type ModuleIdentifier = {
-  columnIndex: number
-  levelIndex: number
-  gridGroupIndex: number
-}
-
-export type HouseModuleIdentifier = ModuleIdentifier & {
-  houseId: string
-}
-
-export type SystemHouseModuleIdentifier = HouseModuleIdentifier & {
-  systemId: string
-}
-
-export type ColumnLayout = Array<PositionedColumn>
-
-const getSpeckleModelGeometries = async (speckleBranchUrl: string) => {
-  const speckleObjectData = await getSpeckleObject(speckleBranchUrl)
-  const speckleObject = speckleIfcParser.parse(speckleObjectData)
-
-  return pipe(
-    speckleObject,
-    A.reduce(
-      {},
-      (acc: { [e: string]: BufferGeometry[] }, { ifcTag, geometry }) => {
-        return produce(acc, (draft) => {
-          if (ifcTag in draft) draft[ifcTag].push(geometry)
-          else draft[ifcTag] = [geometry]
-        })
-      }
-    ),
-    R.map((geoms) => mergeBufferGeometries(geoms)),
-    R.filter((bg: BufferGeometry | null): bg is BufferGeometry => Boolean(bg)),
-    R.map((x) => x.toJSON())
-  )
-}
-
-const syncModels = (modules: LastFetchStamped<Module>[]) => {
-  modules.map(async (nextModule) => {
-    const { speckleBranchUrl, lastFetched } = nextModule
-    const maybeModel = await layoutsDB.models.get(speckleBranchUrl)
-
-    if (maybeModel && maybeModel.lastFetched === lastFetched) {
-      return
-    }
-
-    const geometries = await getSpeckleModelGeometries(speckleBranchUrl)
-
-    layoutsDB.models.put({
-      speckleBranchUrl,
-      lastFetched,
-      geometries,
-      systemId: nextModule.systemId,
-    })
-  })
-}
+import { Module } from "../../../server/data/modules"
+import layoutsDB, {
+  ColumnLayout,
+  LayoutKey,
+  PositionedColumn,
+  PositionedModule,
+  PositionedRow,
+  serializeLayoutKey,
+} from "../../db/layouts"
+import systemsDB, { LastFetchStamped } from "../../db/systems"
+import { A, O } from "../../utils/functions"
+import { isSSR } from "../../utils/next"
+import { syncModels } from "./models"
+import { createVanillaModuleGetter } from "./vanilla"
 
 let modulesCache: LastFetchStamped<Module>[] = []
 let layoutsQueue: LayoutKey[] = []
-
-// const getSpeckleModel = async (module: Module) => {
-//   const { speckleBranchUrl } = module
-//     const maybeModel = await layoutsDB.models.get(speckleBranchUrl)
-//     if (maybeModel && maybeModel.lastFetched === lastFetched) {
-//       return
-//     }
-// }
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -171,6 +77,7 @@ const analyzeColumn =
       )
     )
   }
+
 const columnify =
   <A extends unknown>(toLength: (a: A) => number) =>
   (input: readonly A[][]) => {
@@ -375,53 +282,6 @@ export const splitColumns = (layout: ColumnLayout) =>
     })
   )
 
-const getVanillaModule = (
-  module: Module,
-  opts: {
-    positionType?: string
-    levelType?: string
-    constrainGridType?: boolean
-    sectionType?: string
-  } = {}
-): O.Option<Module> => {
-  const {
-    sectionType,
-    positionType,
-    levelType,
-    constrainGridType = true,
-  } = opts
-
-  return pipe(
-    modulesCache,
-    A.filter((sysModule) =>
-      all(
-        sysModule.systemId === module.systemId,
-        sectionType
-          ? sysModule.structuredDna.sectionType === sectionType
-          : sysModule.structuredDna.sectionType ===
-              module.structuredDna.sectionType,
-        positionType
-          ? sysModule.structuredDna.positionType === positionType
-          : sysModule.structuredDna.positionType ===
-              module.structuredDna.positionType,
-        levelType
-          ? sysModule.structuredDna.levelType === levelType
-          : sysModule.structuredDna.levelType ===
-              module.structuredDna.levelType,
-        !constrainGridType ||
-          sysModule.structuredDna.gridType === module.structuredDna.gridType
-      )
-    ),
-    A.sort(
-      pipe(
-        S.Ord,
-        Ord.contramap((m: Module) => m.dna)
-      )
-    ),
-    A.head
-  )
-}
-
 const processLayout = async ({ systemId, dnas }: LayoutKey) => {
   const modules = pipe(
     dnas,
@@ -449,6 +309,11 @@ const processLayout = async ({ systemId, dnas }: LayoutKey) => {
     startColumn: { gridGroups },
   } = splitColumns(layout)
 
+  const getVanillaModule = createVanillaModuleGetter(modulesCache)({
+    constrainGridType: false,
+    positionType: "MID",
+  })
+
   pipe(
     gridGroups,
     A.traverse(O.Applicative)(
@@ -459,10 +324,8 @@ const processLayout = async ({ systemId, dnas }: LayoutKey) => {
         modules: [{ module }],
       }): O.Option<PositionedRow> =>
         pipe(
-          getVanillaModule(module, {
-            constrainGridType: false,
-            positionType: "MID",
-          }),
+          module,
+          getVanillaModule,
           O.map((vanillaModule) => ({
             modules: [
               {
@@ -529,10 +392,71 @@ if (!isSSR()) {
   })
 }
 
+export const columnLayoutToDnas = (
+  columnLayout: Omit<PositionedColumn, "length" | "z" | "columnIndex">[]
+) =>
+  pipe(
+    columnLayout,
+    RA.map(({ gridGroups }) =>
+      pipe(
+        gridGroups,
+        RA.map(({ modules }) =>
+          pipe(
+            modules,
+            RA.map(({ module }) => module.dna)
+          )
+        )
+      )
+    ),
+    transposeRA,
+    RA.flatten,
+    RA.flatten
+  ) as string[]
+
+const processZStretchLayout = async ({
+  layoutKey,
+  direction,
+  i,
+}: {
+  layoutKey: LayoutKey
+  direction: number
+  i: number
+}) => {
+  const { systemId } = layoutKey
+  const strLayoutKey = serializeLayoutKey(layoutKey)
+  const layout = await layoutsDB.layouts.get(strLayoutKey)
+  if (!layout) {
+    console.log(`no layout for ${strLayoutKey}`)
+    return
+  }
+  const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
+  if (!vanillaColumn) {
+    console.log(`no layout for ${strLayoutKey}`)
+    return
+  }
+
+  const { startColumn, midColumns, endColumn } = splitColumns(layout.layout)
+
+  const nextDnas = columnLayoutToDnas([
+    startColumn,
+    ...A.replicate(i, vanillaColumn.vanillaColumn),
+    ...midColumns,
+    endColumn,
+  ])
+
+  console.log({ nextDnas })
+
+  processLayout({
+    systemId,
+    dnas: nextDnas,
+  })
+}
+
 const api = {
   postLayout,
   postLayouts,
   processLayout,
+  processZStretchLayout,
   syncModels,
 }
 

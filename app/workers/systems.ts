@@ -1,7 +1,9 @@
 import { vanillaTrpc } from "../../client/trpc"
 import { Element } from "../../server/data/elements"
 import { HouseType } from "../../server/data/houseTypes"
+import { LevelType } from "../../server/data/levelTypes"
 import { Module } from "../../server/data/modules"
+import { SectionType } from "../../server/data/sectionTypes"
 import systemsDB, { LastFetchStamped } from "../db/systems"
 
 const initModules = async () => {
@@ -67,10 +69,58 @@ const initElements = async () => {
   await Promise.all(promises)
 }
 
+const initSectionTypes = async () => {
+  const remoteSectionTypes = await vanillaTrpc.sectionTypes.query()
+
+  const promises = remoteSectionTypes.map(async (remoteSectionType) => {
+    const localSectionType = await systemsDB.sectionTypes.get(
+      remoteSectionType.id
+    )
+
+    const indexedSectionType: LastFetchStamped<SectionType> = {
+      ...remoteSectionType,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localSectionType ||
+      remoteSectionType.lastModified > localSectionType.lastModified
+    ) {
+      await systemsDB.sectionTypes.put(indexedSectionType)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
+const initLevelTypes = async () => {
+  const remoteLevelTypes = await vanillaTrpc.levelTypes.query()
+
+  const promises = remoteLevelTypes.map(async (remoteLevelType) => {
+    const localLevelType = await systemsDB.levelTypes.get(remoteLevelType.id)
+
+    const indexedLevelType: LastFetchStamped<LevelType> = {
+      ...remoteLevelType,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localLevelType ||
+      remoteLevelType.lastModified > localLevelType.lastModified
+    ) {
+      await systemsDB.levelTypes.put(indexedLevelType)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
 const init = () => {
   initModules()
   initHouseTypes()
   initElements()
+  initSectionTypes()
+  initLevelTypes()
 }
 
 init()
