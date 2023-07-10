@@ -444,8 +444,6 @@ const processZStretchLayout = async ({
     endColumn,
   ])
 
-  console.log({ nextDnas })
-
   processLayout({
     systemId,
     dnas: nextDnas,

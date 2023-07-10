@@ -27,6 +27,7 @@ type Props = {
 }
 
 const GroupedHouse2 = (props: Props) => {
+  console.log("GroupedHouse2")
   const { house } = props
   const { systemId, id: houseId, position, rotation } = house
   const dnas = [...house.dnas]

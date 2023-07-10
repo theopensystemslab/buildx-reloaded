@@ -23,6 +23,7 @@ import {
   useZStretchHouseListener,
 } from "../events"
 import houses, { useSetHouse } from "../houses"
+import { vanillaColumns } from "../vanilla"
 
 type Props = {
   houseId: string
@@ -51,22 +52,22 @@ const ZStretch = ({
   startRef,
   endRef,
 }: Props) => {
+  console.log("ZStretch")
   const { systemId } = layoutKey
   const strLayoutKey = serializeLayoutKey(layoutKey)
 
   const vanillaColumn = suspend(async () => {
-    return undefined as any
-    // if (strLayoutKey in vanillaColumns) {
-    //   return vanillaColumns[strLayoutKey]
-    // } else {
-    //   const layoutsWorker = getLayoutsWorker()
-    //   if (!layoutsWorker) throw new Error("no layouts worker")
-    //   await layoutsWorker.processLayout(layoutKey)
-    //   const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
-    //   if (!vanillaColumn)
-    //     throw new Error(`no vanilla column for ${strLayoutKey}`)
-    //   return vanillaColumn.vanillaColumn
-    // }
+    if (strLayoutKey in vanillaColumns) {
+      return vanillaColumns[strLayoutKey]
+    } else {
+      const layoutsWorker = getLayoutsWorker()
+      if (!layoutsWorker) throw new Error("no layouts worker")
+      await layoutsWorker.processLayout(layoutKey)
+      const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
+      if (!vanillaColumn)
+        throw new Error(`no vanilla column for ${strLayoutKey}`)
+      return vanillaColumn.vanillaColumn
+    }
   }, [])
 
   const maxLength = 25
