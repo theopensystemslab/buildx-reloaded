@@ -58,19 +58,21 @@ const ZStretch = ({
 
   const vanillaColumn = suspend(async () => {
     if (strLayoutKey in vanillaColumns) {
+      console.log("strLayoutKey in vanillaColumns")
       return vanillaColumns[strLayoutKey]
     } else {
       const layoutsWorker = getLayoutsWorker()
       if (!layoutsWorker) throw new Error("no layouts worker")
       await layoutsWorker.processLayout(layoutKey)
       const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
+      console.log("awaited everything")
       if (!vanillaColumn)
         throw new Error(`no vanilla column for ${strLayoutKey}`)
       return vanillaColumn.vanillaColumn
     }
   }, [])
 
-  const maxLength = 25
+  const maxLength = 10
   const maxCount = floor(max(0, maxLength - length) / vanillaColumn.length)
   const maxColumnZs = pipe(
     NEA.range(0, maxCount - 1),
@@ -155,8 +157,6 @@ const ZStretch = ({
     ]
   )
   const maxStretchLengthDown = columnZsDown?.[columnZsDown.length - 1] ?? 0
-
-  console.log([...columnZsUp, ...columnZsUp])
 
   const columnsUp = pipe(
     columnZsUp,

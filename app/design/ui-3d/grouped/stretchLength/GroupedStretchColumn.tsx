@@ -59,11 +59,15 @@ const GroupedStretchColumn = (props: Props) => {
     } else if (direction === -1 && distance + columnLength / 2 < columnZ) {
       groupRef.current?.scale.set(1, 1, 1)
     } else {
-      groupRef.current?.scale.set(0, 0, 0)
+      // groupRef.current?.scale.set(0, 0, 0)
     }
 
     invalidate()
   })
+
+  useEffect(() => {
+    groupRef.current?.scale.set(1, 1, 1)
+  }, [])
 
   return (
     <group ref={groupRef} scale={[0, 0, 0]}>

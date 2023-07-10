@@ -38,7 +38,10 @@ export const useDnasLayout = (layoutsKey: LayoutKey): ColumnLayout => {
   const maybeLayout: ColumnLayout | undefined = snap?.[serialKey]
 
   return suspend(async () => {
-    if (maybeLayout) return maybeLayout
+    if (maybeLayout) {
+      console.log("maybeLayout")
+      return maybeLayout
+    }
 
     const layoutsWorker = getLayoutsWorker()
 
@@ -48,6 +51,7 @@ export const useDnasLayout = (layoutsKey: LayoutKey): ColumnLayout => {
     const layout = await layoutsWorker.processLayout(layoutsKey)
     layouts[serialKey] = layout
 
+    console.log("awaited layout")
     return layout
   }, [maybeLayout])
 }

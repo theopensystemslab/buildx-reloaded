@@ -1,12 +1,16 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useMemo, useRef } from "react"
+import { useKey } from "react-use"
 import { Box3, Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
-import { RA } from "../../../utils/functions"
-import { splitColumns } from "../../../workers/layouts/worker"
+import { A, RA } from "../../../utils/functions"
+import {
+  columnLayoutToDnas,
+  splitColumns,
+} from "../../../workers/layouts/worker"
 import dimensions, { collideOBB, Dimensions } from "../../state/dimensions"
 import {
   dispatchMoveHouse,
@@ -18,6 +22,7 @@ import houses, { useSetHouse } from "../../state/houses"
 import ZStretch from "../../state/interactions/ZStretch"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
+import { vanillaColumns } from "../../state/vanilla"
 import RotateHandles from "../handles/RotateHandles"
 import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
@@ -33,8 +38,6 @@ const GroupedHouse2 = (props: Props) => {
   const dnas = [...house.dnas]
 
   const layoutKey: LayoutKey = { systemId, dnas }
-
-  const strLayoutKey = serializeLayoutKey(layoutKey)
 
   const translationMatrix = useMemo(() => {
     const m = new Matrix4()
@@ -118,7 +121,6 @@ const GroupedHouse2 = (props: Props) => {
     if (!rootRef.current) return
     rootRef.current.matrixAutoUpdate = false
     rootRef.current.matrix.copy(reactHouseMatrix)
-    invalidate()
   }, [reactHouseMatrix])
 
   const frameOBB = useRef(new OBB())
@@ -166,6 +168,8 @@ const GroupedHouse2 = (props: Props) => {
     invalidate()
   })
 
+  useEffect(invalidate, [dnas])
+
   useHouseMaterialOps({
     houseId,
     ref: rootRef,
@@ -181,6 +185,27 @@ const GroupedHouse2 = (props: Props) => {
       ref.current.visible = b
     })
 
+  useKey(
+    "l",
+    () => {
+      const vanillaColumn = vanillaColumns[serializeLayoutKey(layoutKey)]
+
+      setHouse({
+        ...house,
+        dnas: columnLayoutToDnas([
+          startColumn,
+          ...midColumns,
+          ...A.replicate(1, {
+            gridGroups: vanillaColumn.gridGroups,
+          }),
+          endColumn,
+        ]),
+      })
+    },
+    undefined,
+    [dnas]
+  )
+
   return (
     <Fragment>
       <group
@@ -191,15 +216,15 @@ const GroupedHouse2 = (props: Props) => {
         rotation-y={rotation}
       >
         <group ref={startRef}>
-          <StretchHandle
+          {/* <StretchHandle
             houseId={houseId}
             axis="z"
             direction={-1}
             disable={!stretchEnabled}
-          />
+          /> */}
           <GroupedColumn
             ref={startColumnRef}
-            key={`${houseId}:${startColumn.columnIndex}`}
+            // key={`${houseId}:${startColumn.columnIndex}`}
             column={startColumn}
             {...{ systemId, houseId, start: true }}
           />
@@ -209,7 +234,11 @@ const GroupedHouse2 = (props: Props) => {
             midColumns,
             RA.map((column) => (
               <GroupedColumn
-                key={`${houseId}:${column.columnIndex}`}
+                key={`${houseId}+${column.columnIndex}+${JSON.stringify(
+                  column.gridGroups.map((x) =>
+                    x.modules.map((m) => m.module.dna)
+                  )
+                )}`}
                 column={column}
                 {...{ systemId, houseId }}
               />
@@ -219,16 +248,16 @@ const GroupedHouse2 = (props: Props) => {
         <group ref={endRef}>
           <GroupedColumn
             ref={endColumnRef}
-            key={`${houseId}:${endColumn.columnIndex}`}
+            // key={`${houseId}:${endColumn.columnIndex}`}
             column={endColumn}
             {...{ systemId, houseId, end: true }}
           />
-          <StretchHandle
+          {/* <StretchHandle
             houseId={houseId}
             axis="z"
             direction={1}
             disable={!stretchEnabled}
-          />
+          /> */}
         </group>
 
         {/* <StretchWidth
@@ -242,7 +271,7 @@ const GroupedHouse2 = (props: Props) => {
           scale={moveRotateEnabled ? [1, 1, 1] : [0, 0, 0]}
         />
 
-        <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
+        {/* <group scale={stretchEnabled ? [1, 1, 1] : [0, 0, 0]}>
           <ZStretch
             {...{
               houseId,
@@ -258,7 +287,7 @@ const GroupedHouse2 = (props: Props) => {
               endRef,
             }}
           />
-        </group>
+        </group> */}
 
         {/* <PreviewHouses houseId={houseId} setHouseVisible={setHouseVisible} /> */}
       </group>
