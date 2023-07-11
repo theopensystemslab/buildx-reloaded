@@ -23,7 +23,7 @@ export const layouts = proxy<
 >({})
 
 if (!isSSR()) {
-  liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
+  liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
     for (let { layoutsKey, layout } of dbLayouts) {
       if (!(layoutsKey in layouts)) {
         layouts[layoutsKey] = ref(layout)

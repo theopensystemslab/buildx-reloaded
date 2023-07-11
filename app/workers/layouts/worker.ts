@@ -300,7 +300,7 @@ const processLayout = async ({ systemId, dnas }: LayoutKey) => {
 
   const layoutsKey = serializeLayoutKey({ systemId, dnas })
 
-  layoutsDB.layouts.put({
+  layoutsDB.houseLayouts.put({
     layout,
     layoutsKey,
   })
@@ -424,7 +424,7 @@ const processZStretchLayout = async ({
 }) => {
   const { systemId } = layoutKey
   const strLayoutKey = serializeLayoutKey(layoutKey)
-  const layout = await layoutsDB.layouts.get(strLayoutKey)
+  const layout = await layoutsDB.houseLayouts.get(strLayoutKey)
   if (!layout) {
     console.log(`no layout for ${strLayoutKey}`)
     return

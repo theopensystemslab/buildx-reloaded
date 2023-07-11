@@ -107,7 +107,7 @@ export const getIndexedVanillaModule = ({
     gridType,
   ])
 
-liveQuery(() => layoutsDB.layouts.toArray()).subscribe((dbLayouts) => {
+liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
   for (let dbLayout of dbLayouts) {
     const { layoutsKey } = dbLayout
   }

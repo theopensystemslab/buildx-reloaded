@@ -89,7 +89,7 @@ export const serializeLayoutKey = ({ systemId, dnas }: LayoutKey) =>
 
 class LayoutsDatabase extends Dexie {
   models: Dexie.Table<LastFetchStamped<ParsedModel>, string>
-  layouts: Dexie.Table<IndexedLayout, string>
+  houseLayouts: Dexie.Table<IndexedLayout, string>
   vanillaModules: Dexie.Table<IndexedVanillaModule, string>
   vanillaColumns: Dexie.Table<IndexedVanillaColumn, string>
 
@@ -101,7 +101,7 @@ class LayoutsDatabase extends Dexie {
       vanillaModules: "[systemId+sectionType+positionType+levelType+gridType]",
       vanillaColumns: "layoutsKey",
     })
-    this.layouts = this.table("layouts")
+    this.houseLayouts = this.table("layouts")
     this.models = this.table("models")
     this.vanillaModules = this.table("vanillaModules")
     this.vanillaColumns = this.table("vanillaColumns")
