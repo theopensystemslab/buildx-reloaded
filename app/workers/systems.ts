@@ -2,6 +2,7 @@ import { vanillaTrpc } from "../../client/trpc"
 import { Element } from "../../server/data/elements"
 import { HouseType } from "../../server/data/houseTypes"
 import { LevelType } from "../../server/data/levelTypes"
+import { Material } from "../../server/data/materials"
 import { Module } from "../../server/data/modules"
 import { SectionType } from "../../server/data/sectionTypes"
 import systemsDB, { LastFetchStamped } from "../db/systems"
@@ -69,6 +70,28 @@ const initElements = async () => {
   await Promise.all(promises)
 }
 
+const initMaterials = async () => {
+  const remoteMaterials = await vanillaTrpc.materials.query()
+
+  const promises = remoteMaterials.map(async (remoteMaterial) => {
+    const localElement = await systemsDB.materials.get(remoteMaterial.id)
+
+    const indexedMaterial: LastFetchStamped<Material> = {
+      ...remoteMaterial,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localElement ||
+      remoteMaterial.lastModified > localElement.lastModified
+    ) {
+      await systemsDB.materials.put(indexedMaterial)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
 const initSectionTypes = async () => {
   const remoteSectionTypes = await vanillaTrpc.sectionTypes.query()
 
@@ -119,6 +142,7 @@ const init = () => {
   initModules()
   initHouseTypes()
   initElements()
+  initMaterials()
   initSectionTypes()
   initLevelTypes()
 }

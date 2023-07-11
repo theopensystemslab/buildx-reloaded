@@ -1,10 +1,9 @@
-import { pipe } from "fp-ts/lib/function"
-import { MeshStandardMaterial } from "three"
-import * as z from "zod"
 import { systemFromId } from "@/server/data/system"
+import { QueryParams } from "airtable/lib/query_params"
+import { pipe } from "fp-ts/lib/function"
+import * as z from "zod"
 import { A } from "~/utils/functions"
 import { QueryFn } from "./types"
-import { QueryParams } from "airtable/lib/query_params"
 
 export interface Material {
   id: string
@@ -18,7 +17,7 @@ export interface Material {
   costPerUnit: number
   embodiedCarbonPerUnit: number // kg
   unit: string | null
-  threeMaterial?: MeshStandardMaterial
+  lastModified: number
 }
 
 export const materialSelector: QueryParams<any> = {
@@ -45,6 +44,20 @@ export const materialParser = z
       embodied_carbon_cost_per_unit: z.number().default(0),
       link_url: z.string().optional(),
       unit: z.string().nullable().default(null),
+      last_modified: z
+        .string()
+        .refine(
+          (value) => {
+            // Attempt to parse the value as a date and check that it's valid
+            const date = new Date(value)
+            return !isNaN(date.getTime())
+          },
+          {
+            // Custom error message
+            message: "Invalid date string",
+          }
+        )
+        .transform((x) => new Date(x).getTime()),
     }),
   })
   .transform(
@@ -60,6 +73,7 @@ export const materialParser = z
         embodied_carbon_cost_per_unit,
         link_url,
         unit,
+        last_modified,
       },
     }) => ({
       id,
@@ -72,6 +86,7 @@ export const materialParser = z
       embodiedCarbonPerUnit: embodied_carbon_cost_per_unit,
       linkUrl: link_url,
       unit,
+      lastModified: last_modified,
     })
   )
 

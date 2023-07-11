@@ -20,10 +20,6 @@ const FreshApp = () => {
   const init = () => {
     if (!rootRef.current) return
 
-    // Object.values(vanillaColumns).forEach((vanillaColumn) => {
-    //   rootRef.current!.add(vanillaColumnToGroup(vanillaColumn))
-    // })
-
     pipe(
       getFirstHouseLayout(),
       O.map((layout) =>
@@ -36,6 +32,8 @@ const FreshApp = () => {
         )
       )
     )
+
+    console.log(rootRef.current)
 
     return cleanup
   }

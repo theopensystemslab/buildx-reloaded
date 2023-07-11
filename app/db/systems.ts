@@ -4,6 +4,7 @@ import Dexie from "dexie"
 import { Element } from "../../server/data/elements"
 import { HouseType } from "../../server/data/houseTypes"
 import { LevelType } from "../../server/data/levelTypes"
+import { Material } from "../../server/data/materials"
 import { SectionType } from "../../server/data/sectionTypes"
 
 export type LastFetchStamped<T> = T & {
@@ -14,6 +15,7 @@ class SystemsDatabase extends Dexie {
   modules: Dexie.Table<LastFetchStamped<Module>, string>
   houseTypes: Dexie.Table<LastFetchStamped<HouseType>, string>
   elements: Dexie.Table<LastFetchStamped<Element>, string>
+  materials: Dexie.Table<LastFetchStamped<Material>, string>
   sectionTypes: Dexie.Table<LastFetchStamped<SectionType>, string>
   levelTypes: Dexie.Table<LastFetchStamped<LevelType>, string>
   blocks: Dexie.Table<Block, string>
@@ -25,6 +27,7 @@ class SystemsDatabase extends Dexie {
       modules: "id,systemId,dna",
       houseTypes: "id,systemId",
       elements: "id,systemId",
+      materials: "id,systemId",
       sectionTypes: "id,systemId",
       levelTypes: "id,systemId",
     })
@@ -32,6 +35,7 @@ class SystemsDatabase extends Dexie {
     this.houseTypes = this.table("houseTypes")
     this.blocks = this.table("blocks")
     this.elements = this.table("elements")
+    this.materials = this.table("materials")
     this.sectionTypes = this.table("sectionTypes")
     this.levelTypes = this.table("levelTypes")
   }

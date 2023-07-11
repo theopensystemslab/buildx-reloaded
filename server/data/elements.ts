@@ -87,7 +87,7 @@ export const elementsQuery: QueryFn<Element> =
                       id,
                       systemId,
                       name: element_code,
-                      ifc4Variable: ifc4_variable,
+                      ifc4Variable: ifc4_variable.toUpperCase(),
                       defaultMaterial,
                       materialOptions,
                       category: element_category,
