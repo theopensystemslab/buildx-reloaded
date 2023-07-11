@@ -77,10 +77,6 @@ export const moduleToGroup = ({
   return moduleGroup
 }
 
-export const insert1VanillaColumn = () => {
-  console.log("insert 1 vanilla")
-}
-
 export const createColumnGroup = ({
   gridGroups,
   endColumn = false,
@@ -109,12 +105,21 @@ export const createColumnGroup = ({
 export const layoutToColumns = (layout: ColumnLayout): Group[] =>
   pipe(
     layout,
-    A.mapWithIndex((i, { gridGroups, z }) => {
+    A.mapWithIndex((i, { gridGroups, z, columnIndex, length }) => {
+      const startColumn = i === 0
+      const endColumn = i === layout.length - 1
+
       const group = createColumnGroup({
         gridGroups,
-        endColumn: i === layout.length - 1,
+        endColumn,
       })
       group.position.set(0, 0, z)
+      group.userData = {
+        columnIndex,
+        length,
+        endColumn,
+        startColumn,
+      }
       return group
     })
   )
@@ -136,21 +141,18 @@ export const getFirstHouseLayout = () =>
     O.chain((k) => pipe(houseLayouts, R.lookup(k)))
   )
 
-export const insertVanillaColumn = (houseGroup: Group) => {
+export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   const { children } = houseGroup
 
-  const { startColumnGroup, midColumnGroups, endColumnGroup } = pipe(
-    children,
-    A.partitionWithIndex((i) => i === 0 || i === children.length - 1),
-    ({ left: midColumnGroups, right: [startColumnGroup, endColumnGroup] }) => ({
-      startColumnGroup,
-      endColumnGroup,
-      midColumnGroups,
-    })
-  )
+  const vanillaColumn = undefined as any // get the vanilla column ready
 
-  // to start with, how can I simply update the houseGroup
-  // to put a clone of the startColumnGroup
+  pipe(
+    children,
+    A.findFirst((x) =>
+      direction === 1 ? x.userData.endColumn : x.userData.startColumn
+    ),
+    O.map((x) => {})
+  )
 }
 
 // export const houseToLayout = (house: House): ColumnLayout => {
