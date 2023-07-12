@@ -1,7 +1,6 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
-import { useDebouncedCallback } from "use-debounce"
 import { useSnapshot } from "valtio"
 import scope from "~/design/state/scope"
 import { preTransformsTransients } from "~/design/state/transients/transforms"

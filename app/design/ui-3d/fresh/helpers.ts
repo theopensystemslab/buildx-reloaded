@@ -1,6 +1,14 @@
+import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
+import { findFirst } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
-import { BufferGeometry, BufferGeometryLoader, Group, Mesh } from "three"
+import {
+  BufferGeometry,
+  BufferGeometryLoader,
+  Group,
+  Mesh,
+  Vector3,
+} from "three"
 import { Module } from "../../../../server/data/modules"
 import { ifcTagToElement } from "../../../data/elements"
 import layoutsDB, {
@@ -111,6 +119,11 @@ export const createColumnGroup = ({
     })
   })
 
+  columnGroup.userData.length = gridGroups[0].modules.reduce(
+    (acc, v) => acc + v.module.length,
+    0
+  )
+
   return columnGroup
 }
 
@@ -127,6 +140,7 @@ export const layoutToColumns = (layout: ColumnLayout): Group[] =>
       })
       group.position.set(0, 0, z)
       group.userData = {
+        ...group.userData,
         columnIndex,
         length,
         endColumn,
@@ -157,19 +171,63 @@ export const getFirstHouseLayout = () =>
 export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   const { children } = houseGroup
 
-  const levelTypes = pipe(
-    children
-    // write me...
-    // or maybe we put levelTypes on the house group's userData?
-  )
+  const levelTypes: string[] = houseGroup.userData.levelTypes
+  const systemId: string = houseGroup.userData.systemId
+  const columnGroupCount = houseGroup.userData.columnGroupCount
 
-  pipe(
-    children,
-    A.findFirst((x) =>
-      direction === 1 ? x.userData.endColumn : x.userData.startColumn
-    ),
-    O.map((x) => {})
-  )
+  const vanillaColumn =
+    vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
+
+  const vanillaColumnGroup = createColumnGroup(vanillaColumn)
+
+  const vanillaColumnLength = vanillaColumnGroup.userData.length
+
+  if (direction === 1) {
+    pipe(
+      children,
+      findFirst((x) => x.userData.columnIndex === columnGroupCount - 1),
+      O.map((endColumn) => {
+        const z0 = endColumn.position.z
+
+        endColumn.position.setZ(z0 + vanillaColumnLength)
+        // endColumn.updateMatrix()
+
+        invalidate()
+      })
+    )
+  } else if (direction === -1) {
+    pipe(
+      children,
+      findFirst((x) => x.userData.columnIndex === 1),
+      O.map((secondColumn) => secondColumn.position.z),
+      O.chain((_z0_uhh_wat) =>
+        pipe(
+          children,
+          findFirst((x) => x.userData.columnIndex === 0),
+          O.map((startColumn) => {
+            const z0 = startColumn.position.z
+            startColumn.position.setZ(z0 - vanillaColumnLength)
+          })
+        )
+      )
+    )
+  }
+
+  // vanillaColumnGroup.position.set(
+  //   0,
+  //   0,
+  //   direction === 1 ? endColumnStartZ.value : startColumnEndZ.value
+  // )
+
+  // houseGroup.add(vanillaColumnGroup)
+
+  // pipe(
+  //   children,
+  //   A.findFirst((x) =>
+  //     direction === 1 ? x.userData.endColumn : x.userData.startColumn
+  //   ),
+  //   O.map((x) => {})
+  // )
 }
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
@@ -194,6 +252,7 @@ export const createHouseGroup = async (house: House) => {
     houseGroup.userData = {
       ...house,
       levelTypes: houseLayoutToLevelTypes(houseLayout),
+      columnGroupCount: columnGroups.length,
     }
     houseGroup.add(...columnGroups)
     return houseGroup

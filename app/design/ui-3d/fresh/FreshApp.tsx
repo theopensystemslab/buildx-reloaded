@@ -1,8 +1,8 @@
 import { invalidate } from "@react-three/fiber"
-import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
 import { useEffect, useRef } from "react"
+import { useKey } from "react-use"
 import { Group, Vector3 } from "three"
 import userDB, { House } from "../../../db/user"
 import { A } from "../../../utils/functions"
@@ -11,17 +11,14 @@ import {
   useAddHouseIntentListener,
   useAddHouseListener,
 } from "../../state/events/houses"
-import { createHouseGroup } from "./helpers"
+import XZPlane from "../XZPlane"
+import YPlane from "../YPlane"
+import { createHouseGroup, insertVanillaColumn } from "./helpers"
+
+let houseGroups: Record<string, Group> = {}
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
-
-  const houseGroupRefs = useRef<Group[]>([])
-
-  // forget this for now, just useKey
-  const bindAll = useGesture({
-    onClick: console.log,
-  }) as any
 
   const cleanup = () => {
     rootRef.current?.clear()
@@ -34,6 +31,7 @@ const FreshApp = () => {
     invalidate()
 
     userDB.houses.put(house)
+    houseGroups[house.id] = houseGroup
   }
 
   const init = () => {
@@ -74,7 +72,21 @@ const FreshApp = () => {
 
   useAddHouseListener(addHouse)
 
-  return <group ref={rootRef} {...bindAll()}></group>
+  const bindAll = () => undefined as any
+
+  useKey("v", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
+      insertVanillaColumn(houseGroup, 1)
+      insertVanillaColumn(houseGroup, -1)
+    }
+  })
+
+  return (
+    <group ref={rootRef} {...bindAll()}>
+      <XZPlane />
+      <YPlane />
+    </group>
+  )
 }
 
 export default FreshApp
