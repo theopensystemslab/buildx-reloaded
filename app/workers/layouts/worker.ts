@@ -7,11 +7,11 @@ import produce from "immer"
 import { Module } from "../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
-  LayoutKey,
+  HouseLayoutsKey,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
-  serializeLayoutKey,
+  getHouseLayoutsKey,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import { A, O } from "../../utils/functions"
@@ -20,7 +20,7 @@ import { syncModels } from "./models"
 import { createVanillaModuleGetter } from "./vanilla"
 
 let modulesCache: LastFetchStamped<Module>[] = []
-let layoutsQueue: LayoutKey[] = []
+let layoutsQueue: HouseLayoutsKey[] = []
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -282,7 +282,7 @@ export const splitColumns = (layout: ColumnLayout) =>
     })
   )
 
-const processLayout = async ({ systemId, dnas }: LayoutKey) => {
+const processLayout = async ({ systemId, dnas }: HouseLayoutsKey) => {
   const modules = pipe(
     dnas,
     A.filterMap((dna) =>
@@ -298,11 +298,10 @@ const processLayout = async ({ systemId, dnas }: LayoutKey) => {
 
   const layout = modulesToColumnLayout(modules)
 
-  const layoutsKey = serializeLayoutKey({ systemId, dnas })
-
   layoutsDB.houseLayouts.put({
     layout,
-    layoutsKey,
+    systemId,
+    dnas,
   })
 
   const {
@@ -342,8 +341,14 @@ const processLayout = async ({ systemId, dnas }: LayoutKey) => {
         )
     ),
     O.map((gridGroups) => {
+      const levelTypes = pipe(
+        gridGroups,
+        A.map((gridGroup) => gridGroup.levelType)
+      )
+
       layoutsDB.vanillaColumns.put({
-        layoutsKey,
+        systemId,
+        levelTypes,
         vanillaColumn: {
           gridGroups,
           length: gridGroups[0].length,
@@ -377,11 +382,11 @@ if (!isSSR()) {
   })
 }
 
-const postLayout = (key: LayoutKey) => {
+const postLayout = (key: HouseLayoutsKey) => {
   layoutsQueue.push(key)
 }
 
-const postLayouts = (keys: LayoutKey[]) => {
+const postLayouts = (keys: HouseLayoutsKey[]) => {
   keys.map(postLayout)
 }
 
@@ -418,12 +423,12 @@ const processZStretchLayout = async ({
   direction,
   i,
 }: {
-  layoutKey: LayoutKey
+  layoutKey: HouseLayoutsKey
   direction: number
   i: number
 }) => {
   const { systemId } = layoutKey
-  const strLayoutKey = serializeLayoutKey(layoutKey)
+  const strLayoutKey = getHouseLayoutsKey(layoutKey)
   const layout = await layoutsDB.houseLayouts.get(strLayoutKey)
   if (!layout) {
     console.log(`no layout for ${strLayoutKey}`)

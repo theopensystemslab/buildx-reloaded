@@ -11,8 +11,8 @@ import { usePadColumn } from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
   HouseModuleIdentifier,
-  LayoutKey,
-  serializeLayoutKey,
+  HouseLayoutsKey,
+  getHouseLayoutsKey,
 } from "../../db/layouts"
 import { isSSR } from "../../utils/next"
 import { getLayoutsWorker } from "../../workers"
@@ -24,7 +24,8 @@ export const layouts = proxy<
 
 if (!isSSR()) {
   liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
-    for (let { layoutsKey, layout } of dbLayouts) {
+    for (let { systemId, dnas, layout } of dbLayouts) {
+      const layoutsKey = getHouseLayoutsKey({ systemId, dnas })
       if (!(layoutsKey in layouts)) {
         layouts[layoutsKey] = ref(layout)
       }
@@ -32,9 +33,9 @@ if (!isSSR()) {
   })
 }
 
-export const useDnasLayout = (layoutsKey: LayoutKey): ColumnLayout => {
+export const useDnasLayout = (layoutsKey: HouseLayoutsKey): ColumnLayout => {
   const snap = useSnapshot(layouts) as typeof layouts
-  const serialKey = serializeLayoutKey(layoutsKey)
+  const serialKey = getHouseLayoutsKey(layoutsKey)
   const maybeLayout: ColumnLayout | undefined = snap?.[serialKey]
 
   return suspend(async () => {
@@ -77,7 +78,7 @@ export const useColumnMatrix = (houseId: string) => {
   const { systemId, dnas } = useHouse(houseId)
   const layoutsSnap = useSnapshot(layouts) as typeof layouts
   return columnLayoutToMatrix(
-    layoutsSnap[serializeLayoutKey({ systemId, dnas })]
+    layoutsSnap[getHouseLayoutsKey({ systemId, dnas })]
   )
 }
 

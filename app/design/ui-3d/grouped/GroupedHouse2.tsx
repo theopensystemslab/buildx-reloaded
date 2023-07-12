@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef } from "react"
 import { useKey } from "react-use"
 import { Box3, Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { LayoutKey, serializeLayoutKey } from "../../../db/layouts"
+import { HouseLayoutsKey, getHouseLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { A, RA } from "../../../utils/functions"
 import {
@@ -37,7 +37,7 @@ const GroupedHouse2 = (props: Props) => {
   const { systemId, id: houseId, position, rotation } = house
   const dnas = [...house.dnas]
 
-  const layoutKey: LayoutKey = { systemId, dnas }
+  const layoutKey: HouseLayoutsKey = { systemId, dnas }
 
   const translationMatrix = useMemo(() => {
     const m = new Matrix4()
@@ -173,7 +173,7 @@ const GroupedHouse2 = (props: Props) => {
   useHouseMaterialOps({
     houseId,
     ref: rootRef,
-    layoutsKey: serializeLayoutKey({ systemId, dnas }),
+    layoutsKey: getHouseLayoutsKey({ systemId, dnas }),
   })
 
   const startColumnRef = useRef<Group>(null!)
@@ -188,7 +188,7 @@ const GroupedHouse2 = (props: Props) => {
   useKey(
     "l",
     () => {
-      const vanillaColumn = vanillaColumns[serializeLayoutKey(layoutKey)]
+      const vanillaColumn = vanillaColumns[getHouseLayoutsKey(layoutKey)]
 
       setHouse({
         ...house,

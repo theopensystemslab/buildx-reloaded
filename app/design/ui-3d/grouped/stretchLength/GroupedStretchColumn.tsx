@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { useEffect, useRef } from "react"
 import { Group } from "three"
 import { RA } from "~/utils/functions"
-import { GridGroup, LayoutKey } from "../../../../db/layouts"
+import { GridGroup, HouseLayoutsKey } from "../../../../db/layouts"
 import { getLayoutsWorker } from "../../../../workers"
 import { useZStretchHouseListener } from "../../../state/events"
 import GroupedStretchModule from "./GroupedStretchModule"
@@ -16,7 +16,7 @@ type Props = {
   columnZ: number
   columnLength: number
   i: number
-  layoutKey: LayoutKey
+  layoutKey: HouseLayoutsKey
 }
 
 const GroupedStretchColumn = (props: Props) => {

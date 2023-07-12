@@ -52,20 +52,30 @@ export type SystemHouseModuleIdentifier = HouseModuleIdentifier & {
 
 export type ColumnLayout = Array<PositionedColumn>
 
-export type ParsedModel = {
+export type IndexedModel = LastFetchStamped<{
   speckleBranchUrl: string
   geometries: any
   systemId: string
+}>
+
+export type HouseLayoutsKey = {
+  systemId: string
+  dnas: string[]
+}
+
+export const getHouseLayoutsKey = ({ systemId, dnas }: HouseLayoutsKey) =>
+  `${systemId}:${dnas}`
+
+export const invertHouseLayoutsKey = (key: string): HouseLayoutsKey => {
+  const [systemId, dnasString] = key.split(":")
+  const dnas = dnasString.split(",")
+  return { systemId, dnas }
 }
 
 export type IndexedLayout = {
-  layoutsKey: string
-  layout: ColumnLayout
-}
-
-export type LayoutKey = {
   systemId: string
   dnas: string[]
+  layout: ColumnLayout
 }
 
 export type IndexedVanillaModule = {
@@ -80,15 +90,29 @@ export type IndexedVanillaModule = {
 export type VanillaColumn = Omit<PositionedColumn, "z" | "columnIndex">
 
 export type IndexedVanillaColumn = {
-  layoutsKey: string
+  systemId: string
+  levelTypes: string[]
   vanillaColumn: VanillaColumn
 }
 
-export const serializeLayoutKey = ({ systemId, dnas }: LayoutKey) =>
-  `${systemId}:${dnas}`
+export type VanillaColumnsKey = {
+  systemId: string
+  levelTypes: string[]
+}
+
+export const getVanillaColumnsKey = ({
+  systemId,
+  levelTypes,
+}: VanillaColumnsKey): string => `${systemId}:${levelTypes}`
+
+export const invertVanillaColumnsKey = (key: string): VanillaColumnsKey => {
+  const [systemId, levelTypesString] = key.split(":")
+  const levelTypes = levelTypesString.split(",")
+  return { systemId, levelTypes }
+}
 
 class LayoutsDatabase extends Dexie {
-  models: Dexie.Table<LastFetchStamped<ParsedModel>, string>
+  models: Dexie.Table<IndexedModel, string>
   houseLayouts: Dexie.Table<IndexedLayout, string>
   vanillaModules: Dexie.Table<IndexedVanillaModule, string>
   vanillaColumns: Dexie.Table<IndexedVanillaColumn, string>
@@ -97,11 +121,11 @@ class LayoutsDatabase extends Dexie {
     super("LayoutsDatabase")
     this.version(1).stores({
       models: "speckleBranchUrl,systemId",
-      layouts: "layoutsKey",
+      houseLayouts: "[systemId+dnas]",
       vanillaModules: "[systemId+sectionType+positionType+levelType+gridType]",
-      vanillaColumns: "layoutsKey",
+      vanillaColumns: "[systemId+levelTypes]",
     })
-    this.houseLayouts = this.table("layouts")
+    this.houseLayouts = this.table("houseLayouts")
     this.models = this.table("models")
     this.vanillaModules = this.table("vanillaModules")
     this.vanillaColumns = this.table("vanillaColumns")

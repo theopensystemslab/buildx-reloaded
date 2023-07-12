@@ -6,7 +6,11 @@ import { ifcTagToElement } from "../../../data/elements"
 import layoutsDB, {
   ColumnLayout,
   GridGroup,
+  getHouseLayoutsKey,
   VanillaColumn,
+  getVanillaColumnsKey,
+  VanillaColumnsKey,
+  invertVanillaColumnsKey,
 } from "../../../db/layouts"
 import systemsDB from "../../../db/systems"
 import { A, O, R, S } from "../../../utils/functions"
@@ -15,11 +19,17 @@ import { getMaterial } from "./systems"
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}
 
+const getVanillaColumn = ({ systemId, levelTypes }: VanillaColumnsKey) => {
+  const key = getVanillaColumnsKey({ systemId, levelTypes })
+  return vanillaColumns[key]
+}
+
 liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
   (dbVanillaColumns) => {
     for (let dbVanillaColumn of dbVanillaColumns) {
-      const { layoutsKey, vanillaColumn } = dbVanillaColumn
-      vanillaColumns[layoutsKey] = vanillaColumn
+      const { systemId, levelTypes, vanillaColumn } = dbVanillaColumn
+      vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })] =
+        vanillaColumn
     }
   }
 )
@@ -128,8 +138,11 @@ export let houseLayouts: Record<string, ColumnLayout> = {}
 
 liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   (dbHouseLayouts) => {
-    for (let { layoutsKey, layout } of dbHouseLayouts)
-      houseLayouts[layoutsKey] = layout
+    for (let { systemId, dnas, layout } of dbHouseLayouts) {
+      houseLayouts[getHouseLayoutsKey({ systemId, dnas })] = layout
+    }
+
+    console.log(houseLayouts)
   }
 )
 
@@ -144,7 +157,11 @@ export const getFirstHouseLayout = () =>
 export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   const { children } = houseGroup
 
-  const vanillaColumn = undefined as any // get the vanilla column ready
+  const levelTypes = pipe(
+    children
+    // write me...
+    // or maybe we put levelTypes on the house group's userData?
+  )
 
   pipe(
     children,

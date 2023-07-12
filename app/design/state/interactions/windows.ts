@@ -9,7 +9,7 @@ import { getSide, Side } from "~/design/state/camera"
 import { layouts } from "~/design/state/layouts"
 import siteCtx from "~/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
-import { HouseModuleIdentifier, serializeLayoutKey } from "../../../db/layouts"
+import { HouseModuleIdentifier, getHouseLayoutsKey } from "../../../db/layouts"
 import houses from "../houses"
 import { columnLayoutToDnas } from "../../../workers/layouts/worker"
 
@@ -28,7 +28,7 @@ export const useWindowOptions = ({
   options: WindowTypeOption[]
   selected: WindowTypeOption["value"]
 } => {
-  const layoutsKey = serializeLayoutKey({
+  const layoutsKey = getHouseLayoutsKey({
     systemId: houses[houseId].systemId,
     dnas: houses[houseId].dnas,
   })

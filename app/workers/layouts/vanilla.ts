@@ -109,7 +109,7 @@ export const getIndexedVanillaModule = ({
 
 liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
   for (let dbLayout of dbLayouts) {
-    const { layoutsKey } = dbLayout
+    // const { layoutsKey } = dbLayout
   }
 })
 

@@ -15,7 +15,7 @@ import { useHousePreviews } from "./previews"
 import settings from "./settings"
 import siteCtx from "./siteCtx"
 import { postTransformsTransients } from "./transients/transforms"
-import { LayoutKey } from "../../db/layouts"
+import { HouseLayoutsKey } from "../../db/layouts"
 
 const getMaterialHash = ({
   systemId,

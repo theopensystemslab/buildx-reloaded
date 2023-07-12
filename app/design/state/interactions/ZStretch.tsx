@@ -6,9 +6,9 @@ import { suspend } from "suspend-react"
 import { Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import layoutsDB, {
-  LayoutKey,
+  HouseLayoutsKey,
   PositionedColumn,
-  serializeLayoutKey,
+  getHouseLayoutsKey,
 } from "../../../db/layouts"
 import { A, NEA } from "../../../utils/functions"
 import { floor, max, round, sign } from "../../../utils/math"
@@ -27,7 +27,7 @@ import { vanillaColumns } from "../vanilla"
 
 type Props = {
   houseId: string
-  layoutKey: LayoutKey
+  layoutKey: HouseLayoutsKey
   reactHouseMatrix: Matrix4
   width: number
   height: number
@@ -54,7 +54,7 @@ const ZStretch = ({
 }: Props) => {
   console.log("ZStretch")
   const { systemId } = layoutKey
-  const strLayoutKey = serializeLayoutKey(layoutKey)
+  const strLayoutKey = getHouseLayoutsKey(layoutKey)
 
   const vanillaColumn = suspend(async () => {
     if (strLayoutKey in vanillaColumns) {

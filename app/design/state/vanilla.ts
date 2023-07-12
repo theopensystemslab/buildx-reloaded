@@ -4,7 +4,11 @@ import { pipe } from "fp-ts/lib/function"
 import { proxy } from "valtio"
 import { A, all, O, Ord, RA, S, someOrError } from "~/utils/functions"
 import { useSystemModules } from "../../data/modules"
-import layoutsDB, { PositionedRow, VanillaColumn } from "../../db/layouts"
+import layoutsDB, {
+  getVanillaColumnsKey,
+  PositionedRow,
+  VanillaColumn,
+} from "../../db/layouts"
 import { isSSR } from "../../utils/next"
 
 export const vanillaModules = proxy<Record<string, string>>({})
@@ -38,8 +42,9 @@ if (!isSSR()) {
 if (!isSSR()) {
   liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
     (dbVanillaColumns) => {
-      for (let { layoutsKey, vanillaColumn } of dbVanillaColumns) {
-        vanillaColumns[layoutsKey] = vanillaColumn
+      for (let { systemId, levelTypes, vanillaColumn } of dbVanillaColumns) {
+        const vanillaColumnsKey = getVanillaColumnsKey({ systemId, levelTypes })
+        vanillaColumns[vanillaColumnsKey] = vanillaColumn
       }
     }
   )
