@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef } from "react"
 import { useKey } from "react-use"
 import { Box3, Group, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { HouseLayoutsKey, getHouseLayoutsKey } from "../../../db/layouts"
+import { getHouseLayoutsKey, HouseLayoutsKey } from "../../../db/layouts"
 import { House } from "../../../db/user"
 import { A, RA } from "../../../utils/functions"
 import {
@@ -16,15 +16,13 @@ import {
   dispatchMoveHouse,
   useMoveHouseIntentListener,
   useMoveHouseListener,
-} from "../../state/events"
+} from "../../state/events/moveRotate"
 import { useHouseMaterialOps } from "../../state/hashedMaterials"
-import houses, { useSetHouse } from "../../state/houses"
-import ZStretch from "../../state/interactions/ZStretch"
+import { useSetHouse } from "../../state/houses"
 import { useDnasLayout } from "../../state/layouts"
 import { useTransformabilityBooleans } from "../../state/siteCtx"
 import { vanillaColumns } from "../../state/vanilla"
 import RotateHandles from "../handles/RotateHandles"
-import StretchHandle from "../handles/StretchHandle"
 import GroupedColumn from "./GroupedColumn"
 
 type Props = {

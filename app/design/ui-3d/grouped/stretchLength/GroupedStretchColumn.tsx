@@ -5,7 +5,7 @@ import { Group } from "three"
 import { RA } from "~/utils/functions"
 import { GridGroup, HouseLayoutsKey } from "../../../../db/layouts"
 import { getLayoutsWorker } from "../../../../workers"
-import { useZStretchHouseListener } from "../../../state/events"
+import { useZStretchHouseListener } from "../../../state/events/stretch"
 import GroupedStretchModule from "./GroupedStretchModule"
 
 type Props = {

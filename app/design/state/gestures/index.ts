@@ -10,11 +10,11 @@ import { useSubscribeKey } from "~/utils/hooks"
 import { isMesh, useRotations } from "~/utils/three"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
+import { dispatchMoveHouseIntent } from "../events/moveRotate"
 import {
-  dispatchMoveHouseIntent,
   dispatchXStretchHouseIntent,
   dispatchZStretchHouseIntent,
-} from "../events"
+} from "../events/stretch"
 import { openMenu } from "../menu"
 import pointer from "../pointer"
 import siteCtx, { downMode, EditModeEnum } from "../siteCtx"

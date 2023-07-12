@@ -8,6 +8,7 @@ import { ref } from "valtio"
 import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
 import { useCameraGroundRaycast } from "../state/camera"
+import { dispatchAddHouseIntent } from "../state/events/houses"
 import houses from "../state/houses"
 import HouseThumbnail from "./HouseThumbnail"
 
@@ -72,23 +73,20 @@ const SiteSidebar = ({ open, close }: Props) => {
                       key={index}
                       houseType={houseType}
                       onAdd={() => {
-                        const id = nanoid()
-                        const position = ref(
-                          cameraGroundRaycast() ?? new Vector3(0, 0, 0)
-                        )
+                        dispatchAddHouseIntent(houseType)
 
-                        houses[id] = ref({
-                          id,
-                          houseTypeId: houseType.id,
-                          systemId: houseType.systemId,
-                          position,
-                          rotation: 0,
-                          dnas: ref(houseType.dnas),
-                          modifiedMaterials: {},
-                          friendlyName: `Building ${
-                            Object.keys(houses).length + 1
-                          }`,
-                        })
+                        // dispatchAddHouseIntent({
+                        //   id,
+                        //   houseTypeId: houseType.id,
+                        //   systemId: houseType.systemId,
+                        //   position,
+                        //   rotation: 0,
+                        //   dnas: houseType.dnas,
+                        //   modifiedMaterials: {},
+                        //   friendlyName: `Building ${
+                        //     Object.keys(houses).length + 1
+                        //   }`,
+                        // })
 
                         close()
                       }}

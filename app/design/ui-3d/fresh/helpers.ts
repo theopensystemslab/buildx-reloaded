@@ -13,7 +13,9 @@ import layoutsDB, {
   invertVanillaColumnsKey,
 } from "../../../db/layouts"
 import systemsDB from "../../../db/systems"
+import { House } from "../../../db/user"
 import { A, O, R, S } from "../../../utils/functions"
+import { getLayoutsWorker } from "../../../workers"
 import { getMaterial } from "./systems"
 
 // serialized layout key : column
@@ -141,8 +143,6 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
     for (let { systemId, dnas, layout } of dbHouseLayouts) {
       houseLayouts[getHouseLayoutsKey({ systemId, dnas })] = layout
     }
-
-    console.log(houseLayouts)
   }
 )
 
@@ -170,6 +170,47 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
     ),
     O.map((x) => {})
   )
+}
+
+export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
+  pipe(
+    columnLayout,
+    A.head,
+    O.map(({ gridGroups }) =>
+      pipe(
+        gridGroups,
+        A.map(({ levelType }) => levelType)
+      )
+    ),
+    O.getOrElse((): string[] => [])
+  )
+
+export const createHouseGroup = async (house: House) => {
+  const { systemId, dnas } = house
+
+  const houseLayoutToHouseGroup = async (houseLayout: ColumnLayout) => {
+    const columnGroups = layoutToColumns(houseLayout)
+    const houseGroup = new Group()
+    houseGroup.userData = {
+      ...house,
+      levelTypes: houseLayoutToLevelTypes(houseLayout),
+    }
+    houseGroup.add(...columnGroups)
+    return houseGroup
+  }
+
+  const houseGroup = pipe(
+    houseLayouts,
+    R.lookup(getHouseLayoutsKey({ systemId, dnas })),
+    O.match(async () => {
+      const layoutsWorker = getLayoutsWorker()
+      if (!layoutsWorker) throw new Error(`no layouts worker`)
+      const houseLayout = await layoutsWorker.processLayout({ systemId, dnas })
+      return houseLayoutToHouseGroup(houseLayout)
+    }, houseLayoutToHouseGroup)
+  )
+
+  return houseGroup
 }
 
 // export const houseToLayout = (house: House): ColumnLayout => {

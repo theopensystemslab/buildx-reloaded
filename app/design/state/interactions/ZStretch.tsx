@@ -21,7 +21,7 @@ import {
   dispatchZStretchHouse,
   useZStretchHouseIntentListener,
   useZStretchHouseListener,
-} from "../events"
+} from "../events/stretch"
 import houses, { useSetHouse } from "../houses"
 import { vanillaColumns } from "../vanilla"
 
