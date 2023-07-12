@@ -1,22 +1,17 @@
+import { invalidate } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
+import { nanoid } from "nanoid"
 import { useEffect, useRef } from "react"
 import { Group, Vector3 } from "three"
-import { getHouseLayoutsKey } from "../../../db/layouts"
-import userDB from "../../../db/user"
-import { A, O, R } from "../../../utils/functions"
+import userDB, { House } from "../../../db/user"
+import { A } from "../../../utils/functions"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
   useAddHouseListener,
 } from "../../state/events/houses"
-import {
-  createHouseGroup,
-  getFirstHouseLayout,
-  houseLayouts,
-  layoutToColumns,
-} from "./helpers"
-import { nanoid } from "nanoid"
+import { createHouseGroup } from "./helpers"
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -32,36 +27,21 @@ const FreshApp = () => {
     rootRef.current?.clear()
   }
 
-  const init = () => {
+  const addHouse = async (house: House) => {
     if (!rootRef.current) return
+    const houseGroup = await createHouseGroup(house)
+    rootRef.current.add(houseGroup)
+    invalidate()
 
-    // get houses instead
+    userDB.houses.put(house)
+  }
 
+  const init = () => {
     userDB.houses.toArray().then((houses) => {
-      pipe(
-        houses,
-        A.map(async (house) => {
-          const houseGroup = await createHouseGroup(house)
-          rootRef.current!.add(houseGroup)
-          console.log(`added house ${house.id}`)
-        })
-        // A.map(({ systemId, dnas }) =>
-        //   pipe(
-        //     houseLayouts,
-        //     R.lookup(getHouseLayoutsKey({ systemId, dnas })),
-        //     O.map((layout) =>
-        //       pipe(
-        //         layout,
-        //         layoutToColumns,
-        //         A.map((columnGroup) => {
-        //           rootRef.current!.add(columnGroup)
-        //         })
-        //       )
-        //     )
-        //   )
-        // )
-      )
+      pipe(houses, A.map(addHouse))
     })
+
+    invalidate()
 
     return cleanup
   }
@@ -92,12 +72,7 @@ const FreshApp = () => {
     })
   })
 
-  useAddHouseListener(async (house) => {
-    if (!rootRef.current) return
-    const houseGroup = await createHouseGroup(house)
-    rootRef.current.add(houseGroup)
-    console.log(`added house ${house.id}`)
-  })
+  useAddHouseListener(addHouse)
 
   return <group ref={rootRef} {...bindAll()}></group>
 }
