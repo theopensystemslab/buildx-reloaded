@@ -1,4 +1,3 @@
-import { Dodecahedron } from "@react-three/drei"
 import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
@@ -11,6 +10,7 @@ import {
   Object3D,
   Vector3,
 } from "three"
+import { OBB } from "three-stdlib"
 import { Module } from "../../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
@@ -320,6 +320,19 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
     O.getOrElse((): string[] => [])
   )
 
+export const createHouseDimensions = (houseGroup: Group) => {
+  houseGroup.userData.obb = new OBB()
+}
+
+export const updateHouseDimensions = (houseGroup: Group) => {
+  const { children } = houseGroup
+  houseGroup.userData.length = pipe(
+    children,
+    A.reduce(0, (acc, v) => acc + v.userData.length)
+  )
+  console.log(houseGroup.userData)
+}
+
 export const createHouseGroup = async (house: House) => {
   const { systemId, dnas } = house
 
@@ -332,6 +345,8 @@ export const createHouseGroup = async (house: House) => {
       columnGroupCount: columnGroups.length,
     }
     houseGroup.add(...columnGroups)
+    createHouseDimensions(houseGroup)
+    updateHouseDimensions(houseGroup)
     return houseGroup
   }
 

@@ -6,6 +6,8 @@ import { useKey } from "react-use"
 import { Group, Vector3 } from "three"
 import userDB, { House } from "../../../db/user"
 import { A } from "../../../utils/functions"
+import { PI } from "../../../utils/math"
+import { yAxis } from "../../../utils/three"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
@@ -17,6 +19,7 @@ import {
   createHouseGroup,
   insertVanillaColumn,
   subtractPenultimateColumn,
+  updateHouseDimensions,
 } from "./helpers"
 
 let houseGroups: Record<string, Group> = {}
@@ -81,26 +84,45 @@ const FreshApp = () => {
   useKey("z", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, 1)
+      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("Z", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, -1)
+      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("d", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       subtractPenultimateColumn(houseGroup, 1)
+      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("D", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       subtractPenultimateColumn(houseGroup, -1)
+      updateHouseDimensions(houseGroup)
     }
   })
+
+  useKey("t", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
+      houseGroup.position.add(new Vector3(1, 0, 1))
+      invalidate()
+    }
+  })
+
+  useKey("r", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
+      houseGroup.rotateOnAxis(yAxis, PI / 8)
+      invalidate()
+    }
+  })
+
   return (
     <group ref={rootRef} {...bindAll()}>
       {/* <XZPlane />
