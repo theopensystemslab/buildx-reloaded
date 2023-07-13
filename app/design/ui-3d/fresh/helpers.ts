@@ -216,13 +216,8 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   } else if (direction === -1) {
     pipe(
       children,
-      A.sort(
-        pipe(
-          Num.Ord,
-          Ord.contramap((o: Object3D) => o.userData.columnIndex)
-        )
-      ),
-      ([startColumnGroup, ...otherColumnGroups]) => {
+      A.partition((x) => x.userData.columnIndex !== 0),
+      ({ left: [startColumnGroup], right: otherColumnGroups }) => {
         startColumnGroup.position.add(new Vector3(0, 0, -vanillaColumnLength))
 
         for (let otherColumnGroup of otherColumnGroups) {
