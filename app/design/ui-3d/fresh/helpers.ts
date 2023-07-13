@@ -1,35 +1,36 @@
 import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
-import { findFirst } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import {
   BufferGeometry,
   BufferGeometryLoader,
   Group,
   Mesh,
+  MeshStandardMaterial,
+  Object3D,
   Vector3,
 } from "three"
 import { Module } from "../../../../server/data/modules"
-import { ifcTagToElement } from "../../../data/elements"
 import layoutsDB, {
   ColumnLayout,
-  GridGroup,
   getHouseLayoutsKey,
-  VanillaColumn,
   getVanillaColumnsKey,
+  GridGroup,
+  VanillaColumn,
   VanillaColumnsKey,
-  invertVanillaColumnsKey,
 } from "../../../db/layouts"
-import systemsDB from "../../../db/systems"
 import { House } from "../../../db/user"
-import { A, O, R, S } from "../../../utils/functions"
+import { A, Num, O, Ord, R, S } from "../../../utils/functions"
 import { getLayoutsWorker } from "../../../workers"
 import { getMaterial } from "./systems"
 
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}
 
-const getVanillaColumn = ({ systemId, levelTypes }: VanillaColumnsKey) => {
+export const getVanillaColumn = ({
+  systemId,
+  levelTypes,
+}: VanillaColumnsKey) => {
   const key = getVanillaColumnsKey({ systemId, levelTypes })
   return vanillaColumns[key]
 }
@@ -77,7 +78,7 @@ export const getGeometry = ({
 }) => models[speckleBranchUrl][ifcTag]
 
 export const moduleToGroup = ({
-  module: { speckleBranchUrl, systemId },
+  module: { speckleBranchUrl, systemId, length, dna },
   endColumn = false,
 }: {
   module: Module
@@ -86,13 +87,20 @@ export const moduleToGroup = ({
   const moduleGroup = new Group()
   const taggedModelGeometries = models[speckleBranchUrl]
   for (let ifcTag of Object.keys(taggedModelGeometries)) {
-    const mesh = new Mesh(
-      getGeometry({ speckleBranchUrl, ifcTag }),
-      getMaterial({ systemId, ifcTag, houseId: "" })
-    )
+    const geometry = getGeometry({ speckleBranchUrl, ifcTag })
+    const material = getMaterial({
+      systemId,
+      ifcTag,
+      houseId: "",
+    }) as MeshStandardMaterial
+    const mesh = new Mesh(geometry, material)
     mesh.castShadow = true
     moduleGroup.add(mesh)
   }
+
+  moduleGroup.userData.length = length
+  moduleGroup.userData.systemId = systemId
+  moduleGroup.userData.dna = dna
 
   return moduleGroup
 }
@@ -123,6 +131,8 @@ export const createColumnGroup = ({
     (acc, v) => acc + v.module.length,
     0
   )
+  columnGroup.userData.startColumn = false
+  columnGroup.userData.endColumn = false
 
   return columnGroup
 }
@@ -142,7 +152,6 @@ export const layoutToColumns = (layout: ColumnLayout): Group[] =>
       group.userData = {
         ...group.userData,
         columnIndex,
-        length,
         endColumn,
         startColumn,
       }
@@ -185,12 +194,21 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   if (direction === 1) {
     pipe(
       children,
-      findFirst((x) => x.userData.columnIndex === columnGroupCount - 1),
-      O.map((endColumn) => {
-        const z0 = endColumn.position.z
+      A.findFirst((x) => x.userData.columnIndex === columnGroupCount - 1),
+      O.map((endColumnGroup) => {
+        vanillaColumnGroup.position.setZ(
+          endColumnGroup.position.z + vanillaColumnLength / 2
+        )
+        houseGroup.add(vanillaColumnGroup)
 
-        endColumn.position.setZ(z0 + vanillaColumnLength)
-        // endColumn.updateMatrix()
+        endColumnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
+
+        vanillaColumnGroup.userData.columnIndex =
+          endColumnGroup.userData.columnIndex
+
+        endColumnGroup.userData.columnIndex++
+
+        houseGroup.userData.columnGroupCount = columnGroupCount + 1
 
         invalidate()
       })
@@ -198,36 +216,33 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   } else if (direction === -1) {
     pipe(
       children,
-      findFirst((x) => x.userData.columnIndex === 1),
-      O.map((secondColumn) => secondColumn.position.z),
-      O.chain((_z0_uhh_wat) =>
+      A.sort(
         pipe(
-          children,
-          findFirst((x) => x.userData.columnIndex === 0),
-          O.map((startColumn) => {
-            const z0 = startColumn.position.z
-            startColumn.position.setZ(z0 - vanillaColumnLength)
-          })
+          Num.Ord,
+          Ord.contramap((o: Object3D) => o.userData.columnIndex)
         )
-      )
+      ),
+      ([startColumnGroup, ...otherColumnGroups]) => {
+        startColumnGroup.position.add(new Vector3(0, 0, -vanillaColumnLength))
+
+        for (let otherColumnGroup of otherColumnGroups) {
+          otherColumnGroup.userData.columnIndex++
+        }
+
+        vanillaColumnGroup.userData.columnIndex = 1
+        vanillaColumnGroup.position.setZ(
+          startColumnGroup.position.z +
+            startColumnGroup.userData.length +
+            vanillaColumnLength / 2
+        )
+        houseGroup.add(vanillaColumnGroup)
+
+        houseGroup.userData.columnGroupCount = columnGroupCount + 1
+
+        invalidate()
+      }
     )
   }
-
-  // vanillaColumnGroup.position.set(
-  //   0,
-  //   0,
-  //   direction === 1 ? endColumnStartZ.value : startColumnEndZ.value
-  // )
-
-  // houseGroup.add(vanillaColumnGroup)
-
-  // pipe(
-  //   children,
-  //   A.findFirst((x) =>
-  //     direction === 1 ? x.userData.endColumn : x.userData.startColumn
-  //   ),
-  //   O.map((x) => {})
-  // )
 }
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
@@ -271,8 +286,3 @@ export const createHouseGroup = async (house: House) => {
 
   return houseGroup
 }
-
-// export const houseToLayout = (house: House): ColumnLayout => {
-
-//   return undefined as any
-// }

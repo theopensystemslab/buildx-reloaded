@@ -77,14 +77,19 @@ const FreshApp = () => {
   useKey("v", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, 1)
+    }
+  })
+
+  useKey("V", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, -1)
     }
   })
 
   return (
     <group ref={rootRef} {...bindAll()}>
-      <XZPlane />
-      <YPlane />
+      {/* <XZPlane />
+      <YPlane /> */}
     </group>
   )
 }
