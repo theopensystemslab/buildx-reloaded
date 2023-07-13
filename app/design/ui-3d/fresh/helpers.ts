@@ -1,3 +1,4 @@
+import { Dodecahedron } from "@react-three/drei"
 import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
@@ -236,6 +237,72 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
 
         invalidate()
       }
+    )
+  }
+}
+
+export const subtractPenultimateColumn = (
+  houseGroup: Group,
+  direction: 1 | -1
+) => {
+  const { children } = houseGroup
+
+  const columnGroupCount: number = houseGroup.userData.columnGroupCount
+
+  if (columnGroupCount <= 3) return
+
+  if (direction === 1) {
+    pipe(
+      children,
+      A.filter((x) => x.userData.columnIndex >= columnGroupCount - 2),
+      A.sort(
+        pipe(
+          Num.Ord,
+          Ord.contramap((x: Object3D) => x.userData.columnIndex)
+        )
+      ),
+      ([penultimateColumnGroup, endColumnGroup]) => {
+        endColumnGroup.position.add(
+          new Vector3(0, 0, -penultimateColumnGroup.userData.length)
+        )
+
+        houseGroup.remove(penultimateColumnGroup)
+
+        houseGroup.userData.columnGroupCount = columnGroupCount - 1
+        endColumnGroup.userData.columnIndex--
+
+        invalidate()
+      }
+    )
+  } else if (direction === -1) {
+    pipe(
+      children,
+      A.partition((x) => x.userData.columnIndex >= 2),
+      ({ left: startColumnGroups, right: otherColumnGroups }) =>
+        pipe(
+          startColumnGroups,
+          A.sort(
+            pipe(
+              Num.Ord,
+              Ord.contramap((x: Object3D) => x.userData.columnIndex)
+            )
+          ),
+          ([startColumnGroup, secondColumnGroup]) => {
+            startColumnGroup.position.add(
+              new Vector3(0, 0, secondColumnGroup.userData.length)
+            )
+
+            houseGroup.remove(secondColumnGroup)
+
+            houseGroup.userData.columnGroupCount = columnGroupCount - 1
+
+            for (let otherColumnGroup of otherColumnGroups) {
+              otherColumnGroup.userData.columnIndex--
+            }
+
+            invalidate()
+          }
+        )
     )
   }
 }

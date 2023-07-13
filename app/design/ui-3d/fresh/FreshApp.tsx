@@ -13,7 +13,11 @@ import {
 } from "../../state/events/houses"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
-import { createHouseGroup, insertVanillaColumn } from "./helpers"
+import {
+  createHouseGroup,
+  insertVanillaColumn,
+  subtractPenultimateColumn,
+} from "./helpers"
 
 let houseGroups: Record<string, Group> = {}
 
@@ -74,18 +78,29 @@ const FreshApp = () => {
 
   const bindAll = () => undefined as any
 
-  useKey("v", () => {
+  useKey("z", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, 1)
     }
   })
 
-  useKey("V", () => {
+  useKey("Z", () => {
     for (let houseGroup of Object.values(houseGroups)) {
       insertVanillaColumn(houseGroup, -1)
     }
   })
 
+  useKey("d", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
+      subtractPenultimateColumn(houseGroup, 1)
+    }
+  })
+
+  useKey("D", () => {
+    for (let houseGroup of Object.values(houseGroups)) {
+      subtractPenultimateColumn(houseGroup, -1)
+    }
+  })
   return (
     <group ref={rootRef} {...bindAll()}>
       {/* <XZPlane />
