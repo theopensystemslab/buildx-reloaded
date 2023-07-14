@@ -12,6 +12,7 @@ import {
   getModeBools,
   useSiteCtx,
 } from "../../state/siteCtx"
+import { dispatchDeleteHouse } from "../../ui-3d/fresh/events/houses"
 import RenameForm from "../../ui/RenameForm"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
@@ -28,6 +29,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
   if (!selected) throw new Error("null selected")
 
+  console.log({ selected })
+
   const props: ContextMenuProps = {
     pageX,
     pageY,
@@ -38,8 +41,13 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     selected,
   }
 
-  const { houseId, columnIndex, levelIndex, gridGroupIndex, elementName } =
-    selected
+  const {
+    houseId,
+    columnIndex,
+    levelIndex,
+    gridGroupIndex,
+    ifcTag: elementName,
+  } = selected
 
   const house = useHouse(houseId)
 
@@ -69,7 +77,10 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   }
 
   const deleteBuilding = () => {
-    delete houses[houseId]
+    dispatchDeleteHouse({
+      id: house.id,
+    })
+    // delete houses[houseId]
     scope.selected = null
 
     if (Object.keys(houses).length === 0) {

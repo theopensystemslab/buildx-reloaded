@@ -1,6 +1,6 @@
 import { proxy, useSnapshot } from "valtio"
 
-const settings = proxy<{
+type AppSettings = {
   mapEnabled: boolean
   sidebar: boolean
   groundPlaneEnabled: boolean
@@ -9,7 +9,9 @@ const settings = proxy<{
     length: boolean
   }
   debug: boolean
-}>({
+}
+
+const settings = proxy<AppSettings>({
   mapEnabled: false,
   sidebar: false,
   groundPlaneEnabled: true,

@@ -1,6 +1,5 @@
-import highlights from "~/design/state/highlights"
 import { useFBO } from "@react-three/drei"
-import { invalidate, useFrame, useThree } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import {
   EffectComposer,
   EffectPass,
@@ -8,7 +7,7 @@ import {
   RenderPass,
 } from "postprocessing"
 import { useEffect, useMemo } from "react"
-import { subscribeKey } from "valtio/utils"
+import { useOutlineEvent } from "../fresh/events/outlines"
 
 export type UseOutlineEffectParams = ConstructorParameters<
   typeof OutlineEffectRaw
@@ -78,16 +77,9 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  const outline = () => {
-    if (highlights.outlined.length > 0) {
-      outlineEffect.selection.set(highlights.outlined)
-    } else {
-      outlineEffect.selection.clear()
-    }
-    invalidate()
-  }
-
-  subscribeKey(highlights, "outlined", outline, true)
+  useOutlineEvent(({ objects }) => {
+    outlineEffect.selection.set(objects)
+  })
 
   // subscribeKey(highlights, "illuminated", () => {
   //   if (highlights.illuminated.length > 0) {

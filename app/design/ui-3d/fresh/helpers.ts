@@ -11,6 +11,7 @@ import {
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
+import { z } from "zod"
 import { Module } from "../../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
@@ -78,10 +79,22 @@ export const getGeometry = ({
   ifcTag: string
 }) => models[speckleBranchUrl][ifcTag]
 
+export const UserDataTypeEnum = z.enum(["HouseElementMesh", "HouseModuleGroup"])
+export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
+
 export const moduleToGroup = ({
-  module: { speckleBranchUrl, systemId, length, dna },
-  endColumn = false,
+  systemId,
+  houseId,
+  columnIndex,
+  levelIndex,
+  gridGroupIndex,
+  module: { speckleBranchUrl, length, dna },
 }: {
+  systemId: string
+  houseId: string
+  columnIndex: number
+  levelIndex: number
+  gridGroupIndex: number
   module: Module
   endColumn?: boolean
 }) => {
@@ -96,9 +109,21 @@ export const moduleToGroup = ({
     }) as MeshStandardMaterial
     const mesh = new Mesh(geometry, material)
     mesh.castShadow = true
+    mesh.userData = {
+      type: UserDataTypeEnum.Enum.HouseElementMesh,
+      systemId,
+      houseId,
+      moduleDna: dna,
+      ifcTag,
+      columnIndex,
+      gridGroupIndex,
+      levelIndex,
+    }
+
     moduleGroup.add(mesh)
   }
 
+  moduleGroup.userData.type = UserDataTypeEnum.Enum.HouseModuleGroup
   moduleGroup.userData.length = length
   moduleGroup.userData.systemId = systemId
   moduleGroup.userData.dna = dna
@@ -107,17 +132,31 @@ export const moduleToGroup = ({
 }
 
 export const createColumnGroup = ({
+  systemId,
+  houseId,
   gridGroups,
+  columnIndex,
   endColumn = false,
 }: {
+  systemId: string
+  houseId: string
   gridGroups: GridGroup[]
+  columnIndex: number
   endColumn?: boolean
 }): Group => {
   const columnGroup = new Group()
 
-  gridGroups.forEach(({ modules, y }) => {
-    modules.forEach(({ z, module }) => {
-      const moduleGroup = moduleToGroup({ module, endColumn })
+  gridGroups.forEach(({ modules, y, levelIndex }) => {
+    modules.forEach(({ z, module, gridGroupIndex }) => {
+      const moduleGroup = moduleToGroup({
+        systemId,
+        houseId,
+        module,
+        endColumn,
+        columnIndex,
+        levelIndex,
+        gridGroupIndex,
+      })
       moduleGroup.scale.set(1, 1, endColumn ? 1 : -1)
       moduleGroup.position.set(
         0,
@@ -138,16 +177,27 @@ export const createColumnGroup = ({
   return columnGroup
 }
 
-export const layoutToColumns = (layout: ColumnLayout): Group[] =>
+export const houseLayoutToColumns = ({
+  systemId,
+  houseId,
+  houseLayout,
+}: {
+  systemId: string
+  houseId: string
+  houseLayout: ColumnLayout
+}): Group[] =>
   pipe(
-    layout,
+    houseLayout,
     A.mapWithIndex((i, { gridGroups, z, columnIndex, length }) => {
       const startColumn = i === 0
-      const endColumn = i === layout.length - 1
+      const endColumn = i === houseLayout.length - 1
 
       const group = createColumnGroup({
+        systemId,
+        houseId,
         gridGroups,
         endColumn,
+        columnIndex,
       })
       group.position.set(0, 0, z)
       group.userData = {
@@ -160,6 +210,18 @@ export const layoutToColumns = (layout: ColumnLayout): Group[] =>
     })
   )
 
+export const createHouseDimensions = (houseGroup: Group) => {
+  houseGroup.userData.obb = new OBB()
+}
+
+export const updateHouseDimensions = (houseGroup: Group) => {
+  const { children } = houseGroup
+  houseGroup.userData.length = pipe(
+    children,
+    A.reduce(0, (acc, v) => acc + v.userData.length)
+  )
+}
+
 export let houseLayouts: Record<string, ColumnLayout> = {}
 
 liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
@@ -169,6 +231,56 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
     }
   }
 )
+
+export const createHouseGroup = async (house: House) => {
+  const { systemId, id: houseId, dnas } = house
+
+  const houseLayoutToHouseGroup = async ({
+    systemId,
+    houseId,
+    houseLayout,
+  }: {
+    systemId: string
+    houseId: string
+    houseLayout: ColumnLayout
+  }) => {
+    const columnGroups = houseLayoutToColumns({
+      systemId,
+      houseId,
+      houseLayout,
+    })
+    const houseGroup = new Group()
+    houseGroup.userData = {
+      ...house,
+      levelTypes: houseLayoutToLevelTypes(houseLayout),
+      columnGroupCount: columnGroups.length,
+    }
+    houseGroup.add(...columnGroups)
+    createHouseDimensions(houseGroup)
+    updateHouseDimensions(houseGroup)
+    return houseGroup
+  }
+
+  const houseGroup = pipe(
+    houseLayouts,
+    R.lookup(getHouseLayoutsKey({ systemId, dnas })),
+    O.match(
+      async () => {
+        const layoutsWorker = getLayoutsWorker()
+        if (!layoutsWorker) throw new Error(`no layouts worker`)
+        const houseLayout = await layoutsWorker.processLayout({
+          systemId,
+          dnas,
+        })
+        return houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
+      },
+      (houseLayout) =>
+        houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
+    )
+  )
+
+  return houseGroup
+}
 
 export const getFirstHouseLayout = () =>
   pipe(
@@ -188,7 +300,12 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   const vanillaColumn =
     vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
 
-  const vanillaColumnGroup = createColumnGroup(vanillaColumn)
+  const vanillaColumnGroup = createColumnGroup({
+    systemId,
+    houseId: houseGroup.userData.houseId,
+    gridGroups: vanillaColumn.gridGroups,
+    columnIndex: -1,
+  })
 
   const vanillaColumnLength = vanillaColumnGroup.userData.length
 
@@ -319,47 +436,3 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
     ),
     O.getOrElse((): string[] => [])
   )
-
-export const createHouseDimensions = (houseGroup: Group) => {
-  houseGroup.userData.obb = new OBB()
-}
-
-export const updateHouseDimensions = (houseGroup: Group) => {
-  const { children } = houseGroup
-  houseGroup.userData.length = pipe(
-    children,
-    A.reduce(0, (acc, v) => acc + v.userData.length)
-  )
-  console.log(houseGroup.userData)
-}
-
-export const createHouseGroup = async (house: House) => {
-  const { systemId, dnas } = house
-
-  const houseLayoutToHouseGroup = async (houseLayout: ColumnLayout) => {
-    const columnGroups = layoutToColumns(houseLayout)
-    const houseGroup = new Group()
-    houseGroup.userData = {
-      ...house,
-      levelTypes: houseLayoutToLevelTypes(houseLayout),
-      columnGroupCount: columnGroups.length,
-    }
-    houseGroup.add(...columnGroups)
-    createHouseDimensions(houseGroup)
-    updateHouseDimensions(houseGroup)
-    return houseGroup
-  }
-
-  const houseGroup = pipe(
-    houseLayouts,
-    R.lookup(getHouseLayoutsKey({ systemId, dnas })),
-    O.match(async () => {
-      const layoutsWorker = getLayoutsWorker()
-      if (!layoutsWorker) throw new Error(`no layouts worker`)
-      const houseLayout = await layoutsWorker.processLayout({ systemId, dnas })
-      return houseLayoutToHouseGroup(houseLayout)
-    }, houseLayoutToHouseGroup)
-  )
-
-  return houseGroup
-}

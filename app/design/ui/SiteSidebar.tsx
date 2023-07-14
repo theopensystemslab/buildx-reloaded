@@ -8,7 +8,7 @@ import { ref } from "valtio"
 import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
 import { useCameraGroundRaycast } from "../state/camera"
-import { dispatchAddHouseIntent } from "../state/events/houses"
+import { dispatchAddHouseIntent } from "../ui-3d/fresh/events/houses"
 import houses from "../state/houses"
 import HouseThumbnail from "./HouseThumbnail"
 

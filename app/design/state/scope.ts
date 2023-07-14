@@ -7,7 +7,7 @@ import { getHouseLayoutsKey } from "../../db/layouts"
 import houses from "./houses"
 
 export type ScopeItem = {
-  elementName: string
+  ifcTag: string
   gridGroupIndex: number
   levelIndex: number
   columnIndex: number
