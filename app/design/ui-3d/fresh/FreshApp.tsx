@@ -138,25 +138,33 @@ const FreshApp = () => {
   useKey("t", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(1, 0, 1))
-      // updateHouseOBB(houseGroup)
+      updateHouseOBB(houseGroup)
       invalidate()
-      console.log(houseGroup)
+    }
+  })
+  useKey("T", () => {
+    for (let houseGroup of getHouseGroups()) {
+      houseGroup.position.add(new Vector3(-1, 0, -1))
+      updateHouseOBB(houseGroup)
+      invalidate()
     }
   })
 
   useKey("r", () => {
     for (let houseGroup of getHouseGroups()) {
-      const houseCenter = houseGroup.position.clone()
-      // .add(new Vector3(0, 0, houseGroup.userData.length / 2))
-
-      // console.log(houseCenter)
-
-      houseGroup.position.sub(houseCenter)
-      houseGroup.position.applyAxisAngle(yAxis, PI / 8) // rotate the POSITION
-      houseGroup.position.add(houseCenter)
       houseGroup.rotateOnAxis(yAxis, PI / 8)
       houseGroup.updateMatrix()
-      // updateHouseOBB(houseGroup)
+      updateHouseOBB(houseGroup)
+
+      invalidate()
+    }
+  })
+
+  useKey("R", () => {
+    for (let houseGroup of getHouseGroups()) {
+      houseGroup.rotateOnAxis(yAxis, -PI / 8)
+      houseGroup.updateMatrix()
+      updateHouseOBB(houseGroup)
 
       invalidate()
     }

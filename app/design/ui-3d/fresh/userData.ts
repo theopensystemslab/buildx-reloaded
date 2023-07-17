@@ -7,10 +7,11 @@ import { z } from "zod"
 // or at certain levels/scopes?
 
 // houseGroup has
-//  -> columnGroups as children has
-//    -> gridGroups as children has
-//      -> moduleGroups as children has
-//        -> elementMeshes as children
+// -> zCenterGroup as singleton child has
+//   -> columnGroups as children has
+//     -> gridGroups as children has
+//       -> moduleGroups as children has
+//         -> elementMeshes as children
 
 export const UserDataTypeEnum = z.enum([
   "HouseGroup",

@@ -248,7 +248,8 @@ export const createHouseGroup = async ({
       houseId,
       houseLayout,
     })
-    const houseGroup = new Group()
+    const topLevelHouseGroup = new Group()
+    const zCenterHouseGroup = new Group()
     const width = houseLayout[0].gridGroups[0].modules[0].module.width
     const height = houseLayout[0].gridGroups.reduce(
       (acc, v) => acc + v.modules[0].module.height,
@@ -278,9 +279,11 @@ export const createHouseGroup = async ({
       levelTypes: houseLayoutToLevelTypes(houseLayout),
       columnCount: columnGroups.length,
     }
-    houseGroup.userData = houseGroupUserData
-    houseGroup.add(...columnGroups)
-    return houseGroup
+    topLevelHouseGroup.userData = houseGroupUserData
+    zCenterHouseGroup.add(...columnGroups)
+    zCenterHouseGroup.position.setZ(-length / 2)
+    topLevelHouseGroup.add(zCenterHouseGroup)
+    return topLevelHouseGroup
   }
 
   const houseGroup = pipe(
@@ -313,142 +316,152 @@ export const getFirstHouseLayout = () =>
   )
 
 export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
-  const { children } = houseGroup
+  pipe(
+    houseGroup.children,
+    A.head,
+    O.map(({ children }) => {
+      const levelTypes: string[] = houseGroup.userData.levelTypes
+      const systemId: string = houseGroup.userData.systemId
+      const columnCount = houseGroup.userData.columnCount
 
-  const levelTypes: string[] = houseGroup.userData.levelTypes
-  const systemId: string = houseGroup.userData.systemId
-  const columnCount = houseGroup.userData.columnCount
+      const vanillaColumn =
+        vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
 
-  const vanillaColumn =
-    vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
+      console.log({ vanillaColumn, systemId, levelTypes, houseGroup })
 
-  console.log({ vanillaColumn, systemId, levelTypes, houseGroup })
-
-  const vanillaColumnGroup = createColumnGroup({
-    systemId,
-    gridGroups: vanillaColumn.gridGroups,
-    columnIndex: -1,
-  })
-
-  const vanillaColumnLength = vanillaColumnGroup.userData.length
-
-  if (direction === 1) {
-    pipe(
-      children,
-      A.findFirst((x) => x.userData.columnIndex === columnCount - 1),
-      O.map((endColumnGroup) => {
-        vanillaColumnGroup.position.setZ(
-          endColumnGroup.position.z + vanillaColumnLength / 2
-        )
-        houseGroup.add(vanillaColumnGroup)
-
-        endColumnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
-
-        vanillaColumnGroup.userData.columnIndex =
-          endColumnGroup.userData.columnIndex
-
-        endColumnGroup.userData.columnIndex++
-
-        houseGroup.userData.columnCount = columnCount + 1
-
-        invalidate()
+      const vanillaColumnGroup = createColumnGroup({
+        systemId,
+        gridGroups: vanillaColumn.gridGroups,
+        columnIndex: -1,
       })
-    )
-  } else if (direction === -1) {
-    pipe(
-      children,
-      A.partition((x) => x.userData.columnIndex !== 0),
-      ({ left: [startColumnGroup], right: otherColumnGroups }) => {
-        startColumnGroup.position.add(new Vector3(0, 0, -vanillaColumnLength))
 
-        for (let otherColumnGroup of otherColumnGroups) {
-          otherColumnGroup.userData.columnIndex++
-        }
+      const vanillaColumnLength = vanillaColumnGroup.userData.length
 
-        vanillaColumnGroup.userData.columnIndex = 1
-        vanillaColumnGroup.position.setZ(
-          startColumnGroup.position.z +
-            startColumnGroup.userData.length +
-            vanillaColumnLength / 2
+      if (direction === 1) {
+        pipe(
+          children,
+          A.findFirst((x) => x.userData.columnIndex === columnCount - 1),
+          O.map((endColumnGroup) => {
+            vanillaColumnGroup.position.setZ(
+              endColumnGroup.position.z + vanillaColumnLength / 2
+            )
+            houseGroup.add(vanillaColumnGroup)
+
+            endColumnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
+
+            vanillaColumnGroup.userData.columnIndex =
+              endColumnGroup.userData.columnIndex
+
+            endColumnGroup.userData.columnIndex++
+
+            houseGroup.userData.columnCount = columnCount + 1
+
+            invalidate()
+          })
         )
-        houseGroup.add(vanillaColumnGroup)
+      } else if (direction === -1) {
+        pipe(
+          children,
+          A.partition((x) => x.userData.columnIndex !== 0),
+          ({ left: [startColumnGroup], right: otherColumnGroups }) => {
+            startColumnGroup.position.add(
+              new Vector3(0, 0, -vanillaColumnLength)
+            )
 
-        houseGroup.userData.columnCount = columnCount + 1
+            for (let otherColumnGroup of otherColumnGroups) {
+              otherColumnGroup.userData.columnIndex++
+            }
 
-        invalidate()
+            vanillaColumnGroup.userData.columnIndex = 1
+            vanillaColumnGroup.position.setZ(
+              startColumnGroup.position.z +
+                startColumnGroup.userData.length +
+                vanillaColumnLength / 2
+            )
+            houseGroup.add(vanillaColumnGroup)
+
+            houseGroup.userData.columnCount = columnCount + 1
+
+            invalidate()
+          }
+        )
       }
-    )
-  }
 
-  updateHouseLength(houseGroup)
+      updateHouseLength(houseGroup)
+    })
+  )
 }
 
 export const subtractPenultimateColumn = (
   houseGroup: Group,
   direction: 1 | -1
 ) => {
-  const { children } = houseGroup
+  pipe(
+    houseGroup.children,
+    A.head,
+    O.map(({ children }) => {
+      const columnCount: number = houseGroup.userData.columnCount
 
-  const columnCount: number = houseGroup.userData.columnCount
+      if (columnCount <= 3) return
 
-  if (columnCount <= 3) return
-
-  if (direction === 1) {
-    pipe(
-      children,
-      A.filter((x) => x.userData.columnIndex >= columnCount - 2),
-      A.sort(
+      if (direction === 1) {
         pipe(
-          Num.Ord,
-          Ord.contramap((x: Object3D) => x.userData.columnIndex)
-        )
-      ),
-      ([penultimateColumnGroup, endColumnGroup]) => {
-        endColumnGroup.position.add(
-          new Vector3(0, 0, -penultimateColumnGroup.userData.length)
-        )
-
-        houseGroup.remove(penultimateColumnGroup)
-
-        houseGroup.userData.columnCount = columnCount - 1
-        endColumnGroup.userData.columnIndex--
-
-        invalidate()
-      }
-    )
-  } else if (direction === -1) {
-    pipe(
-      children,
-      A.partition((x) => x.userData.columnIndex >= 2),
-      ({ left: startColumnGroups, right: otherColumnGroups }) =>
-        pipe(
-          startColumnGroups,
+          children,
+          A.filter((x) => x.userData.columnIndex >= columnCount - 2),
           A.sort(
             pipe(
               Num.Ord,
               Ord.contramap((x: Object3D) => x.userData.columnIndex)
             )
           ),
-          ([startColumnGroup, secondColumnGroup]) => {
-            startColumnGroup.position.add(
-              new Vector3(0, 0, secondColumnGroup.userData.length)
+          ([penultimateColumnGroup, endColumnGroup]) => {
+            endColumnGroup.position.add(
+              new Vector3(0, 0, -penultimateColumnGroup.userData.length)
             )
 
-            houseGroup.remove(secondColumnGroup)
+            houseGroup.remove(penultimateColumnGroup)
 
             houseGroup.userData.columnCount = columnCount - 1
-
-            for (let otherColumnGroup of otherColumnGroups) {
-              otherColumnGroup.userData.columnIndex--
-            }
+            endColumnGroup.userData.columnIndex--
 
             invalidate()
           }
         )
-    )
-  }
+      } else if (direction === -1) {
+        pipe(
+          children,
+          A.partition((x) => x.userData.columnIndex >= 2),
+          ({ left: startColumnGroups, right: otherColumnGroups }) =>
+            pipe(
+              startColumnGroups,
+              A.sort(
+                pipe(
+                  Num.Ord,
+                  Ord.contramap((x: Object3D) => x.userData.columnIndex)
+                )
+              ),
+              ([startColumnGroup, secondColumnGroup]) => {
+                startColumnGroup.position.add(
+                  new Vector3(0, 0, secondColumnGroup.userData.length)
+                )
 
-  updateHouseLength(houseGroup)
+                houseGroup.remove(secondColumnGroup)
+
+                houseGroup.userData.columnCount = columnCount - 1
+
+                for (let otherColumnGroup of otherColumnGroups) {
+                  otherColumnGroup.userData.columnIndex--
+                }
+
+                invalidate()
+              }
+            )
+        )
+      }
+
+      updateHouseLength(houseGroup)
+    })
+  )
 }
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>

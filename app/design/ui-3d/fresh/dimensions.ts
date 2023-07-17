@@ -1,3 +1,4 @@
+import { pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
   Group,
@@ -9,6 +10,7 @@ import {
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
+import { A, O } from "../../../utils/functions"
 import { HouseGroupUserData } from "./userData"
 
 let lastMesh: Mesh | null
@@ -34,7 +36,7 @@ export const updateHouseOBB = (houseGroup: Group) => {
 
   const { x, y, z } = houseGroup.position
 
-  const center = new Vector3(x, y + height / 2, z + length / 2)
+  const center = new Vector3(x, y + height / 2, z)
   const halfSize = new Vector3(width / 2, height / 2, length / 2)
   const rotation = new Matrix3().setFromMatrix4(houseGroup.matrix)
 
@@ -50,18 +52,22 @@ export const updateHouseWidth = (houseGroup: Group) => {}
 export const updateHouseHeight = (houseGroup: Group) => {}
 
 export const updateHouseLength = (houseGroup: Group) => {
-  const { children: columnGroups } = houseGroup
+  pipe(
+    houseGroup.children,
+    A.head,
+    O.map(({ children: columnGroups }) => {
+      console.log(`houseGroup length before: ${houseGroup.userData.length}`)
 
-  console.log(`houseGroup length before: ${houseGroup.userData.length}`)
+      houseGroup.userData.length = columnGroups.reduce(
+        (acc, columnGroup) => acc + columnGroup.userData.length,
+        0
+      )
 
-  houseGroup.userData.length = columnGroups.reduce(
-    (acc, columnGroup) => acc + columnGroup.userData.length,
-    0
+      console.log(`houseGroup length after: ${houseGroup.userData.length}`)
+
+      // updateHouseOBB(houseGroup)
+
+      // update length should update dimensions, obb etc...
+    })
   )
-
-  console.log(`houseGroup length after: ${houseGroup.userData.length}`)
-
-  // updateHouseOBB(houseGroup)
-
-  // update length should update dimensions, obb etc...
 }
