@@ -38,7 +38,6 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       closeMenu()
       invalidate()
     },
-    selected,
   }
 
   const {

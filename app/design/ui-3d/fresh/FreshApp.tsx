@@ -7,26 +7,27 @@ import { useKey } from "react-use"
 import { Group, Vector3 } from "three"
 import userDB, { House } from "../../../db/user"
 import { A, O } from "../../../utils/functions"
+import { useSubscribe } from "../../../utils/hooks"
 import { floor, PI } from "../../../utils/math"
 import { isMesh, yAxis } from "../../../utils/three"
+import { openMenu } from "../../state/menu"
+import scope, { ScopeItem } from "../../state/scope"
+import settings from "../../state/settings"
+import siteCtx, { downMode, SiteCtxModeEnum } from "../../state/siteCtx"
+import { updateHouseOBB } from "./dimensions"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
   useAddHouseListener,
   useDeleteHouseListener,
 } from "./events/houses"
-import { openMenu } from "../../state/menu"
-import scope, { ScopeItem } from "../../state/scope"
-import XZPlane from "../XZPlane"
-import YPlane from "../YPlane"
+import { dispatchOutline } from "./events/outlines"
 import {
   createHouseGroup,
   insertVanillaColumn,
   subtractPenultimateColumn,
-  updateHouseDimensions,
 } from "./helpers"
-import { dispatchOutline } from "./events/outlines"
-import siteCtx, { SiteCtxModeEnum } from "../../state/siteCtx"
+import { UserData, UserDataTypeEnum } from "./userData"
 
 // let houseGroups: Record<string, Group> = {}
 
@@ -38,8 +39,14 @@ const FreshApp = () => {
   }
 
   const addHouse = async (house: House) => {
+    const { id: houseId, systemId, dnas, friendlyName } = house
     if (!rootRef.current) return
-    const houseGroup = await createHouseGroup(house)
+    const houseGroup = await createHouseGroup({
+      systemId,
+      houseId,
+      dnas,
+      friendlyName,
+    })
     rootRef.current.add(houseGroup)
     invalidate()
 
@@ -99,48 +106,59 @@ const FreshApp = () => {
     }
   })
 
-  const getHouseGroups = () => (rootRef.current?.children ?? []) as Group[]
+  const getHouseGroups = () =>
+    (rootRef.current?.children ?? []).filter(
+      (x) => x.userData.type === UserDataTypeEnum.Enum.HouseGroup
+    ) as Group[]
 
   useKey("z", () => {
     for (let houseGroup of getHouseGroups()) {
       insertVanillaColumn(houseGroup, 1)
-      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("Z", () => {
     for (let houseGroup of getHouseGroups()) {
       insertVanillaColumn(houseGroup, -1)
-      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("d", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, 1)
-      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("D", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, -1)
-      updateHouseDimensions(houseGroup)
     }
   })
 
   useKey("t", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(1, 0, 1))
+      // updateHouseOBB(houseGroup)
       invalidate()
+      console.log(houseGroup)
     }
   })
 
   useKey("r", () => {
     for (let houseGroup of getHouseGroups()) {
+      const houseCenter = houseGroup.position.clone()
+      // .add(new Vector3(0, 0, houseGroup.userData.length / 2))
+
+      // console.log(houseCenter)
+
+      houseGroup.position.sub(houseCenter)
+      houseGroup.position.applyAxisAngle(yAxis, PI / 8) // rotate the POSITION
+      houseGroup.position.add(houseCenter)
       houseGroup.rotateOnAxis(yAxis, PI / 8)
+      houseGroup.updateMatrix()
+      // updateHouseOBB(houseGroup)
+
       invalidate()
-      console.log(rootRef.current)
     }
   })
 
@@ -169,22 +187,24 @@ const FreshApp = () => {
         // object: { userData },
       } = intersections[0]
 
-      if (object.parent?.parent) {
-        const objects = object.parent.parent.children.flatMap((x) => x.children)
-        dispatchOutline({
-          objects,
-        })
-      }
+      // if (object.parent?.parent) {
+      //   const objects = object.parent.parent.children.flatMap((x) => x.children)
+      //   dispatchOutline({
+      //     objects,
+      //   })
+      // }
+
       switch (siteCtx.mode) {
         case SiteCtxModeEnum.Enum.SITE:
-          // if (object.parent?.parent?.parent) {
-          //   const objects = object.parent.parent.parent.children.flatMap((x) =>
-          //     x.children.flatMap((y) => y.children)
-          //   )
-          //   dispatchOutline({
-          //     objects,
-          //   })
-          // }
+          if (object.parent?.parent?.parent?.parent) {
+            const objects = object.parent.parent.parent.parent.children.flatMap(
+              (x) =>
+                x.children.flatMap((y) => y.children.flatMap((z) => z.children))
+            )
+            dispatchOutline({
+              objects,
+            })
+          }
           break
         case SiteCtxModeEnum.Enum.BUILDING:
           // OUTLINE COLUMN ?!
@@ -223,7 +243,65 @@ const FreshApp = () => {
         })
       )
     },
+    onDoubleClick: ({ event, event: { intersections } }) => {
+      event.stopPropagation()
+
+      if (intersections.length === 0) return
+
+      const { object } = intersections[0]
+
+      const userData: UserData = object.userData as UserData
+
+      switch (userData.type) {
+        case UserDataTypeEnum.Enum.ElementMesh:
+          const houseId =
+            object.parent?.parent?.parent?.parent?.userData.houseId
+          const levelIndex = object.parent?.parent?.userData.levelIndex
+          if (houseId && levelIndex) downMode({ houseId, levelIndex })
+      }
+
+      // if (userData) {
+      //   if (userData?.identifier?.houseId) {
+      //     downMode({ ...userData.identifier })
+      //   }
+      // }
+
+      invalidate()
+    },
   })
+
+  useSubscribe(
+    settings.verticalCuts,
+    () => {
+      const { width, length } = settings.verticalCuts
+      const { levelIndex } = siteCtx
+
+      rootRef.current?.traverseVisible((o3) => {
+        const userData = o3.userData as UserData
+
+        switch (userData.type) {
+          case UserDataTypeEnum.Enum.ElementMesh:
+            // console.log(userData)
+            break
+          case UserDataTypeEnum.Enum.HouseGroup:
+            console.log(userData)
+            // TypeScript knows that userData is of type HouseModuleGroupUserData in this block
+            // console.log(userData.length) // This is valid
+            // console.log(userData.houseId) // TypeScript error, houseId doesn't exist on HouseModuleGroupUserData
+            break
+        }
+      })
+      // Object.values(elementMaterials.current).forEach((material) => {
+      //   material.clippingPlanes = [
+      //     width ? [clippingPlaneZ] : [],
+      //     levelIndex !== null ? [clippingPlaneY] : [],
+      //     length ? [clippingPlaneX] : [],
+      //   ].flat()
+      // })
+      invalidate()
+    },
+    true
+  )
 
   return (
     <group ref={rootRef} {...bindAll()}>
