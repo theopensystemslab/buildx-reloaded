@@ -96,8 +96,6 @@ const FreshApp = () => {
   useDeleteHouseListener(({ id }) => {
     if (!rootRef.current) return
 
-    console.log(`deleting id ${id}`)
-
     const target = rootRef.current.children.find((x) => x.userData.id === id)
 
     if (target) {
@@ -108,7 +106,7 @@ const FreshApp = () => {
 
   const getHouseGroups = () =>
     (rootRef.current?.children ?? []).filter(
-      (x) => x.userData.type === UserDataTypeEnum.Enum.HouseGroup
+      (x) => x.userData.type === UserDataTypeEnum.Enum.HouseRootGroup
     ) as Group[]
 
   useKey("z", () => {
@@ -291,8 +289,7 @@ const FreshApp = () => {
           case UserDataTypeEnum.Enum.ElementMesh:
             // console.log(userData)
             break
-          case UserDataTypeEnum.Enum.HouseGroup:
-            console.log(userData)
+          case UserDataTypeEnum.Enum.HouseRootGroup:
             // TypeScript knows that userData is of type HouseModuleGroupUserData in this block
             // console.log(userData.length) // This is valid
             // console.log(userData.houseId) // TypeScript error, houseId doesn't exist on HouseModuleGroupUserData

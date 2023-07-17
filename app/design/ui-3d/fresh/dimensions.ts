@@ -11,7 +11,9 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { A, O } from "../../../utils/functions"
-import { HouseGroupUserData } from "./userData"
+import { HouseRootGroupUserData } from "./userData"
+
+export const DEBUG = false
 
 let lastMesh: Mesh | null
 
@@ -30,7 +32,7 @@ const renderOBB = (obb: OBB, scene: Object3D) => {
 }
 
 export const updateHouseOBB = (houseGroup: Group) => {
-  const houseGroupUserData = houseGroup.userData as HouseGroupUserData
+  const houseGroupUserData = houseGroup.userData as HouseRootGroupUserData
 
   const { width, height, length } = houseGroupUserData
 
@@ -42,9 +44,8 @@ export const updateHouseOBB = (houseGroup: Group) => {
 
   houseGroupUserData.obb.set(center, halfSize, rotation)
 
-  if (houseGroup.parent) renderOBB(houseGroupUserData.obb, houseGroup.parent)
-
-  console.log(houseGroupUserData.obb)
+  if (DEBUG && houseGroup.parent)
+    renderOBB(houseGroupUserData.obb, houseGroup.parent)
 }
 
 export const updateHouseWidth = (houseGroup: Group) => {}
@@ -55,19 +56,17 @@ export const updateHouseLength = (houseGroup: Group) => {
   pipe(
     houseGroup.children,
     A.head,
-    O.map(({ children: columnGroups }) => {
-      console.log(`houseGroup length before: ${houseGroup.userData.length}`)
+    O.map((zCenterHouseGroup) => {
+      const { children: columnGroups } = zCenterHouseGroup
 
       houseGroup.userData.length = columnGroups.reduce(
         (acc, columnGroup) => acc + columnGroup.userData.length,
         0
       )
 
-      console.log(`houseGroup length after: ${houseGroup.userData.length}`)
+      zCenterHouseGroup.position.setZ(-houseGroup.userData.length / 2)
 
-      // updateHouseOBB(houseGroup)
-
-      // update length should update dimensions, obb etc...
+      updateHouseOBB(houseGroup)
     })
   )
 }

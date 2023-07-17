@@ -13,8 +13,12 @@ import { z } from "zod"
 //       -> moduleGroups as children has
 //         -> elementMeshes as children
 
+// needs HouseTransformGroup
+// HouseColumnsGroup
+
 export const UserDataTypeEnum = z.enum([
-  "HouseGroup",
+  "HouseRootGroup",
+  "HouseColumnsContainerGroup",
   "ColumnGroup",
   "GridGroup",
   "ModuleGroup",
@@ -22,8 +26,8 @@ export const UserDataTypeEnum = z.enum([
 ])
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
-export type HouseGroupUserData = {
-  type: typeof UserDataTypeEnum.Enum.HouseGroup
+export type HouseRootGroupUserData = {
+  type: typeof UserDataTypeEnum.Enum.HouseRootGroup
   systemId: string
   houseId: string
   dnas: string[]
@@ -40,6 +44,10 @@ export type HouseGroupUserData = {
   }
   columnCount: number
   levelTypes: string[]
+}
+
+export type HouseColumnsContainerUserData = {
+  type: typeof UserDataTypeEnum.Enum.HouseColumnsContainerGroup
 }
 
 export type ColumnGroupUserData = {
@@ -73,7 +81,7 @@ export type UserData =
   | ModuleGroupUserData
   | GridGroupUserData
   | ColumnGroupUserData
-  | HouseGroupUserData
+  | HouseRootGroupUserData
 
 // ASSUMPTIONS
 // -----------
@@ -85,7 +93,7 @@ export const updateHouseUserData = (houseGroup: Group) => {}
 // update SOME PART OF THE HOUSE
 //   based on SOME OTHER PARTS OF THE HOUSE
 export const updateClippingPlanes = (houseGroup: Group) => {
-  const houseGroupUserData = houseGroup.userData as HouseGroupUserData
+  const houseGroupUserData = houseGroup.userData as HouseRootGroupUserData
 
   // x, y, z...
 
