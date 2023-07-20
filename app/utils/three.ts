@@ -47,6 +47,7 @@ export const createMaterial = (config: Material) => {
       // wireframe: true,
       // opacity: 0.6,
       // depthTest: false,
+      clipShadows: true,
     })
   }
 
@@ -152,7 +153,9 @@ export const useSetRotation = (houseId: string) => {
   )
 }
 
+export const xAxis = new Vector3(1, 0, 0)
 export const yAxis = new Vector3(0, 1, 0)
+export const zAxis = new Vector3(0, 0, 1)
 
 export const useRotations = () => {
   const rotationMatrix = useRef(new Matrix4())

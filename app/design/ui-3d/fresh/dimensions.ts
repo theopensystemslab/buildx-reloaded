@@ -1,7 +1,8 @@
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
   Group,
+  Material,
   Matrix3,
   Matrix4,
   Mesh,
@@ -11,7 +12,8 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { A, O } from "../../../utils/functions"
-import { HouseRootGroupUserData } from "./userData"
+import { isMesh, xAxis, yAxis, zAxis } from "../../../utils/three"
+import { HouseRootGroupUserData, UserDataTypeEnum } from "./userData"
 
 export const DEBUG = false
 
@@ -52,6 +54,30 @@ export const updateHouseWidth = (houseGroup: Group) => {}
 
 export const updateHouseHeight = (houseGroup: Group) => {}
 
+export const updateClippingPlanes = flow((houseGroup: Group) => {
+  const { clippingPlanes } = houseGroup.userData as HouseRootGroupUserData
+  houseGroup.updateMatrix()
+  clippingPlanes.x.set(xAxis, 0)
+  clippingPlanes.x.applyMatrix4(houseGroup.matrix)
+  clippingPlanes.y.set(yAxis, 0)
+  clippingPlanes.y.applyMatrix4(houseGroup.matrix)
+  clippingPlanes.z.set(zAxis, 0)
+  clippingPlanes.z.applyMatrix4(houseGroup.matrix)
+
+  houseGroup.traverse((node) => {
+    switch (node.userData.type) {
+      case UserDataTypeEnum.Enum.ElementMesh: {
+        if (!isMesh(node)) return
+        ;((node as Mesh).material as Material).clippingPlanes = [
+          clippingPlanes.x,
+          clippingPlanes.y,
+          clippingPlanes.z,
+        ]
+      }
+    }
+  })
+})
+
 export const updateHouseLength = (houseGroup: Group) => {
   pipe(
     houseGroup.children,
@@ -69,4 +95,6 @@ export const updateHouseLength = (houseGroup: Group) => {
       updateHouseOBB(houseGroup)
     })
   )
+
+  updateClippingPlanes(houseGroup)
 }

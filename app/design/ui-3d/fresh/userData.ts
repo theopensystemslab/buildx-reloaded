@@ -82,29 +82,3 @@ export type UserData =
   | GridGroupUserData
   | ColumnGroupUserData
   | HouseRootGroupUserData
-
-// ASSUMPTIONS
-// -----------
-// we've updated the ... something or other...
-export const updateHouseUserData = (houseGroup: Group) => {}
-
-// MORE GRANULAR
-// -------------
-// update SOME PART OF THE HOUSE
-//   based on SOME OTHER PARTS OF THE HOUSE
-export const updateClippingPlanes = (houseGroup: Group) => {
-  const houseGroupUserData = houseGroup.userData as HouseRootGroupUserData
-
-  // x, y, z...
-
-  // x and z is like okay yeah standard or... well...
-  // dynamic on user controls could be cool
-
-  // y is like dependent on levelIndex of level mode
-
-  // first we want the clipping planes in the user data
-}
-
-export const getClippingPlanesStuff = (houseGroup: Group) => {
-  // dimensions should do it I guess?
-}
