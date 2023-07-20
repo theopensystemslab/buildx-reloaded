@@ -21,31 +21,15 @@ export const defaultOutlineEffectParams: UseOutlineEffectParams = {
   blur: false,
 }
 
-// export const defaultBloomParams: ConstructorParameters<
-//   typeof SelectiveBloomEffect
-// >[2] = {
-//   intensity: 2,
-//   kernelSize: 4,
-//   luminanceSmoothing: 0,
-//   luminanceThreshold: 0,
-// }
-
 const defaultRenderPriority: number = 1
 
 const Effects = () => {
   const { gl, camera, size, scene } = useThree()
 
-  const renderTarget = useFBO(size.width, size.height, { depthBuffer: true })
-
-  // const selectiveBloomEffect = useMemo(() => {
-  //   const effect = new SelectiveBloomEffect(scene, camera, {
-  //     ...defaultBloomParams,
-  //     width: size.width / 2,
-  //     height: size.height / 2,
-  //   })
-  //   effect.selection.layer = 11
-  //   return effect
-  // }, [camera, scene])
+  const renderTarget = useFBO(size.width, size.height, {
+    depthBuffer: true,
+    stencilBuffer: true,
+  })
 
   const outlineEffect = useMemo(() => {
     const effect = new OutlineEffectRaw(
@@ -57,36 +41,17 @@ const Effects = () => {
     return effect
   }, [scene, camera])
 
-  // const bloomPass = useMemo(() => {
-  //   return new EffectPass(camera, selectiveBloomEffect)
-  // }, [camera, selectiveBloomEffect])
-
   const effectComposer = useMemo(() => {
     const effectComposer = new EffectComposer(gl, renderTarget)
     const renderPass = new RenderPass(scene, camera)
     effectComposer.addPass(renderPass)
-    // effectComposer.addPass(bloomPass)
     effectComposer.addPass(new EffectPass(camera, outlineEffect))
     return effectComposer
-  }, [
-    gl,
-    renderTarget,
-    scene,
-    camera,
-    outlineEffect,
-    // selectiveBloomEffect
-  ])
+  }, [gl, renderTarget, scene, camera, outlineEffect])
 
   useOutlineEvent(({ objects }) => {
     outlineEffect.selection.set(objects)
   })
-
-  // subscribeKey(highlights, "illuminated", () => {
-  //   if (highlights.illuminated.length > 0) {
-  //     if (!bloomPass.enabled) bloomPass.enabled = true
-  //     selectiveBloomEffect.selection.set(highlights.illuminated)
-  //   } else bloomPass.enabled = false
-  // })
 
   useEffect(() => {
     effectComposer.setSize(size.width, size.height)

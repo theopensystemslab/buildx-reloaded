@@ -1,10 +1,24 @@
-import { invalidate, ThreeEvent } from "@react-three/fiber"
+import { invalidate, ThreeEvent, useFrame, useThree } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useKey } from "react-use"
-import { Group, Vector3 } from "three"
+import {
+  BoxGeometry,
+  DoubleSide,
+  Group,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  NotEqualStencilFunc,
+  Plane,
+  PlaneGeometry,
+  ReplaceStencilOp,
+  TorusGeometry,
+  Vector3,
+} from "three"
 import userDB, { House } from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
@@ -14,7 +28,7 @@ import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
 import settings from "../../state/settings"
 import siteCtx, { downMode, SiteCtxModeEnum } from "../../state/siteCtx"
-import { updateHouseOBB } from "./dimensions"
+import { updateClippingPlanes, updateHouseOBB } from "./dimensions"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
@@ -28,6 +42,7 @@ import {
   subtractPenultimateColumn,
 } from "./helpers"
 import { UserData, UserDataTypeEnum } from "./userData"
+import createPlaneStencilGroup from "./util/createPlaneStencilGroup"
 
 // let houseGroups: Record<string, Group> = {}
 
@@ -65,8 +80,85 @@ const FreshApp = () => {
     return cleanup
   }
 
-  useEffect(init, [])
+  // useEffect(init, [])
   // useKey("l", insert1VanillaColumn)
+
+  const scene = useThree((t) => t.scene)
+
+  const planes = useMemo(() => [new Plane(new Vector3(1, 0, 0), 0)], [])
+
+  const planeObjects = useRef<Mesh[]>([])
+
+  const test = () => {
+    if (!rootRef.current) return
+
+    const geometry = new TorusGeometry(0.4, 0.15, 220, 60)
+    const object = new Group()
+    scene.add(object)
+    const planeGeom = new PlaneGeometry(4, 4)
+
+    for (let i = 0; i < planes.length; i++) {
+      const poGroup = new Group()
+      const plane = planes[i]
+      const stencilGroup = createPlaneStencilGroup(geometry, plane, i + 1)
+
+      // plane is clipped by the other clipping planes
+      const planeMat = new MeshStandardMaterial({
+        color: 0xe91e63,
+        metalness: 0.1,
+        roughness: 0.75,
+        clippingPlanes: planes.filter((p) => p !== plane),
+
+        stencilWrite: true,
+        stencilRef: 0,
+        stencilFunc: NotEqualStencilFunc,
+        stencilFail: ReplaceStencilOp,
+        stencilZFail: ReplaceStencilOp,
+        stencilZPass: ReplaceStencilOp,
+      })
+      const po = new Mesh(planeGeom, planeMat)
+      po.onAfterRender = function (renderer) {
+        renderer.clearStencil()
+      }
+
+      po.renderOrder = i + 1.1
+
+      object.add(stencilGroup)
+      poGroup.add(po)
+      planeObjects.current.push(po)
+      scene.add(poGroup)
+    }
+
+    const material = new MeshStandardMaterial({
+      color: 0xffc107,
+      metalness: 0.1,
+      roughness: 0.75,
+      clippingPlanes: planes,
+      clipShadows: true,
+      shadowSide: DoubleSide,
+    })
+
+    // add the color
+    const clippedColorFront = new Mesh(geometry, material)
+    clippedColorFront.castShadow = true
+    clippedColorFront.renderOrder = 6
+    object.add(clippedColorFront)
+  }
+
+  useEffect(test, [planes, scene])
+
+  useFrame(() => {
+    for (let i = 0; i < planeObjects.current.length; i++) {
+      const plane = planes[i]
+      const po = planeObjects.current[i]
+      plane.coplanarPoint(po.position)
+      po.lookAt(
+        po.position.x - plane.normal.x,
+        po.position.y - plane.normal.y,
+        po.position.z - plane.normal.z
+      )
+    }
+  })
 
   useAddHouseIntentListener(({ dnas, id: houseTypeId, systemId }) => {
     // maybe cameraGroundRaycast
@@ -137,6 +229,7 @@ const FreshApp = () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(1, 0, 1))
       updateHouseOBB(houseGroup)
+      updateClippingPlanes(houseGroup)
       invalidate()
     }
   })
@@ -144,6 +237,7 @@ const FreshApp = () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(-1, 0, -1))
       updateHouseOBB(houseGroup)
+      updateClippingPlanes(houseGroup)
       invalidate()
     }
   })
@@ -153,7 +247,7 @@ const FreshApp = () => {
       houseGroup.rotateOnAxis(yAxis, PI / 8)
       houseGroup.updateMatrix()
       updateHouseOBB(houseGroup)
-
+      updateClippingPlanes(houseGroup)
       invalidate()
     }
   })
@@ -163,7 +257,7 @@ const FreshApp = () => {
       houseGroup.rotateOnAxis(yAxis, -PI / 8)
       houseGroup.updateMatrix()
       updateHouseOBB(houseGroup)
-
+      updateClippingPlanes(houseGroup)
       invalidate()
     }
   })
