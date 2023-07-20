@@ -37,11 +37,7 @@ export type HouseRootGroupUserData = {
   length: number
   width: number
   obb: OBB
-  clippingPlanes: {
-    x: Plane
-    y: Plane
-    z: Plane
-  }
+  clippingPlanes: Plane[]
   columnCount: number
   levelTypes: string[]
 }

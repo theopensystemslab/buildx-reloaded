@@ -1,4 +1,3 @@
-import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import {
@@ -23,7 +22,6 @@ import layoutsDB, {
 } from "../../../db/layouts"
 import { A, Num, O, Ord, R, S } from "../../../utils/functions"
 import { getLayoutsWorker } from "../../../workers"
-import { updateHouseLength } from "./dimensions"
 import { getMaterial } from "./systems"
 import {
   ColumnGroupUserData,
@@ -91,10 +89,12 @@ export const moduleToGroup = ({
   systemId,
   gridGroupIndex,
   module: { speckleBranchUrl, length, dna },
+  clippingPlanes,
 }: {
   systemId: string
   gridGroupIndex: number
   module: Module
+  clippingPlanes: Plane[]
 }) => {
   const moduleGroup = new Group()
   const taggedModelGeometries = models[speckleBranchUrl]
@@ -105,6 +105,7 @@ export const moduleToGroup = ({
       ifcTag,
       houseId: "",
     }) as MeshStandardMaterial
+    material.clippingPlanes = clippingPlanes
     const mesh = new Mesh(geometry, material)
     mesh.castShadow = true
 
@@ -135,12 +136,14 @@ export const createColumnGroup = ({
   columnIndex,
   startColumn = false,
   endColumn = false,
+  clippingPlanes,
 }: {
   systemId: string
   gridGroups: GridGroup[]
   columnIndex: number
   startColumn?: boolean
   endColumn?: boolean
+  clippingPlanes: Plane[]
 }): Group => {
   const columnGroup = new Group()
 
@@ -152,6 +155,7 @@ export const createColumnGroup = ({
           systemId,
           module,
           gridGroupIndex,
+          clippingPlanes,
         })
         moduleGroup.scale.set(1, 1, endColumn ? 1 : -1)
         moduleGroup.position.set(
@@ -190,10 +194,12 @@ export const houseLayoutToColumns = ({
   systemId,
   houseId,
   houseLayout,
+  clippingPlanes,
 }: {
   systemId: string
   houseId: string
   houseLayout: ColumnLayout
+  clippingPlanes: Plane[]
 }): Group[] =>
   pipe(
     houseLayout,
@@ -207,6 +213,7 @@ export const houseLayoutToColumns = ({
         startColumn,
         endColumn,
         columnIndex,
+        clippingPlanes,
       })
       group.position.set(0, 0, z)
       return group
@@ -234,6 +241,12 @@ export const createHouseGroup = async ({
   dnas: string[]
   friendlyName: string
 }) => {
+  const clippingPlanes: Plane[] = [
+    new Plane(new Vector3(1, 0, 0), 0),
+    new Plane(new Vector3(0, 1, 0), 0),
+    new Plane(new Vector3(0, 0, 1), 0),
+  ]
+
   const houseLayoutToHouseGroup = async ({
     systemId,
     houseId,
@@ -247,6 +260,7 @@ export const createHouseGroup = async ({
       systemId,
       houseId,
       houseLayout,
+      clippingPlanes,
     })
     const topLevelHouseGroup = new Group()
     const zCenterHouseGroup = new Group()
@@ -271,11 +285,7 @@ export const createHouseGroup = async ({
       friendlyName,
       modifiedMaterials: {},
       obb,
-      clippingPlanes: {
-        x: new Plane(),
-        y: new Plane(),
-        z: new Plane(),
-      },
+      clippingPlanes,
       levelTypes: houseLayoutToLevelTypes(houseLayout),
       columnCount: columnGroups.length,
     }
@@ -297,7 +307,11 @@ export const createHouseGroup = async ({
           systemId,
           dnas,
         })
-        return houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
+        return houseLayoutToHouseGroup({
+          systemId,
+          houseId,
+          houseLayout,
+        })
       },
       (houseLayout) =>
         houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
@@ -333,14 +347,13 @@ export const removeColumnFromHouse = (
   )
 
 export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
+  const { levelTypes, systemId, columnCount, clippingPlanes } =
+    houseGroup.userData as HouseRootGroupUserData
   pipe(
     houseGroup.children,
     A.head,
     O.map((zCenterHouseGroup) => {
       const { children: columnGroups } = zCenterHouseGroup
-      const levelTypes: string[] = houseGroup.userData.levelTypes
-      const systemId: string = houseGroup.userData.systemId
-      const columnCount = houseGroup.userData.columnCount
 
       const vanillaColumn =
         vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
@@ -349,6 +362,7 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
         systemId,
         gridGroups: vanillaColumn.gridGroups,
         columnIndex: -1,
+        clippingPlanes,
       })
 
       const vanillaColumnLength = vanillaColumnGroup.userData.length
@@ -371,8 +385,6 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
             endColumnGroup.userData.columnIndex++
 
             houseGroup.userData.columnCount = columnCount + 1
-
-            invalidate()
           })
         )
       } else if (direction === -1) {
@@ -399,13 +411,9 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
             addColumnToHouse(houseGroup, vanillaColumnGroup)
 
             houseGroup.userData.columnCount = columnCount + 1
-
-            invalidate()
           }
         )
       }
-
-      updateHouseLength(houseGroup)
     })
   )
 }
@@ -441,8 +449,6 @@ export const subtractPenultimateColumn = (
 
             houseGroup.userData.columnCount = columnCount - 1
             endColumnGroup.userData.columnIndex--
-
-            invalidate()
           }
         )
       } else if (direction === -1) {
@@ -455,8 +461,6 @@ export const subtractPenultimateColumn = (
             )
           ),
           ([_, secondColumnGroup, ...restColumnGroups]) => {
-            //don't do anything?
-
             const subV = new Vector3(0, 0, secondColumnGroup.userData.length)
 
             restColumnGroups.forEach((columnGroup) => {
@@ -467,14 +471,9 @@ export const subtractPenultimateColumn = (
             removeColumnFromHouse(houseGroup, secondColumnGroup)
 
             houseGroup.userData.columnCount = columnCount - 1
-
-            invalidate()
           }
-          // A.partition((x) => x.userData.columnIndex >= 2),
         )
       }
-
-      updateHouseLength(houseGroup)
     })
   )
 }

@@ -1,3 +1,4 @@
+import { invalidate } from "@react-three/fiber"
 import { flow, pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
@@ -55,27 +56,19 @@ export const updateHouseWidth = (houseGroup: Group) => {}
 export const updateHouseHeight = (houseGroup: Group) => {}
 
 export const updateClippingPlanes = flow((houseGroup: Group) => {
-  const { clippingPlanes } = houseGroup.userData as HouseRootGroupUserData
-  houseGroup.updateMatrix()
-  clippingPlanes.x.set(xAxis, 0)
-  clippingPlanes.x.applyMatrix4(houseGroup.matrix)
-  clippingPlanes.y.set(yAxis, 0)
-  clippingPlanes.y.applyMatrix4(houseGroup.matrix)
-  clippingPlanes.z.set(zAxis, 0)
-  clippingPlanes.z.applyMatrix4(houseGroup.matrix)
+  const {
+    clippingPlanes,
+    clippingPlanes: [planeX, planeY, planeZ],
+  } = houseGroup.userData as HouseRootGroupUserData
 
-  houseGroup.traverse((node) => {
-    switch (node.userData.type) {
-      case UserDataTypeEnum.Enum.ElementMesh: {
-        if (!isMesh(node)) return
-        ;((node as Mesh).material as Material).clippingPlanes = [
-          clippingPlanes.x,
-          clippingPlanes.y,
-          clippingPlanes.z,
-        ]
-      }
-    }
-  })
+  houseGroup.updateMatrix()
+
+  planeX.set(new Vector3(1, 0, 0), 0)
+  planeX.applyMatrix4(houseGroup.matrix)
+  planeY.set(new Vector3(0, 1, 0), 0)
+  planeY.applyMatrix4(houseGroup.matrix)
+  planeZ.set(new Vector3(0, 0, 1), 0)
+  planeZ.applyMatrix4(houseGroup.matrix)
 })
 
 export const updateHouseLength = (houseGroup: Group) => {
@@ -91,10 +84,13 @@ export const updateHouseLength = (houseGroup: Group) => {
       )
 
       zCenterHouseGroup.position.setZ(-houseGroup.userData.length / 2)
-
-      updateHouseOBB(houseGroup)
     })
   )
+}
 
+export const updateEverything = (houseGroup: Group) => {
+  updateHouseLength(houseGroup)
+  updateHouseOBB(houseGroup)
   updateClippingPlanes(houseGroup)
+  invalidate()
 }

@@ -14,7 +14,7 @@ import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
 import settings from "../../state/settings"
 import siteCtx, { downMode, SiteCtxModeEnum } from "../../state/siteCtx"
-import { updateHouseOBB } from "./dimensions"
+import { updateEverything, updateHouseOBB } from "./dimensions"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
@@ -48,6 +48,7 @@ const FreshApp = () => {
       friendlyName,
     })
     rootRef.current.add(houseGroup)
+
     invalidate()
 
     userDB.houses.put(house)
@@ -102,6 +103,8 @@ const FreshApp = () => {
       rootRef.current.remove(target)
       userDB.houses.delete(id)
     }
+
+    invalidate()
   })
 
   const getHouseGroups = () =>
@@ -112,59 +115,55 @@ const FreshApp = () => {
   useKey("z", () => {
     for (let houseGroup of getHouseGroups()) {
       insertVanillaColumn(houseGroup, 1)
+      updateEverything(houseGroup)
     }
   })
 
   useKey("Z", () => {
     for (let houseGroup of getHouseGroups()) {
       insertVanillaColumn(houseGroup, -1)
+      updateEverything(houseGroup)
     }
   })
 
   useKey("d", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, 1)
+      updateEverything(houseGroup)
     }
   })
 
   useKey("D", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, -1)
+      updateEverything(houseGroup)
     }
   })
 
   useKey("t", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(1, 0, 1))
-      updateHouseOBB(houseGroup)
-      invalidate()
+      updateEverything(houseGroup)
     }
   })
   useKey("T", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(-1, 0, -1))
-      updateHouseOBB(houseGroup)
-      invalidate()
+      updateEverything(houseGroup)
     }
   })
 
   useKey("r", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.rotateOnAxis(yAxis, PI / 8)
-      houseGroup.updateMatrix()
-      updateHouseOBB(houseGroup)
-
-      invalidate()
+      updateEverything(houseGroup)
     }
   })
 
   useKey("R", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.rotateOnAxis(yAxis, -PI / 8)
-      houseGroup.updateMatrix()
-      updateHouseOBB(houseGroup)
-
-      invalidate()
+      updateEverything(houseGroup)
     }
   })
 

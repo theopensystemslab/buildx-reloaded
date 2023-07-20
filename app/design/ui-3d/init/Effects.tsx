@@ -35,7 +35,10 @@ const defaultRenderPriority: number = 1
 const Effects = () => {
   const { gl, camera, size, scene } = useThree()
 
-  const renderTarget = useFBO(size.width, size.height, { depthBuffer: true })
+  const renderTarget = useFBO(size.width, size.height, {
+    depthBuffer: true,
+    stencilBuffer: true,
+  })
 
   // const selectiveBloomEffect = useMemo(() => {
   //   const effect = new SelectiveBloomEffect(scene, camera, {
