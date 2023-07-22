@@ -3,7 +3,6 @@ import { flow, pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
   Group,
-  Material,
   Matrix3,
   Matrix4,
   Mesh,
@@ -13,8 +12,7 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { A, O } from "../../../utils/functions"
-import { isMesh, xAxis, yAxis, zAxis } from "../../../utils/three"
-import { HouseRootGroupUserData, UserDataTypeEnum } from "./userData"
+import { HouseRootGroupUserData } from "./userData"
 
 export const DEBUG = false
 

@@ -1,4 +1,4 @@
-import { Group, Plane } from "three"
+import { Group, Mesh, Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 
@@ -38,6 +38,7 @@ export type HouseRootGroupUserData = {
   width: number
   obb: OBB
   clippingPlanes: Plane[]
+  clippingPlaneCaps: Record<string, Mesh>
   columnCount: number
   levelTypes: string[]
 }

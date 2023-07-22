@@ -1,16 +1,19 @@
 import { liveQuery } from "dexie"
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import {
+  BoxGeometry,
   BufferGeometry,
   BufferGeometryLoader,
   Group,
+  Material,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   Plane,
   Vector3,
 } from "three"
-import { OBB } from "three-stdlib"
+import { mergeBufferGeometries, OBB } from "three-stdlib"
 import { Module } from "../../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
@@ -31,6 +34,7 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
+import { CSG } from "three-csg-ts"
 
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}
@@ -286,6 +290,7 @@ export const createHouseGroup = async ({
       modifiedMaterials: {},
       obb,
       clippingPlanes,
+      clippingPlaneCaps: {},
       levelTypes: houseLayoutToLevelTypes(houseLayout),
       columnCount: columnGroups.length,
     }
@@ -293,6 +298,34 @@ export const createHouseGroup = async ({
     zCenterHouseGroup.add(...columnGroups)
     zCenterHouseGroup.position.setZ(-length / 2)
     topLevelHouseGroup.add(zCenterHouseGroup)
+
+    const meshesByIfcTag: Record<string, Mesh[]> = {}
+
+    topLevelHouseGroup.traverse((node) => {
+      switch (node.userData.type) {
+        case UserDataTypeEnum.Enum.ElementMesh:
+          const { ifcTag } = node.userData as ElementMeshUserData
+          if (ifcTag in meshesByIfcTag) {
+            meshesByIfcTag[ifcTag].push(node as Mesh)
+          } else {
+            meshesByIfcTag[ifcTag] = [node as Mesh]
+          }
+      }
+    })
+
+    // const box = new Mesh(new BoxGeometry(houseWidth, houseHeight, houseLength))
+
+    const boxGeom = new BoxGeometry(width, height, length)
+
+    topLevelHouseGroup.userData.clippingPlaneCaps = pipe(
+      meshesByIfcTag,
+      R.map((meshes) =>
+        meshes.reduce((acc, v) => {
+          return CSG.union(acc, CSG.intersect(v, new Mesh(boxGeom, v.material)))
+        })
+      )
+    )
+
     return topLevelHouseGroup
   }
 
