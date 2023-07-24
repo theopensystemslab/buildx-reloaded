@@ -1,10 +1,11 @@
 import { useEvent } from "react-use"
-import { Object3D } from "three"
+import { Object3D, Plane } from "three"
 
 const OUTLINE_EVENT = "OutlineEvent"
 
 type OutlineEventDetail = {
   objects: Object3D[]
+  clippingPlanes: Plane[]
 }
 
 export const dispatchOutline = (detail: OutlineEventDetail) =>

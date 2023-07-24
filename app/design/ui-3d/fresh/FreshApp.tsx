@@ -27,7 +27,7 @@ import {
   insertVanillaColumn,
   subtractPenultimateColumn,
 } from "./helpers"
-import { UserData, UserDataTypeEnum } from "./userData"
+import { HouseRootGroupUserData, UserData, UserDataTypeEnum } from "./userData"
 
 // let houseGroups: Record<string, Group> = {}
 
@@ -181,6 +181,7 @@ const FreshApp = () => {
         document.body.style.cursor = ""
         dispatchOutline({
           objects: [],
+          clippingPlanes: [],
         })
         invalidate()
         // scope.hovered = null
@@ -192,34 +193,44 @@ const FreshApp = () => {
         // object: { userData },
       } = intersections[0]
 
+      if (object.userData.type === UserDataTypeEnum.Enum.ElementMesh) {
+        if (object.parent?.parent?.parent?.parent?.parent) {
+          const houseGroup = object.parent?.parent?.parent?.parent?.parent
+          const { clippingPlanes } =
+            houseGroup.userData as HouseRootGroupUserData
+
+          switch (siteCtx.mode) {
+            case SiteCtxModeEnum.Enum.SITE:
+              const objects =
+                object.parent.parent.parent.parent.children.flatMap((x) =>
+                  x.children.flatMap((y) =>
+                    y.children.flatMap((z) => z.children)
+                  )
+                )
+              dispatchOutline({
+                objects,
+                clippingPlanes,
+              })
+              break
+            case SiteCtxModeEnum.Enum.BUILDING:
+              // OUTLINE COLUMN ?!
+              break
+            case SiteCtxModeEnum.Enum.LEVEL:
+              dispatchOutline({
+                objects: object.parent.children,
+                clippingPlanes: [],
+              })
+              break
+          }
+        }
+      }
+
       // if (object.parent?.parent) {
       //   const objects = object.parent.parent.children.flatMap((x) => x.children)
       //   dispatchOutline({
       //     objects,
       //   })
       // }
-
-      switch (siteCtx.mode) {
-        case SiteCtxModeEnum.Enum.SITE:
-          if (object.parent?.parent?.parent?.parent) {
-            const objects = object.parent.parent.parent.parent.children.flatMap(
-              (x) =>
-                x.children.flatMap((y) => y.children.flatMap((z) => z.children))
-            )
-            dispatchOutline({
-              objects,
-            })
-          }
-          break
-        case SiteCtxModeEnum.Enum.BUILDING:
-          // OUTLINE COLUMN ?!
-          break
-        case SiteCtxModeEnum.Enum.LEVEL:
-          if (object.parent) {
-            dispatchOutline({ objects: object.parent.children })
-          }
-          break
-      }
 
       // scope.hovered = {
       //   ...userData.identifier,

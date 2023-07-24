@@ -236,6 +236,9 @@ export const convertSpeckleToThree = (input: InputData): BufferGeometry => {
   )
   buffer.setIndex(indices)
 
+  const uvs = new Float32Array((input.vertices.length / 3) * 2)
+  buffer.setAttribute("uv", new BufferAttribute(uvs, 2))
+
   // Rotate geometry from Z-up to Y-up
   buffer.rotateX(-Math.PI / 2)
 

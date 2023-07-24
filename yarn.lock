@@ -5698,6 +5698,11 @@ thread-stream@^2.0.0:
   dependencies:
     real-require "^0.2.0"
 
+three-bvh-csg@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/three-bvh-csg/-/three-bvh-csg-0.0.8.tgz#9dc7f29bf43744f7496bfcf2de6f8ae1137f51d9"
+  integrity sha512-c09fHCTSOn82n1Q2Q9rdWL7lVvs6yaMV+APFhSRXTjtNxAjhtyng+pLoLobIPfcTOjGUQyfkqksW5Vd+sa8yRw==
+
 three-mesh-bvh@^0.5.16:
   version "0.5.16"
   resolved "https://registry.yarnpkg.com/three-mesh-bvh/-/three-mesh-bvh-0.5.16.tgz#ed8518355fb70d7da6a5537558ba43f76a56b067"
