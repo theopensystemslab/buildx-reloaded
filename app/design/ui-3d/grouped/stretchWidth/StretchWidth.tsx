@@ -40,6 +40,13 @@ import {
 } from "../../../../db/layouts"
 import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
 
+export type AugSectionType = SectionType & {
+  // live: boolean
+  houseDna: string[]
+  houseDnaKey: string
+  dx: number
+}
+
 export type StretchWidthRaw = {
   direction: 1 | -1
   dx: number
@@ -78,13 +85,6 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   const module0 = columnLayout[0].gridGroups[0].modules[0].module
 
   const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
-
-  type AugSectionType = SectionType & {
-    // live: boolean
-    houseDna: string[]
-    houseDnaKey: string
-    dx: number
-  }
 
   const augSectionTypes: NonEmptyArray<AugSectionType> = pipe(
     sectionTypes,

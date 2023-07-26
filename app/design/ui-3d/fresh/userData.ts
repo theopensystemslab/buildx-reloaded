@@ -39,6 +39,7 @@ export type HouseRootGroupUserData = {
   obb: OBB
   clippingPlanes: Plane[]
   columnCount: number
+  sectionType: string
   levelTypes: string[]
 }
 

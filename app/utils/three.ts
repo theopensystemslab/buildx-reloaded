@@ -30,10 +30,7 @@ export const isMesh = (x: Object3D): x is Mesh => x.type === "Mesh"
 
 export const onCreated = (state: RootState) => {
   state.gl.localClippingEnabled = true
-  state.raycaster.layers.disableAll()
-  state.raycaster.layers.enable(CameraLayer.VISIBLE)
-  state.raycaster.layers.enable(CameraLayer.INVISIBLE)
-  state.raycaster.layers.enable(RaycasterLayer.ENABLED)
+  state.raycaster.layers.set(RaycasterLayer.ENABLED)
 }
 
 export const createMaterial = (config: Material) => {

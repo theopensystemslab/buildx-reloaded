@@ -264,6 +264,10 @@ export const createHouseGroup = async ({
     })
     const topLevelHouseGroup = new Group()
     const zCenterHouseGroup = new Group()
+
+    const sectionType =
+      houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+
     const width = houseLayout[0].gridGroups[0].modules[0].module.width
     const height = houseLayout[0].gridGroups.reduce(
       (acc, v) => acc + v.modules[0].module.height,
@@ -286,6 +290,7 @@ export const createHouseGroup = async ({
       modifiedMaterials: {},
       obb,
       clippingPlanes,
+      sectionType,
       levelTypes: houseLayoutToLevelTypes(houseLayout),
       columnCount: columnGroups.length,
     }
@@ -293,6 +298,7 @@ export const createHouseGroup = async ({
     zCenterHouseGroup.add(...columnGroups)
     zCenterHouseGroup.position.setZ(-length / 2)
     topLevelHouseGroup.add(zCenterHouseGroup)
+
     return topLevelHouseGroup
   }
 

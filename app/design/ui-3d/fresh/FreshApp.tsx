@@ -14,7 +14,7 @@ import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
 import settings from "../../state/settings"
 import siteCtx, { downMode, SiteCtxModeEnum } from "../../state/siteCtx"
-import { updateEverything, updateHouseOBB } from "./dimensions"
+import { updateEverything } from "./dimensions"
 import {
   dispatchAddHouse,
   useAddHouseIntentListener,
@@ -27,9 +27,11 @@ import {
   insertVanillaColumn,
   subtractPenultimateColumn,
 } from "./helpers"
+import getStretchXPreviews from "./stretchXPreviews"
 import { UserData, UserDataTypeEnum } from "./userData"
 
-// let houseGroups: Record<string, Group> = {}
+const liveHouses: Record<string, Group> = {}
+const stretchXHouses: Record<string, Record<string, Group>> = {}
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -39,15 +41,26 @@ const FreshApp = () => {
   }
 
   const addHouse = async (house: House) => {
-    const { id: houseId, systemId, dnas, friendlyName } = house
     if (!rootRef.current) return
+
+    const { id: houseId, systemId, dnas, friendlyName } = house
+
     const houseGroup = await createHouseGroup({
       systemId,
       houseId,
       dnas,
       friendlyName,
     })
+
     rootRef.current.add(houseGroup)
+    liveHouses[houseId] = houseGroup
+
+    getStretchXPreviews(houseGroup).then((x) => {
+      console.log(x, `hi`)
+    })
+
+    // stretchXHouses[houseId] = getStretchXPreviews(houseGroup)
+    // (stretchXHouses)
 
     invalidate()
 
@@ -126,6 +139,12 @@ const FreshApp = () => {
     }
   })
 
+  // stretch width +
+  useKey("x", () => {})
+
+  // stretch width -
+  useKey("X", () => {})
+
   useKey("d", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, 1)
@@ -198,6 +217,8 @@ const FreshApp = () => {
       //     objects,
       //   })
       // }
+
+      console.log(object)
 
       switch (siteCtx.mode) {
         case SiteCtxModeEnum.Enum.SITE:

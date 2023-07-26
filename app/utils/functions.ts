@@ -17,6 +17,10 @@ export * as RM from "fp-ts/ReadonlyMap"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
+export * as TO from "fp-ts/TaskOption"
+export * as TE from "fp-ts/TaskEither"
+export * as T from "fp-ts/Task"
+
 export { clamp_ as clamp }
 export { A, Num, O, R, RA, S }
 

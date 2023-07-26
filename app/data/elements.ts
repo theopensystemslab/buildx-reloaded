@@ -1,17 +1,13 @@
 import { trpc } from "@/client/trpc"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
-import { suspend } from "suspend-react"
 import { BufferGeometry, BufferGeometryLoader } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { O, R, RA, S } from "~/utils/functions"
 import { Element } from "../../server/data/elements"
-import { Module } from "../../server/data/modules"
 import layoutsDB from "../db/layouts"
 import systemsDB from "../db/systems"
 import { isSSR } from "../utils/next"
-import { getLayoutsWorker } from "../workers"
 
 export const useElements = (): Element[] => {
   const { data = [] } = trpc.elements.useQuery()

@@ -1,10 +1,15 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import { pipe } from "fp-ts/lib/function"
+import { flow, identity, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { Module } from "../../../server/data/modules"
+import { SectionType } from "../../../server/data/sectionTypes"
+import {
+  filterCompatibleModules,
+  topCandidateByHamming,
+} from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
   HouseLayoutsKey,
@@ -12,12 +17,25 @@ import layoutsDB, {
   PositionedModule,
   PositionedRow,
   getHouseLayoutsKey,
+  GridGroup,
+  IndexedVanillaModule,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, O } from "../../utils/functions"
+import userDB from "../../db/user"
+import { AugSectionType } from "../../design/ui-3d/grouped/stretchWidth/StretchWidth"
+import {
+  A,
+  mapToOption,
+  Num,
+  O,
+  Ord,
+  reduceToOption,
+  TO,
+} from "../../utils/functions"
+import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { syncModels } from "./models"
-import { createVanillaModuleGetter } from "./vanilla"
+import { createVanillaModuleGetter, getIndexedVanillaModule } from "./vanilla"
 
 let modulesCache: LastFetchStamped<Module>[] = []
 let layoutsQueue: HouseLayoutsKey[] = []
@@ -282,82 +300,92 @@ export const splitColumns = (layout: ColumnLayout) =>
     })
   )
 
-const processLayout = async ({ systemId, dnas }: HouseLayoutsKey) => {
-  const modules = pipe(
-    dnas,
-    A.filterMap((dna) =>
-      pipe(
-        modulesCache,
-        A.findFirst(
-          (systemModule: Module) =>
-            systemModule.systemId === systemId && systemModule.dna === dna
+// also posts vanilla columns
+const getLayout = async ({
+  systemId,
+  dnas,
+}: HouseLayoutsKey): Promise<ColumnLayout> => {
+  const maybeLayout = await layoutsDB.houseLayouts
+    .get(getHouseLayoutsKey({ systemId, dnas }))
+    .then((x) => x?.layout)
+
+  if (maybeLayout) {
+    return maybeLayout
+  } else {
+    const modules = pipe(
+      dnas,
+      A.filterMap((dna) =>
+        pipe(
+          modulesCache,
+          A.findFirst(
+            (systemModule: Module) =>
+              systemModule.systemId === systemId && systemModule.dna === dna
+          )
         )
       )
     )
-  )
-
-  const layout = modulesToColumnLayout(modules)
-
-  layoutsDB.houseLayouts.put({
-    layout,
-    systemId,
-    dnas,
-  })
-
-  const {
-    startColumn: { gridGroups },
-  } = splitColumns(layout)
-
-  const getVanillaModule = createVanillaModuleGetter(modulesCache)({
-    constrainGridType: false,
-    positionType: "MID",
-  })
-
-  pipe(
-    gridGroups,
-    A.traverse(O.Applicative)(
-      ({
-        levelIndex,
-        levelType,
-        y,
-        modules: [{ module }],
-      }): O.Option<PositionedRow> =>
-        pipe(
-          module,
-          getVanillaModule,
-          O.map((vanillaModule) => ({
-            modules: [
-              {
-                module: vanillaModule,
-                gridGroupIndex: 0,
-                z: 0,
-              },
-            ],
-            length: vanillaModule.length,
-            y,
-            levelIndex,
-            levelType,
-          }))
-        )
-    ),
-    O.map((gridGroups) => {
-      const levelTypes = pipe(
-        gridGroups,
-        A.map((gridGroup) => gridGroup.levelType)
-      )
-
-      layoutsDB.vanillaColumns.put({
-        systemId,
-        levelTypes,
-        vanillaColumn: {
-          gridGroups,
-          length: gridGroups[0].length,
-        },
-      })
+    const layout = modulesToColumnLayout(modules)
+    layoutsDB.houseLayouts.put({
+      layout,
+      systemId,
+      dnas,
     })
-  )
 
-  return layout
+    const {
+      startColumn: { gridGroups },
+    } = splitColumns(layout)
+
+    const getVanillaModule = createVanillaModuleGetter(modulesCache)({
+      constrainGridType: false,
+      positionType: "MID",
+    })
+
+    pipe(
+      gridGroups,
+      A.traverse(O.Applicative)(
+        ({
+          levelIndex,
+          levelType,
+          y,
+          modules: [{ module }],
+        }): O.Option<PositionedRow> =>
+          pipe(
+            module,
+            getVanillaModule,
+            O.map((vanillaModule) => ({
+              modules: [
+                {
+                  module: vanillaModule,
+                  gridGroupIndex: 0,
+                  z: 0,
+                },
+              ],
+              length: vanillaModule.length,
+              y,
+              levelIndex,
+              levelType,
+            }))
+          )
+      ),
+      O.map((gridGroups) => {
+        const levelTypes = pipe(
+          gridGroups,
+          A.map((gridGroup) => gridGroup.levelType)
+        )
+
+        layoutsDB.vanillaColumns.put({
+          systemId,
+          levelTypes,
+          vanillaColumn: {
+            gridGroups,
+            length: gridGroups[0].length,
+          },
+        })
+      })
+    )
+
+    return layout
+  }
 }
 
 const processLayoutsQueue = async () => {
@@ -369,7 +397,7 @@ const processLayoutsQueue = async () => {
   while (layoutsQueue.length > 0) {
     const layoutsKey = layoutsQueue.shift()
     if (layoutsKey) {
-      await processLayout(layoutsKey)
+      await getLayout(layoutsKey)
     }
   }
 }
@@ -449,17 +477,248 @@ const processZStretchLayout = async ({
     endColumn,
   ])
 
-  processLayout({
+  getLayout({
     systemId,
     dnas: nextDnas,
   })
 }
 
+if (!isSSR()) {
+  // CONT
+  liveQuery(async () => {
+    const houses = await userDB.houses.toArray()
+    const sectionTypes = await systemsDB.sectionTypes.toArray()
+
+    return { houses, sectionTypes }
+  }).subscribe(async ({ houses, sectionTypes }) => {
+    // for each house, for each section type
+
+    for (const house of houses) {
+      const { systemId, dnas, id: houseId } = house
+
+      const layout = await getLayout({ systemId, dnas })
+
+      // CONT
+      // getOrPutLayout({ systemId, dnas })
+
+      // for (const { code } of sectionTypes) {
+      // if (!(dnas[0] === code)) {
+      //   console.log(`dnas[0] === code`)
+      //   continue
+      // }
+      // dnas -> new sectionType
+      // skip if code in dnas
+
+      const otherSectionTypes = sectionTypes.filter(
+        (x) =>
+          x.code !==
+          layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+      )
+
+      const changeLayoutSectionType = (
+        layout: ColumnLayout,
+        st: SectionType
+      ) => {
+        const { code: sectionType } = st
+
+        return pipe(
+          layout,
+          A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
+            pipe(
+              positionedColumn.gridGroups,
+              A.traverse(TO.ApplicativeSeq)((gridGroup) => {
+                const {
+                  modules,
+                  modules: [
+                    {
+                      module: {
+                        structuredDna: { levelType, positionType, gridType },
+                      },
+                    },
+                  ],
+                } = gridGroup
+
+                const vanillaModuleTask: TO.TaskOption<Module> = pipe(
+                  TO.fromTask(() =>
+                    getIndexedVanillaModule({
+                      systemId,
+                      sectionType,
+                      positionType,
+                      levelType,
+                      gridType,
+                    })
+                  ),
+                  TO.chainOptionK(
+                    flow(
+                      O.fromNullable,
+                      O.chain((a) =>
+                        pipe(
+                          modulesCache,
+                          A.findFirst(
+                            (b) =>
+                              a.systemId === b.systemId && a.moduleDna === b.dna
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+                // what must I do?
+
+                return pipe(
+                  vanillaModuleTask,
+                  TO.chain((vanillaModule) =>
+                    pipe(
+                      modules,
+                      reduceToOption(
+                        O.some([]),
+                        (
+                          i,
+                          acc: O.Option<PositionedModule[]>,
+                          positionedModule
+                        ) => {
+                          // target is existent module with target section type
+                          const target = {
+                            structuredDna: {
+                              ...positionedModule.module.structuredDna,
+                              sectionType: st.code,
+                            },
+                          } as Module
+
+                          const compatModules = pipe(
+                            modulesCache,
+                            filterCompatibleModules()(target)
+                          )
+
+                          if (compatModules.length === 0) return O.none
+
+                          return pipe(
+                            compatModules,
+                            topCandidateByHamming(target),
+                            O.map((bestModule) => {
+                              const distanceToTarget =
+                                target.structuredDna.gridUnits -
+                                bestModule.structuredDna.gridUnits
+                              switch (true) {
+                                case sign(distanceToTarget) > 0:
+                                  // fill in some vanilla
+                                  return [
+                                    bestModule,
+                                    ...A.replicate(
+                                      distanceToTarget / vanillaModule.length,
+                                      vanillaModule
+                                    ),
+                                  ]
+                                case sign(distanceToTarget) < 0:
+                                  // abort and only vanilla
+                                  return A.replicate(
+                                    positionedModule.module.length /
+                                      vanillaModule.length,
+                                    vanillaModule
+                                  )
+
+                                case sign(distanceToTarget) === 0:
+                                default:
+                                  return [bestModule]
+                                // swap the module
+                              }
+                            }),
+                            O.map((nextModules) =>
+                              pipe(
+                                acc,
+                                O.map((positionedModules) => [
+                                  ...positionedModules,
+                                  ...nextModules.map(
+                                    (module, i) =>
+                                      ({
+                                        module,
+                                        z: positionedModule.z,
+                                        gridGroupIndex: i,
+                                      } as PositionedModule)
+                                  ),
+                                ])
+                              )
+                            ),
+                            O.flatten
+                          )
+                        }
+                      ),
+                      TO.fromOption
+                    )
+                  )
+                )
+              })
+            )
+          )
+        )
+      }
+
+      //                     }
+      //                   ),
+      //                   O.map(
+      //                     (modules): GridGroup => ({
+      //                       ...gridGroupRest,
+      //                       modules,
+      //                     })
+      //                   )
+      //                 )
+      //               } catch (e) {
+      //                 return O.none
+      //               }
+      //             }
+      //           ),
+      //           O.map((gridGroups) => ({
+      //             ...columnRest,
+      //             gridGroups,
+      //           }))
+      //         )
+      //     ),
+      //     O.map((columnLayout): AugSectionType => {
+      //       const houseDna = columnLayoutToDnas(columnLayout)
+      //       return {
+      //         ...st,
+      //         dx: (st.width - houseWidth) / 2,
+      //         houseDna,
+      //         houseDnaKey: houseDna.toString(),
+      //       }
+      //     })
+      //   )
+      // ),
+      // A.sort(
+      //   pipe(
+      //     Num.Ord,
+      //     Ord.contramap((st: AugSectionType) => st.width)
+      //   )
+      // ),
+      // (as) =>
+      //   A.isNonEmpty(as)
+      //     ? as
+      //     : ((): any => {
+      //         throw new Error("empty section types")
+      //       })()
+      // )
+      // }
+    }
+  })
+}
+
+const getStretchXLayout = (houseId: string, sectionType: string) => {
+  // check if already there
+  // if then return
+  // else get and return
+}
+
+const getStretchXPreviews = (houseId: string, currentSectionType: string) => {
+  return { foo: "bar" }
+}
+
 const api = {
   postLayout,
   postLayouts,
-  processLayout,
+  processLayout: getLayout,
   processZStretchLayout,
+  // getStretchXLayout,
+  getStretchXPreviews,
   syncModels,
 }
 
