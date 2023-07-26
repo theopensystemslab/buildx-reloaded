@@ -55,9 +55,9 @@ const FreshApp = () => {
     rootRef.current.add(houseGroup)
     liveHouses[houseId] = houseGroup
 
-    getStretchXPreviews(houseGroup).then((x) => {
-      console.log(x, `hi`)
-    })
+    // getStretchXPreviews(houseGroup).then((x) => {
+    //   console.log(x, `hi`)
+    // })
 
     // stretchXHouses[houseId] = getStretchXPreviews(houseGroup)
     // (stretchXHouses)
@@ -217,8 +217,6 @@ const FreshApp = () => {
       //     objects,
       //   })
       // }
-
-      console.log(object)
 
       switch (siteCtx.mode) {
         case SiteCtxModeEnum.Enum.SITE:

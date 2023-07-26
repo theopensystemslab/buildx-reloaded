@@ -1,7 +1,8 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import { flow, identity, pipe } from "fp-ts/lib/function"
+import { sequenceS } from "fp-ts/lib/Apply"
+import { flow, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
 import { Module } from "../../../server/data/modules"
@@ -12,24 +13,22 @@ import {
 } from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
+  getHouseLayoutsKey,
+  GridGroup,
   HouseLayoutsKey,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
-  getHouseLayoutsKey,
-  GridGroup,
-  IndexedVanillaModule,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import userDB from "../../db/user"
-import { AugSectionType } from "../../design/ui-3d/grouped/stretchWidth/StretchWidth"
 import {
   A,
-  mapToOption,
-  Num,
   O,
-  Ord,
+  pipeLog,
+  pipeLogWith,
   reduceToOption,
+  T,
   TO,
 } from "../../utils/functions"
 import { sign } from "../../utils/math"
@@ -498,23 +497,6 @@ if (!isSSR()) {
 
       const layout = await getLayout({ systemId, dnas })
 
-      // CONT
-      // getOrPutLayout({ systemId, dnas })
-
-      // for (const { code } of sectionTypes) {
-      // if (!(dnas[0] === code)) {
-      //   console.log(`dnas[0] === code`)
-      //   continue
-      // }
-      // dnas -> new sectionType
-      // skip if code in dnas
-
-      const otherSectionTypes = sectionTypes.filter(
-        (x) =>
-          x.code !==
-          layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
-      )
-
       const changeLayoutSectionType = (
         layout: ColumnLayout,
         st: SectionType
@@ -548,9 +530,11 @@ if (!isSSR()) {
                       gridType,
                     })
                   ),
+                  pipeLogWith(() => 1),
                   TO.chainOptionK(
                     flow(
                       O.fromNullable,
+                      pipeLogWith(() => 2),
                       O.chain((a) =>
                         pipe(
                           modulesCache,
@@ -563,7 +547,6 @@ if (!isSSR()) {
                     )
                   )
                 )
-                // what must I do?
 
                 return pipe(
                   vanillaModuleTask,
@@ -579,6 +562,7 @@ if (!isSSR()) {
                         ) => {
                           // target is existent module with target section type
                           const target = {
+                            systemId,
                             structuredDna: {
                               ...positionedModule.module.structuredDna,
                               sectionType: st.code,
@@ -643,15 +627,52 @@ if (!isSSR()) {
                           )
                         }
                       ),
+                      O.map(
+                        (modules): GridGroup => ({
+                          ...gridGroup,
+                          modules,
+                        })
+                      ),
                       TO.fromOption
                     )
                   )
                 )
-              })
+              }),
+              TO.map((gridGroups) => ({
+                ...positionedColumn,
+                gridGroups,
+              }))
             )
           )
-        )
+        )()
       }
+
+      const otherSectionTypes = sectionTypes.filter(
+        (x) =>
+          x.code !==
+          layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+      )
+
+      const unwrapSome = <A>(
+        taskOptionArray: T.Task<O.Option<A>[]>
+      ): T.Task<A[]> =>
+        pipe(
+          taskOptionArray,
+          T.map(A.compact) // compact function removes None and unwraps Some values
+        )
+
+      const otherLayouts = await pipe(
+        otherSectionTypes,
+        A.map(
+          (sectionType): TO.TaskOption<ColumnLayout> =>
+            () =>
+              changeLayoutSectionType(layout, sectionType)
+        ),
+        A.sequence(T.ApplicativeSeq), // Converts Array<Task<Option<A>>> to Task<Array<Option<A>>>
+        unwrapSome // Transforms Task<Array<Option<A>>> to Task<Array<A>>, unwrapping Some and ignoring None
+      )()
+
+      console.log({ otherLayouts })
 
       //                     }
       //                   ),
