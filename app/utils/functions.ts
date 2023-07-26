@@ -7,7 +7,7 @@ import { clamp } from "fp-ts/Ord"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as R from "fp-ts/Record"
 import * as S from "fp-ts/string"
-
+import * as T from "fp-ts/Task"
 const clamp_ = clamp(Num.Ord)
 
 export * as M from "fp-ts/Map"
@@ -19,10 +19,9 @@ export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
 export * as TO from "fp-ts/TaskOption"
 export * as TE from "fp-ts/TaskEither"
-export * as T from "fp-ts/Task"
 
 export { clamp_ as clamp }
-export { A, Num, O, R, RA, S }
+export { A, Num, O, R, RA, S, T }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)
@@ -114,3 +113,11 @@ export const clearRecord = (obj: Record<string, any>) => {
     }
   }
 }
+
+export const unwrapSome = <A>(
+  taskOptionArray: T.Task<O.Option<A>[]>
+): T.Task<A[]> =>
+  pipe(
+    taskOptionArray,
+    T.map(A.compact) // compact function removes None and unwraps Some values
+  )

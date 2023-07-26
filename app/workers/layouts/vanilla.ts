@@ -98,17 +98,14 @@ export const getIndexedVanillaModule = ({
   positionType: string
   levelType: string
   gridType: string
-}) => {
-  console.log("am I ever?")
-
-  return layoutsDB.vanillaModules.get([
+}) =>
+  layoutsDB.vanillaModules.get([
     systemId,
     sectionType,
     positionType,
     levelType,
     gridType,
   ])
-}
 
 liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
   for (let dbLayout of dbLayouts) {

@@ -27,9 +27,12 @@ import {
   O,
   pipeLog,
   pipeLogWith,
+  R,
   reduceToOption,
+  SG,
   T,
   TO,
+  unwrapSome,
 } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
@@ -653,84 +656,41 @@ if (!isSSR()) {
           layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
       )
 
-      const unwrapSome = <A>(
-        taskOptionArray: T.Task<O.Option<A>[]>
-      ): T.Task<A[]> =>
-        pipe(
-          taskOptionArray,
-          T.map(A.compact) // compact function removes None and unwraps Some values
-        )
-
       const otherLayouts = await pipe(
         otherSectionTypes,
         A.map(
-          (sectionType): TO.TaskOption<ColumnLayout> =>
+          (
+              sectionType
+            ): TO.TaskOption<{
+              layout: ColumnLayout
+              sectionType: SectionType
+            }> =>
             () =>
-              changeLayoutSectionType(layout, sectionType)
+              changeLayoutSectionType(layout, sectionType).then(
+                O.map((layout) => ({ layout, sectionType }))
+              )
         ),
-        A.sequence(T.ApplicativeSeq), // Converts Array<Task<Option<A>>> to Task<Array<Option<A>>>
-        unwrapSome // Transforms Task<Array<Option<A>>> to Task<Array<A>>, unwrapping Some and ignoring None
+        A.sequence(T.ApplicativeSeq),
+        unwrapSome,
+        (x) => x
       )()
 
-      console.log({ otherLayouts })
+      const altSectionTypeLayouts = pipe(
+        otherLayouts,
+        A.reduce(
+          {},
+          (acc: Record<string, ColumnLayout>, { layout, sectionType }) => {
+            return {
+              ...acc,
+              [sectionType.code]: layout,
+            }
+          }
+        )
+      )
 
-      //                     }
-      //                   ),
-      //                   O.map(
-      //                     (modules): GridGroup => ({
-      //                       ...gridGroupRest,
-      //                       modules,
-      //                     })
-      //                   )
-      //                 )
-      //               } catch (e) {
-      //                 return O.none
-      //               }
-      //             }
-      //           ),
-      //           O.map((gridGroups) => ({
-      //             ...columnRest,
-      //             gridGroups,
-      //           }))
-      //         )
-      //     ),
-      //     O.map((columnLayout): AugSectionType => {
-      //       const houseDna = columnLayoutToDnas(columnLayout)
-      //       return {
-      //         ...st,
-      //         dx: (st.width - houseWidth) / 2,
-      //         houseDna,
-      //         houseDnaKey: houseDna.toString(),
-      //       }
-      //     })
-      //   )
-      // ),
-      // A.sort(
-      //   pipe(
-      //     Num.Ord,
-      //     Ord.contramap((st: AugSectionType) => st.width)
-      //   )
-      // ),
-      // (as) =>
-      //   A.isNonEmpty(as)
-      //     ? as
-      //     : ((): any => {
-      //         throw new Error("empty section types")
-      //       })()
-      // )
-      // }
+      layoutsDB.altSectionTypeLayouts.put({ houseId, altSectionTypeLayouts })
     }
   })
-}
-
-const getStretchXLayout = (houseId: string, sectionType: string) => {
-  // check if already there
-  // if then return
-  // else get and return
-}
-
-const getStretchXPreviews = (houseId: string, currentSectionType: string) => {
-  return { foo: "bar" }
 }
 
 const api = {
@@ -738,8 +698,6 @@ const api = {
   postLayouts,
   processLayout: getLayout,
   processZStretchLayout,
-  // getStretchXLayout,
-  getStretchXPreviews,
   syncModels,
 }
 
