@@ -17,7 +17,6 @@ import {
   setVisibleAndRaycast,
   yAxis,
 } from "../../../utils/three"
-import { CameraLayer } from "../../state/constants"
 import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
 import settings from "../../state/settings"
@@ -177,6 +176,7 @@ const FreshApp = () => {
               delete stretchXGroups[k]
 
               invalidate()
+              updateEverything(firstGroup)
             })
           )
         )

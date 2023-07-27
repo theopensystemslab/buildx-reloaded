@@ -282,10 +282,15 @@ export const houseLayoutToHouseGroup = async ({
     sectionType,
     levelTypes: houseLayoutToLevelTypes(houseLayout),
     columnCount: columnGroups.length,
+    houseLayout,
   }
   topLevelHouseGroup.userData = houseGroupUserData
+
   zCenterHouseGroup.add(...columnGroups)
   zCenterHouseGroup.position.setZ(-length / 2)
+  zCenterHouseGroup.userData.type =
+    UserDataTypeEnum.Enum.HouseColumnsContainerGroup
+
   topLevelHouseGroup.add(zCenterHouseGroup)
 
   return topLevelHouseGroup
@@ -359,6 +364,13 @@ export const removeColumnFromHouse = (
     O.map((zCenterHouseGroup) => void zCenterHouseGroup.remove(columnGroup))
   )
 
+export const columnSorter = A.sort(
+  pipe(
+    Num.Ord,
+    Ord.contramap((x: Object3D) => x.userData.columnIndex)
+  )
+)
+
 export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
   const { levelTypes, systemId, columnCount, clippingPlanes } =
     houseGroup.userData as HouseRootGroupUserData
@@ -403,12 +415,7 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
       } else if (direction === -1) {
         pipe(
           columnGroups,
-          A.sort(
-            pipe(
-              Num.Ord,
-              Ord.contramap((x: Object3D) => x.userData.columnIndex)
-            )
-          ),
+          columnSorter,
           ([startColumnGroup, ...restColumnGroups]) => {
             for (let columnGroup of restColumnGroups) {
               columnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))

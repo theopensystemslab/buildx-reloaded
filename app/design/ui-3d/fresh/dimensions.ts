@@ -1,9 +1,8 @@
 import { invalidate } from "@react-three/fiber"
-import { flow, pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
   Group,
-  Material,
   Matrix3,
   Matrix4,
   Mesh,
@@ -14,8 +13,12 @@ import {
 import { OBB } from "three-stdlib"
 import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
-import { isMesh, xAxis, yAxis, zAxis } from "../../../utils/three"
-import { HouseRootGroupUserData, UserDataTypeEnum } from "./userData"
+import { columnSorter } from "./helpers"
+import {
+  HouseRootGroupUserData,
+  ModuleGroupUserData,
+  UserDataTypeEnum,
+} from "./userData"
 
 export const DEBUG = false
 
@@ -90,10 +93,35 @@ export const updateHouseLength = (houseGroup: Group) => {
 }
 
 const updateDnas = (houseGroup: Group) => {
-  // infer the dnas from the layout
-  houseGroup.traverse((node) => {
-    console.log(node)
-  })
+  let result: string[][] = []
+  pipe(
+    houseGroup.children,
+    A.lookup(0),
+    O.map((columnsContainerGroup) =>
+      pipe(
+        columnsContainerGroup.children,
+        columnSorter,
+        A.map((v) => {
+          v.traverse((node) => {
+            if (node.userData.type === UserDataTypeEnum.Enum.ModuleGroup) {
+              const { dna } = node.userData as ModuleGroupUserData
+              if (
+                node.parent?.userData.type !== UserDataTypeEnum.Enum.GridGroup
+              )
+                throw new Error("non-GridGroup parent of ModuleGroup")
+
+              const levelIndex = node.parent!.userData.levelIndex
+              if (!result[levelIndex]) {
+                result[levelIndex] = []
+              }
+              result[levelIndex].push(dna)
+            }
+          })
+        })
+      )
+    )
+  )
+  houseGroup.userData.dnas = result.flat()
 }
 
 export const updateEverything = (houseGroup: Group) => {
@@ -102,19 +130,13 @@ export const updateEverything = (houseGroup: Group) => {
   updateClippingPlanes(houseGroup)
   updateDnas(houseGroup)
 
-  const { dnas, houseId, friendlyName, houseTypeId } =
-    houseGroup.userData as HouseRootGroupUserData
-
-  console.log(houseGroup.userData.dnas)
+  const { dnas, houseId } = houseGroup.userData as HouseRootGroupUserData
 
   const rotation = houseGroup.rotation.y
   const position = houseGroup.position
 
-  console.log({ dnas })
-
   userDB.houses.update(houseId, {
     dnas,
-    friendlyName,
     position,
     rotation,
   })

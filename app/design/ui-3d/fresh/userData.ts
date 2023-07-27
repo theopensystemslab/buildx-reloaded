@@ -1,6 +1,7 @@
 import { Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
+import { ColumnLayout } from "../../../db/layouts"
 
 // HouseRootGroup has
 // -> HouseColumnsContainerGroup as singleton child has
@@ -25,6 +26,7 @@ export type HouseRootGroupUserData = {
   houseId: string
   houseTypeId: string
   dnas: string[]
+  houseLayout: ColumnLayout
   friendlyName: string
   modifiedMaterials: Record<string, string>
   height: number
