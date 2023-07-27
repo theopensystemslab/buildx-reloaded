@@ -1,12 +1,14 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
+import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
 import { useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Group, Vector3 } from "three"
+import layoutsDB from "../../../db/layouts"
 import userDB, { House } from "../../../db/user"
-import { A, O } from "../../../utils/functions"
+import { A, O, R } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { floor, PI } from "../../../utils/math"
 import { isMesh, yAxis } from "../../../utils/three"
@@ -185,6 +187,26 @@ const FreshApp = () => {
       updateEverything(houseGroup)
     }
   })
+
+  liveQuery(() => layoutsDB.altSectionTypeLayouts.toArray()).subscribe(
+    (data) => {
+      for (const { houseId, altSectionTypeLayouts } of data) {
+        // CONT
+        // this needs to .clone(false) on the house group first
+        // then fill said house group with the layout
+        // ---
+        // maybe we want to do this so that createHouseGroup uses this also?
+        // and then we'd want to modify the
+        stretchXHouses[houseId] = pipe(
+          altSectionTypeLayouts,
+          R.map((x) => {
+            // yeah you need something that's gonna turn the layout into a scene graph
+            const phonyHouseGroup = createHouseGroup()
+          })
+        )
+      }
+    }
+  )
 
   const bindAll: any = useGesture<{
     drag: ThreeEvent<PointerEvent>

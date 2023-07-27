@@ -230,16 +230,14 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   }
 )
 
-export const createHouseGroup = async ({
+const houseLayoutToHouseGroup = async ({
   systemId,
   houseId,
-  dnas,
-  friendlyName,
+  houseLayout,
 }: {
   systemId: string
   houseId: string
-  dnas: string[]
-  friendlyName: string
+  houseLayout: ColumnLayout
 }) => {
   const clippingPlanes: Plane[] = [
     new Plane(new Vector3(1, 0, 0), 0),
@@ -247,61 +245,63 @@ export const createHouseGroup = async ({
     new Plane(new Vector3(0, 0, 1), 0),
   ]
 
-  const houseLayoutToHouseGroup = async ({
+  const columnGroups = houseLayoutToColumns({
     systemId,
     houseId,
     houseLayout,
-  }: {
-    systemId: string
-    houseId: string
-    houseLayout: ColumnLayout
-  }) => {
-    const columnGroups = houseLayoutToColumns({
-      systemId,
-      houseId,
-      houseLayout,
-      clippingPlanes,
-    })
-    const topLevelHouseGroup = new Group()
-    const zCenterHouseGroup = new Group()
+    clippingPlanes,
+  })
+  const topLevelHouseGroup = new Group()
+  const zCenterHouseGroup = new Group()
 
-    const sectionType =
-      houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+  const sectionType =
+    houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
 
-    const width = houseLayout[0].gridGroups[0].modules[0].module.width
-    const height = houseLayout[0].gridGroups.reduce(
-      (acc, v) => acc + v.modules[0].module.height,
-      0
-    )
-    const length = columnGroups.reduce(
-      (acc, columnGroup) => acc + columnGroup.userData.length,
-      0
-    )
-    const obb = new OBB()
-    const houseGroupUserData: HouseRootGroupUserData = {
-      type: UserDataTypeEnum.Enum.HouseRootGroup,
-      systemId,
-      houseId,
-      width,
-      length,
-      height,
-      dnas,
-      friendlyName,
-      modifiedMaterials: {},
-      obb,
-      clippingPlanes,
-      sectionType,
-      levelTypes: houseLayoutToLevelTypes(houseLayout),
-      columnCount: columnGroups.length,
-    }
-    topLevelHouseGroup.userData = houseGroupUserData
-    zCenterHouseGroup.add(...columnGroups)
-    zCenterHouseGroup.position.setZ(-length / 2)
-    topLevelHouseGroup.add(zCenterHouseGroup)
-
-    return topLevelHouseGroup
+  const width = houseLayout[0].gridGroups[0].modules[0].module.width
+  const height = houseLayout[0].gridGroups.reduce(
+    (acc, v) => acc + v.modules[0].module.height,
+    0
+  )
+  const length = columnGroups.reduce(
+    (acc, columnGroup) => acc + columnGroup.userData.length,
+    0
+  )
+  const obb = new OBB()
+  const houseGroupUserData: Partial<HouseRootGroupUserData> = {
+    type: UserDataTypeEnum.Enum.HouseRootGroup,
+    systemId,
+    houseId,
+    width,
+    length,
+    height,
+    // dnas,
+    // friendlyName,
+    modifiedMaterials: {},
+    obb,
+    clippingPlanes,
+    sectionType,
+    levelTypes: houseLayoutToLevelTypes(houseLayout),
+    columnCount: columnGroups.length,
   }
+  topLevelHouseGroup.userData = houseGroupUserData
+  zCenterHouseGroup.add(...columnGroups)
+  zCenterHouseGroup.position.setZ(-length / 2)
+  topLevelHouseGroup.add(zCenterHouseGroup)
 
+  return topLevelHouseGroup
+}
+
+export const createHouseGroup = async ({
+  systemId,
+  houseId,
+  dnas,
+}: // friendlyName,
+{
+  systemId: string
+  houseId: string
+  dnas: string[]
+  // friendlyName: string
+}) => {
   const houseGroup = pipe(
     houseLayouts,
     R.lookup(getHouseLayoutsKey({ systemId, dnas })),

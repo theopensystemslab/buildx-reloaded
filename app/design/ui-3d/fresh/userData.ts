@@ -1,20 +1,13 @@
-import { Group, Plane } from "three"
+import { Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 
-// maybe want some updater functions to update all the user data in the tree
-
-// or at certain levels/scopes?
-
-// houseGroup has
-// -> zCenterGroup as singleton child has
-//   -> columnGroups as children has
-//     -> gridGroups as children has
-//       -> moduleGroups as children has
-//         -> elementMeshes as children
-
-// needs HouseTransformGroup
-// HouseColumnsGroup
+// HouseRootGroup has
+// -> HouseColumnsContainerGroup as singleton child has
+//   -> ColumnsGroup's as children has
+//     -> GridGroup's as children has
+//       -> ModuleGroup's as children has
+//         -> ElementMesh's as children
 
 export const UserDataTypeEnum = z.enum([
   "HouseRootGroup",
@@ -78,4 +71,5 @@ export type UserData =
   | ModuleGroupUserData
   | GridGroupUserData
   | ColumnGroupUserData
+  | HouseColumnsContainerUserData
   | HouseRootGroupUserData
