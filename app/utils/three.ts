@@ -185,3 +185,9 @@ export const useRotations = () => {
 
   return { rotateV2, unrotateV2 }
 }
+
+export const setLayer = (object: Object3D, layer: number) => {
+  object.traverse((node) => {
+    node.layers.set(layer)
+  })
+}

@@ -1,5 +1,6 @@
 import Dexie from "dexie"
 import { Module } from "../../server/data/modules"
+import { SectionType } from "../../server/data/sectionTypes"
 import { LastFetchStamped } from "./systems"
 
 export type PositionedModule = {
@@ -113,7 +114,10 @@ export const invertVanillaColumnsKey = (key: string): VanillaColumnsKey => {
 
 type IndexedAltSectionTypeLayouts = {
   houseId: string
-  altSectionTypeLayouts: Record<string, ColumnLayout>
+  altSectionTypeLayouts: Record<
+    string,
+    { layout: ColumnLayout; sectionType: SectionType }
+  >
 }
 
 class LayoutsDatabase extends Dexie {

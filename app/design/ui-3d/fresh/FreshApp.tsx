@@ -1,17 +1,19 @@
-import { invalidate, ThreeEvent } from "@react-three/fiber"
+import { invalidate, ThreeEvent, useThree } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { liveQuery } from "dexie"
-import { pipe } from "fp-ts/lib/function"
+import { identity, pipe } from "fp-ts/lib/function"
+import { Task } from "fp-ts/lib/Task"
 import { nanoid } from "nanoid"
 import { useEffect, useRef } from "react"
-import { useKey } from "react-use"
-import { Group, Vector3 } from "three"
+import { useInterval, useKey } from "react-use"
+import { Group, Object3D, Vector3 } from "three"
 import layoutsDB from "../../../db/layouts"
 import userDB, { House } from "../../../db/user"
-import { A, O, R } from "../../../utils/functions"
+import { A, O, R, T } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { floor, PI } from "../../../utils/math"
-import { isMesh, yAxis } from "../../../utils/three"
+import { isMesh, setLayer, yAxis } from "../../../utils/three"
+import { CameraLayer } from "../../state/constants"
 import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
 import settings from "../../state/settings"
@@ -26,11 +28,12 @@ import {
 import { dispatchOutline } from "./events/outlines"
 import {
   createHouseGroup,
+  houseLayoutToHouseGroup,
   insertVanillaColumn,
   subtractPenultimateColumn,
 } from "./helpers"
 import getStretchXPreviews from "./stretchXPreviews"
-import { UserData, UserDataTypeEnum } from "./userData"
+import { HouseRootGroupUserData, UserData, UserDataTypeEnum } from "./userData"
 
 const liveHouses: Record<string, Group> = {}
 const stretchXHouses: Record<string, Record<string, Group>> = {}
@@ -141,8 +144,37 @@ const FreshApp = () => {
     }
   })
 
-  // stretch width +
-  useKey("x", () => {})
+  // toggle stretch width first pass
+  useKey("x", () => {
+    for (let houseId of Object.keys(liveHouses)) {
+      const liveHouseGroup: Group = liveHouses[houseId]
+      const stretchXGroups: Record<string, Group> = stretchXHouses[houseId]
+
+      pipe(
+        R.keys(stretchXGroups),
+        A.head,
+        O.map((k) =>
+          pipe(
+            stretchXGroups,
+            R.lookup(k),
+            O.map((firstGroup) => {
+              setLayer(firstGroup, CameraLayer.VISIBLE)
+              setLayer(liveHouseGroup, CameraLayer.INVISIBLE)
+
+              stretchXGroups[
+                (liveHouseGroup.userData as HouseRootGroupUserData).sectionType
+              ] = liveHouseGroup
+              liveHouses[houseId] = firstGroup
+
+              delete stretchXGroups[k]
+
+              invalidate()
+            })
+          )
+        )
+      )
+    }
+  })
 
   // stretch width -
   useKey("X", () => {})
@@ -191,17 +223,49 @@ const FreshApp = () => {
   liveQuery(() => layoutsDB.altSectionTypeLayouts.toArray()).subscribe(
     (data) => {
       for (const { houseId, altSectionTypeLayouts } of data) {
-        // CONT
-        // this needs to .clone(false) on the house group first
-        // then fill said house group with the layout
-        // ---
-        // maybe we want to do this so that createHouseGroup uses this also?
-        // and then we'd want to modify the
-        stretchXHouses[houseId] = pipe(
-          altSectionTypeLayouts,
-          R.map((x) => {
-            // yeah you need something that's gonna turn the layout into a scene graph
-            const phonyHouseGroup = createHouseGroup()
+        pipe(
+          liveHouses,
+          R.lookup(houseId),
+          O.map((houseGroup) => {
+            const layoutTasks: Record<string, T.Task<Group>> = pipe(
+              altSectionTypeLayouts,
+              R.map(({ layout: houseLayout }) => {
+                const { systemId, friendlyName } =
+                  houseGroup.userData as HouseRootGroupUserData
+                // const houseLayout = altSectionTypeLayouts[]
+                return () =>
+                  houseLayoutToHouseGroup({
+                    systemId,
+                    friendlyName,
+                    houseId,
+                    houseLayout,
+                  })
+              })
+            )
+
+            const layoutsTask = pipe(
+              layoutTasks,
+              R.traverse(T.ApplicativeSeq)(identity)
+            )
+
+            layoutsTask().then((groups) => {
+              pipe(
+                stretchXHouses[houseId],
+                R.map((group) => rootRef.current?.remove(group))
+              )
+              pipe(
+                groups,
+                R.map((group) => {
+                  // const layerUp = (object: Object3D, layers: )
+
+                  setLayer(group, CameraLayer.INVISIBLE)
+
+                  rootRef.current?.add(group)
+                })
+              )
+              stretchXHouses[houseId] = groups
+              console.log({ rootRef: rootRef.current })
+            })
           })
         )
       }

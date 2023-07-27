@@ -1,7 +1,6 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import { sequenceS } from "fp-ts/lib/Apply"
 import { flow, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
@@ -22,18 +21,7 @@ import layoutsDB, {
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import userDB from "../../db/user"
-import {
-  A,
-  O,
-  pipeLog,
-  pipeLogWith,
-  R,
-  reduceToOption,
-  SG,
-  T,
-  TO,
-  unwrapSome,
-} from "../../utils/functions"
+import { A, O, reduceToOption, T, TO, unwrapSome } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { syncModels } from "./models"
@@ -533,11 +521,9 @@ if (!isSSR()) {
                       gridType,
                     })
                   ),
-                  pipeLogWith(() => 1),
                   TO.chainOptionK(
                     flow(
                       O.fromNullable,
-                      pipeLogWith(() => 2),
                       O.chain((a) =>
                         pipe(
                           modulesCache,
@@ -679,10 +665,16 @@ if (!isSSR()) {
         otherLayouts,
         A.reduce(
           {},
-          (acc: Record<string, ColumnLayout>, { layout, sectionType }) => {
+          (
+            acc: Record<
+              string,
+              { layout: ColumnLayout; sectionType: SectionType }
+            >,
+            { layout, sectionType }
+          ) => {
             return {
               ...acc,
-              [sectionType.code]: layout,
+              [sectionType.code]: { layout, sectionType },
             }
           }
         )

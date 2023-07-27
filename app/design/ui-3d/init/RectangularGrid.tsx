@@ -7,6 +7,7 @@ import {
   LineDashedMaterial,
   LineSegments,
 } from "three"
+import { CameraLayer } from "../../state/constants"
 
 interface Axis {
   cells: number

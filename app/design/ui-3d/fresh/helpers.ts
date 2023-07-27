@@ -22,6 +22,7 @@ import layoutsDB, {
 } from "../../../db/layouts"
 import { A, Num, O, Ord, R, S } from "../../../utils/functions"
 import { getLayoutsWorker } from "../../../workers"
+import { CameraLayer, RaycasterLayer } from "../../state/constants"
 import { getMaterial } from "./systems"
 import {
   ColumnGroupUserData,
@@ -105,7 +106,7 @@ export const moduleToGroup = ({
       ifcTag,
       houseId: "",
     }) as MeshStandardMaterial
-    material.clippingPlanes = clippingPlanes
+    // material.clippingPlanes = clippingPlanes
     const mesh = new Mesh(geometry, material)
     mesh.castShadow = true
 
@@ -230,19 +231,22 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   }
 )
 
-const houseLayoutToHouseGroup = async ({
+export const houseLayoutToHouseGroup = async ({
   systemId,
   houseId,
   houseLayout,
+  friendlyName,
 }: {
   systemId: string
   houseId: string
   houseLayout: ColumnLayout
+  friendlyName: string
 }) => {
+  const BIG_NUMBER = 99
   const clippingPlanes: Plane[] = [
-    new Plane(new Vector3(1, 0, 0), 0),
-    new Plane(new Vector3(0, 1, 0), 0),
-    new Plane(new Vector3(0, 0, 1), 0),
+    new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
+    new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
+    new Plane(new Vector3(0, 0, BIG_NUMBER), 0),
   ]
 
   const columnGroups = houseLayoutToColumns({
@@ -295,14 +299,14 @@ export const createHouseGroup = async ({
   systemId,
   houseId,
   dnas,
-}: // friendlyName,
-{
+  friendlyName,
+}: {
   systemId: string
   houseId: string
   dnas: string[]
-  // friendlyName: string
+  friendlyName: string
 }) => {
-  const houseGroup = pipe(
+  const houseGroup = await pipe(
     houseLayouts,
     R.lookup(getHouseLayoutsKey({ systemId, dnas })),
     O.match(
@@ -317,10 +321,16 @@ export const createHouseGroup = async ({
           systemId,
           houseId,
           houseLayout,
+          friendlyName,
         })
       },
       (houseLayout) =>
-        houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
+        houseLayoutToHouseGroup({
+          systemId,
+          houseId,
+          houseLayout,
+          friendlyName,
+        })
     )
   )
 

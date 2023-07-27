@@ -55,7 +55,7 @@ export const updateHouseWidth = (houseGroup: Group) => {}
 
 export const updateHouseHeight = (houseGroup: Group) => {}
 
-export const updateClippingPlanes = flow((houseGroup: Group) => {
+export const updateClippingPlanes = (houseGroup: Group) => {
   const {
     clippingPlanes,
     clippingPlanes: [planeX, planeY, planeZ],
@@ -69,7 +69,7 @@ export const updateClippingPlanes = flow((houseGroup: Group) => {
   planeY.applyMatrix4(houseGroup.matrix)
   planeZ.set(new Vector3(0, 0, 1), 0)
   planeZ.applyMatrix4(houseGroup.matrix)
-})
+}
 
 export const updateHouseLength = (houseGroup: Group) => {
   pipe(
