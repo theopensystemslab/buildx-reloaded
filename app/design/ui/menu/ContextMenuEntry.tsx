@@ -77,7 +77,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
   const deleteBuilding = () => {
     dispatchDeleteHouse({
-      id: house.id,
+      id: house.houseId,
     })
     // delete houses[houseId]
     scope.selected = null

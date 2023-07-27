@@ -2,7 +2,7 @@ import Dexie from "dexie"
 import { z } from "zod"
 
 export const houseParser = z.object({
-  id: z.string().min(1),
+  houseId: z.string().min(1),
   houseTypeId: z.string().min(1),
   systemId: z.string().min(1),
   dnas: z.array(z.string().min(1)),
@@ -24,7 +24,7 @@ class UserDatabase extends Dexie {
   constructor() {
     super("UserDatabase")
     this.version(1).stores({
-      houses: "id,&friendlyName",
+      houses: "houseId,&friendlyName",
     })
     this.houses = this.table("houses")
   }

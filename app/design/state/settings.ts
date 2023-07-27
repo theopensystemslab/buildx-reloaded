@@ -14,7 +14,7 @@ type AppSettings = {
 const settings = proxy<AppSettings>({
   mapEnabled: false,
   sidebar: false,
-  groundPlaneEnabled: false,
+  groundPlaneEnabled: true,
   verticalCuts: {
     width: false,
     length: false,

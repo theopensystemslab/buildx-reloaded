@@ -235,12 +235,10 @@ export const houseLayoutToHouseGroup = async ({
   systemId,
   houseId,
   houseLayout,
-  friendlyName,
 }: {
   systemId: string
   houseId: string
   houseLayout: ColumnLayout
-  friendlyName: string
 }) => {
   const BIG_NUMBER = 99
   const clippingPlanes: Plane[] = [
@@ -278,8 +276,6 @@ export const houseLayoutToHouseGroup = async ({
     width,
     length,
     height,
-    // dnas,
-    // friendlyName,
     modifiedMaterials: {},
     obb,
     clippingPlanes,
@@ -321,7 +317,6 @@ export const createHouseGroup = async ({
           systemId,
           houseId,
           houseLayout,
-          friendlyName,
         })
       },
       (houseLayout) =>
@@ -329,10 +324,12 @@ export const createHouseGroup = async ({
           systemId,
           houseId,
           houseLayout,
-          friendlyName,
         })
     )
   )
+
+  houseGroup.userData.dnas = dnas
+  houseGroup.userData.friendlyName = friendlyName
 
   return houseGroup
 }

@@ -484,7 +484,7 @@ if (!isSSR()) {
     // for each house, for each section type
 
     for (const house of houses) {
-      const { systemId, dnas, id: houseId } = house
+      const { systemId, dnas, houseId: houseId } = house
 
       const layout = await getLayout({ systemId, dnas })
 

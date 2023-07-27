@@ -1,18 +1,22 @@
-import { invalidate, ThreeEvent, useThree } from "@react-three/fiber"
+import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { liveQuery } from "dexie"
 import { identity, pipe } from "fp-ts/lib/function"
-import { Task } from "fp-ts/lib/Task"
 import { nanoid } from "nanoid"
 import { useEffect, useRef } from "react"
-import { useInterval, useKey } from "react-use"
-import { Group, Object3D, Vector3 } from "three"
+import { useKey } from "react-use"
+import { Group, Vector3 } from "three"
 import layoutsDB from "../../../db/layouts"
 import userDB, { House } from "../../../db/user"
 import { A, O, R, T } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { floor, PI } from "../../../utils/math"
-import { isMesh, setLayer, yAxis } from "../../../utils/three"
+import {
+  isMesh,
+  setInvisible,
+  setVisibleAndRaycast,
+  yAxis,
+} from "../../../utils/three"
 import { CameraLayer } from "../../state/constants"
 import { openMenu } from "../../state/menu"
 import scope, { ScopeItem } from "../../state/scope"
@@ -32,7 +36,6 @@ import {
   insertVanillaColumn,
   subtractPenultimateColumn,
 } from "./helpers"
-import getStretchXPreviews from "./stretchXPreviews"
 import { HouseRootGroupUserData, UserData, UserDataTypeEnum } from "./userData"
 
 const liveHouses: Record<string, Group> = {}
@@ -48,7 +51,14 @@ const FreshApp = () => {
   const addHouse = async (house: House) => {
     if (!rootRef.current) return
 
-    const { id: houseId, systemId, dnas, friendlyName } = house
+    const {
+      houseId: houseId,
+      systemId,
+      dnas,
+      friendlyName,
+      position,
+      rotation,
+    } = house
 
     const houseGroup = await createHouseGroup({
       systemId,
@@ -57,15 +67,13 @@ const FreshApp = () => {
       friendlyName,
     })
 
+    houseGroup.position.set(position.x, position.y, position.z)
+    houseGroup.rotation.set(0, rotation, 0)
+
+    setVisibleAndRaycast(houseGroup)
+
     rootRef.current.add(houseGroup)
     liveHouses[houseId] = houseGroup
-
-    // getStretchXPreviews(houseGroup).then((x) => {
-    //   console.log(x, `hi`)
-    // })
-
-    // stretchXHouses[houseId] = getStretchXPreviews(houseGroup)
-    // (stretchXHouses)
 
     invalidate()
 
@@ -101,7 +109,7 @@ const FreshApp = () => {
     const friendlyName = getFriendlyName()
 
     dispatchAddHouse({
-      id,
+      houseId: id,
       systemId,
       houseTypeId,
       dnas,
@@ -125,10 +133,10 @@ const FreshApp = () => {
     invalidate()
   })
 
-  const getHouseGroups = () =>
-    (rootRef.current?.children ?? []).filter(
-      (x) => x.userData.type === UserDataTypeEnum.Enum.HouseRootGroup
-    ) as Group[]
+  const getHouseGroups = () => Object.values(liveHouses)
+  // (rootRef.current?.children ?? []).filter(
+  //   (x) => x.userData.type === UserDataTypeEnum.Enum.HouseRootGroup
+  // ) as Group[]
 
   useKey("z", () => {
     for (let houseGroup of getHouseGroups()) {
@@ -158,8 +166,8 @@ const FreshApp = () => {
             stretchXGroups,
             R.lookup(k),
             O.map((firstGroup) => {
-              setLayer(firstGroup, CameraLayer.VISIBLE)
-              setLayer(liveHouseGroup, CameraLayer.INVISIBLE)
+              setVisibleAndRaycast(firstGroup)
+              setInvisible(liveHouseGroup)
 
               stretchXGroups[
                 (liveHouseGroup.userData as HouseRootGroupUserData).sectionType
@@ -226,17 +234,16 @@ const FreshApp = () => {
         pipe(
           liveHouses,
           R.lookup(houseId),
-          O.map((houseGroup) => {
+          O.map((liveHouseGroup) => {
             const layoutTasks: Record<string, T.Task<Group>> = pipe(
               altSectionTypeLayouts,
               R.map(({ layout: houseLayout }) => {
                 const { systemId, friendlyName } =
-                  houseGroup.userData as HouseRootGroupUserData
+                  liveHouseGroup.userData as HouseRootGroupUserData
                 // const houseLayout = altSectionTypeLayouts[]
                 return () =>
                   houseLayoutToHouseGroup({
                     systemId,
-                    friendlyName,
                     houseId,
                     houseLayout,
                   })
@@ -255,16 +262,21 @@ const FreshApp = () => {
               )
               pipe(
                 groups,
-                R.map((group) => {
+                R.map((altHouseGroup) => {
                   // const layerUp = (object: Object3D, layers: )
 
-                  setLayer(group, CameraLayer.INVISIBLE)
+                  setInvisible(altHouseGroup)
 
-                  rootRef.current?.add(group)
+                  liveHouseGroup.matrix.decompose(
+                    altHouseGroup.position,
+                    altHouseGroup.quaternion,
+                    altHouseGroup.scale
+                  )
+
+                  rootRef.current?.add(altHouseGroup)
                 })
               )
               stretchXHouses[houseId] = groups
-              console.log({ rootRef: rootRef.current })
             })
           })
         )
@@ -391,12 +403,9 @@ const FreshApp = () => {
 
         switch (userData.type) {
           case UserDataTypeEnum.Enum.ElementMesh:
-            // console.log(userData)
             break
           case UserDataTypeEnum.Enum.HouseRootGroup:
             // TypeScript knows that userData is of type HouseModuleGroupUserData in this block
-            // console.log(userData.length) // This is valid
-            // console.log(userData.houseId) // TypeScript error, houseId doesn't exist on HouseModuleGroupUserData
             break
         }
       })

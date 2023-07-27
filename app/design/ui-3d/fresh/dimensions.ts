@@ -12,6 +12,7 @@ import {
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
+import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { isMesh, xAxis, yAxis, zAxis } from "../../../utils/three"
 import { HouseRootGroupUserData, UserDataTypeEnum } from "./userData"
@@ -88,9 +89,35 @@ export const updateHouseLength = (houseGroup: Group) => {
   )
 }
 
+const updateDnas = (houseGroup: Group) => {
+  // infer the dnas from the layout
+  houseGroup.traverse((node) => {
+    console.log(node)
+  })
+}
+
 export const updateEverything = (houseGroup: Group) => {
   updateHouseLength(houseGroup)
   updateHouseOBB(houseGroup)
   updateClippingPlanes(houseGroup)
+  updateDnas(houseGroup)
+
+  const { dnas, houseId, friendlyName, houseTypeId } =
+    houseGroup.userData as HouseRootGroupUserData
+
+  console.log(houseGroup.userData.dnas)
+
+  const rotation = houseGroup.rotation.y
+  const position = houseGroup.position
+
+  console.log({ dnas })
+
+  userDB.houses.update(houseId, {
+    dnas,
+    friendlyName,
+    position,
+    rotation,
+  })
+
   invalidate()
 }

@@ -23,6 +23,7 @@ export type HouseRootGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseRootGroup
   systemId: string
   houseId: string
+  houseTypeId: string
   dnas: string[]
   friendlyName: string
   modifiedMaterials: Record<string, string>

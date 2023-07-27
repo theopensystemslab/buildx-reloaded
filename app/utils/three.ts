@@ -186,8 +186,28 @@ export const useRotations = () => {
   return { rotateV2, unrotateV2 }
 }
 
-export const setLayer = (object: Object3D, layer: number) => {
+export const setVisibleAndRaycast = (object: Object3D) => {
   object.traverse((node) => {
-    node.layers.set(layer)
+    node.layers.set(CameraLayer.VISIBLE)
+    node.layers.enable(RaycasterLayer.ENABLED)
+  })
+}
+
+export const setVisibleOnly = (object: Object3D) => {
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.VISIBLE)
+  })
+}
+
+export const setInvisible = (object: Object3D) => {
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.INVISIBLE)
+  })
+}
+
+export const setInvisibleAndRaycast = (object: Object3D) => {
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.INVISIBLE)
+    node.layers.enable(RaycasterLayer.ENABLED)
   })
 }

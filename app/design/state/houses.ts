@@ -28,17 +28,17 @@ const initHouses = async () => {
   }
 
   housesArray.forEach((house) => {
-    houses[house.id] = ref(house)
+    houses[house.houseId] = ref(house)
   })
 }
 
 initHouses().then(() => {
   subscribe(houses, () => {
     Object.values(houses).forEach(async (house) => {
-      const existingHouse = await userDB.houses.get(house.id)
+      const existingHouse = await userDB.houses.get(house.houseId)
 
       if (existingHouse) {
-        userDB.houses.update(house.id, Dexie.deepClone(house))
+        userDB.houses.update(house.houseId, Dexie.deepClone(house))
       } else {
         userDB.houses.add(Dexie.deepClone(house))
       }
@@ -188,9 +188,9 @@ export const useInsert1000Skylarks = () => {
 
       for (let x = startX; x < incX * count; x += incX) {
         for (let z = startZ; z < incZ * count; z += incZ) {
-          const id = nanoid()
-          houses[id] = ref({
-            id,
+          const houseId = nanoid()
+          houses[houseId] = ref({
+            houseId,
             houseTypeId,
             systemId: houseType.systemId,
             position: new Vector3(x, 0, z),

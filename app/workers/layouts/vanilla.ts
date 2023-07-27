@@ -106,36 +106,3 @@ export const getIndexedVanillaModule = ({
     levelType,
     gridType,
   ])
-
-liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe((dbLayouts) => {
-  for (let dbLayout of dbLayouts) {
-    // const { layoutsKey } = dbLayout
-  }
-})
-
-// this actually needs to SUBSCRIBE TO HOUSES
-// get their `dnas`
-// get their column layout (maybe we're subscribing to layouts actually)
-// layoutKey -> vanillaColumn we post
-//
-// ---------------------------------------------------------------------
-//
-// liveQuery(() => layoutsDB.vanillaModules.toArray()).subscribe(
-//   async (dbVanillaMods) => {
-//     if (dbVanillaMods.length > 0) {
-//       const {
-//         systemId,
-//         sectionType,
-//         positionType,
-//         levelType,
-//         gridType,
-//         moduleDna,
-//       } = dbVanillaMods[0]
-
-//       console.log(
-//         [systemId, sectionType, positionType, levelType, gridType].toString()
-//       )
-//     }
-
-//   }
-// )

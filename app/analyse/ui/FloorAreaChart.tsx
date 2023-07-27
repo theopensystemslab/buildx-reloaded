@@ -51,7 +51,7 @@ const FloorAreaChart = () => {
                 pipe(
                   selectedHouses,
                   A.filterMap((selectedHouse) =>
-                    selectedHouse.id === houseId
+                    selectedHouse.houseId === houseId
                       ? O.some({
                           houseId,
                           floorArea,
