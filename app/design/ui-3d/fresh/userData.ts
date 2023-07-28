@@ -21,22 +21,24 @@ export const UserDataTypeEnum = z.enum([
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
 export type HouseRootGroupUserData = {
+  // all
   type: typeof UserDataTypeEnum.Enum.HouseRootGroup
   systemId: string
   houseId: string
   houseTypeId: string
-  dnas: string[]
-  houseLayout: ColumnLayout
   friendlyName: string
-  modifiedMaterials: Record<string, string>
+  clippingPlanes: Plane[]
+  // preview specific
   height: number
   length: number
   width: number
   obb: OBB
-  clippingPlanes: Plane[]
   columnCount: number
   sectionType: string
   levelTypes: string[]
+  modifiedMaterials: Record<string, string>
+  dnas: string[]
+  houseLayout: ColumnLayout
 }
 
 export type HouseColumnsContainerUserData = {

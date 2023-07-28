@@ -1,6 +1,15 @@
+import { invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
+import { MutableRefObject, RefObject, useEffect } from "react"
 import { useEvent } from "react-use"
+import { Group, Vector3 } from "three"
 import { HouseType } from "../../../../../server/data/houseTypes"
-import { House } from "../../../../db/user"
+import userDB, { House } from "../../../../db/user"
+import { A } from "../../../../utils/functions"
+import { setVisibleAndRaycast } from "../../../../utils/three"
+import { createHouseGroup } from "../helpers"
+import { nanoid } from "nanoid"
+import { floor } from "../../../../utils/math"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
@@ -28,7 +37,7 @@ export const useAddHouseListener = (f: (eventDetail: House) => void) =>
   useEvent(ADD_HOUSE_EVENT, ({ detail }) => f(detail))
 
 type DeleteHouseDetail = {
-  id: string
+  houseId: string
 }
 
 export const dispatchDeleteHouse = (detail: DeleteHouseDetail) =>
@@ -37,3 +46,98 @@ export const dispatchDeleteHouse = (detail: DeleteHouseDetail) =>
 export const useDeleteHouseListener = (
   f: (eventDetail: DeleteHouseDetail) => void
 ) => useEvent(DELETE_HOUSE_EVENT, ({ detail }) => f(detail))
+
+export const useHousesEvents = (rootRef: RefObject<Group>) => {
+  const addHouse = async (house: House) => {
+    if (!rootRef.current) return
+
+    const {
+      houseId: houseId,
+      systemId,
+      dnas,
+      friendlyName,
+      position,
+      rotation,
+    } = house
+
+    const houseGroup = await createHouseGroup({
+      systemId,
+      houseId,
+      dnas,
+      friendlyName,
+    })
+
+    houseGroup.position.set(position.x, position.y, position.z)
+    houseGroup.rotation.set(0, rotation, 0)
+
+    setVisibleAndRaycast(houseGroup)
+
+    rootRef.current.add(houseGroup)
+    // liveHouses[houseId] = houseGroup
+
+    invalidate()
+
+    userDB.houses.put(house)
+  }
+
+  const cleanup = () => {
+    rootRef.current?.clear()
+  }
+
+  const initHouses = () => {
+    userDB.houses.toArray().then((houses) => {
+      pipe(houses, A.map(addHouse))
+    })
+
+    invalidate()
+
+    return cleanup
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initHouses, [])
+
+  useAddHouseIntentListener(({ dnas, id: houseTypeId, systemId }) => {
+    // maybe cameraGroundRaycast
+    // maybe collisions
+
+    const id = nanoid()
+    const position = new Vector3(0, 0, 0)
+
+    const getFriendlyName = () => {
+      return `yo+${floor(Math.random() * 99999)}` // Object.keys(houses).length + 1
+    }
+
+    const friendlyName = getFriendlyName()
+
+    dispatchAddHouse({
+      houseId: id,
+      systemId,
+      houseTypeId,
+      dnas,
+      position,
+      friendlyName,
+      modifiedMaterials: {},
+      rotation: 0,
+    })
+  })
+
+  useAddHouseListener(addHouse)
+
+  useDeleteHouseListener(({ houseId }) => {
+    if (!rootRef.current) return
+
+    console.log("hi", houseId)
+
+    const target = rootRef.current.children.find(
+      (x) => x.userData.houseId === houseId
+    )
+
+    if (target) {
+      rootRef.current.remove(target)
+      userDB.houses.delete(houseId)
+    }
+
+    invalidate()
+  })
+}

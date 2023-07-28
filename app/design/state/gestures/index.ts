@@ -7,6 +7,12 @@ import { preTransformsTransients } from "~/design/state/transients/transforms"
 import { A, O } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import { isMesh, useRotations } from "~/utils/three"
+import {
+  ElementMeshUserData,
+  GridGroupUserData,
+  HouseRootGroupUserData,
+  UserDataTypeEnum,
+} from "../../ui-3d/fresh/userData"
 import { setCameraEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import { dispatchMoveHouseIntent } from "../events/moveRotate"
@@ -286,12 +292,20 @@ export const useGestures = (): any =>
 
       if (intersections.length === 0) return
       const {
-        object: { userData },
+        object: { userData, parent },
       } = intersections[0]
 
       if (userData) {
-        if (userData?.identifier?.houseId) {
-          downMode({ ...userData.identifier })
+        if (parent?.parent?.userData.type === UserDataTypeEnum.Enum.GridGroup) {
+          const { levelIndex } = parent.parent.userData as GridGroupUserData
+          if (
+            parent.parent.parent?.parent?.parent?.userData.type ===
+            UserDataTypeEnum.Enum.HouseRootGroup
+          ) {
+            const { houseId } = parent.parent.parent?.parent?.parent
+              ?.userData as HouseRootGroupUserData
+            downMode({ houseId, levelIndex })
+          }
         }
       }
 
