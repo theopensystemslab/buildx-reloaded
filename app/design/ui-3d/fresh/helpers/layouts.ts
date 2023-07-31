@@ -1,4 +1,3 @@
-import { RoundedBox } from "@react-three/drei"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import {
@@ -12,7 +11,7 @@ import {
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
-import { Module } from "../../../../server/data/modules"
+import { Module } from "../../../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
@@ -20,23 +19,19 @@ import layoutsDB, {
   GridGroup,
   VanillaColumn,
   VanillaColumnsKey,
-} from "../../../db/layouts"
-import { A, Num, O, Ord, R, S } from "../../../utils/functions"
-import { PI } from "../../../utils/math"
-import { getLayoutsWorker } from "../../../workers"
-import { CameraLayer, RaycasterLayer } from "../../state/constants"
-import handleMaterial from "./handleMaterial"
-import { createStretchHandles } from "./handles"
-import { getMaterial } from "./systems"
+} from "../../../../db/layouts"
+import { A, Num, O, Ord, R, S } from "../../../../utils/functions"
+import { getLayoutsWorker } from "../../../../workers"
+import { getMaterial } from "../systems"
 import {
   ColumnGroupUserData,
   ElementMeshUserData,
   GridGroupUserData,
   HouseRootGroupUserData,
   ModuleGroupUserData,
-  StretchHandleMeshUserData,
   UserDataTypeEnum,
-} from "./userData"
+} from "../userData"
+import { createStretchHandles } from "./handles"
 
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}

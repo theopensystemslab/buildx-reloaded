@@ -13,7 +13,7 @@ import {
 import { OBB } from "three-stdlib"
 import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
-import { columnSorter } from "./helpers"
+import { columnSorter } from "./helpers/layouts"
 import {
   HouseRootGroupUserData,
   ModuleGroupUserData,

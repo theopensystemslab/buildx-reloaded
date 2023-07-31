@@ -7,7 +7,7 @@ import { HouseType } from "../../../../../server/data/houseTypes"
 import userDB, { House } from "../../../../db/user"
 import { A } from "../../../../utils/functions"
 import { setVisibleAndRaycast } from "../../../../utils/three"
-import { createHouseGroup } from "../helpers"
+import { createHouseGroup } from "../helpers/layouts"
 import { nanoid } from "nanoid"
 import { floor } from "../../../../utils/math"
 

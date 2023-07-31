@@ -2,34 +2,25 @@ import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject, useRef } from "react"
-import { Group } from "three"
+import { useEvent } from "react-use"
+import { Group, Object3D, Vector3 } from "three"
+import { z } from "zod"
 import { A, O } from "../../../../utils/functions"
-import { useSubscribeKey } from "../../../../utils/hooks"
 import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
-import { dispatchMoveHouseIntent } from "../../../state/events/moveRotate"
-import dragProxy, { Drag } from "../../../state/gestures/drag"
 import { openMenu } from "../../../state/menu"
 import pointer from "../../../state/pointer"
 import scope, { ScopeItem } from "../../../state/scope"
-import siteCtx, {
-  downMode,
-  EditModeEnum,
-  SiteCtxModeEnum,
-} from "../../../state/siteCtx"
-import { dispatchOutline } from "./outlines"
+import siteCtx, { downMode, SiteCtxModeEnum } from "../../../state/siteCtx"
+import { rootHouseGroupQuery } from "../helpers/sceneQueries"
 import {
-  ElementMeshUserData,
   GridGroupUserData,
   HouseRootGroupUserData,
-  RotateHandleMeshUserData,
   StretchHandleMeshUserData,
   UserData,
   UserDataTypeEnum,
 } from "../userData"
-import { useEvent } from "react-use"
-import { z } from "zod"
-import { insertVanillaColumn } from "../helpers"
+import { dispatchOutline } from "./outlines"
 
 export const GestureEventType = z.enum(["POINTER_DOWN", "POINTER_UP"])
 
@@ -37,7 +28,7 @@ export type GestureEventType = z.infer<typeof GestureEventType>
 
 export type GestureEventDetail = {
   point: V3
-  userData: UserData
+  object: Object3D
 }
 
 export const usePointerDownListener = (
@@ -55,12 +46,13 @@ export const dispatchPointerUp = (detail: GestureEventDetail) =>
   dispatchEvent(new CustomEvent(GestureEventType.Enum.POINTER_UP, { detail }))
 
 type GestureTarget = {
-  userData: UserData
   point: V3
+  object: Object3D
 }
 
 const useGestures = (rootRef: RefObject<Group>) => {
   const dragStartRef = useRef<GestureTarget | null>(null)
+  const lastDragRef = useRef<V3 | null>(null)
 
   return useGesture<{
     drag: ThreeEvent<PointerEvent>
@@ -79,77 +71,75 @@ const useGestures = (rootRef: RefObject<Group>) => {
         O.map((ix0) => {
           event.stopPropagation()
 
-          const userData = ix0.object.userData as UserData
-          const [x, z] = pointer.xz
-          const y = pointer.y
+          const { point, object } = ix0
+          const [px, pz] = pointer.xz
+          const py = pointer.y
 
           if (first) {
             setCameraControlsEnabled(false)
-            dispatchPointerDown({ point: ix0.point, userData })
-            dragStartRef.current = { userData, point: ix0.point }
-
-            // switch (userData.type as UserDataTypeEnum) {
-            //   case UserDataTypeEnum.Enum.ElementMesh:
-            //     const {} = userData as ElementMeshUserData
-            //     break
-            //   case UserDataTypeEnum.Enum.StretchHandleMesh:
-            //     const {} = userData as StretchHandleMeshUserData
-            //     break
-            //   case UserDataTypeEnum.Enum.RotateHandleMesh:
-            //     const {} = userData as RotateHandleMeshUserData
-            //     break
-            // }
-
-            // if (type) {
-
-            //   scope.selected = {
-            //     ...identifier,
-            //   }
-
-            //   if (siteCtx.editMode === null) {
-            //     siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
-            //   }
-            //   if (siteCtx.houseId !== identifier.houseId) {
-            //     siteCtx.houseId = identifier.houseId
-            //   }
-
-            // }
+            dispatchPointerDown({ point, object })
+            dragStartRef.current = { point, object }
+            lastDragRef.current = point
           } else if (last) {
             setCameraControlsEnabled(true)
-            dispatchPointerUp({ point: { x, y, z }, userData })
+            dispatchPointerUp({ point, object })
           } else {
             if (!dragStartRef.current) return
-            const d0 = dragStartRef.current
-            const { userData, point: p0 } = d0
+
+            const { point: p0, object } = dragStartRef.current
+
+            const userData = object.userData as UserData
 
             switch (userData.type) {
-              case UserDataTypeEnum.Enum.StretchHandleMesh:
-                const delta = {
-                  x: x - p0.x,
-                  y: y - p0.y,
-                  z: z - p0.z,
-                }
+              case UserDataTypeEnum.Enum.StretchHandleMesh: {
                 const { houseId, direction, axis } =
                   userData as StretchHandleMeshUserData
 
-                // rootRef to house group
+                const maybeHouseGroup = rootHouseGroupQuery(rootRef, houseId)
 
-                switch (axis) {
-                  case "z":
-                    // measure vanilla column length vs. delta
-                    // maybe insert or remove
+                pipe(
+                  maybeHouseGroup,
+                  O.map((houseGroup) => {
+                    if (!lastDragRef.current) return
 
-                    // insertVanillaColumn(houseGroup, direction)
-                    break
-                  case "x":
-                    break
-                }
+                    const delta = new Vector3(
+                      px - lastDragRef.current.x,
+                      py - lastDragRef.current.y,
+                      pz - lastDragRef.current.z
+                    ).applyAxisAngle(
+                      new Vector3(0, 1, 0),
+                      -houseGroup.rotation.y
+                    )
+
+                    switch (axis) {
+                      case "z":
+                        console.log(object.position)
+                        object.position.add(new Vector3(0, 0, delta.z))
+                        console.log(object.position, delta.z)
+
+                        switch (direction) {
+                          case 1:
+                            break
+                          case -1:
+                        }
+
+                        // measure vanilla column length vs. delta
+                        // maybe insert or remove
+
+                        // insertVanillaColumn(houseGroup, direction)
+                        break
+                      case "x":
+                        break
+                    }
+                  })
+                )
 
                 break
-              default:
-                break
+              }
             }
           }
+
+          lastDragRef.current = { x: px, y: py, z: pz }
 
           invalidate()
         })

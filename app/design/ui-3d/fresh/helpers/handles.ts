@@ -1,8 +1,8 @@
 import { Mesh } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
-import { PI } from "../../../utils/math"
-import handleMaterial from "./handleMaterial"
-import { StretchHandleMeshUserData, UserDataTypeEnum } from "./userData"
+import { PI } from "../../../../utils/math"
+import handleMaterial from "../handleMaterial"
+import { StretchHandleMeshUserData, UserDataTypeEnum } from "../userData"
 
 export const createStretchHandles = ({
   houseId,

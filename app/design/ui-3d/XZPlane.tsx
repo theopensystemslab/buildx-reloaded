@@ -23,7 +23,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
   const localRef = useRef<Mesh>(null)
   const { size = DEFAULT_SIZE } = props
 
-  usePointerDownListener(({ point: { y }, userData }) => {
+  usePointerDownListener(({ point: { y } }) => {
     if (!localRef.current) return
     localRef.current.position.setY(y)
     localRef.current.layers.set(RaycasterLayer.ENABLED)
@@ -33,7 +33,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     }
   })
 
-  usePointerUpListener(({ point: { y }, userData }) => {
+  usePointerUpListener(() => {
     if (!localRef.current) return
     localRef.current.layers.set(RaycasterLayer.DISABLED)
     if (DEBUG) console.log(`DEBUG XZPlane: POINTER_UP RaycasterLayer.DISABLED`)

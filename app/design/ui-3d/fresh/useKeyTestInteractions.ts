@@ -4,7 +4,10 @@ import { Group, Object3D, Vector3 } from "three"
 import { PI } from "../../../utils/math"
 import { yAxis } from "../../../utils/three"
 import { updateEverything } from "./dimensions"
-import { insertVanillaColumn, subtractPenultimateColumn } from "./helpers"
+import {
+  insertVanillaColumn,
+  subtractPenultimateColumn,
+} from "./helpers/layouts"
 import { UserDataTypeEnum } from "./userData"
 
 const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
