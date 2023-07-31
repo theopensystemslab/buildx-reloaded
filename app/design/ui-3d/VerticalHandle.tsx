@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Group, Mesh } from "three"
 import { subscribeKey } from "valtio/utils"
 import { RaycasterLayer } from "~/design/state/constants"
-import { setCameraEnabled } from "../state/camera"
+import { setCameraControlsEnabled } from "../state/camera"
 import dimensions from "../state/dimensions"
 import houses from "../state/houses"
 import pointer from "../state/pointer"
@@ -69,7 +69,7 @@ const VerticalHandle = (props: Props) => {
       if (!handleRef.current) return
       if (first) {
         y0.current = pointer.y
-        setCameraEnabled(false)
+        setCameraControlsEnabled(false)
         dragging.current = true
         return
       }
@@ -85,7 +85,7 @@ const VerticalHandle = (props: Props) => {
       y0.current = pointer.y
 
       if (last) {
-        setCameraEnabled(true)
+        setCameraControlsEnabled(true)
         dragging.current = false
       }
     },

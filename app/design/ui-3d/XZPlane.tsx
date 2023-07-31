@@ -1,11 +1,16 @@
 import { ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
-import { forwardRef, useEffect, useRef } from "react"
+import { forwardRef, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { DoubleSide, Mesh } from "three"
-import { RaycasterLayer } from "../state/constants"
-import { useDragStart } from "../state/gestures"
+import { CameraLayer, RaycasterLayer } from "../state/constants"
 import pointer from "../state/pointer"
+import {
+  usePointerDownListener,
+  usePointerUpListener,
+} from "./fresh/events/gestures"
+
+const DEBUG = false
 
 type Props = {
   size?: number
@@ -18,16 +23,21 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
   const localRef = useRef<Mesh>(null)
   const { size = DEFAULT_SIZE } = props
 
-  const dragStart = useDragStart()
-
-  useEffect(() => {
+  usePointerDownListener(({ point: { y }, userData }) => {
     if (!localRef.current) return
-    if (dragStart) {
-      localRef.current.position.setY(dragStart.point.y)
-    } else {
-      localRef.current.position.setY(0)
+    localRef.current.position.setY(y)
+    localRef.current.layers.set(RaycasterLayer.ENABLED)
+    if (DEBUG) {
+      console.log(`DEBUG XZPlane: POINTER_DOWN CameraLayer.VISIBLE`)
+      localRef.current.layers.enable(CameraLayer.VISIBLE)
     }
-  }, [dragStart])
+  })
+
+  usePointerUpListener(({ point: { y }, userData }) => {
+    if (!localRef.current) return
+    localRef.current.layers.set(RaycasterLayer.DISABLED)
+    if (DEBUG) console.log(`DEBUG XZPlane: POINTER_UP RaycasterLayer.DISABLED`)
+  })
 
   const bind: any = useGesture<{
     onPointerMove: ThreeEvent<PointerEvent>
@@ -42,10 +52,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     <mesh
       ref={mergeRefs([localRef, ref])}
       rotation-x={Math.PI / 2}
-      position={[0, dragStart?.point.y ?? 0, 0]}
-      layers={
-        dragStart === null ? RaycasterLayer.DISABLED : RaycasterLayer.ENABLED
-      }
+      layers={DEBUG ? CameraLayer.VISIBLE : RaycasterLayer.DISABLED}
       {...bind()}
     >
       <planeGeometry args={[size, size, 1, 1]} />

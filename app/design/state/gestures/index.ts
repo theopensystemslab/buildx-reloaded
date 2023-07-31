@@ -13,7 +13,7 @@ import {
   HouseRootGroupUserData,
   UserDataTypeEnum,
 } from "../../ui-3d/fresh/userData"
-import { setCameraEnabled } from "../camera"
+import { setCameraControlsEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import { dispatchMoveHouseIntent } from "../events/moveRotate"
 import {
@@ -222,7 +222,7 @@ export const useGestures = (): any =>
       // onClick here
       if (first) {
         event.stopPropagation()
-        setCameraEnabled(false)
+        setCameraControlsEnabled(false)
         // XZ and Y planes should subscribe here to jump to right place
 
         if (identifier) {
@@ -246,7 +246,7 @@ export const useGestures = (): any =>
       } else if (last) {
         event.stopPropagation()
         dragProxy.end = true
-        setCameraEnabled(true)
+        setCameraControlsEnabled(true)
       } else {
         dragProxy.drag = drag
       }
