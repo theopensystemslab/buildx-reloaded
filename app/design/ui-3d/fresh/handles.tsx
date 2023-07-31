@@ -2,12 +2,14 @@ import { Mesh } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
 import { PI } from "../../../utils/math"
 import handleMaterial from "./handleMaterial"
-import { UserDataTypeEnum } from "./userData"
+import { StretchHandleMeshUserData, UserDataTypeEnum } from "./userData"
 
 export const createStretchHandles = ({
+  houseId,
   width,
   length,
 }: {
+  houseId: string
   width: number
   length: number
 }) => {
@@ -49,7 +51,8 @@ export const createStretchHandles = ({
       type: UserDataTypeEnum.Enum.StretchHandleMesh,
       axis,
       direction,
-    }
+      houseId,
+    } as StretchHandleMeshUserData
 
     return mesh
   })

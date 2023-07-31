@@ -29,6 +29,7 @@ import {
 } from "../userData"
 import { useEvent } from "react-use"
 import { z } from "zod"
+import { insertVanillaColumn } from "../helpers"
 
 export const GestureEventType = z.enum(["POINTER_DOWN", "POINTER_UP"])
 
@@ -53,8 +54,13 @@ export const usePointerUpListener = (
 export const dispatchPointerUp = (detail: GestureEventDetail) =>
   dispatchEvent(new CustomEvent(GestureEventType.Enum.POINTER_UP, { detail }))
 
+type GestureTarget = {
+  userData: UserData
+  point: V3
+}
+
 const useGestures = (rootRef: RefObject<Group>) => {
-  const dragStartRef = useRef<V3 | null>(null)
+  const dragStartRef = useRef<GestureTarget | null>(null)
 
   return useGesture<{
     drag: ThreeEvent<PointerEvent>
@@ -80,7 +86,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
           if (first) {
             setCameraControlsEnabled(false)
             dispatchPointerDown({ point: ix0.point, userData })
-            dragStartRef.current = ix0.point
+            dragStartRef.current = { userData, point: ix0.point }
 
             // switch (userData.type as UserDataTypeEnum) {
             //   case UserDataTypeEnum.Enum.ElementMesh:
@@ -112,7 +118,37 @@ const useGestures = (rootRef: RefObject<Group>) => {
             setCameraControlsEnabled(true)
             dispatchPointerUp({ point: { x, y, z }, userData })
           } else {
-            // cont
+            if (!dragStartRef.current) return
+            const d0 = dragStartRef.current
+            const { userData, point: p0 } = d0
+
+            switch (userData.type) {
+              case UserDataTypeEnum.Enum.StretchHandleMesh:
+                const delta = {
+                  x: x - p0.x,
+                  y: y - p0.y,
+                  z: z - p0.z,
+                }
+                const { houseId, direction, axis } =
+                  userData as StretchHandleMeshUserData
+
+                // rootRef to house group
+
+                switch (axis) {
+                  case "z":
+                    // measure vanilla column length vs. delta
+                    // maybe insert or remove
+
+                    // insertVanillaColumn(houseGroup, direction)
+                    break
+                  case "x":
+                    break
+                }
+
+                break
+              default:
+                break
+            }
           }
 
           invalidate()

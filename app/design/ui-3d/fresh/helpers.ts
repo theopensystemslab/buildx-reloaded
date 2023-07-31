@@ -298,7 +298,7 @@ export const houseLayoutToHouseGroup = async ({
 
   topLevelHouseGroup.add(zCenterHouseGroup)
 
-  createStretchHandles({ width, length }).forEach((mesh) => {
+  createStretchHandles({ houseId, width, length }).forEach((mesh) => {
     topLevelHouseGroup.add(mesh)
   })
 

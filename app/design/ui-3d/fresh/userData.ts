@@ -79,6 +79,7 @@ export type StretchHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleMesh
   axis: "z" | "x"
   direction: 1 | -1
+  houseId: string
 }
 
 export type RotateHandleMeshUserData = {
