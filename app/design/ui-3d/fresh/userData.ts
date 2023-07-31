@@ -9,6 +9,8 @@ import { ColumnLayout } from "../../../db/layouts"
 //     -> GridGroup's as children has
 //       -> ModuleGroup's as children has
 //         -> ElementMesh's as children
+// -> Stretch Handles
+// -> Rotate Handles
 
 export const UserDataTypeEnum = z.enum([
   "HouseRootGroup",
@@ -17,6 +19,8 @@ export const UserDataTypeEnum = z.enum([
   "GridGroup",
   "ModuleGroup",
   "ElementMesh",
+  "StretchHandleMesh",
+  "RotateHandleMesh",
 ])
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
@@ -71,6 +75,16 @@ export type ElementMeshUserData = {
   ifcTag: string
 }
 
+export type StretchHandleMeshUserData = {
+  type: typeof UserDataTypeEnum.Enum.StretchHandleMesh
+  axis: "z" | "x"
+  direction: 1 | -1
+}
+
+export type RotateHandleMeshUserData = {
+  type: typeof UserDataTypeEnum.Enum.RotateHandleMesh
+}
+
 export type UserData =
   | ElementMeshUserData
   | ModuleGroupUserData
@@ -78,3 +92,5 @@ export type UserData =
   | ColumnGroupUserData
   | HouseColumnsContainerUserData
   | HouseRootGroupUserData
+  | StretchHandleMeshUserData
+  | RotateHandleMeshUserData

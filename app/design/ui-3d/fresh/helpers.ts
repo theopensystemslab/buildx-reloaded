@@ -1,3 +1,4 @@
+import { RoundedBox } from "@react-three/drei"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import {
@@ -21,8 +22,11 @@ import layoutsDB, {
   VanillaColumnsKey,
 } from "../../../db/layouts"
 import { A, Num, O, Ord, R, S } from "../../../utils/functions"
+import { PI } from "../../../utils/math"
 import { getLayoutsWorker } from "../../../workers"
 import { CameraLayer, RaycasterLayer } from "../../state/constants"
+import handleMaterial from "./handleMaterial"
+import { createStretchHandles } from "./handles"
 import { getMaterial } from "./systems"
 import {
   ColumnGroupUserData,
@@ -30,6 +34,7 @@ import {
   GridGroupUserData,
   HouseRootGroupUserData,
   ModuleGroupUserData,
+  StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "./userData"
 
@@ -292,6 +297,10 @@ export const houseLayoutToHouseGroup = async ({
     UserDataTypeEnum.Enum.HouseColumnsContainerGroup
 
   topLevelHouseGroup.add(zCenterHouseGroup)
+
+  createStretchHandles({ width, length }).forEach((mesh) => {
+    topLevelHouseGroup.add(mesh)
+  })
 
   return topLevelHouseGroup
 }

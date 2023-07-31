@@ -127,11 +127,9 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
   useDeleteHouseListener(({ houseId }) => {
     if (!rootRef.current) return
 
-    console.log("hi", houseId)
-
-    const target = rootRef.current.children.find(
-      (x) => x.userData.houseId === houseId
-    )
+    const target = rootRef.current.children.find((x) => {
+      return x.userData.houseId === houseId
+    })
 
     if (target) {
       rootRef.current.remove(target)
