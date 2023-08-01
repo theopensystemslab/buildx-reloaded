@@ -85,21 +85,14 @@ const useGestures = (rootRef: RefObject<Group>) => {
       case !first && !last: {
         if (!stretchData.current) throw new Error("first didn't set first")
 
-        const { handleGroup, handleGroupPos0, point0 } = stretchData.current
+        const { handleGroup, handleGroupPos0, point0, houseGroup } =
+          stretchData.current
 
-        const [x, z] = pointer.xz
-        const z0 = stretchData.current.point0.z
-        const y = pointer.y
+        const [x1, z1] = pointer.xz
+        const v = new Vector3(x1, 0, z1).sub(point0)
+        v.applyAxisAngle(new Vector3(0, 1, 0), -houseGroup.rotation.y)
 
-        // const pointerVector = new Vector3(x, y, z)
-
-        console.log(`z - z0 = ${z - z0}`)
-
-        stretchData.current.handleGroup.position.set(
-          0,
-          0,
-          handleGroupPos0.z + (z - z0)
-        )
+        handleGroup.position.set(0, 0, handleGroupPos0.z + v.z)
 
         break
       }
