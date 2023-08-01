@@ -121,3 +121,14 @@ export const unwrapSome = <A>(
     taskOptionArray,
     T.map(A.compact) // compact function removes None and unwraps Some values
   )
+
+export const headTail = <T>(xs: T[]) =>
+  pipe(
+    xs,
+    A.partitionWithIndex((i) => i === 0 || i === xs.length - 1),
+    ({ left: middle, right: [start, end] }) => ({
+      start,
+      end,
+      middle,
+    })
+  )

@@ -31,7 +31,7 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "../userData"
-import { createStretchHandles } from "./handles"
+import { createStretchHandle } from "./handles"
 
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}
@@ -241,6 +241,7 @@ export const houseLayoutToHouseGroup = async ({
   houseLayout: ColumnLayout
 }) => {
   const BIG_NUMBER = 99
+
   const clippingPlanes: Plane[] = [
     new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
     new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
@@ -253,6 +254,7 @@ export const houseLayoutToHouseGroup = async ({
     houseLayout,
     clippingPlanes,
   })
+
   const topLevelHouseGroup = new Group()
   const zCenterHouseGroup = new Group()
 
@@ -269,6 +271,7 @@ export const houseLayoutToHouseGroup = async ({
     0
   )
   const obb = new OBB()
+  const levelTypes = houseLayoutToLevelTypes(houseLayout)
   const houseGroupUserData: Partial<HouseRootGroupUserData> = {
     type: UserDataTypeEnum.Enum.HouseRootGroup,
     systemId,
@@ -280,7 +283,8 @@ export const houseLayoutToHouseGroup = async ({
     obb,
     clippingPlanes,
     sectionType,
-    levelTypes: houseLayoutToLevelTypes(houseLayout),
+    levelTypes,
+    vanillaColumn: getVanillaColumn({ systemId, levelTypes }),
     columnCount: columnGroups.length,
     houseLayout,
   }
@@ -293,9 +297,36 @@ export const houseLayoutToHouseGroup = async ({
 
   topLevelHouseGroup.add(zCenterHouseGroup)
 
-  createStretchHandles({ houseId, width, length }).forEach((mesh) => {
-    topLevelHouseGroup.add(mesh)
-  })
+  pipe(
+    columnGroups,
+    A.findFirst((x) => x.userData.columnIndex === 0),
+    O.map((firstColumn) => {
+      const stretchHandle = createStretchHandle({
+        houseId,
+        axis: "z",
+        direction: -1,
+        length,
+        width,
+      })
+      firstColumn.add(stretchHandle)
+    })
+  )
+
+  pipe(
+    columnGroups,
+    A.findFirst((x) => x.userData.columnIndex === columnGroups.length - 1),
+    O.map((lastColumn) => {
+      const stretchHandle = createStretchHandle({
+        houseId,
+        axis: "z",
+        direction: 1,
+        length,
+        width,
+      })
+      stretchHandle.position.z += lastColumn.userData.length
+      lastColumn.add(stretchHandle)
+    })
+  )
 
   return topLevelHouseGroup
 }
