@@ -59,21 +59,33 @@ const loader = new BufferGeometryLoader()
 // speckle branch url : geometry by ifc tag
 export let models: Record<string, Record<string, BufferGeometry>> = {}
 
+const putModel = ({
+  geometries,
+  speckleBranchUrl,
+}: {
+  speckleBranchUrl: string
+  geometries: any
+}) => {
+  const loadedModels: Record<string, BufferGeometry> = pipe(
+    geometries,
+    R.map((x) => loader.parse(x) as BufferGeometry),
+    R.reduceWithIndex(S.Ord)({}, (ifcTag, acc, geometry) => {
+      geometry.computeVertexNormals()
+      return {
+        ...acc,
+        [ifcTag]: geometry,
+      }
+    })
+  )
+  models[speckleBranchUrl] = loadedModels
+
+  return loadedModels
+}
+
 liveQuery(() => layoutsDB.models.toArray()).subscribe((dbModels) => {
   for (let { speckleBranchUrl, geometries } of dbModels) {
     if (!(speckleBranchUrl in models)) {
-      const loadedModels: Record<string, BufferGeometry> = pipe(
-        geometries,
-        R.map((x) => loader.parse(x) as BufferGeometry),
-        R.reduceWithIndex(S.Ord)({}, (ifcTag, acc, geometry) => {
-          geometry.computeVertexNormals()
-          return {
-            ...acc,
-            [ifcTag]: geometry,
-          }
-        })
-      )
-      models[speckleBranchUrl] = loadedModels
+      putModel({ speckleBranchUrl, geometries })
     }
   }
 })
@@ -86,7 +98,7 @@ export const getGeometry = ({
   ifcTag: string
 }) => models[speckleBranchUrl][ifcTag]
 
-export const moduleToGroup = ({
+export const moduleToGroup = async ({
   systemId,
   gridGroupIndex,
   module: { speckleBranchUrl, length, dna },
@@ -98,25 +110,46 @@ export const moduleToGroup = ({
   clippingPlanes: Plane[]
 }) => {
   const moduleGroup = new Group()
-  const taggedModelGeometries = models[speckleBranchUrl]
-  for (let ifcTag of Object.keys(taggedModelGeometries)) {
-    const geometry = getGeometry({ speckleBranchUrl, ifcTag })
-    const material = getMaterial({
-      systemId,
-      ifcTag,
-      houseId: "",
-    }) as MeshStandardMaterial
-    // material.clippingPlanes = clippingPlanes
-    const mesh = new Mesh(geometry, material)
-    mesh.castShadow = true
 
-    const elementMeshUserData: ElementMeshUserData = {
-      type: UserDataTypeEnum.Enum.ElementMesh,
-      ifcTag,
+  const processModel = (
+    modelGeometriesByIfcTag: Record<string, BufferGeometry>
+  ) => {
+    for (let ifcTag of Object.keys(modelGeometriesByIfcTag)) {
+      const geometry = getGeometry({ speckleBranchUrl, ifcTag })
+      const material = getMaterial({
+        systemId,
+        ifcTag,
+        houseId: "",
+      }) as MeshStandardMaterial
+      // material.clippingPlanes = clippingPlanes
+      const mesh = new Mesh(geometry, material)
+      mesh.castShadow = true
+
+      const elementMeshUserData: ElementMeshUserData = {
+        type: UserDataTypeEnum.Enum.ElementMesh,
+        ifcTag,
+      }
+      mesh.userData = elementMeshUserData
+      moduleGroup.add(mesh)
     }
-    mesh.userData = elementMeshUserData
-    moduleGroup.add(mesh)
   }
+
+  await pipe(
+    models,
+    R.lookup(speckleBranchUrl),
+    O.match(
+      async () => {
+        const model = await layoutsDB.models.get(speckleBranchUrl)
+        if (model === undefined)
+          throw new Error(`no model for ${speckleBranchUrl}`)
+        const loadedModel = putModel(model)
+        processModel(loadedModel)
+      },
+      async (loadedModel) => {
+        processModel(loadedModel)
+      }
+    )
+  )
 
   const moduleGroupUserData: ModuleGroupUserData = {
     type: UserDataTypeEnum.Enum.ModuleGroup,
@@ -131,7 +164,7 @@ export const moduleToGroup = ({
   return moduleGroup
 }
 
-export const createColumnGroup = ({
+export const createColumnGroup = async ({
   systemId,
   gridGroups,
   columnIndex,
@@ -145,7 +178,7 @@ export const createColumnGroup = ({
   startColumn?: boolean
   endColumn?: boolean
   clippingPlanes: Plane[]
-}): Group => {
+}): Promise<Group> => {
   const columnGroup = new Group()
 
   gridGroups.forEach(({ modules, y, levelIndex }) => {
