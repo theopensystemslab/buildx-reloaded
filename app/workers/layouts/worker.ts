@@ -13,11 +13,13 @@ import {
 import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
+  getVanillaColumnsKey,
   GridGroup,
   HouseLayoutsKey,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
+  VanillaColumnsKey,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import userDB from "../../db/user"
@@ -685,12 +687,25 @@ if (!isSSR()) {
   })
 }
 
+const getVanillaColumn = async (key: VanillaColumnsKey) => {
+  const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(
+    getVanillaColumnsKey(key)
+  )
+
+  if (maybeVanillaColumn) {
+    return maybeVanillaColumn.vanillaColumn
+  } else {
+    throw new Error(`No vanilla module found for ${key}`)
+  }
+}
+
 const api = {
   postLayout,
   postLayouts,
   processLayout: getLayout,
   processZStretchLayout,
   syncModels,
+  getVanillaColumn,
 }
 
 export type LayoutsAPI = typeof api

@@ -20,7 +20,7 @@ import layoutsDB, {
   VanillaColumn,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
-import { A, Num, O, Ord, R, S } from "../../../../utils/functions"
+import { A, Num, O, Ord, R, S, T } from "../../../../utils/functions"
 import { getLayoutsWorker } from "../../../../workers"
 import { getMaterial } from "../systems"
 import {
@@ -39,9 +39,25 @@ export let vanillaColumns: Record<string, VanillaColumn> = {}
 export const getVanillaColumn = ({
   systemId,
   levelTypes,
-}: VanillaColumnsKey) => {
+}: VanillaColumnsKey): T.Task<VanillaColumn> => {
   const key = getVanillaColumnsKey({ systemId, levelTypes })
-  return vanillaColumns[key]
+
+  return pipe(
+    vanillaColumns,
+    R.lookup(key),
+    O.match(
+      () => {
+        const layoutsWorker = getLayoutsWorker()
+        if (!layoutsWorker) throw new Error(`no layouts worker`)
+        return () =>
+          layoutsWorker.getVanillaColumn({
+            systemId,
+            levelTypes,
+          })
+      },
+      (vanillaColumn) => T.of(vanillaColumn)
+    )
+  )
 }
 
 liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
@@ -98,16 +114,14 @@ export const getGeometry = ({
   ifcTag: string
 }) => models[speckleBranchUrl][ifcTag]
 
-export const moduleToGroup = async ({
+export const createModuleGroup = async ({
   systemId,
   gridGroupIndex,
   module: { speckleBranchUrl, length, dna },
-  clippingPlanes,
 }: {
   systemId: string
   gridGroupIndex: number
   module: Module
-  clippingPlanes: Plane[]
 }) => {
   const moduleGroup = new Group()
 
@@ -156,7 +170,6 @@ export const moduleToGroup = async ({
     gridGroupIndex,
     dna,
     length,
-    // module
   }
 
   moduleGroup.userData = moduleGroupUserData
@@ -164,94 +177,100 @@ export const moduleToGroup = async ({
   return moduleGroup
 }
 
-export const createColumnGroup = async ({
-  systemId,
-  gridGroups,
-  columnIndex,
-  startColumn = false,
-  endColumn = false,
-  clippingPlanes,
-}: {
-  systemId: string
-  gridGroups: GridGroup[]
-  columnIndex: number
-  startColumn?: boolean
-  endColumn?: boolean
-  clippingPlanes: Plane[]
-}): Promise<Group> => {
-  const columnGroup = new Group()
+export const createColumnGroup =
+  ({
+    systemId,
+    gridGroups,
+    columnIndex,
+    startColumn = false,
+    endColumn = false,
+  }: {
+    systemId: string
+    gridGroups: GridGroup[]
+    columnIndex: number
+    startColumn?: boolean
+    endColumn?: boolean
+  }): T.Task<Group> =>
+  async () => {
+    const columnGroup = new Group()
 
-  gridGroups.forEach(({ modules, y, levelIndex }) => {
-    const gridGroup = new Group()
-    const length = modules.reduce(
-      (acc, { z, module, gridGroupIndex }): number => {
-        const moduleGroup = moduleToGroup({
+    for (let { modules, y, levelIndex } of gridGroups) {
+      const gridGroup = new Group()
+      let length = 0
+
+      for (let { z, module, gridGroupIndex } of modules) {
+        const moduleGroup = await createModuleGroup({
           systemId,
           module,
           gridGroupIndex,
-          clippingPlanes,
         })
+
         moduleGroup.scale.set(1, 1, endColumn ? 1 : -1)
         moduleGroup.position.set(
           0,
           y,
           endColumn ? z + module.length / 2 : z - module.length / 2
         )
-        gridGroup.add(moduleGroup)
-        return acc + module.length
-      },
-      0
-    )
-    const gridGroupUserData: GridGroupUserData = {
-      type: UserDataTypeEnum.Enum.GridGroup,
-      levelIndex,
-      length,
-    }
-    gridGroup.userData = gridGroupUserData
-    columnGroup.add(gridGroup)
-  })
 
-  const columnGroupUserData: ColumnGroupUserData = {
-    type: UserDataTypeEnum.Enum.ColumnGroup,
-    columnIndex,
-    length: gridGroups[0].length,
-    startColumn,
-    endColumn,
+        gridGroup.add(moduleGroup)
+
+        length += module.length
+      }
+
+      const gridGroupUserData: GridGroupUserData = {
+        type: UserDataTypeEnum.Enum.GridGroup,
+        levelIndex,
+        length,
+      }
+      gridGroup.userData = gridGroupUserData
+
+      columnGroup.add(gridGroup)
+    }
+
+    const columnGroupUserData: ColumnGroupUserData = {
+      type: UserDataTypeEnum.Enum.ColumnGroup,
+      columnIndex,
+      length: gridGroups[0].length,
+      startColumn,
+      endColumn,
+    }
+
+    columnGroup.userData = columnGroupUserData
+
+    return columnGroup
   }
 
-  columnGroup.userData = columnGroupUserData
-
-  return columnGroup
-}
-
-export const houseLayoutToColumns = ({
+export const createColumnGroups = ({
   systemId,
-  houseId,
   houseLayout,
-  clippingPlanes,
 }: {
   systemId: string
-  houseId: string
   houseLayout: ColumnLayout
-  clippingPlanes: Plane[]
-}): Group[] =>
+}): T.Task<Group[]> =>
   pipe(
     houseLayout,
-    A.mapWithIndex((i, { gridGroups, z, columnIndex, length }) => {
-      const startColumn = i === 0
-      const endColumn = i === houseLayout.length - 1
+    A.traverseWithIndex(T.ApplicativeSeq)(
+      (i, { gridGroups, z, columnIndex }) => {
+        const startColumn = i === 0
+        const endColumn = i === houseLayout.length - 1
 
-      const group = createColumnGroup({
-        systemId,
-        gridGroups,
-        startColumn,
-        endColumn,
-        columnIndex,
-        clippingPlanes,
-      })
-      group.position.set(0, 0, z)
-      return group
-    })
+        const task = createColumnGroup({
+          systemId,
+          gridGroups,
+          startColumn,
+          endColumn,
+          columnIndex,
+        })
+
+        return pipe(
+          task,
+          T.map((columnGroup) => {
+            columnGroup.position.set(0, 0, z)
+            return columnGroup
+          })
+        )
+      }
+    )
   )
 
 export let houseLayouts: Record<string, ColumnLayout> = {}
@@ -264,7 +283,7 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   }
 )
 
-export const houseLayoutToHouseGroup = async ({
+export const houseLayoutToHouseGroup = ({
   systemId,
   houseId,
   houseLayout,
@@ -272,99 +291,102 @@ export const houseLayoutToHouseGroup = async ({
   systemId: string
   houseId: string
   houseLayout: ColumnLayout
-}) => {
-  const BIG_NUMBER = 99
-
-  const clippingPlanes: Plane[] = [
-    new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
-    new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
-    new Plane(new Vector3(0, 0, BIG_NUMBER), 0),
-  ]
-
-  const columnGroups = houseLayoutToColumns({
-    systemId,
-    houseId,
-    houseLayout,
-    clippingPlanes,
-  })
-
-  const topLevelHouseGroup = new Group()
-  const zCenterHouseGroup = new Group()
-
-  const sectionType =
-    houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
-
-  const width = houseLayout[0].gridGroups[0].modules[0].module.width
-  const height = houseLayout[0].gridGroups.reduce(
-    (acc, v) => acc + v.modules[0].module.height,
-    0
-  )
-  const length = columnGroups.reduce(
-    (acc, columnGroup) => acc + columnGroup.userData.length,
-    0
-  )
-  const obb = new OBB()
-  const levelTypes = houseLayoutToLevelTypes(houseLayout)
-  const houseGroupUserData: Partial<HouseRootGroupUserData> = {
-    type: UserDataTypeEnum.Enum.HouseRootGroup,
-    systemId,
-    houseId,
-    width,
-    length,
-    height,
-    modifiedMaterials: {},
-    obb,
-    clippingPlanes,
-    sectionType,
-    levelTypes,
-    vanillaColumn: getVanillaColumn({ systemId, levelTypes }),
-    columnCount: columnGroups.length,
-    houseLayout,
-  }
-  topLevelHouseGroup.userData = houseGroupUserData
-
-  zCenterHouseGroup.add(...columnGroups)
-  zCenterHouseGroup.position.setZ(-length / 2)
-  zCenterHouseGroup.userData.type =
-    UserDataTypeEnum.Enum.HouseColumnsContainerGroup
-
-  topLevelHouseGroup.add(zCenterHouseGroup)
-
+}): T.Task<Group> =>
   pipe(
-    columnGroups,
-    A.findFirst((x) => x.userData.columnIndex === 0),
-    O.map((firstColumn) => {
-      const stretchHandle = createStretchHandle({
+    createColumnGroups({
+      systemId,
+      houseLayout,
+    }),
+    T.chain((columnGroups) => async () => {
+      const topLevelHouseGroup = new Group()
+      const zCenterHouseGroup = new Group()
+
+      const BIG_NUMBER = 999
+
+      const clippingPlanes: Plane[] = [
+        new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
+        new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
+        new Plane(new Vector3(0, 0, BIG_NUMBER), 0),
+      ]
+
+      const sectionType =
+        houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+
+      const width = houseLayout[0].gridGroups[0].modules[0].module.width
+      const height = houseLayout[0].gridGroups.reduce(
+        (acc, v) => acc + v.modules[0].module.height,
+        0
+      )
+      const length = columnGroups.reduce(
+        (acc, columnGroup) => acc + columnGroup.userData.length,
+        0
+      )
+      const obb = new OBB()
+      const levelTypes = houseLayoutToLevelTypes(houseLayout)
+
+      const vanillaColumn = await getVanillaColumn({ systemId, levelTypes })()
+
+      const houseGroupUserData: Partial<HouseRootGroupUserData> = {
+        type: UserDataTypeEnum.Enum.HouseRootGroup,
+        systemId,
         houseId,
-        axis: "z",
-        direction: -1,
-        length,
         width,
-      })
-      firstColumn.add(stretchHandle)
+        length,
+        height,
+        modifiedMaterials: {},
+        obb,
+        clippingPlanes,
+        sectionType,
+        levelTypes,
+        vanillaColumn,
+        columnCount: columnGroups.length,
+        houseLayout,
+      }
+      topLevelHouseGroup.userData = houseGroupUserData
+
+      zCenterHouseGroup.add(...columnGroups)
+      zCenterHouseGroup.position.setZ(-length / 2)
+      zCenterHouseGroup.userData.type =
+        UserDataTypeEnum.Enum.HouseColumnsContainerGroup
+
+      topLevelHouseGroup.add(zCenterHouseGroup)
+
+      pipe(
+        columnGroups,
+        A.findFirst((x) => x.userData.columnIndex === 0),
+        O.map((firstColumn) => {
+          const stretchHandle = createStretchHandle({
+            houseId,
+            axis: "z",
+            direction: -1,
+            length,
+            width,
+          })
+          firstColumn.add(stretchHandle)
+        })
+      )
+
+      pipe(
+        columnGroups,
+        A.findFirst((x) => x.userData.columnIndex === columnGroups.length - 1),
+        O.map((lastColumn) => {
+          const stretchHandle = createStretchHandle({
+            houseId,
+            axis: "z",
+            direction: 1,
+            length,
+            width,
+          })
+          stretchHandle.position.z += lastColumn.userData.length
+          lastColumn.add(stretchHandle)
+        })
+      )
+
+      return topLevelHouseGroup
     })
   )
 
-  pipe(
-    columnGroups,
-    A.findFirst((x) => x.userData.columnIndex === columnGroups.length - 1),
-    O.map((lastColumn) => {
-      const stretchHandle = createStretchHandle({
-        houseId,
-        axis: "z",
-        direction: 1,
-        length,
-        width,
-      })
-      stretchHandle.position.z += lastColumn.userData.length
-      lastColumn.add(stretchHandle)
-    })
-  )
-
-  return topLevelHouseGroup
-}
-
-export const createHouseGroup = async ({
+export const createHouseGroup = ({
   systemId,
   houseId,
   dnas,
@@ -374,45 +396,28 @@ export const createHouseGroup = async ({
   houseId: string
   dnas: string[]
   friendlyName: string
-}) => {
-  const houseGroup = await pipe(
+}): T.Task<Group> =>
+  pipe(
     houseLayouts,
     R.lookup(getHouseLayoutsKey({ systemId, dnas })),
     O.match(
-      async () => {
+      (): T.Task<ColumnLayout> => async () => {
         const layoutsWorker = getLayoutsWorker()
         if (!layoutsWorker) throw new Error(`no layouts worker`)
-        const houseLayout = await layoutsWorker.processLayout({
+        return await layoutsWorker.processLayout({
           systemId,
           dnas,
         })
-        return houseLayoutToHouseGroup({
-          systemId,
-          houseId,
-          houseLayout,
-        })
       },
-      (houseLayout) =>
-        houseLayoutToHouseGroup({
-          systemId,
-          houseId,
-          houseLayout,
-        })
-    )
-  )
-
-  houseGroup.userData.dnas = dnas
-  houseGroup.userData.friendlyName = friendlyName
-
-  return houseGroup
-}
-
-export const getFirstHouseLayout = () =>
-  pipe(
-    houseLayouts,
-    R.keys,
-    A.head,
-    O.chain((k) => pipe(houseLayouts, R.lookup(k)))
+      (houseLayout) => T.of(houseLayout)
+    ),
+    T.chain((houseLayout) =>
+      houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
+    ),
+    T.map((group) => {
+      group.userData.friendlyName = friendlyName
+      return group
+    })
   )
 
 export const addColumnToHouse = (houseGroup: Object3D, columnGroup: Object3D) =>
@@ -439,78 +444,80 @@ export const columnSorter = A.sort(
   )
 )
 
-export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
-  const { levelTypes, systemId, columnCount, clippingPlanes } =
-    houseGroup.userData as HouseRootGroupUserData
-  pipe(
-    houseGroup.children,
-    A.head,
-    O.map((zCenterHouseGroup) => {
-      const { children: columnGroups } = zCenterHouseGroup
+export const insertVanillaColumn =
+  (houseGroup: Group, direction: 1 | -1): T.Task<void> =>
+  async () => {
+    const { levelTypes, systemId, columnCount, clippingPlanes } =
+      houseGroup.userData as HouseRootGroupUserData
 
-      const vanillaColumn =
-        vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
+    pipe(
+      houseGroup.children,
+      A.head,
+      O.map((zCenterHouseGroup) => async () => {
+        const { children: columnGroups } = zCenterHouseGroup
 
-      const vanillaColumnGroup = createColumnGroup({
-        systemId,
-        gridGroups: vanillaColumn.gridGroups,
-        columnIndex: -1,
-        clippingPlanes,
-      })
+        const vanillaColumn =
+          vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
 
-      const vanillaColumnLength = vanillaColumnGroup.userData.length
+        const vanillaColumnGroup = await createColumnGroup({
+          systemId,
+          gridGroups: vanillaColumn.gridGroups,
+          columnIndex: -1,
+        })()
 
-      if (direction === 1) {
-        pipe(
-          columnGroups,
-          A.filter((x) => x.userData.columnIndex >= columnCount - 2),
-          A.sort(
-            pipe(
-              Num.Ord,
-              Ord.contramap((x: Object3D) => x.userData.columnIndex)
-            )
-          ),
-          ([penultimateColumnGroup, endColumnGroup]) => {
-            vanillaColumnGroup.position.setZ(
-              penultimateColumnGroup.position.z +
-                penultimateColumnGroup.userData.length / 2 +
-                vanillaColumnLength / 2
-            )
-            addColumnToHouse(houseGroup, vanillaColumnGroup)
+        const vanillaColumnLength = vanillaColumnGroup.userData.length
 
-            vanillaColumnGroup.userData.columnIndex =
-              penultimateColumnGroup.userData.columnIndex + 1
+        if (direction === 1) {
+          pipe(
+            columnGroups,
+            A.filter((x) => x.userData.columnIndex >= columnCount - 2),
+            A.sort(
+              pipe(
+                Num.Ord,
+                Ord.contramap((x: Object3D) => x.userData.columnIndex)
+              )
+            ),
+            ([penultimateColumnGroup, endColumnGroup]) => {
+              vanillaColumnGroup.position.setZ(
+                penultimateColumnGroup.position.z +
+                  penultimateColumnGroup.userData.length / 2 +
+                  vanillaColumnLength / 2
+              )
+              addColumnToHouse(houseGroup, vanillaColumnGroup)
 
-            endColumnGroup.userData.columnIndex++
+              vanillaColumnGroup.userData.columnIndex =
+                penultimateColumnGroup.userData.columnIndex + 1
 
-            houseGroup.userData.columnCount = columnCount + 1
-          }
-        )
-      } else if (direction === -1) {
-        pipe(
-          columnGroups,
-          columnSorter,
-          ([startColumnGroup, ...restColumnGroups]) => {
-            for (let columnGroup of restColumnGroups) {
-              columnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
-              columnGroup.userData.columnIndex++
+              endColumnGroup.userData.columnIndex++
+
+              houseGroup.userData.columnCount = columnCount + 1
             }
+          )
+        } else if (direction === -1) {
+          pipe(
+            columnGroups,
+            columnSorter,
+            ([startColumnGroup, ...restColumnGroups]) => {
+              for (let columnGroup of restColumnGroups) {
+                columnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
+                columnGroup.userData.columnIndex++
+              }
 
-            vanillaColumnGroup.userData.columnIndex = 1
-            vanillaColumnGroup.position.setZ(
-              startColumnGroup.position.z +
-                startColumnGroup.userData.length +
-                vanillaColumnLength / 2
-            )
-            addColumnToHouse(houseGroup, vanillaColumnGroup)
+              vanillaColumnGroup.userData.columnIndex = 1
+              vanillaColumnGroup.position.setZ(
+                startColumnGroup.position.z +
+                  startColumnGroup.userData.length +
+                  vanillaColumnLength / 2
+              )
+              addColumnToHouse(houseGroup, vanillaColumnGroup)
 
-            houseGroup.userData.columnCount = columnCount + 1
-          }
-        )
-      }
-    })
-  )
-}
+              houseGroup.userData.columnCount = columnCount + 1
+            }
+          )
+        }
+      })
+    )
+  }
 
 export const subtractPenultimateColumn = (
   houseGroup: Group,
