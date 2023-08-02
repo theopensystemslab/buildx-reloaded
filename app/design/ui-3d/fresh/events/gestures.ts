@@ -148,15 +148,18 @@ const useGestures = (rootRef: RefObject<Group>) => {
                     }
                     break
                   }
-                  // case distance < lastDistance: {
-                  //   if (
-                  //     distance <
-                  //     vanillaColumnLength * columnsDelta + vanillaColumnLength
-                  //   ) {
-                  //     console.log("subtract vanilla column")
-                  //     stretchData.current.columnsDelta++
-                  //   }
-                  // }
+                  case distance < lastDistance: {
+                    if (distance < vanillaColumnLength * columnsAddedToEnd) {
+                      console.log("going down")
+                    }
+                    // if (
+                    //   distance <
+                    //   vanillaColumnLength * columnsDelta + vanillaColumnLength
+                    // ) {
+                    //   console.log("subtract vanilla column")
+                    //   stretchData.current.columnsDelta++
+                    // }
+                  }
                 }
                 stretchData.current.lastDistance = distance
 

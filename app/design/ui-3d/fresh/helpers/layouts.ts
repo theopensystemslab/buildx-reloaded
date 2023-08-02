@@ -445,10 +445,6 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
             )
             addColumnToHouse(houseGroup, vanillaColumnGroup)
 
-            // penultimateColumnGroup.position.add(
-            //   new Vector3(0, 0, vanillaColumnLength)
-            // )
-
             vanillaColumnGroup.userData.columnIndex =
               penultimateColumnGroup.userData.columnIndex + 1
 
