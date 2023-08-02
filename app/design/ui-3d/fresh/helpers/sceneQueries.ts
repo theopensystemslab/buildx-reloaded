@@ -1,8 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Object3D } from "three"
-import { A, O } from "../../../../utils/functions"
-import { UserDataTypeEnum } from "../userData"
+import { A, O, someOrError } from "../../../../utils/functions"
+import { ColumnGroupUserData, UserDataTypeEnum } from "../userData"
 
 export const rootHouseGroupChildQuery = (
   rootRef: RefObject<Group>,
@@ -35,3 +35,25 @@ export const handleColumnGroupParentQuery = (object: Object3D) => {
   }
   throw new Error(`No HouseRootGroup parent found for ${object}`)
 }
+
+export const getHouseGroupColumns = (houseGroup: Group) =>
+  pipe(
+    houseGroup.children,
+    A.head,
+    O.map((columnsContainer) => columnsContainer.children as Group[]),
+    someOrError("no columns container in house group")
+  )
+
+// should just be able to use house length
+
+// export const getLastColumnEndZ = (houseGroup: Group) => {
+//   return pipe(
+//     getHouseGroupColumns(houseGroup),
+//     A.last,
+//     O.map((lastColumn) => {
+//       const { length } = lastColumn.userData as ColumnGroupUserData
+//       return length
+//       // return pipe(lastColumn.children, A.last)
+//     })
+//   )
+// }

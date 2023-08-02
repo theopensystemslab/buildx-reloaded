@@ -12,13 +12,16 @@ import { openMenu } from "../../../state/menu"
 import pointer from "../../../state/pointer"
 import scope, { ScopeItem } from "../../../state/scope"
 import siteCtx, { downMode, SiteCtxModeEnum } from "../../../state/siteCtx"
+import { insertVanillaColumn } from "../helpers/layouts"
 import {
+  getHouseGroupColumns,
   handleColumnGroupParentQuery,
   rootHouseGroupParentQuery,
 } from "../helpers/sceneQueries"
 import {
   GridGroupUserData,
   HouseRootGroupUserData,
+  StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
 import { dispatchOutline } from "./outlines"
@@ -60,7 +63,11 @@ const useGestures = (rootRef: RefObject<Group>) => {
     handleGroup: Group
     point0: Vector3
     handleGroupPos0: Vector3
+    lastDistance: number
+    columnsAddedToEnd: number
   } | null>(null)
+
+  // we could pre-process each gate
 
   const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = ({
     first,
@@ -72,12 +79,15 @@ const useGestures = (rootRef: RefObject<Group>) => {
       case first: {
         setCameraControlsEnabled(false)
         const handleGroup = handleColumnGroupParentQuery(object)
+        const houseGroup = rootHouseGroupParentQuery(object)
         stretchData.current = {
           handleObject: object,
-          houseGroup: rootHouseGroupParentQuery(object),
+          houseGroup,
           handleGroup,
           handleGroupPos0: handleGroup.position.clone(),
           point0: point,
+          lastDistance: 0,
+          columnsAddedToEnd: 0,
         }
         dispatchPointerDown({ point, object })
         break
@@ -85,14 +95,81 @@ const useGestures = (rootRef: RefObject<Group>) => {
       case !first && !last: {
         if (!stretchData.current) throw new Error("first didn't set first")
 
-        const { handleGroup, handleGroupPos0, point0, houseGroup } =
-          stretchData.current
+        const {
+          handleGroup,
+          handleGroupPos0,
+          point0,
+          houseGroup,
+          handleObject,
+          lastDistance,
+          columnsAddedToEnd,
+        } = stretchData.current
 
-        const [x1, z1] = pointer.xz
-        const v = new Vector3(x1, 0, z1).sub(point0)
-        v.applyAxisAngle(new Vector3(0, 1, 0), -houseGroup.rotation.y)
+        const { direction, axis } =
+          handleObject.userData as StretchHandleMeshUserData
 
-        handleGroup.position.set(0, 0, handleGroupPos0.z + v.z)
+        switch (axis) {
+          case "z":
+            switch (direction) {
+              case 1: {
+                const vanillaColumnLength = (
+                  houseGroup.userData as HouseRootGroupUserData
+                ).vanillaColumn.length
+
+                const [x1, z1] = pointer.xz
+                const distanceVector = new Vector3(x1, 0, z1).sub(point0)
+                distanceVector.applyAxisAngle(
+                  new Vector3(0, 1, 0),
+                  -houseGroup.rotation.y
+                )
+                const distance = distanceVector.z
+
+                handleGroup.position.set(0, 0, handleGroupPos0.z + distance)
+
+                // maybe we want to oper on the house group columns doodah itself
+
+                // and then constantly be computing whether we want to add or subtract
+
+                // so we're tracking the next gate up or down
+
+                // probably want to just set visible false and turn off raycasting
+                // when we delete columns
+
+                // let's work on adding some first
+
+                // gate 1 = z'end + vanillaColumnLength
+
+                switch (true) {
+                  case distance > lastDistance: {
+                    if (
+                      distance >
+                      vanillaColumnLength * (columnsAddedToEnd + 1)
+                    ) {
+                      console.log("add vanilla column")
+                      insertVanillaColumn(houseGroup, 1)
+                      stretchData.current.columnsAddedToEnd++
+                    }
+                    break
+                  }
+                  // case distance < lastDistance: {
+                  //   if (
+                  //     distance <
+                  //     vanillaColumnLength * columnsDelta + vanillaColumnLength
+                  //   ) {
+                  //     console.log("subtract vanilla column")
+                  //     stretchData.current.columnsDelta++
+                  //   }
+                  // }
+                }
+
+                // gates on err...
+
+                // vanilla column length up
+
+                // existing column length down
+              }
+            }
+        }
 
         break
       }
