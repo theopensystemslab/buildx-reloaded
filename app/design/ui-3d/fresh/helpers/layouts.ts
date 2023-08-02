@@ -430,22 +430,32 @@ export const insertVanillaColumn = (houseGroup: Group, direction: 1 | -1) => {
       if (direction === 1) {
         pipe(
           columnGroups,
-          A.findFirst((x) => x.userData.columnIndex === columnCount - 1),
-          O.map((endColumnGroup) => {
+          A.filter((x) => x.userData.columnIndex >= columnCount - 2),
+          A.sort(
+            pipe(
+              Num.Ord,
+              Ord.contramap((x: Object3D) => x.userData.columnIndex)
+            )
+          ),
+          ([penultimateColumnGroup, endColumnGroup]) => {
             vanillaColumnGroup.position.setZ(
-              endColumnGroup.position.z + vanillaColumnLength / 2
+              penultimateColumnGroup.position.z +
+                penultimateColumnGroup.userData.length / 2 +
+                vanillaColumnLength / 2
             )
             addColumnToHouse(houseGroup, vanillaColumnGroup)
 
-            endColumnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))
+            // penultimateColumnGroup.position.add(
+            //   new Vector3(0, 0, vanillaColumnLength)
+            // )
 
             vanillaColumnGroup.userData.columnIndex =
-              endColumnGroup.userData.columnIndex
+              penultimateColumnGroup.userData.columnIndex + 1
 
             endColumnGroup.userData.columnIndex++
 
             houseGroup.userData.columnCount = columnCount + 1
-          })
+          }
         )
       } else if (direction === -1) {
         pipe(

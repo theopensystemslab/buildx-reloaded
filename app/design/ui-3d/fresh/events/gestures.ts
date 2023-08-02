@@ -141,10 +141,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
                 switch (true) {
                   case distance > lastDistance: {
-                    if (
-                      distance >
-                      vanillaColumnLength * (columnsAddedToEnd + 1)
-                    ) {
+                    if (distance > vanillaColumnLength * columnsAddedToEnd) {
                       console.log("add vanilla column")
                       insertVanillaColumn(houseGroup, 1)
                       stretchData.current.columnsAddedToEnd++
@@ -161,6 +158,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
                   //   }
                   // }
                 }
+                stretchData.current.lastDistance = distance
 
                 // gates on err...
 
@@ -303,7 +301,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
       const {
         object,
-        eventObject,
         // object: { userData },
       } = intersections[0]
 
@@ -313,6 +310,12 @@ const useGestures = (rootRef: RefObject<Group>) => {
       //     objects,
       //   })
       // }
+
+      if (hovering) {
+        document.body.style.cursor = "grab"
+      }
+
+      if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
 
       switch (siteCtx.mode) {
         case SiteCtxModeEnum.Enum.SITE:
@@ -339,10 +342,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
       // scope.hovered = {
       //   ...userData.identifier,
       // }
-
-      if (hovering) {
-        document.body.style.cursor = "grab"
-      }
 
       invalidate()
     },
