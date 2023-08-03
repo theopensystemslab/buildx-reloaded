@@ -34,6 +34,8 @@ import {
 } from "../userData"
 import { createStretchHandle } from "./handles"
 
+export const BIG_CLIP_NUMBER = 999
+
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}
 
@@ -208,10 +210,11 @@ export const createColumnGroup =
         moduleGroup.scale.set(1, 1, endColumn ? 1 : -1)
         moduleGroup.position.set(
           0,
-          y,
+          0,
           endColumn ? z + module.length / 2 : z - module.length / 2
         )
 
+        gridGroup.position.setY(y)
         gridGroup.add(moduleGroup)
 
         length += module.length
@@ -221,6 +224,7 @@ export const createColumnGroup =
         type: UserDataTypeEnum.Enum.GridGroup,
         levelIndex,
         length,
+        height: modules[0].module.height,
       }
       gridGroup.userData = gridGroupUserData
 
@@ -470,14 +474,12 @@ export const createInitialHouse = ({
     T.map((layoutGroup) => {
       const transformsGroup = new Group()
 
-      const BIG_NUMBER = 999
-
       const NORMAL_DIRECTION = -1
 
       const clippingPlanes: Plane[] = [
-        new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_NUMBER),
-        new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_NUMBER),
-        new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_NUMBER),
+        new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_CLIP_NUMBER),
+        new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
+        new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
       ]
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {

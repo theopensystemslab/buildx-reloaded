@@ -130,7 +130,7 @@ const updateDnas = (houseGroup: Group) => {
 export const updateEverything = (houseTransformsGroup: Group) => {
   updateHouseLength(houseTransformsGroup)
   updateHouseOBB(houseTransformsGroup)
-  updateClippingPlanes(houseTransformsGroup)
+  // updateClippingPlanes(houseTransformsGroup)
   updateDnas(houseTransformsGroup)
 
   const { dnas, houseId } = getActiveHouseUserData(houseTransformsGroup)

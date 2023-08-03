@@ -10,5 +10,6 @@ type OutlineEventDetail = {
 export const dispatchOutline = (detail: OutlineEventDetail) =>
   dispatchEvent(new CustomEvent(OUTLINE_EVENT, { detail }))
 
-export const useOutlineEvent = (f: (eventDetail: OutlineEventDetail) => void) =>
-  useEvent(OUTLINE_EVENT, ({ detail }) => f(detail))
+export const useOutlineListener = (
+  f: (eventDetail: OutlineEventDetail) => void
+) => useEvent(OUTLINE_EVENT, ({ detail }) => f(detail))

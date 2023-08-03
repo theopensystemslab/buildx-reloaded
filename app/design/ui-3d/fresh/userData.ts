@@ -68,6 +68,7 @@ export type GridGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.GridGroup
   levelIndex: number
   length: number
+  height: number
 }
 
 export type ModuleGroupUserData = {

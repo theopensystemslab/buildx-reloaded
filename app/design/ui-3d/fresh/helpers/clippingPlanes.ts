@@ -1,12 +1,23 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Material, Mesh } from "three"
 import { A, O } from "../../../../utils/functions"
-import { HouseTransformsGroupUserData, UserDataTypeEnum } from "../userData"
+import siteCtx, {
+  SiteCtxModeEnum,
+  useModeChangeListener,
+} from "../../../state/siteCtx"
+import {
+  GridGroupUserData,
+  HouseTransformsGroupUserData,
+  UserDataTypeEnum,
+} from "../userData"
+import { BIG_CLIP_NUMBER } from "./layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformGroup,
+  getLayoutGroupColumnGroups,
   mapHouseTransformGroup,
 } from "./sceneQueries"
 
@@ -16,28 +27,77 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
       const { clippingPlanes } =
         houseTransformGroup.userData as HouseTransformsGroupUserData
 
-      console.log({ clippingPlanes })
-
       houseTransformGroup.traverse((x) => {
         if (x.userData.type === UserDataTypeEnum.Enum.ElementMesh) {
           ;((x as Mesh).material as Material).clippingPlanes = clippingPlanes
         }
       })
-
-      console.log(houseTransformGroup)
     })
   }
 
   const setYCut = (houseId: string, y: number) => {
     mapHouseTransformGroup(rootRef, houseId, (houseTransformGroup) => {
       const {
-        clippingPlanes,
-        clippingPlanes: [cpx, cpy, cpz],
+        clippingPlanes: [, cpy],
         height,
       } = getActiveHouseUserData(houseTransformGroup)
-      cpy.constant = height / 2
+      cpy.constant = y
     })
   }
+
+  const houseLevelIndexToCutHeight = (houseId: string, levelIndex: number) => {
+    return pipe(
+      getHouseTransformGroup(rootRef, houseId),
+      O.chain((houseTransformGroup) =>
+        pipe(
+          houseTransformGroup,
+          getActiveLayoutGroup,
+          getLayoutGroupColumnGroups,
+          A.head,
+          O.chain((columnGroup) => {
+            const gridGroups = columnGroup.children
+            return pipe(
+              gridGroups,
+              A.findFirst((gridGroup) => {
+                const gridGroupUserData =
+                  gridGroup.userData as GridGroupUserData
+
+                return gridGroupUserData.levelIndex === levelIndex
+              })
+            )
+          })
+        )
+      ),
+      O.map((gridGroup) => {
+        const { height } = gridGroup.userData as GridGroupUserData
+        return gridGroup.position.y + height / 2
+      })
+    )
+  }
+
+  useModeChangeListener(({ previous, next }) => {
+    const { houseId, levelIndex } = siteCtx
+
+    switch (true) {
+      case next === SiteCtxModeEnum.Enum.LEVEL:
+        if (houseId === null || levelIndex === null) break
+        // find level index height
+
+        pipe(
+          houseLevelIndexToCutHeight(houseId, levelIndex),
+          O.map((cutHeight) => {
+            setYCut(houseId, cutHeight)
+          })
+        )
+        break
+      default:
+        if (houseId === null) break
+        setYCut(houseId, BIG_CLIP_NUMBER)
+        break
+    }
+
+    invalidate()
+  })
 
   return { setYCut, initClippingPlanes }
 }

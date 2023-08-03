@@ -7,7 +7,7 @@ import {
   RenderPass,
 } from "postprocessing"
 import { useEffect, useMemo } from "react"
-import { useOutlineEvent } from "../fresh/events/outlines"
+import { useOutlineListener } from "../fresh/events/outlines"
 
 export type UseOutlineEffectParams = ConstructorParameters<
   typeof OutlineEffectRaw
@@ -80,7 +80,7 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  useOutlineEvent(({ objects }) => {
+  useOutlineListener(({ objects }) => {
     outlineEffect.selection.set(objects)
   })
 

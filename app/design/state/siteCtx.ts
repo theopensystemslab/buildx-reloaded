@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { useEvent } from "react-use"
 import { proxy, subscribe, useSnapshot } from "valtio"
 import * as z from "zod"
 import { isSSR } from "~/utils/next"
@@ -113,8 +114,16 @@ export const upMode = () => {
   const { houseId, mode } = siteCtx
   if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
     enterBuildingMode(houseId)
+    dispatchModeChange({
+      previous: SiteCtxModeEnum.Enum.LEVEL,
+      next: SiteCtxModeEnum.Enum.BUILDING,
+    })
   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
     exitBuildingMode()
+    dispatchModeChange({
+      previous: SiteCtxModeEnum.Enum.BUILDING,
+      next: SiteCtxModeEnum.Enum.SITE,
+    })
   }
 }
 
@@ -122,10 +131,32 @@ export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
   const { mode } = siteCtx
   if (mode === SiteCtxModeEnum.Enum.SITE) {
     enterBuildingMode(incoming.houseId)
+    dispatchModeChange({
+      previous: SiteCtxModeEnum.Enum.SITE,
+      next: SiteCtxModeEnum.Enum.BUILDING,
+    })
   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
     enterLevelMode(incoming.levelIndex)
+    dispatchModeChange({
+      previous: SiteCtxModeEnum.Enum.BUILDING,
+      next: SiteCtxModeEnum.Enum.LEVEL,
+    })
   }
 }
+
+const MODE_CHANGE_EVENT = "ModeChangeEvent"
+
+export type ModeChangeEventDetail = {
+  previous: SiteCtxMode
+  next: SiteCtxMode
+}
+
+export const dispatchModeChange = (detail: ModeChangeEventDetail) =>
+  dispatchEvent(new CustomEvent(MODE_CHANGE_EVENT, { detail }))
+
+export const useModeChangeListener = (
+  f: (eventDetail: ModeChangeEventDetail) => void
+) => useEvent(MODE_CHANGE_EVENT, ({ detail }) => f(detail))
 
 export const useSiteCurrency = () => {
   const { region } = useSiteCtx()
