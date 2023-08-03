@@ -201,7 +201,7 @@ const HtmlUi = (props: Props) => {
 
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
       {DEBUG && (
-        <div className="absolute bottom-0 right-0">
+        <div className="absolute bottom-0 right-0 pointer-events-none">
           <pre>{JSON.stringify({ mode, hovered, selected }, null, 2)}</pre>
         </div>
       )}

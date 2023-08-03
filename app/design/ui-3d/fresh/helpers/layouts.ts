@@ -214,6 +214,8 @@ export const createColumnGroup =
           endColumn ? z + module.length / 2 : z - module.length / 2
         )
 
+        console.log({ gridGroupY: y, moduleDna: moduleGroup.userData.dna })
+
         gridGroup.position.setY(y)
         gridGroup.add(moduleGroup)
 
