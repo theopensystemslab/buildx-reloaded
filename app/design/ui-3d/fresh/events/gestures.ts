@@ -69,7 +69,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
   // we could pre-process each gate
 
-  const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = ({
+  const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = async ({
     first,
     last,
     event,
@@ -142,8 +142,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
                 switch (true) {
                   case distance > lastDistance: {
                     if (distance > vanillaColumnLength * columnsAddedToEnd) {
-                      console.log("add vanilla column")
-                      insertVanillaColumn(houseGroup, 1)
+                      insertVanillaColumn(houseGroup, 1)()
                       stretchData.current.columnsAddedToEnd++
                     }
                     break
@@ -156,7 +155,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
                     //   distance <
                     //   vanillaColumnLength * columnsDelta + vanillaColumnLength
                     // ) {
-                    //   console.log("subtract vanilla column")
                     //   stretchData.current.columnsDelta++
                     // }
                   }

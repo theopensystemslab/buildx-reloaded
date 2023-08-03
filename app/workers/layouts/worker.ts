@@ -438,43 +438,6 @@ export const columnLayoutToDnas = (
     RA.flatten
   ) as string[]
 
-const processZStretchLayout = async ({
-  layoutKey,
-  direction,
-  i,
-}: {
-  layoutKey: HouseLayoutsKey
-  direction: number
-  i: number
-}) => {
-  const { systemId } = layoutKey
-  const strLayoutKey = getHouseLayoutsKey(layoutKey)
-  const layout = await layoutsDB.houseLayouts.get(strLayoutKey)
-  if (!layout) {
-    console.log(`no layout for ${strLayoutKey}`)
-    return
-  }
-  const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
-  if (!vanillaColumn) {
-    console.log(`no layout for ${strLayoutKey}`)
-    return
-  }
-
-  const { startColumn, midColumns, endColumn } = splitColumns(layout.layout)
-
-  const nextDnas = columnLayoutToDnas([
-    startColumn,
-    ...A.replicate(i, vanillaColumn.vanillaColumn),
-    ...midColumns,
-    endColumn,
-  ])
-
-  getLayout({
-    systemId,
-    dnas: nextDnas,
-  })
-}
-
 if (!isSSR()) {
   // CONT
   liveQuery(async () => {
@@ -702,8 +665,7 @@ const getVanillaColumn = async (key: VanillaColumnsKey) => {
 const api = {
   postLayout,
   postLayouts,
-  processLayout: getLayout,
-  processZStretchLayout,
+  getLayout,
   syncModels,
   getVanillaColumn,
 }

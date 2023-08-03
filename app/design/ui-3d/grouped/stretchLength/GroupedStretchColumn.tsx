@@ -33,14 +33,13 @@ const GroupedStretchColumn = (props: Props) => {
 
   const groupRef = useRef<Group>(null)
 
-  useEffect(() => {
-    const layoutsWorker = getLayoutsWorker()
-    if (!layoutsWorker) {
-      console.log("no layouts workers")
-      return
-    }
-    layoutsWorker.processZStretchLayout({ direction, i, layoutKey })
-  }, [direction, houseId, i, layoutKey])
+  // useEffect(() => {
+  //   const layoutsWorker = getLayoutsWorker()
+  //   if (!layoutsWorker) {
+  //     return
+  //   }
+  //   layoutsWorker.processZStretchLayout({ direction, i, layoutKey })
+  // }, [direction, houseId, i, layoutKey])
 
   useZStretchHouseListener((detail) => {
     if (houseId !== detail.houseId) return

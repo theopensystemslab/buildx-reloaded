@@ -29,8 +29,6 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
 
   if (!selected) throw new Error("null selected")
 
-  console.log({ selected })
-
   const props: ContextMenuProps = {
     pageX,
     pageY,

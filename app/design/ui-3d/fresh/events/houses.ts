@@ -65,7 +65,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
       houseId,
       dnas,
       friendlyName,
-    })
+    })()
 
     houseGroup.position.set(position.x, position.y, position.z)
     houseGroup.rotation.set(0, rotation, 0)

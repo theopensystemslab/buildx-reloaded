@@ -28,7 +28,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     localRef.current.position.setY(y)
     localRef.current.layers.set(RaycasterLayer.ENABLED)
     if (DEBUG) {
-      console.log(`DEBUG XZPlane: POINTER_DOWN CameraLayer.VISIBLE`)
+      console.debug(`DEBUG XZPlane: POINTER_DOWN CameraLayer.VISIBLE`)
       localRef.current.layers.enable(CameraLayer.VISIBLE)
     }
   })
@@ -36,7 +36,8 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
   usePointerUpListener(() => {
     if (!localRef.current) return
     localRef.current.layers.set(RaycasterLayer.DISABLED)
-    if (DEBUG) console.log(`DEBUG XZPlane: POINTER_UP RaycasterLayer.DISABLED`)
+    if (DEBUG)
+      console.debug(`DEBUG XZPlane: POINTER_UP RaycasterLayer.DISABLED`)
   })
 
   const bind: any = useGesture<{

@@ -20,7 +20,7 @@ import layoutsDB, {
   VanillaColumn,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
-import { A, Num, O, Ord, R, S, T } from "../../../../utils/functions"
+import { A, Num, O, Ord, pipeLog, R, S, T } from "../../../../utils/functions"
 import { getLayoutsWorker } from "../../../../workers"
 import { getMaterial } from "../systems"
 import {
@@ -404,7 +404,7 @@ export const createHouseGroup = ({
       (): T.Task<ColumnLayout> => async () => {
         const layoutsWorker = getLayoutsWorker()
         if (!layoutsWorker) throw new Error(`no layouts worker`)
-        return await layoutsWorker.processLayout({
+        return await layoutsWorker.getLayout({
           systemId,
           dnas,
         })
@@ -447,23 +447,23 @@ export const columnSorter = A.sort(
 export const insertVanillaColumn =
   (houseGroup: Group, direction: 1 | -1): T.Task<void> =>
   async () => {
-    const { levelTypes, systemId, columnCount, clippingPlanes } =
+    const { levelTypes, systemId, columnCount } =
       houseGroup.userData as HouseRootGroupUserData
+
+    const vanillaColumn =
+      vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
+
+    const vanillaColumnGroup = await createColumnGroup({
+      systemId,
+      gridGroups: vanillaColumn.gridGroups,
+      columnIndex: -1,
+    })()
 
     pipe(
       houseGroup.children,
       A.head,
-      O.map((zCenterHouseGroup) => async () => {
+      O.map((zCenterHouseGroup) => {
         const { children: columnGroups } = zCenterHouseGroup
-
-        const vanillaColumn =
-          vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
-
-        const vanillaColumnGroup = await createColumnGroup({
-          systemId,
-          gridGroups: vanillaColumn.gridGroups,
-          columnIndex: -1,
-        })()
 
         const vanillaColumnLength = vanillaColumnGroup.userData.length
 

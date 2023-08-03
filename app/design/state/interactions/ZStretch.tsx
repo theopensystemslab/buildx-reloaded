@@ -52,20 +52,17 @@ const ZStretch = ({
   startRef,
   endRef,
 }: Props) => {
-  console.log("ZStretch")
   const { systemId } = layoutKey
   const strLayoutKey = getHouseLayoutsKey(layoutKey)
 
   const vanillaColumn = suspend(async () => {
     if (strLayoutKey in vanillaColumns) {
-      console.log("strLayoutKey in vanillaColumns")
       return vanillaColumns[strLayoutKey]
     } else {
       const layoutsWorker = getLayoutsWorker()
       if (!layoutsWorker) throw new Error("no layouts worker")
-      await layoutsWorker.processLayout(layoutKey)
+      await layoutsWorker.getLayout(layoutKey)
       const vanillaColumn = await layoutsDB.vanillaColumns.get(strLayoutKey)
-      console.log("awaited everything")
       if (!vanillaColumn)
         throw new Error(`no vanilla column for ${strLayoutKey}`)
       return vanillaColumn.vanillaColumn
@@ -210,8 +207,6 @@ const ZStretch = ({
     // if (!startRef.current || !endRef.current) return
 
     const { distance, direction, dx, dz, last } = detail
-
-    console.log(distance)
 
     switch (direction) {
       case 1: {

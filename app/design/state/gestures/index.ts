@@ -75,7 +75,6 @@ export const useDragHandler = () => {
           const { direction = 1, axis } = identifier as StretchHandleIdentifier
 
           if (axis === "z") {
-            console.log("dispatching NORMAL")
             dispatchZStretchHouseIntent({
               houseId,
               direction,
@@ -108,7 +107,6 @@ export const useDragHandler = () => {
       if (!dragProxy.end) return
 
       const cleanup = () => {
-        console.log("cleaning up")
         dragProxy.start = null
         dragProxy.drag = null
         dragProxy.end = false
@@ -156,7 +154,6 @@ export const useDragHandler = () => {
               identifier as StretchHandleIdentifier
 
             if (axis === "z") {
-              console.log("dispatching LAST")
               dispatchZStretchHouseIntent({
                 houseId,
                 direction,

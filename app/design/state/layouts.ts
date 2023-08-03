@@ -40,7 +40,6 @@ export const useDnasLayout = (layoutsKey: HouseLayoutsKey): ColumnLayout => {
 
   return suspend(async () => {
     if (maybeLayout) {
-      console.log("maybeLayout")
       return maybeLayout
     }
 
@@ -49,10 +48,9 @@ export const useDnasLayout = (layoutsKey: HouseLayoutsKey): ColumnLayout => {
     if (layoutsWorker === null)
       throw new Error(`layoutsWorker null in useDnasLayout`)
 
-    const layout = await layoutsWorker.processLayout(layoutsKey)
+    const layout = await layoutsWorker.getLayout(layoutsKey)
     layouts[serialKey] = layout
 
-    console.log("awaited layout")
     return layout
   }, [maybeLayout])
 }
