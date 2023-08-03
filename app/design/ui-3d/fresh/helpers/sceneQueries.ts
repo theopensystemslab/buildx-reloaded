@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Object3D } from "three"
-import { A, O, pipeLog, someOrError } from "../../../../utils/functions"
+import { A, O, someOrError } from "../../../../utils/functions"
 import {
   HouseLayoutGroupUserData,
   HouseTransformsGroupUserData,
@@ -95,7 +95,6 @@ export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
   pipe(
     houseTransformsGroup,
     getLayoutGroups,
-    pipeLog,
     A.partition((x) => x.uuid === houseTransformsGroup.userData.activeChildUuid)
   )
 

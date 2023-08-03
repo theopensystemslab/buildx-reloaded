@@ -3,7 +3,7 @@ import { Handler, useGesture, UserHandlers } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject, useRef } from "react"
 import { useEvent } from "react-use"
-import { Group, Object3D, Vector3 } from "three"
+import { Group, Material, Mesh, Object3D, Plane, Vector3 } from "three"
 import { z } from "zod"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
@@ -234,10 +234,60 @@ const useGestures = (rootRef: RefObject<Group>) => {
         return
       }
 
-      const {
-        object,
-        // object: { userData },
-      } = intersections[0]
+      pipe(
+        intersections,
+        A.findFirst((ix) => {
+          const { object, point } = ix
+          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh)
+            return false
+          return (
+            ((object as Mesh).material as Material).clippingPlanes as Plane[]
+          ).every((plane) => {
+            return plane.distanceToPoint(point) > 0
+          })
+        }),
+        O.map((intersection) => {
+          const { object } = intersection
+
+          if (hovering) {
+            document.body.style.cursor = "grab"
+          }
+
+          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
+          const scopeItem = elementMeshToScopeItem(object)
+          scope.hovered = scopeItem
+          switch (siteCtx.mode) {
+            case SiteCtxModeEnum.Enum.SITE:
+              dispatchOutline({
+                objects: objectToHouseObjects(object),
+              })
+              break
+            case SiteCtxModeEnum.Enum.BUILDING:
+              dispatchOutline({
+                objects: objectToIfcTagObjects(object),
+              })
+              // object to all of ifc tag
+              break
+            case SiteCtxModeEnum.Enum.LEVEL:
+              // object to all of module group
+              if (object.parent) {
+                dispatchOutline({ objects: object.parent.children })
+              }
+              break
+          }
+
+          // scope.hovered = {
+          //   ...userData.identifier,
+          // }
+
+          invalidate()
+        })
+      )
+
+      // const {
+      //   object,
+      //   // object: { userData },
+      // } = ix0
 
       // if (object.parent?.parent) {
       //   const objects = object.parent.parent.children.flatMap((x) => x.children)
@@ -245,39 +295,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
       //     objects,
       //   })
       // }
-
-      if (hovering) {
-        document.body.style.cursor = "grab"
-      }
-
-      if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
-      const scopeItem = elementMeshToScopeItem(object)
-      scope.hovered = scopeItem
-      switch (siteCtx.mode) {
-        case SiteCtxModeEnum.Enum.SITE:
-          dispatchOutline({
-            objects: objectToHouseObjects(object),
-          })
-          break
-        case SiteCtxModeEnum.Enum.BUILDING:
-          dispatchOutline({
-            objects: objectToIfcTagObjects(object),
-          })
-          // object to all of ifc tag
-          break
-        case SiteCtxModeEnum.Enum.LEVEL:
-          // object to all of module group
-          if (object.parent) {
-            dispatchOutline({ objects: object.parent.children })
-          }
-          break
-      }
-
-      // scope.hovered = {
-      //   ...userData.identifier,
-      // }
-
-      invalidate()
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()
