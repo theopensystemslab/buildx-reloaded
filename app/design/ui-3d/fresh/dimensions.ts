@@ -15,7 +15,11 @@ import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { columnSorter } from "./helpers/layouts"
 import {
-  HouseRootGroupUserData,
+  getActiveHouseUserData,
+  getActiveLayoutGroup,
+} from "./helpers/sceneQueries"
+import {
+  HouseTransformsGroupUserData,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -38,21 +42,20 @@ const renderOBB = (obb: OBB, scene: Object3D) => {
   lastMesh = mesh
 }
 
-export const updateHouseOBB = (houseGroup: Group) => {
-  const houseGroupUserData = houseGroup.userData as HouseRootGroupUserData
+export const updateHouseOBB = (houseTransformsGroup: Group) => {
+  const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
+  const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
 
-  const { width, height, length } = houseGroupUserData
-
-  const { x, y, z } = houseGroup.position
+  const { x, y, z } = houseTransformsGroup.position
 
   const center = new Vector3(x, y + height / 2, z)
   const halfSize = new Vector3(width / 2, height / 2, length / 2)
-  const rotation = new Matrix3().setFromMatrix4(houseGroup.matrix)
+  const rotation = new Matrix3().setFromMatrix4(houseTransformsGroup.matrix)
 
-  houseGroupUserData.obb.set(center, halfSize, rotation)
+  activeLayoutGroup.userData.obb.set(center, halfSize, rotation)
 
-  if (DEBUG && houseGroup.parent)
-    renderOBB(houseGroupUserData.obb, houseGroup.parent)
+  if (DEBUG && houseTransformsGroup.parent)
+    renderOBB(activeLayoutGroup.userData.obb, houseTransformsGroup.parent)
 }
 
 export const updateHouseWidth = (houseGroup: Group) => {}
@@ -63,7 +66,7 @@ export const updateClippingPlanes = (houseGroup: Group) => {
   const {
     clippingPlanes,
     clippingPlanes: [planeX, planeY, planeZ],
-  } = houseGroup.userData as HouseRootGroupUserData
+  } = houseGroup.userData as HouseTransformsGroupUserData
 
   houseGroup.updateMatrix()
 
@@ -124,16 +127,16 @@ const updateDnas = (houseGroup: Group) => {
   houseGroup.userData.dnas = result.flat()
 }
 
-export const updateEverything = (houseGroup: Group) => {
-  updateHouseLength(houseGroup)
-  updateHouseOBB(houseGroup)
-  updateClippingPlanes(houseGroup)
-  updateDnas(houseGroup)
+export const updateEverything = (houseTransformsGroup: Group) => {
+  updateHouseLength(houseTransformsGroup)
+  updateHouseOBB(houseTransformsGroup)
+  updateClippingPlanes(houseTransformsGroup)
+  updateDnas(houseTransformsGroup)
 
-  const { dnas, houseId } = houseGroup.userData as HouseRootGroupUserData
+  const { dnas, houseId } = getActiveHouseUserData(houseTransformsGroup)
 
-  const rotation = houseGroup.rotation.y
-  const position = houseGroup.position
+  const rotation = houseTransformsGroup.rotation.y
+  const position = houseTransformsGroup.position
 
   userDB.houses.update(houseId, {
     dnas,

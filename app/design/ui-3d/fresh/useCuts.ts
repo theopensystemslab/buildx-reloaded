@@ -19,7 +19,7 @@ const useCuts = (rootRef: RefObject<Group>) => {
         switch (userData.type) {
           case UserDataTypeEnum.Enum.ElementMesh:
             break
-          case UserDataTypeEnum.Enum.HouseRootGroup:
+          case UserDataTypeEnum.Enum.HouseTransformsGroup:
             // TypeScript knows that userData is of type HouseModuleGroupUserData in this block
             break
         }

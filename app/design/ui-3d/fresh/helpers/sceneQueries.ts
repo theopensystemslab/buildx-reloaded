@@ -2,7 +2,11 @@ import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Object3D } from "three"
 import { A, O, someOrError } from "../../../../utils/functions"
-import { ColumnGroupUserData, UserDataTypeEnum } from "../userData"
+import {
+  HouseLayoutGroupUserData,
+  HouseTransformsGroupUserData,
+  UserDataTypeEnum,
+} from "../userData"
 
 export const rootHouseGroupChildQuery = (
   rootRef: RefObject<Group>,
@@ -17,12 +21,14 @@ export const rootHouseGroupChildQuery = (
 export const rootHouseGroupParentQuery = (object: Object3D) => {
   let x = object
   while (x.parent) {
-    if (x.userData.type === UserDataTypeEnum.Enum.HouseRootGroup) {
+    if (x.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup) {
       return x as Group
     }
     x = x.parent
   }
-  throw new Error(`No HouseRootGroup parent found for ${object}`)
+  throw new Error(
+    `No ${UserDataTypeEnum.Enum.HouseTransformsGroup} parent found for ${object}`
+  )
 }
 
 export const handleColumnGroupParentQuery = (object: Object3D) => {
@@ -33,7 +39,9 @@ export const handleColumnGroupParentQuery = (object: Object3D) => {
     }
     x = x.parent
   }
-  throw new Error(`No HouseRootGroup parent found for ${object}`)
+  throw new Error(
+    `No ${UserDataTypeEnum.Enum.ColumnGroup} parent found for ${object}`
+  )
 }
 
 export const getHouseGroupColumns = (houseGroup: Group) =>
@@ -43,6 +51,39 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
     O.map((columnsContainer) => columnsContainer.children as Group[]),
     someOrError("no columns container in house group")
   )
+
+export const getActiveLayoutGroup = (houseTransformsGroup: Group): Group =>
+  pipe(
+    houseTransformsGroup.children,
+    A.findFirst(
+      (x) =>
+        x.uuid ===
+        (houseTransformsGroup.userData as HouseTransformsGroupUserData)
+          .activeChildUuid
+    ),
+    someOrError(`getActiveLayoutGroup failure`)
+  ) as Group
+
+export const getActiveHouseUserData = (houseTransformsGroup: Group) =>
+  pipe(
+    houseTransformsGroup.children,
+    A.findFirstMap((x) =>
+      x.uuid ===
+      (houseTransformsGroup.userData as HouseTransformsGroupUserData)
+        .activeChildUuid
+        ? O.some({
+            ...(houseTransformsGroup.userData as HouseTransformsGroupUserData),
+            ...(x.userData as HouseLayoutGroupUserData),
+          })
+        : O.none
+    ),
+    someOrError(`getActiveHouseUserData failure`)
+  )
+
+export const getLayoutGroupColumnGroups = (layoutGroup: Group): Group[] =>
+  layoutGroup.children.filter(
+    (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
+  ) as Group[]
 
 // should just be able to use house length
 

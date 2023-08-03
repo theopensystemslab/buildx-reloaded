@@ -10,7 +10,7 @@ import { isMesh, useRotations } from "~/utils/three"
 import {
   ElementMeshUserData,
   GridGroupUserData,
-  HouseRootGroupUserData,
+  HouseTransformsGroupUserData,
   UserDataTypeEnum,
 } from "../../ui-3d/fresh/userData"
 import { setCameraControlsEnabled } from "../camera"
@@ -297,10 +297,10 @@ export const useGestures = (): any =>
           const { levelIndex } = parent.parent.userData as GridGroupUserData
           if (
             parent.parent.parent?.parent?.parent?.userData.type ===
-            UserDataTypeEnum.Enum.HouseRootGroup
+            UserDataTypeEnum.Enum.HouseTransformsGroup
           ) {
             const { houseId } = parent.parent.parent?.parent?.parent
-              ?.userData as HouseRootGroupUserData
+              ?.userData as HouseTransformsGroupUserData
             downMode({ houseId, levelIndex })
           }
         }

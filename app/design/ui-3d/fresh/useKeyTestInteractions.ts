@@ -1,13 +1,19 @@
+import { liveQuery } from "dexie"
+import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { useKey } from "react-use"
 import { Group, Object3D, Vector3 } from "three"
+import layoutsDB from "../../../db/layouts"
+import { A, O, R } from "../../../utils/functions"
 import { PI } from "../../../utils/math"
 import { yAxis } from "../../../utils/three"
 import { updateEverything } from "./dimensions"
+import { createLayoutGroup } from "./helpers/layouts"
+import { getActiveHouseUserData } from "./helpers/sceneQueries"
 import {
   insertVanillaColumn,
   subtractPenultimateColumn,
-} from "./helpers/layouts"
+} from "./helpers/stretchZ"
 import { UserDataTypeEnum } from "./userData"
 
 const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
@@ -15,21 +21,21 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
     return (
       rootRef.current?.children.filter(
         (x: Object3D): x is Group =>
-          x.userData.type === UserDataTypeEnum.Enum.HouseRootGroup
+          x.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup
       ) ?? []
     )
   }
 
-  useKey("z", () => {
+  useKey("z", async () => {
     for (let houseGroup of getHouseGroups()) {
-      insertVanillaColumn(houseGroup, 1)
+      await insertVanillaColumn(houseGroup, 1)()
       updateEverything(houseGroup)
     }
   })
 
-  useKey("Z", () => {
+  useKey("Z", async () => {
     for (let houseGroup of getHouseGroups()) {
-      insertVanillaColumn(houseGroup, -1)
+      await insertVanillaColumn(houseGroup, -1)()
       updateEverything(houseGroup)
     }
   })
@@ -78,6 +84,11 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
     }
   })
 
+  useKey("x", () => {
+    for (let houseGroup of getHouseGroups()) {
+    }
+  })
+
   // toggle stretch width first pass
   // useKey("x", () => {
   //   // console.log(liveHouses)
@@ -99,7 +110,7 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
   //             console.log("swapping groups")
 
   //             stretchXGroups[
-  //               (liveHouseGroup.userData as HouseRootGroupUserData).sectionType
+  //               (liveHouseGroup.userData as HouseTransformsGroupUserData).sectionType
   //             ] = liveHouseGroup
 
   //             liveHouses[houseId] = firstGroup
@@ -116,28 +127,51 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
   //   }
   // })
 
-  // liveQuery(() => layoutsDB.altSectionTypeLayouts.toArray()).subscribe(
-  //   (data) => {
+  liveQuery(() => layoutsDB.altSectionTypeLayouts.toArray()).subscribe(
+    (data) => {
+      const houseGroups = getHouseGroups()
+      for (const { houseId, altSectionTypeLayouts } of data) {
+        pipe(
+          houseGroups,
+          A.findFirst((houseGroup) => houseGroup.userData.houseId === houseId),
+          O.chain((houseTransformsGroup) =>
+            pipe(
+              houseTransformsGroup.children,
+              A.head,
+              O.map((houseLayoutGroup) =>
+                pipe(
+                  altSectionTypeLayouts,
+                  R.map(({ layout: houseLayout }) => {
+                    const { systemId, dnas } =
+                      getActiveHouseUserData(houseTransformsGroup)
+
+                    createLayoutGroup({
+                      systemId,
+                      dnas,
+                      houseId,
+                      houseLayout,
+                    })
+
+                    // probably needs to be the layout group
+                    // houseLayoutToHouseGroup({
+                    //   systemId,
+                    //   houseId,
+                    //   houseLayout,
+                    // })
+                  })
+                )
+              )
+            )
+          )
+        )
+      }
+    }
+  )
   //     for (const { houseId, altSectionTypeLayouts } of data) {
   //       pipe(
   //         liveHouses,
   //         R.lookup(houseId),
   //         O.map((liveHouseGroup) => {
-  //           const layoutTasks: Record<string, T.Task<Group>> = pipe(
-  //             altSectionTypeLayouts,
-  //             R.map(({ layout: houseLayout }) => {
-  //               const { systemId, friendlyName } =
-  //                 liveHouseGroup.userData as HouseRootGroupUserData
-  //               // const houseLayout = altSectionTypeLayouts[]
-
-  //               return () =>
-  //                 houseLayoutToHouseGroup({
-  //                   systemId,
-  //                   houseId,
-  //                   houseLayout,
-  //                 })
-  //             })
-  //           )
 
   //           const layoutsTask = pipe(
   //             layoutTasks,
@@ -178,8 +212,6 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
   //         })
   //       )
   //     }
-  //   }
-  // )
 }
 
 export default useKeyTestInteractions

@@ -12,15 +12,16 @@ import { openMenu } from "../../../state/menu"
 import pointer from "../../../state/pointer"
 import scope, { ScopeItem } from "../../../state/scope"
 import siteCtx, { downMode, SiteCtxModeEnum } from "../../../state/siteCtx"
-import { insertVanillaColumn } from "../helpers/layouts"
 import {
+  getActiveHouseUserData,
   getHouseGroupColumns,
   handleColumnGroupParentQuery,
   rootHouseGroupParentQuery,
 } from "../helpers/sceneQueries"
+import { insertVanillaColumn } from "../helpers/stretchZ"
 import {
   GridGroupUserData,
-  HouseRootGroupUserData,
+  HouseTransformsGroupUserData,
   StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
@@ -105,6 +106,8 @@ const useGestures = (rootRef: RefObject<Group>) => {
           columnsAddedToEnd,
         } = stretchData.current
 
+        const { vanillaColumn } = getActiveHouseUserData(houseGroup)
+
         const { direction, axis } =
           handleObject.userData as StretchHandleMeshUserData
 
@@ -112,10 +115,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
           case "z":
             switch (direction) {
               case 1: {
-                const vanillaColumnLength = (
-                  houseGroup.userData as HouseRootGroupUserData
-                ).vanillaColumn.length
-
                 const [x1, z1] = pointer.xz
                 const distanceVector = new Vector3(x1, 0, z1).sub(point0)
                 distanceVector.applyAxisAngle(
@@ -141,14 +140,15 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
                 switch (true) {
                   case distance > lastDistance: {
-                    if (distance > vanillaColumnLength * columnsAddedToEnd) {
+                    if (distance > vanillaColumn.length * columnsAddedToEnd) {
+                      console.log("am i even ever")
                       insertVanillaColumn(houseGroup, 1)()
                       stretchData.current.columnsAddedToEnd++
                     }
                     break
                   }
                   case distance < lastDistance: {
-                    if (distance < vanillaColumnLength * columnsAddedToEnd) {
+                    if (distance < vanillaColumn.length * columnsAddedToEnd) {
                       console.log("going down")
                     }
                     // if (
@@ -376,10 +376,10 @@ const useGestures = (rootRef: RefObject<Group>) => {
         const { levelIndex } = parent.parent.userData as GridGroupUserData
         if (
           parent.parent.parent?.parent?.parent?.userData.type ===
-          UserDataTypeEnum.Enum.HouseRootGroup
+          UserDataTypeEnum.Enum.HouseTransformsGroup
         ) {
           const { houseId } = parent.parent.parent?.parent?.parent
-            ?.userData as HouseRootGroupUserData
+            ?.userData as HouseTransformsGroupUserData
           downMode({ houseId, levelIndex })
         }
       }

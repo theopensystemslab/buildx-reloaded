@@ -7,9 +7,9 @@ import { HouseType } from "../../../../../server/data/houseTypes"
 import userDB, { House } from "../../../../db/user"
 import { A } from "../../../../utils/functions"
 import { setVisibleAndRaycast } from "../../../../utils/three"
-import { createHouseGroup } from "../helpers/layouts"
 import { nanoid } from "nanoid"
 import { floor } from "../../../../utils/math"
+import { createInitialHouse } from "../helpers/layouts"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
@@ -58,13 +58,15 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
       friendlyName,
       position,
       rotation,
+      houseTypeId,
     } = house
 
-    const houseGroup = await createHouseGroup({
+    const houseGroup = await createInitialHouse({
       systemId,
       houseId,
       dnas,
       friendlyName,
+      houseTypeId,
     })()
 
     houseGroup.position.set(position.x, position.y, position.z)

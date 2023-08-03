@@ -1,20 +1,24 @@
-import { Plane } from "three"
+import { Group, Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
 
-// HouseRootGroup has
-// -> HouseColumnsContainerGroup as singleton child has
-//   -> ColumnsGroup's as children has
-//     -> GridGroup's as children has
-//       -> ModuleGroup's as children has
+// HouseTransformsGroup has
+
+// -> HouseLayoutGroup's as children
+//      (alternative layouts;
+//         visibility/raycasting disabled
+//           except 1)
+//   -> ColumnsGroup's as children have
+//     -> GridGroup's as children have
+//       -> ModuleGroup's as children have
 //         -> ElementMesh's as children
 // -> Stretch Handles
 // -> Rotate Handles
 
 export const UserDataTypeEnum = z.enum([
-  "HouseRootGroup",
-  "HouseColumnsContainerGroup",
+  "HouseTransformsGroup",
+  "HouseLayoutGroup",
   "ColumnGroup",
   "GridGroup",
   "ModuleGroup",
@@ -24,30 +28,31 @@ export const UserDataTypeEnum = z.enum([
 ])
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
-export type HouseRootGroupUserData = {
+export type HouseTransformsGroupUserData = {
   // all
-  type: typeof UserDataTypeEnum.Enum.HouseRootGroup
+  type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
   systemId: string
   houseId: string
   houseTypeId: string
   friendlyName: string
   clippingPlanes: Plane[]
+  activeChildUuid: string
   // preview specific
-  height: number
-  length: number
-  width: number
-  obb: OBB
-  columnCount: number
-  sectionType: string
-  levelTypes: string[]
-  modifiedMaterials: Record<string, string>
+}
+
+export type HouseLayoutGroupUserData = {
+  type: typeof UserDataTypeEnum.Enum.HouseLayoutGroup
   dnas: string[]
   houseLayout: ColumnLayout
   vanillaColumn: VanillaColumn
-}
-
-export type HouseColumnsContainerUserData = {
-  type: typeof UserDataTypeEnum.Enum.HouseColumnsContainerGroup
+  levelTypes: string[]
+  obb: OBB
+  height: number
+  length: number
+  width: number
+  columnCount: number
+  sectionType: string
+  modifiedMaterials: Record<string, string>
 }
 
 export type ColumnGroupUserData = {
@@ -76,6 +81,8 @@ export type ElementMeshUserData = {
   ifcTag: string
 }
 
+// --- HANDLES ---
+
 export type StretchHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleMesh
   axis: "z" | "x"
@@ -87,12 +94,28 @@ export type RotateHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.RotateHandleMesh
 }
 
+// ---
+
 export type UserData =
   | ElementMeshUserData
   | ModuleGroupUserData
   | GridGroupUserData
   | ColumnGroupUserData
-  | HouseColumnsContainerUserData
-  | HouseRootGroupUserData
+  | HouseLayoutGroupUserData
+  | HouseTransformsGroupUserData
   | StretchHandleMeshUserData
   | RotateHandleMeshUserData
+
+export const incrementColumnCount = (layoutGroup: Group) => {
+  const userData = layoutGroup.userData as HouseLayoutGroupUserData
+  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
+    throw new Error(`incrementColumnCount called on ${userData.type}`)
+  userData.columnCount++
+}
+
+export const decrementColumnCount = (layoutGroup: Group) => {
+  const userData = layoutGroup.userData as HouseLayoutGroupUserData
+  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
+    throw new Error(`incrementColumnCount called on ${userData.type}`)
+  userData.columnCount--
+}
