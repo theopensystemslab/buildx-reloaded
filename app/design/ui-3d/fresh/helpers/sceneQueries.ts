@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Object3D } from "three"
-import { A, O, someOrError } from "../../../../utils/functions"
+import { A, O, pipeLog, someOrError } from "../../../../utils/functions"
 import {
   HouseLayoutGroupUserData,
   HouseTransformsGroupUserData,
@@ -52,18 +52,6 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
     someOrError("no columns container in house group")
   )
 
-export const getActiveLayoutGroup = (houseTransformsGroup: Group): Group =>
-  pipe(
-    houseTransformsGroup.children,
-    A.findFirst(
-      (x) =>
-        x.uuid ===
-        (houseTransformsGroup.userData as HouseTransformsGroupUserData)
-          .activeChildUuid
-    ),
-    someOrError(`getActiveLayoutGroup failure`)
-  ) as Group
-
 export const getActiveHouseUserData = (houseTransformsGroup: Group) =>
   pipe(
     houseTransformsGroup.children,
@@ -80,10 +68,56 @@ export const getActiveHouseUserData = (houseTransformsGroup: Group) =>
     someOrError(`getActiveHouseUserData failure`)
   )
 
+export const getLayoutGroups = (houseTransformsGroup: Group): Group[] =>
+  houseTransformsGroup.children.filter(
+    (x) => x.userData.type === UserDataTypeEnum.Enum.HouseLayoutGroup
+  ) as Group[]
+
+export const getActiveLayoutGroup = (houseTransformsGroup: Group): Group =>
+  pipe(
+    houseTransformsGroup.children,
+    A.findFirst(
+      (x) =>
+        x.uuid ===
+        (houseTransformsGroup.userData as HouseTransformsGroupUserData)
+          .activeChildUuid
+    ),
+    someOrError(`getActiveLayoutGroup failure`)
+  ) as Group
+
+export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
+  pipe(
+    houseTransformsGroup,
+    getLayoutGroups,
+    pipeLog,
+    A.partition((x) => x.uuid === houseTransformsGroup.userData.activeChildUuid)
+  )
+
 export const getLayoutGroupColumnGroups = (layoutGroup: Group): Group[] =>
   layoutGroup.children.filter(
     (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
   ) as Group[]
+
+export const getLayoutGroupBySectionType = (
+  houseTransformsGroup: Group,
+  sectionType: string
+) => {
+  const houseTransformsUserData =
+    houseTransformsGroup.userData as HouseTransformsGroupUserData
+  if (
+    houseTransformsUserData.type !== UserDataTypeEnum.Enum.HouseTransformsGroup
+  )
+    throw new Error(
+      `getLayoutGroupBySectionType called on type other than ${UserDataTypeEnum.Enum.HouseTransformsGroup}`
+    )
+  return pipe(
+    houseTransformsGroup.children,
+    A.findFirst(
+      (group) =>
+        (group.userData as HouseLayoutGroupUserData).sectionType === sectionType
+    )
+  )
+}
 
 // should just be able to use house length
 

@@ -187,6 +187,7 @@ export const useRotations = () => {
 }
 
 export const setVisibleAndRaycast = (object: Object3D) => {
+  object.visible = true
   object.traverse((node) => {
     node.layers.set(CameraLayer.VISIBLE)
     node.layers.enable(RaycasterLayer.ENABLED)
@@ -200,8 +201,10 @@ export const setVisibleOnly = (object: Object3D) => {
 }
 
 export const setInvisible = (object: Object3D) => {
+  object.visible = false
   object.traverse((node) => {
     node.layers.set(CameraLayer.INVISIBLE)
+    node.layers.enable(RaycasterLayer.DISABLED)
   })
 }
 

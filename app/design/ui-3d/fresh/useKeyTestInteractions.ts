@@ -1,15 +1,20 @@
+import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { useKey } from "react-use"
 import { Group, Object3D, Vector3 } from "three"
 import layoutsDB from "../../../db/layouts"
-import { A, O, R } from "../../../utils/functions"
+import { A, O, R, T } from "../../../utils/functions"
 import { PI } from "../../../utils/math"
-import { yAxis } from "../../../utils/three"
+import { setInvisible, yAxis } from "../../../utils/three"
 import { updateEverything } from "./dimensions"
 import { createLayoutGroup } from "./helpers/layouts"
-import { getActiveHouseUserData } from "./helpers/sceneQueries"
+import { debugNextLayout } from "./helpers/sceneChanges"
+import {
+  getActiveHouseUserData,
+  getLayoutGroupBySectionType,
+} from "./helpers/sceneQueries"
 import {
   insertVanillaColumn,
   subtractPenultimateColumn,
@@ -39,9 +44,6 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
       updateEverything(houseGroup)
     }
   })
-
-  // stretch width -
-  useKey("X", () => {})
 
   useKey("d", () => {
     for (let houseGroup of getHouseGroups()) {
@@ -86,6 +88,11 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
 
   useKey("x", () => {
     for (let houseGroup of getHouseGroups()) {
+      debugNextLayout(houseGroup)
+      invalidate()
+
+      // @ts-ignore
+      window.houseGroup = houseGroup
     }
   })
 
@@ -131,36 +138,42 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
     (data) => {
       const houseGroups = getHouseGroups()
       for (const { houseId, altSectionTypeLayouts } of data) {
-        pipe(
+        const foo = pipe(
           houseGroups,
           A.findFirst((houseGroup) => houseGroup.userData.houseId === houseId),
-          O.chain((houseTransformsGroup) =>
+          O.map((houseTransformsGroup) =>
             pipe(
-              houseTransformsGroup.children,
-              A.head,
-              O.map((houseLayoutGroup) =>
+              altSectionTypeLayouts,
+              R.map(({ layout: houseLayout, sectionType }) => {
+                const { systemId, dnas } =
+                  getActiveHouseUserData(houseTransformsGroup)
+
                 pipe(
-                  altSectionTypeLayouts,
-                  R.map(({ layout: houseLayout }) => {
-                    const { systemId, dnas } =
-                      getActiveHouseUserData(houseTransformsGroup)
-
-                    createLayoutGroup({
-                      systemId,
-                      dnas,
-                      houseId,
-                      houseLayout,
-                    })
-
-                    // probably needs to be the layout group
-                    // houseLayoutToHouseGroup({
-                    //   systemId,
-                    //   houseId,
-                    //   houseLayout,
-                    // })
+                  getLayoutGroupBySectionType(
+                    houseTransformsGroup,
+                    sectionType.code
+                  ),
+                  O.map((maybeSectionTypeLayoutGroup) => {
+                    houseTransformsGroup.remove(maybeSectionTypeLayoutGroup)
                   })
                 )
-              )
+
+                const taskOut: T.Task<void> = async () => {
+                  const layoutGroup = await createLayoutGroup({
+                    systemId,
+                    dnas,
+                    houseId,
+                    houseLayout,
+                  })()
+
+                  setInvisible(layoutGroup)
+
+                  houseTransformsGroup.add(layoutGroup)
+                  console.log(houseTransformsGroup)
+                }
+
+                taskOut()
+              })
             )
           )
         )
