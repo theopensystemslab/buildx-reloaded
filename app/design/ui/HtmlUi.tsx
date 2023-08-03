@@ -15,9 +15,9 @@ import SiteSidebar from "./SiteSidebar"
 import { pipe } from "fp-ts/lib/function"
 import { keys } from "fp-ts/lib/Record"
 import usePortal from "react-cool-portal"
-import { useSnapshot } from "valtio"
 import Checklist from "~/ui/Checklist"
 import Radio from "~/ui/Radio"
+import { R, S } from "~/utils/functions"
 import {
   setOrthographic,
   useCameraReset,
@@ -26,13 +26,11 @@ import {
 import elementCategories, {
   useElementCategories,
 } from "../state/elementCategories"
-import { R, S } from "~/utils/functions"
-import ContextMenuEntry from "./menu/ContextMenuEntry"
-import Breadcrumbs from "./Breadcrumbs"
-import ExitMode from "./ExitMode"
 import { useMenu } from "../state/menu"
-import { useSiteCtx } from "../state/siteCtx"
 import { useScope } from "../state/scope"
+import { useSiteCtx } from "../state/siteCtx"
+import ExitMode from "./ExitMode"
+import ContextMenuEntry from "./menu/ContextMenuEntry"
 
 type Props = {
   controlsEnabled: boolean
@@ -195,9 +193,7 @@ const HtmlUi = (props: Props) => {
         close={() => setUniversalMenu(false)}
       />
 
-      <HeaderStartPortal>
-        <Breadcrumbs />
-      </HeaderStartPortal>
+      <HeaderStartPortal>{/* <Breadcrumbs /> */}</HeaderStartPortal>
 
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
       {DEBUG && (
