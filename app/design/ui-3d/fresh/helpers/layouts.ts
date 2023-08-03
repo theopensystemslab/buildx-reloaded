@@ -136,7 +136,6 @@ export const createModuleGroup = async ({
         ifcTag,
         houseId: "",
       }) as MeshStandardMaterial
-      // material.clippingPlanes = clippingPlanes
       const mesh = new Mesh(geometry, material)
       mesh.castShadow = true
 
@@ -473,10 +472,12 @@ export const createInitialHouse = ({
 
       const BIG_NUMBER = 999
 
+      const NORMAL_DIRECTION = -1
+
       const clippingPlanes: Plane[] = [
-        new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
-        new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
-        new Plane(new Vector3(0, 0, BIG_NUMBER), 0),
+        new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_NUMBER),
+        new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_NUMBER),
+        new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_NUMBER),
       ]
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {

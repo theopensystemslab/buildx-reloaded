@@ -8,7 +8,7 @@ import {
   UserDataTypeEnum,
 } from "../userData"
 
-export const rootHouseGroupChildQuery = (
+export const getHouseTransformGroup = (
   rootRef: RefObject<Group>,
   houseId: string
 ) =>
@@ -16,7 +16,13 @@ export const rootHouseGroupChildQuery = (
     rootRef.current?.children,
     O.fromNullable,
     O.chain(A.findFirst((x) => x.userData.houseId === houseId))
-  )
+  ) as O.Option<Group>
+
+export const mapHouseTransformGroup = (
+  rootRef: RefObject<Group>,
+  houseId: string,
+  f: (houseTransformGroup: Group) => void
+) => pipe(getHouseTransformGroup(rootRef, houseId), O.map(f))
 
 export const rootHouseGroupParentQuery = (object: Object3D) => {
   let x = object

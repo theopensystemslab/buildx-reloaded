@@ -1,7 +1,8 @@
-import { Group, Plane } from "three"
+import { Group, Object3D, Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
+import { ScopeItem } from "../../state/scope"
 
 // HouseTransformsGroup has
 
@@ -118,4 +119,30 @@ export const decrementColumnCount = (layoutGroup: Group) => {
   if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
     throw new Error(`incrementColumnCount called on ${userData.type}`)
   userData.columnCount--
+}
+
+export const elementMeshToScopeItem = (object: Object3D): ScopeItem => {
+  const userData = object.userData as ElementMeshUserData
+
+  if (userData.type !== UserDataTypeEnum.Enum.ElementMesh)
+    throw new Error(
+      `userData.type is ${userData.type} in elementMeshToScopeItem`
+    )
+
+  const { ifcTag } = userData
+  const { gridGroupIndex, dna } = object.parent!.userData as ModuleGroupUserData
+  const { levelIndex } = object.parent!.parent!.userData as GridGroupUserData
+  const { columnIndex } = object.parent!.parent!.parent!
+    .userData as ColumnGroupUserData
+  const { houseId } = object.parent!.parent!.parent!.parent!.parent!
+    .userData as HouseTransformsGroupUserData
+
+  return {
+    ifcTag,
+    gridGroupIndex,
+    levelIndex,
+    columnIndex,
+    houseId,
+    dna,
+  }
 }

@@ -31,6 +31,8 @@ import ContextMenuEntry from "./menu/ContextMenuEntry"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
 import { useMenu } from "../state/menu"
+import { useSiteCtx } from "../state/siteCtx"
+import { useScope } from "../state/scope"
 
 type Props = {
   controlsEnabled: boolean
@@ -63,6 +65,11 @@ const HtmlUi = (props: Props) => {
     autoRemoveContainer: false,
     internalShowHide: false,
   })
+
+  const { mode } = useSiteCtx()
+  const { hovered, selected } = useScope()
+
+  const DEBUG = true
 
   return (
     <Fragment>
@@ -193,6 +200,11 @@ const HtmlUi = (props: Props) => {
       </HeaderStartPortal>
 
       {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
+      {DEBUG && (
+        <div className="absolute bottom-0 right-0">
+          <pre>{JSON.stringify({ mode, hovered, selected }, null, 2)}</pre>
+        </div>
+      )}
 
       <ExitMode />
     </Fragment>

@@ -20,6 +20,7 @@ import {
 } from "../helpers/sceneQueries"
 import { insertVanillaColumn } from "../helpers/stretchZ"
 import {
+  elementMeshToScopeItem,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   StretchHandleMeshUserData,
@@ -48,6 +49,23 @@ export const usePointerUpListener = (f: () => void) =>
 
 export const dispatchPointerUp = () =>
   dispatchEvent(new CustomEvent(GestureEventType.Enum.POINTER_UP))
+
+const objectToHouseObjects = (object: Object3D) =>
+  object.parent!.parent!.parent!.parent!.children.flatMap((x) =>
+    x.children.flatMap((y) => y.children.flatMap((z) => z.children))
+  )
+
+const objectToIfcTagObjects = (object: Object3D) => {
+  const ifcTag: string = object.userData.ifcTag
+
+  return object.parent!.parent!.parent!.parent!.children.flatMap((x) =>
+    x.children.flatMap((y) =>
+      y.children.flatMap((z) =>
+        z.children.filter((x) => x.userData.ifcTag === ifcTag)
+      )
+    )
+  )
+}
 
 const useGestures = (rootRef: RefObject<Group>) => {
   // const firstGestureDataRef = useRef<{
@@ -141,7 +159,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
                 switch (true) {
                   case distance > lastDistance: {
                     if (distance > vanillaColumn.length * columnsAddedToEnd) {
-                      console.log("am i even ever")
                       insertVanillaColumn(houseGroup, 1)()
                       stretchData.current.columnsAddedToEnd++
                     }
@@ -203,89 +220,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
       }
 
       invalidate()
-
-      // pipe(
-      //   event.intersections,
-      //   A.head,
-      //   O.map((ix0) => {
-      //     event.stopPropagation()
-
-      //     const { point, object } = ix0
-
-      //     if (first) {
-      //       setCameraControlsEnabled(false)
-      //       const [x, z] = pointer.xz
-      //       const y = pointer.y
-      //       pointerZeroRef.current = { x, y, z }
-      //       lastPointerRef.current = { x, y, z }
-      //       gestureTargetRef.current = object
-      //       dispatchPointerDown({ point, object: gestureTargetRef.current })
-      //     } else if (last) {
-      //       dispatchPointerUp({ point, object: gestureTargetRef.current! })
-      //       pointerZeroRef.current = null
-      //       lastPointerRef.current = null
-      //       gestureTargetRef.current = null
-      //       setCameraControlsEnabled(true)
-      //     } else {
-      //       const userData = gestureTargetRef.current?.userData as UserData
-
-      //       switch (userData.type) {
-      //         case UserDataTypeEnum.Enum.StretchHandleMesh: {
-      //           const { houseId, direction, axis } =
-      //             userData as StretchHandleMeshUserData
-
-      //           const maybeHouseGroup = rootHouseGroupQuery(rootRef, houseId)
-
-      //           pipe(
-      //             maybeHouseGroup,
-      //             O.map((houseGroup) => {
-      //               if (lastPointerRef.current === null) return
-
-      //               const [x1, z1] = pointer.xz
-      //               const y1 = pointer.y
-
-      //               const { x: x0, y: y0, z: z0 } = lastPointerRef.current
-
-      //               const delta = new Vector3(
-      //                 x1 - x0,
-      //                 y1 - y0,
-      //                 z1 - z0
-      //               ).applyAxisAngle(
-      //                 new Vector3(0, 1, 0),
-      //                 -houseGroup.rotation.y
-      //               )
-
-      //               switch (axis) {
-      //                 case "z":
-      //                   gestureTargetRef.current!.position.z += delta.z
-      //                   // object.position.lerp(
-      //                   //   new Vector3(0, 0, object.position.z + delta.z),
-      //                   //   0.1
-      //                   // )
-
-      //                   switch (direction) {
-      //                     case 1:
-      //                       break
-      //                     case -1:
-      //                   }
-
-      //                   break
-      //                 case "x":
-      //                   break
-      //               }
-
-      //               lastPointerRef.current = { x: x1, y: y1, z: z1 }
-      //             })
-      //           )
-
-      //           break
-      //         }
-      //       }
-      //     }
-
-      //     invalidate()
-      //   })
-      // )
     },
     onHover: ({ event, event: { intersections }, hovering }) => {
       event.stopPropagation()
@@ -317,23 +251,22 @@ const useGestures = (rootRef: RefObject<Group>) => {
       }
 
       if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
-
+      const scopeItem = elementMeshToScopeItem(object)
+      scope.hovered = scopeItem
       switch (siteCtx.mode) {
         case SiteCtxModeEnum.Enum.SITE:
-          if (object.parent?.parent?.parent?.parent) {
-            const objects = object.parent.parent.parent.parent.children.flatMap(
-              (x) =>
-                x.children.flatMap((y) => y.children.flatMap((z) => z.children))
-            )
-            dispatchOutline({
-              objects,
-            })
-          }
+          dispatchOutline({
+            objects: objectToHouseObjects(object),
+          })
           break
         case SiteCtxModeEnum.Enum.BUILDING:
-          // OUTLINE COLUMN ?!
+          dispatchOutline({
+            objects: objectToIfcTagObjects(object),
+          })
+          // object to all of ifc tag
           break
         case SiteCtxModeEnum.Enum.LEVEL:
+          // object to all of module group
           if (object.parent) {
             dispatchOutline({ objects: object.parent.children })
           }

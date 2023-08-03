@@ -10,6 +10,7 @@ import { setVisibleAndRaycast } from "../../../../utils/three"
 import { nanoid } from "nanoid"
 import { floor } from "../../../../utils/math"
 import { createInitialHouse } from "../helpers/layouts"
+import useClippingPlaneHelpers from "../helpers/clippingPlanes"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
@@ -48,6 +49,8 @@ export const useDeleteHouseListener = (
 ) => useEvent(DELETE_HOUSE_EVENT, ({ detail }) => f(detail))
 
 export const useHousesEvents = (rootRef: RefObject<Group>) => {
+  const { initClippingPlanes } = useClippingPlaneHelpers(rootRef)
+
   const addHouse = async (house: House) => {
     if (!rootRef.current) return
 
@@ -80,6 +83,8 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
     invalidate()
 
     userDB.houses.put(house)
+
+    initClippingPlanes(houseId)
   }
 
   const cleanup = () => {

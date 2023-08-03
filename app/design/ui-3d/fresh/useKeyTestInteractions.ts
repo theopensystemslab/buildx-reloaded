@@ -9,6 +9,7 @@ import { A, O, R, T } from "../../../utils/functions"
 import { PI } from "../../../utils/math"
 import { setInvisible, yAxis } from "../../../utils/three"
 import { updateEverything } from "./dimensions"
+import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { createLayoutGroup } from "./helpers/layouts"
 import { debugNextLayout } from "./helpers/sceneChanges"
 import {
@@ -96,6 +97,12 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
     }
   })
 
+  const { setYCut } = useClippingPlaneHelpers(rootRef)
+
+  useKey("c", () => {
+    setYCut(getHouseGroups()[0].userData.houseId, 0.5)
+  })
+
   // toggle stretch width first pass
   // useKey("x", () => {
   //   // console.log(liveHouses)
@@ -169,7 +176,6 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
                   setInvisible(layoutGroup)
 
                   houseTransformsGroup.add(layoutGroup)
-                  console.log(houseTransformsGroup)
                 }
 
                 taskOut()

@@ -8,6 +8,7 @@ import houses from "./houses"
 
 export type ScopeItem = {
   ifcTag: string
+  dna: string
   gridGroupIndex: number
   levelIndex: number
   columnIndex: number
