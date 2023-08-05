@@ -7,15 +7,11 @@ import { formatWithUnit } from "../../analyse/state/data"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
 import houses from "./houses"
 
-export const EditModeEnum = z.enum(["MOVE_ROTATE", "STRETCH"])
-export type EditMode = z.infer<typeof EditModeEnum>
-
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
 
 type SiteCtx = {
   mode: SiteCtxMode
-  editMode: EditMode | null
   houseId: string | null
   levelIndex: number | null
   projectName: string | null
@@ -49,17 +45,14 @@ export const useIsBuilding = (houseId: string) => {
 }
 
 export const useTransformabilityBooleans = (houseId: string) => {
-  const { mode, editMode, houseId: ctxHouseId } = useSiteCtx()
+  const { mode, houseId: ctxHouseId } = useSiteCtx()
 
   return {
     stretchEnabled:
-      mode === SiteCtxModeEnum.Enum.BUILDING &&
-      editMode === EditModeEnum.Enum.STRETCH &&
-      houseId === ctxHouseId,
+      mode === SiteCtxModeEnum.Enum.BUILDING ||
+      (mode === SiteCtxModeEnum.Enum.LEVEL && houseId === ctxHouseId),
     moveRotateEnabled:
-      mode === SiteCtxModeEnum.Enum.SITE &&
-      editMode === EditModeEnum.Enum.MOVE_ROTATE &&
-      houseId === ctxHouseId,
+      mode === SiteCtxModeEnum.Enum.SITE && houseId === ctxHouseId,
   }
 }
 
@@ -82,16 +75,9 @@ export const useProjectName = () => {
   else return projectName
 }
 
-export const useEditMode = (): EditMode | null => {
-  const { editMode } = useSiteCtx()
-  return editMode
-}
-
 export const enterBuildingMode = (houseId: string) => {
   if (siteCtx.houseId !== houseId) siteCtx.houseId = houseId
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-  if (siteCtx.editMode !== EditModeEnum.Enum.STRETCH)
-    siteCtx.editMode = EditModeEnum.Enum.STRETCH
   if (siteCtx.mode !== SiteCtxModeEnum.Enum.BUILDING)
     siteCtx.mode = SiteCtxModeEnum.Enum.BUILDING
 }
@@ -99,7 +85,6 @@ export const enterBuildingMode = (houseId: string) => {
 export const exitBuildingMode = () => {
   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
   if (siteCtx.houseId !== null) siteCtx.houseId = null
-  if (siteCtx.editMode !== null) siteCtx.editMode = null
   if (siteCtx.mode !== SiteCtxModeEnum.Enum.SITE)
     siteCtx.mode = SiteCtxModeEnum.Enum.SITE
 }

@@ -8,7 +8,6 @@ import { A, O } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import { isMesh, useRotations } from "~/utils/three"
 import {
-  ElementMeshUserData,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   UserDataTypeEnum,
@@ -22,7 +21,7 @@ import {
 } from "../events/stretch"
 import { openMenu } from "../menu"
 import pointer from "../pointer"
-import siteCtx, { downMode, EditModeEnum } from "../siteCtx"
+import siteCtx, { downMode } from "../siteCtx"
 import dragProxy, { Drag, StretchHandleIdentifier } from "./drag"
 
 export const useDragHandler = () => {
@@ -135,47 +134,45 @@ export const useDragHandler = () => {
       }
 
       if (dragProxy.end) {
-        switch (siteCtx.editMode) {
-          case EditModeEnum.Enum.MOVE_ROTATE:
-            dispatchMoveHouseIntent({
-              houseId,
-              delta,
-              last: true,
-            })
-            break
-          case EditModeEnum.Enum.STRETCH:
-            const [distanceX, distanceZ] = unrotateV2(houseId, [
-              x1 - x0,
-              z1 - z0,
-            ])
-            const [dx, dz] = rotateV2(houseId, [0, distanceZ])
-
-            const { direction = 1, axis } =
-              identifier as StretchHandleIdentifier
-
-            if (axis === "z") {
-              dispatchZStretchHouseIntent({
-                houseId,
-                direction,
-                distance: distanceZ,
-                dx,
-                dz,
-                last: true,
-              })
-            } else if (axis === "x") {
-              dispatchXStretchHouseIntent({
-                houseId,
-                direction,
-                distance: distanceX,
-                dx,
-                dz,
-                last: true,
-              })
-            }
-            return
-          // setStretchLength()
-          // setPreviews()
-        }
+        // switch (siteCtx.editMode) {
+        //   case EditModeEnum.Enum.MOVE_ROTATE:
+        //     dispatchMoveHouseIntent({
+        //       houseId,
+        //       delta,
+        //       last: true,
+        //     })
+        //     break
+        //   case EditModeEnum.Enum.STRETCH:
+        //     const [distanceX, distanceZ] = unrotateV2(houseId, [
+        //       x1 - x0,
+        //       z1 - z0,
+        //     ])
+        //     const [dx, dz] = rotateV2(houseId, [0, distanceZ])
+        //     const { direction = 1, axis } =
+        //       identifier as StretchHandleIdentifier
+        //     if (axis === "z") {
+        //       dispatchZStretchHouseIntent({
+        //         houseId,
+        //         direction,
+        //         distance: distanceZ,
+        //         dx,
+        //         dz,
+        //         last: true,
+        //       })
+        //     } else if (axis === "x") {
+        //       dispatchXStretchHouseIntent({
+        //         houseId,
+        //         direction,
+        //         distance: distanceX,
+        //         dx,
+        //         dz,
+        //         last: true,
+        //       })
+        //     }
+        //     return
+        //   // setStretchLength()
+        //   // setPreviews()
+        // }
       }
 
       cleanup()
@@ -227,9 +224,9 @@ export const useGestures = (): any =>
             ...identifier,
           }
 
-          if (siteCtx.editMode === null) {
-            siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
-          }
+          // if (siteCtx.editMode === null) {
+          //   siteCtx.editMode = EditModeEnum.Enum.MOVE_ROTATE
+          // }
           if (siteCtx.houseId !== identifier.houseId) {
             siteCtx.houseId = identifier.houseId
           }

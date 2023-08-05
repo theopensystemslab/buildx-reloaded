@@ -11,7 +11,11 @@ import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
 import pointer from "../../../state/pointer"
 import scope, { ScopeItem } from "../../../state/scope"
-import siteCtx, { downMode, SiteCtxModeEnum } from "../../../state/siteCtx"
+import siteCtx, {
+  downMode,
+  SiteCtxMode,
+  SiteCtxModeEnum,
+} from "../../../state/siteCtx"
 import {
   getActiveHouseUserData,
   getHouseGroupColumns,
@@ -211,7 +215,13 @@ const useGestures = (rootRef: RefObject<Group>) => {
       React.MouseEvent<EventTarget, MouseEvent>
   }>({
     onDrag: (state) => {
-      const stretch = true
+      const stretchModes: SiteCtxMode[] = [
+        SiteCtxModeEnum.Enum.BUILDING,
+        SiteCtxModeEnum.Enum.LEVEL,
+      ]
+
+      const stretch = stretchModes.includes(siteCtx.mode)
+
       switch (true) {
         case stretch: {
           onDragStretch(state)
