@@ -93,7 +93,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
     columnsAddedToEnd: number
   } | null>(null)
 
-  const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = async ({
+  const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = ({
     first,
     last,
     event,
@@ -207,80 +207,72 @@ const useGestures = (rootRef: RefObject<Group>) => {
   const moveData = useRef<{
     lastPoint: Vector3
     houseObject: Object3D
-    houseTransformGroupPos0: Vector3
-    point0: Vector3
+    // houseTransformGroupPos0: Vector3
+    // point0: Vector3
   } | null>(null)
 
-  const onDragMove: Handler<"drag", ThreeEvent<PointerEvent>> = async (
-    state
-  ) => {
+  const onDragMove: Handler<"drag", ThreeEvent<PointerEvent>> = (state) => {
     const {
       first,
       last,
-      event: { intersections },
+      event: { intersections, stopPropagation },
     } = state
 
-    pipe(
-      intersections,
-      A.head,
-      O.map(({ point, object }) => {
-        if (first) {
-          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
+    stopPropagation()
 
-          dispatchPointerDown({ point, object })
+    switch (true) {
+      case first: {
+        pipe(
+          intersections,
+          A.head,
+          O.map(({ point, object }) => {
+            if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh)
+              return
 
-          setCameraControlsEnabled(false)
-
-          traverseUpUntil(
-            object,
-            (o) =>
-              o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
-            (houseTransformGroup) => {
-              moveData.current = {
-                houseObject: houseTransformGroup,
-                lastPoint: point,
-                houseTransformGroupPos0: houseTransformGroup.position.clone(),
-                point0: point,
+            traverseUpUntil(
+              object,
+              (o) =>
+                o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
+              (houseTransformGroup) => {
+                dispatchPointerDown({ point, object })
+                moveData.current = {
+                  houseObject: houseTransformGroup,
+                  lastPoint: point.setY(0),
+                }
+                setCameraControlsEnabled(false)
               }
-            }
-          )
-          return
-        }
-
+            )
+            return
+          })
+        )
+        break
+      }
+      case !first && !last: {
         if (!moveData.current) {
           console.warn(`no moveData.current in onDragMove`)
           return
         }
 
-        const [x, z] = pointer.xz
-        const { houseTransformGroupPos0, point0 } = moveData.current
-        const delta = new Vector3(x, point0.y, z).sub(point0)
-        moveData.current.houseObject.position.addVectors(
-          houseTransformGroupPos0,
-          delta
-        )
-
-        // const { lastPoint } = moveData.current
-        // const pv = new Vector3(x, 0, z)
-        // const delta = pv.sub(lastPoint)
-        // moveData.current.houseObject.position.add(delta)
-
-        if (last) {
-          setCameraControlsEnabled(true)
-          moveData.current = null
-          dispatchPointerUp()
-          return
-        }
-      })
-    )
+        const { lastPoint, houseObject } = moveData.current
+        const [px, pz] = pointer.xz
+        const thisPoint = new Vector3(px, 0, pz)
+        const delta = thisPoint.clone().sub(lastPoint)
+        moveData.current.lastPoint = thisPoint
+        houseObject.position.add(delta)
+        return
+      }
+      case last: {
+        setCameraControlsEnabled(true)
+        moveData.current = null
+        dispatchPointerUp()
+        return
+      }
+    }
   }
 
   const rotateData = useRef(null)
 
-  const onDragRotate: Handler<
-    "drag",
-    ThreeEvent<PointerEvent>
-  > = async ({}) => {}
+  const onDragRotate: Handler<"drag", ThreeEvent<PointerEvent>> = ({}) => {}
 
   const mapNearestCutIntersection = (
     intersections: Intersection[],
@@ -339,6 +331,7 @@ const useGestures = (rootRef: RefObject<Group>) => {
         }
         case rotate: {
           onDragRotate(state)
+          break
         }
         default: {
           break

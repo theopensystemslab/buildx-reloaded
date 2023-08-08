@@ -16,9 +16,8 @@ const FreshApp = () => {
 
   return (
     <Fragment>
-      <group ref={rootRef} {...bindAll()}>
-        <XZPlane />
-      </group>
+      <group ref={rootRef} {...bindAll()}></group>
+      <XZPlane />
     </Fragment>
   )
 }

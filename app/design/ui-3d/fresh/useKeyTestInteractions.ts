@@ -35,55 +35,55 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
   useKey("z", async () => {
     for (let houseGroup of getHouseGroups()) {
       await insertVanillaColumn(houseGroup, 1)()
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("Z", async () => {
     for (let houseGroup of getHouseGroups()) {
       await insertVanillaColumn(houseGroup, -1)()
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("d", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, 1)
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("D", () => {
     for (let houseGroup of getHouseGroups()) {
       subtractPenultimateColumn(houseGroup, -1)
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("t", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(1, 0, 1))
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
   useKey("T", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.position.add(new Vector3(-1, 0, -1))
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("r", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.rotateOnAxis(yAxis, PI / 8)
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
   useKey("R", () => {
     for (let houseGroup of getHouseGroups()) {
       houseGroup.rotateOnAxis(yAxis, -PI / 8)
-      updateEverything(houseGroup)
+      // updateEverything(houseGroup)
     }
   })
 
