@@ -3,7 +3,15 @@ import { Handler, useGesture, UserHandlers } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject, useRef } from "react"
 import { useEvent } from "react-use"
-import { Group, Material, Mesh, Object3D, Plane, Vector3 } from "three"
+import {
+  Group,
+  Intersection,
+  Material,
+  Mesh,
+  Object3D,
+  Plane,
+  Vector3,
+} from "three"
 import { z } from "zod"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
@@ -19,12 +27,15 @@ import siteCtx, {
 import {
   getActiveHouseUserData,
   getHouseGroupColumns,
+  getHouseTransformGroup,
   handleColumnGroupParentQuery,
   rootHouseGroupParentQuery,
+  traverseUpUntil,
 } from "../helpers/sceneQueries"
 import { insertVanillaColumn } from "../helpers/stretchZ"
 import {
   elementMeshToScopeItem,
+  ElementMeshUserData,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   StretchHandleMeshUserData,
@@ -72,14 +83,6 @@ const objectToIfcTagObjects = (object: Object3D) => {
 }
 
 const useGestures = (rootRef: RefObject<Group>) => {
-  // const firstGestureDataRef = useRef<{
-  //   gestureTarget: Object3D
-  //   gestureTargetHouseGroup: Group
-  //   point: Vector3
-  // } | null>(null)
-
-  // const stretchDragGroup = useRef<Group | null>(null)
-
   const stretchData = useRef<{
     handleObject: Object3D
     houseGroup: Group
@@ -89,8 +92,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
     lastDistance: number
     columnsAddedToEnd: number
   } | null>(null)
-
-  // we could pre-process each gate
 
   const onDragStretch: Handler<"drag", ThreeEvent<PointerEvent>> = async ({
     first,
@@ -170,7 +171,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
                   }
                   case distance < lastDistance: {
                     if (distance < vanillaColumn.length * columnsAddedToEnd) {
-                      console.log("going down")
                     }
                     // if (
                     //   distance <
@@ -204,6 +204,104 @@ const useGestures = (rootRef: RefObject<Group>) => {
     }
   }
 
+  const moveData = useRef<{
+    lastPoint: Vector3
+    houseObject: Object3D
+    houseTransformGroupPos0: Vector3
+    point0: Vector3
+  } | null>(null)
+
+  const onDragMove: Handler<"drag", ThreeEvent<PointerEvent>> = async (
+    state
+  ) => {
+    const {
+      first,
+      last,
+      event: { intersections },
+    } = state
+
+    pipe(
+      intersections,
+      A.head,
+      O.map(({ point, object }) => {
+        if (first) {
+          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
+
+          dispatchPointerDown({ point, object })
+
+          setCameraControlsEnabled(false)
+
+          traverseUpUntil(
+            object,
+            (o) =>
+              o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
+            (houseTransformGroup) => {
+              moveData.current = {
+                houseObject: houseTransformGroup,
+                lastPoint: point,
+                houseTransformGroupPos0: houseTransformGroup.position.clone(),
+                point0: point,
+              }
+            }
+          )
+          return
+        }
+
+        if (!moveData.current) {
+          console.warn(`no moveData.current in onDragMove`)
+          return
+        }
+
+        const [x, z] = pointer.xz
+        const { houseTransformGroupPos0, point0 } = moveData.current
+        const delta = new Vector3(x, point0.y, z).sub(point0)
+        moveData.current.houseObject.position.addVectors(
+          houseTransformGroupPos0,
+          delta
+        )
+
+        // const { lastPoint } = moveData.current
+        // const pv = new Vector3(x, 0, z)
+        // const delta = pv.sub(lastPoint)
+        // moveData.current.houseObject.position.add(delta)
+
+        if (last) {
+          setCameraControlsEnabled(true)
+          moveData.current = null
+          dispatchPointerUp()
+          return
+        }
+      })
+    )
+  }
+
+  const rotateData = useRef(null)
+
+  const onDragRotate: Handler<
+    "drag",
+    ThreeEvent<PointerEvent>
+  > = async ({}) => {}
+
+  const mapNearestCutIntersection = (
+    intersections: Intersection[],
+    f: (ix: Intersection) => void
+  ) => {
+    pipe(
+      intersections,
+      A.findFirst((ix) => {
+        const { object, point } = ix
+        if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh)
+          return false
+        return (
+          ((object as Mesh).material as Material).clippingPlanes as Plane[]
+        ).every((plane) => {
+          return plane.distanceToPoint(point) > 0
+        })
+      }),
+      O.map(f)
+    )
+  }
+
   return useGesture<{
     drag: ThreeEvent<PointerEvent>
     hover: ThreeEvent<PointerEvent>
@@ -220,11 +318,29 @@ const useGestures = (rootRef: RefObject<Group>) => {
         SiteCtxModeEnum.Enum.LEVEL,
       ]
 
-      const stretch = stretchModes.includes(siteCtx.mode)
+      const type = state.event.object.userData?.type
+
+      const stretch =
+        stretchModes.includes(siteCtx.mode) &&
+        type === UserDataTypeEnum.Enum.StretchHandleMesh
+
+      const move = !stretch && type === UserDataTypeEnum.Enum.ElementMesh
+
+      const rotate = !stretch && type === UserDataTypeEnum.Enum.RotateHandleMesh
 
       switch (true) {
         case stretch: {
           onDragStretch(state)
+          break
+        }
+        case move: {
+          onDragMove(state)
+          break
+        }
+        case rotate: {
+          onDragRotate(state)
+        }
+        default: {
           break
         }
       }
@@ -237,74 +353,62 @@ const useGestures = (rootRef: RefObject<Group>) => {
       if (intersections.length === 0) {
         document.body.style.cursor = ""
         dispatchOutline({
-          objects: [],
+          hoveredObjects: [],
         })
         invalidate()
         // scope.hovered = null
         return
       }
 
-      pipe(
-        intersections,
-        A.findFirst((ix) => {
-          const { object, point } = ix
-          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh)
-            return false
-          return (
-            ((object as Mesh).material as Material).clippingPlanes as Plane[]
-          ).every((plane) => {
-            return plane.distanceToPoint(point) > 0
-          })
-        }),
-        O.map((intersection) => {
-          const { object } = intersection
+      mapNearestCutIntersection(intersections, (intersection) => {
+        const { object } = intersection
 
-          if (hovering) {
-            document.body.style.cursor = "grab"
-          }
+        if (hovering) {
+          document.body.style.cursor = "grab"
+        }
 
-          if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
-          const scopeItem = elementMeshToScopeItem(object)
-          scope.hovered = scopeItem
-          switch (siteCtx.mode) {
-            case SiteCtxModeEnum.Enum.SITE:
-              dispatchOutline({
-                objects: objectToHouseObjects(object),
-              })
-              break
-            case SiteCtxModeEnum.Enum.BUILDING:
-              dispatchOutline({
-                objects: objectToIfcTagObjects(object),
-              })
-              // object to all of ifc tag
-              break
-            case SiteCtxModeEnum.Enum.LEVEL:
-              // object to all of module group
-              if (object.parent) {
-                dispatchOutline({ objects: object.parent.children })
-              }
-              break
-          }
+        if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
 
-          // scope.hovered = {
-          //   ...userData.identifier,
-          // }
+        const scopeItem = elementMeshToScopeItem(object)
+        scope.hovered = scopeItem
 
-          invalidate()
-        })
-      )
+        switch (siteCtx.mode) {
+          case SiteCtxModeEnum.Enum.SITE:
+            dispatchOutline({
+              hoveredObjects: objectToHouseObjects(object),
+            })
+            break
+          case SiteCtxModeEnum.Enum.BUILDING:
+            dispatchOutline({
+              hoveredObjects: objectToIfcTagObjects(object),
+            })
+            // object to all of ifc tag
+            break
+          case SiteCtxModeEnum.Enum.LEVEL:
+            // object to all of module group
+            if (object.parent) {
+              dispatchOutline({ hoveredObjects: object.parent.children })
+            }
+            break
+        }
+      })
 
-      // const {
-      //   object,
-      //   // object: { userData },
-      // } = ix0
+      invalidate()
+    },
+    onClick: ({ event: { intersections } }) => {
+      mapNearestCutIntersection(intersections, (intersection) => {
+        const { object } = intersection
+        const scopeItem = elementMeshToScopeItem(object)
+        scope.selected = scopeItem
 
-      // if (object.parent?.parent) {
-      //   const objects = object.parent.parent.children.flatMap((x) => x.children)
-      //   dispatchOutline({
-      //     objects,
-      //   })
-      // }
+        switch (siteCtx.mode) {
+          case SiteCtxModeEnum.Enum.SITE:
+            dispatchOutline({
+              selectedObjects: objectToHouseObjects(object),
+            })
+            break
+        }
+      })
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()

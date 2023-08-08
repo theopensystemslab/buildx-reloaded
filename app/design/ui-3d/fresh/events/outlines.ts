@@ -4,7 +4,8 @@ import { Object3D } from "three"
 const OUTLINE_EVENT = "OutlineEvent"
 
 type OutlineEventDetail = {
-  objects: Object3D[]
+  hoveredObjects?: Object3D[]
+  selectedObjects?: Object3D[]
 }
 
 export const dispatchOutline = (detail: OutlineEventDetail) =>

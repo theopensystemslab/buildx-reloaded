@@ -32,7 +32,7 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "../userData"
-import { createStretchHandle } from "./handles"
+import { createRotateHandles, createStretchHandle } from "./handles"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -214,8 +214,6 @@ export const createColumnGroup =
           endColumn ? z + module.length / 2 : z - module.length / 2
         )
 
-        console.log({ gridGroupY: y, moduleDna: moduleGroup.userData.dna })
-
         gridGroup.position.setY(y)
         gridGroup.add(moduleGroup)
 
@@ -378,6 +376,8 @@ export const createLayoutGroup = ({
               lastColumn.add(stretchHandle)
             })
           )
+
+          layoutGroup.add(createRotateHandles({ width, length }))
 
           return layoutGroup
         })

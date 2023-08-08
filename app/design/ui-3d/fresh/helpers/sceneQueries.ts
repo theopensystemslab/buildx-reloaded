@@ -8,6 +8,40 @@ import {
   UserDataTypeEnum,
 } from "../userData"
 
+export const traverseUpUntil = (
+  object: Object3D,
+  condition: (o: Object3D) => boolean,
+  callback: (o: Object3D) => void
+) => {
+  if (condition(object)) {
+    callback(object)
+    return
+  }
+
+  const parent = object.parent
+
+  if (parent !== null) {
+    traverseUpUntil(parent, condition, callback)
+  }
+}
+
+export const traverseDownUntil = (
+  object: Object3D,
+  condition: (o: Object3D) => boolean,
+  callback: (o: Object3D) => void
+) => {
+  if (condition(object)) {
+    callback(object)
+    return
+  }
+
+  const children = object.children
+
+  for (let i = 0, l = children.length; i < l; i++) {
+    traverseDownUntil(children[i], condition, callback)
+  }
+}
+
 export const getHouseTransformGroup = (
   rootRef: RefObject<Group>,
   houseId: string

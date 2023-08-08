@@ -67,7 +67,7 @@ const HtmlUi = (props: Props) => {
   const { mode } = useSiteCtx()
   const { hovered, selected } = useScope()
 
-  const DEBUG = true
+  const DEBUG = false
 
   return (
     <Fragment>

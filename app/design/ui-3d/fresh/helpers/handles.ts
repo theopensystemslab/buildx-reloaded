@@ -1,8 +1,13 @@
-import { Mesh } from "three"
+import { CircleGeometry, Group, Mesh, PlaneGeometry } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
 import { PI } from "../../../../utils/math"
+import { setInvisible } from "../../../../utils/three"
 import handleMaterial from "../handleMaterial"
-import { StretchHandleMeshUserData, UserDataTypeEnum } from "../userData"
+import {
+  RotateHandleMeshUserData,
+  StretchHandleMeshUserData,
+  UserDataTypeEnum,
+} from "../userData"
 
 export const createStretchHandle = ({
   houseId,
@@ -50,5 +55,56 @@ export const createStretchHandle = ({
     houseId,
   } as StretchHandleMeshUserData
 
+  setInvisible(mesh)
+
   return mesh
+}
+
+const ROTATE_HANDLE_OFFSET = 5
+const ROTATE_HANDLE_SIZE = 0.3
+const rotateHandleCircleGeometry = new CircleGeometry(0.5, 16)
+
+export const createRotateHandles = ({
+  width,
+  length,
+}: {
+  width: number
+  length: number
+}) => {
+  const userData: RotateHandleMeshUserData = {
+    type: UserDataTypeEnum.Enum.RotateHandleMesh,
+  }
+
+  const circleMesh1 = new Mesh(rotateHandleCircleGeometry, handleMaterial)
+  circleMesh1.position.set(0, 0, -ROTATE_HANDLE_OFFSET)
+  circleMesh1.rotation.x = -PI / 2
+  circleMesh1.userData = userData
+
+  const planeMesh1 = new Mesh(
+    new PlaneGeometry(ROTATE_HANDLE_SIZE, ROTATE_HANDLE_OFFSET),
+    handleMaterial
+  )
+  planeMesh1.rotation.x = -PI / 2
+  planeMesh1.position.set(0, 0, -ROTATE_HANDLE_OFFSET / 2)
+  planeMesh1.userData = userData
+
+  const circleMesh2 = new Mesh(rotateHandleCircleGeometry, handleMaterial)
+  circleMesh2.rotation.x = -PI / 2
+  circleMesh2.position.set(-ROTATE_HANDLE_OFFSET - width / 4, 0, length / 2)
+  circleMesh2.userData = userData
+
+  const planeMesh2 = new Mesh(
+    new PlaneGeometry(ROTATE_HANDLE_OFFSET, ROTATE_HANDLE_SIZE),
+    handleMaterial
+  )
+  planeMesh2.rotation.x = -PI / 2
+  planeMesh2.position.set(-width / 1.05, 0, length / 2)
+  planeMesh2.userData = userData
+
+  const handleGroup = new Group()
+  handleGroup.add(circleMesh1, planeMesh1, circleMesh2, planeMesh2)
+
+  setInvisible(handleGroup)
+
+  return handleGroup
 }

@@ -6,7 +6,8 @@ import {
   OutlineEffect as OutlineEffectRaw,
   RenderPass,
 } from "postprocessing"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
+import { Object3D } from "three"
 import { useOutlineListener } from "../fresh/events/outlines"
 
 export type UseOutlineEffectParams = ConstructorParameters<
@@ -37,7 +38,7 @@ const Effects = () => {
 
   const renderTarget = useFBO(size.width, size.height, {
     depthBuffer: true,
-    stencilBuffer: true,
+    // stencilBuffer: true,
   })
 
   // const selectiveBloomEffect = useMemo(() => {
@@ -80,8 +81,24 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  useOutlineListener(({ objects }) => {
-    outlineEffect.selection.set(objects)
+  const hoveredObjects = useRef<Object3D[]>([])
+  const selectedObjects = useRef<Object3D[]>([])
+
+  const setSelection = () => {
+    outlineEffect.selection.set(
+      selectedObjects.current.concat(hoveredObjects.current)
+    )
+  }
+
+  useOutlineListener((incoming) => {
+    if (incoming.hoveredObjects) {
+      hoveredObjects.current = incoming.hoveredObjects
+    } else if (incoming.selectedObjects) {
+      selectedObjects.current = incoming.selectedObjects
+    } else {
+      return
+    }
+    setSelection()
   })
 
   // subscribeKey(highlights, "illuminated", () => {
