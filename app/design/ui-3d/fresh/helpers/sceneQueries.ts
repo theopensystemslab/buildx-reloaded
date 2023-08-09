@@ -24,23 +24,41 @@ export const traverseUpUntil = (
     traverseUpUntil(parent, condition, callback)
   }
 }
-
 export const traverseDownUntil = (
   object: Object3D,
-  condition: (o: Object3D) => boolean,
-  callback: (o: Object3D) => void
-) => {
-  if (condition(object)) {
-    callback(object)
-    return
+  callback: (o: Object3D) => boolean // stops if returns true
+): boolean => {
+  if (callback(object)) {
+    return true
   }
 
   const children = object.children
 
   for (let i = 0, l = children.length; i < l; i++) {
-    traverseDownUntil(children[i], condition, callback)
+    if (traverseDownUntil(children[i], callback)) {
+      return true
+    }
   }
+
+  return false
 }
+
+// export const traverseDownUntil = (
+//   object: Object3D,
+//   condition: (o: Object3D) => boolean,
+//   callback: (o: Object3D) => void
+// ) => {
+//   if (condition(object)) {
+//     callback(object)
+//     return
+//   }
+
+//   const children = object.children
+
+//   for (let i = 0, l = children.length; i < l; i++) {
+//     traverseDownUntil(children[i], condition, callback)
+//   }
+// }
 
 export const getHouseTransformGroup = (
   rootRef: RefObject<Group>,
@@ -92,7 +110,7 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
     someOrError("no columns container in house group")
   )
 
-export const getActiveHouseUserData = (houseTransformsGroup: Group) =>
+export const getActiveHouseUserData = (houseTransformsGroup: Object3D) =>
   pipe(
     houseTransformsGroup.children,
     A.findFirstMap((x) =>
@@ -113,7 +131,9 @@ export const getLayoutGroups = (houseTransformsGroup: Group): Group[] =>
     (x) => x.userData.type === UserDataTypeEnum.Enum.HouseLayoutGroup
   ) as Group[]
 
-export const getActiveLayoutGroup = (houseTransformsGroup: Group): Group =>
+export const getActiveLayoutGroup = (
+  houseTransformsGroup: Object3D
+): Object3D =>
   pipe(
     houseTransformsGroup.children,
     A.findFirst(

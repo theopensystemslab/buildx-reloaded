@@ -42,7 +42,7 @@ const renderOBB = (obb: OBB, scene: Object3D) => {
   lastMesh = mesh
 }
 
-export const updateHouseOBB = (houseTransformsGroup: Group) => {
+export const updateHouseOBB = (houseTransformsGroup: Object3D) => {
   const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
   const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
 
@@ -125,6 +125,22 @@ const updateDnas = (houseGroup: Group) => {
     )
   )
   houseGroup.userData.dnas = result.flat()
+}
+
+export const updateIndexedHouseTransforms = (
+  houseTransformsGroup: Object3D
+) => {
+  const { houseId } = getActiveHouseUserData(houseTransformsGroup)
+
+  const rotation = houseTransformsGroup.rotation.y
+  const position = houseTransformsGroup.position
+
+  userDB.houses.update(houseId, {
+    position,
+    rotation,
+  })
+
+  updateHouseOBB(houseTransformsGroup)
 }
 
 export const updateEverything = (houseTransformsGroup: Group) => {

@@ -1,13 +1,32 @@
-import { CircleGeometry, Group, Mesh, PlaneGeometry } from "three"
+import { CircleGeometry, Group, Mesh, Object3D, PlaneGeometry } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
 import { PI } from "../../../../utils/math"
-import { setInvisible } from "../../../../utils/three"
+import { setInvisible, setVisibleAndRaycast } from "../../../../utils/three"
 import handleMaterial from "../handleMaterial"
 import {
   RotateHandleMeshUserData,
+  RotateHandlesGroupUserData,
   StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
+import { traverseDownUntil } from "./sceneQueries"
+
+export const setStretchHandleVisibility = (
+  houseTransformGroup: Object3D,
+  value: boolean
+) => {
+  let handleCount = 2
+  traverseDownUntil(houseTransformGroup, (object) => {
+    if (handleCount === 0) return true
+    if (object.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
+      if (value) setVisibleAndRaycast(object)
+      else setInvisible(object)
+      console.log(object)
+      handleCount--
+    }
+    return false
+  })
+}
 
 export const createStretchHandle = ({
   houseId,
@@ -71,14 +90,14 @@ export const createRotateHandles = ({
   width: number
   length: number
 }) => {
-  const userData: RotateHandleMeshUserData = {
+  const meshUserData: RotateHandleMeshUserData = {
     type: UserDataTypeEnum.Enum.RotateHandleMesh,
   }
 
   const circleMesh1 = new Mesh(rotateHandleCircleGeometry, handleMaterial)
   circleMesh1.position.set(0, 0, -ROTATE_HANDLE_OFFSET)
   circleMesh1.rotation.x = -PI / 2
-  circleMesh1.userData = userData
+  circleMesh1.userData = meshUserData
 
   const planeMesh1 = new Mesh(
     new PlaneGeometry(ROTATE_HANDLE_SIZE, ROTATE_HANDLE_OFFSET),
@@ -86,12 +105,12 @@ export const createRotateHandles = ({
   )
   planeMesh1.rotation.x = -PI / 2
   planeMesh1.position.set(0, 0, -ROTATE_HANDLE_OFFSET / 2)
-  planeMesh1.userData = userData
+  planeMesh1.userData = meshUserData
 
   const circleMesh2 = new Mesh(rotateHandleCircleGeometry, handleMaterial)
   circleMesh2.rotation.x = -PI / 2
   circleMesh2.position.set(-ROTATE_HANDLE_OFFSET - width / 4, 0, length / 2)
-  circleMesh2.userData = userData
+  circleMesh2.userData = meshUserData
 
   const planeMesh2 = new Mesh(
     new PlaneGeometry(ROTATE_HANDLE_OFFSET, ROTATE_HANDLE_SIZE),
@@ -99,12 +118,34 @@ export const createRotateHandles = ({
   )
   planeMesh2.rotation.x = -PI / 2
   planeMesh2.position.set(-width / 1.05, 0, length / 2)
-  planeMesh2.userData = userData
+  planeMesh2.userData = meshUserData
 
   const handleGroup = new Group()
   handleGroup.add(circleMesh1, planeMesh1, circleMesh2, planeMesh2)
 
-  setInvisible(handleGroup)
+  const groupUserData: RotateHandlesGroupUserData = {
+    type: UserDataTypeEnum.Enum.RotateHandlesGroup,
+  }
+
+  handleGroup.userData = groupUserData
+
+  handleGroup.visible = false
+
+  // setInvisible(handleGroup)
 
   return handleGroup
 }
+
+// export const setRotateHandleVisibility = (
+//   houseTransformGroup: Object3D,
+//   value: boolean
+// ) => {
+//   traverseDownUntil(houseTransformGroup, (object) => {
+//     if (object.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
+//       object.visible = value
+//       o = object
+//       return true
+//     }
+//     return false
+//   })
+// }

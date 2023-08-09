@@ -25,6 +25,7 @@ export const UserDataTypeEnum = z.enum([
   "ModuleGroup",
   "ElementMesh",
   "StretchHandleMesh",
+  "RotateHandlesGroup",
   "RotateHandleMesh",
 ])
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
@@ -92,6 +93,10 @@ export type StretchHandleMeshUserData = {
   houseId: string
 }
 
+export type RotateHandlesGroupUserData = {
+  type: typeof UserDataTypeEnum.Enum.RotateHandlesGroup
+}
+
 export type RotateHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.RotateHandleMesh
 }
@@ -106,7 +111,7 @@ export type UserData =
   | HouseLayoutGroupUserData
   | HouseTransformsGroupUserData
   | StretchHandleMeshUserData
-  | RotateHandleMeshUserData
+  | RotateHandlesGroupUserData
 
 export const incrementColumnCount = (layoutGroup: Group) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData

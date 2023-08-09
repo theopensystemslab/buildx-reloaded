@@ -1,5 +1,5 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
-import { Handler, useGesture, UserHandlers } from "@use-gesture/react"
+import { Handler, useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject, useRef } from "react"
 import { useEvent } from "react-use"
@@ -14,6 +14,7 @@ import {
 } from "three"
 import { z } from "zod"
 import { A, O } from "../../../../utils/functions"
+import { atan2 } from "../../../../utils/math"
 import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
@@ -24,18 +25,17 @@ import siteCtx, {
   SiteCtxMode,
   SiteCtxModeEnum,
 } from "../../../state/siteCtx"
+import { updateIndexedHouseTransforms } from "../dimensions"
 import {
   getActiveHouseUserData,
-  getHouseGroupColumns,
-  getHouseTransformGroup,
   handleColumnGroupParentQuery,
   rootHouseGroupParentQuery,
+  traverseDownUntil,
   traverseUpUntil,
 } from "../helpers/sceneQueries"
 import { insertVanillaColumn } from "../helpers/stretchZ"
 import {
   elementMeshToScopeItem,
-  ElementMeshUserData,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   StretchHandleMeshUserData,
@@ -82,6 +82,33 @@ const objectToIfcTagObjects = (object: Object3D) => {
   )
 }
 
+const mapNearestCutIntersection = (
+  intersections: Intersection[],
+  f: (ix: Intersection) => void
+) => {
+  pipe(
+    intersections,
+    A.findFirst((ix) => {
+      const { object, point } = ix
+      switch (object.userData.type) {
+        case UserDataTypeEnum.Enum.ElementMesh: {
+          return (
+            ((object as Mesh).material as Material).clippingPlanes as Plane[]
+          ).every((plane) => {
+            return plane.distanceToPoint(point) > 0
+          })
+        }
+        case UserDataTypeEnum.Enum.RotateHandleMesh:
+        case UserDataTypeEnum.Enum.StretchHandleMesh:
+          return true
+        default:
+          return false
+      }
+    }),
+    O.map(f)
+  )
+}
+
 const useGestures = (rootRef: RefObject<Group>) => {
   const stretchData = useRef<{
     handleObject: Object3D
@@ -116,7 +143,15 @@ const useGestures = (rootRef: RefObject<Group>) => {
         dispatchPointerDown({ point, object })
         break
       }
-      case !first && !last: {
+      case last: {
+        if (stretchData.current === null)
+          throw new Error("stretchData.current null unexpectedly")
+        dispatchPointerUp()
+        stretchData.current = null
+        setCameraControlsEnabled(true)
+        break
+      }
+      default: {
         if (!stretchData.current) throw new Error("first didn't set first")
 
         const {
@@ -193,22 +228,21 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
         break
       }
-      case last: {
-        if (stretchData.current === null)
-          throw new Error("stretchData.current null unexpectedly")
-        dispatchPointerUp()
-        stretchData.current = null
-        setCameraControlsEnabled(true)
-        break
-      }
     }
+  }
+
+  const activeRotateHandlesRef = useRef<Object3D | null>(null)
+  const updateActiveRotateHandles = (object: Object3D) => {
+    if (activeRotateHandlesRef.current !== null) {
+      activeRotateHandlesRef.current.visible = false
+    }
+    activeRotateHandlesRef.current = object
+    activeRotateHandlesRef.current.visible = true
   }
 
   const moveData = useRef<{
     lastPoint: Vector3
-    houseObject: Object3D
-    // houseTransformGroupPos0: Vector3
-    // point0: Vector3
+    houseObject: Group
   } | null>(null)
 
   const onDragMove: Handler<"drag", ThreeEvent<PointerEvent>> = (state) => {
@@ -235,11 +269,32 @@ const useGestures = (rootRef: RefObject<Group>) => {
                 o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
               (houseTransformGroup) => {
                 dispatchPointerDown({ point, object })
+
                 moveData.current = {
-                  houseObject: houseTransformGroup,
+                  houseObject: houseTransformGroup as Group,
                   lastPoint: point.setY(0),
                 }
+
                 setCameraControlsEnabled(false)
+
+                const scopeItem = elementMeshToScopeItem(object)
+                scope.selected = scopeItem
+
+                dispatchOutline({
+                  selectedObjects: objectToHouseObjects(object),
+                })
+
+                traverseDownUntil(houseTransformGroup, (object) => {
+                  if (
+                    object.userData.type ===
+                    UserDataTypeEnum.Enum.RotateHandlesGroup
+                  ) {
+                    console.log(object.uuid)
+                    updateActiveRotateHandles(object)
+                    return true
+                  }
+                  return false
+                })
               }
             )
             return
@@ -247,7 +302,14 @@ const useGestures = (rootRef: RefObject<Group>) => {
         )
         break
       }
-      case !first && !last: {
+      case last: {
+        setCameraControlsEnabled(true)
+        updateIndexedHouseTransforms(moveData.current!.houseObject)
+        moveData.current = null
+        dispatchPointerUp()
+        return
+      }
+      default: {
         if (!moveData.current) {
           console.warn(`no moveData.current in onDragMove`)
           return
@@ -261,37 +323,96 @@ const useGestures = (rootRef: RefObject<Group>) => {
         houseObject.position.add(delta)
         return
       }
-      case last: {
-        setCameraControlsEnabled(true)
-        moveData.current = null
-        dispatchPointerUp()
-        return
-      }
     }
   }
 
-  const rotateData = useRef(null)
+  const rotateData = useRef<{
+    houseTransformsGroup: Object3D
+    center: Vector3
+    rotation0: number
+    angle0: number
+    angle: number
+  } | null>(null)
 
-  const onDragRotate: Handler<"drag", ThreeEvent<PointerEvent>> = ({}) => {}
+  const onDragRotate: Handler<"drag", ThreeEvent<PointerEvent>> = (state) => {
+    const {
+      first,
+      last,
+      event: { intersections, stopPropagation },
+    } = state
 
-  const mapNearestCutIntersection = (
-    intersections: Intersection[],
-    f: (ix: Intersection) => void
-  ) => {
-    pipe(
-      intersections,
-      A.findFirst((ix) => {
-        const { object, point } = ix
-        if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh)
-          return false
-        return (
-          ((object as Mesh).material as Material).clippingPlanes as Plane[]
-        ).every((plane) => {
-          return plane.distanceToPoint(point) > 0
-        })
-      }),
-      O.map(f)
-    )
+    stopPropagation()
+
+    switch (true) {
+      case first: {
+        pipe(
+          intersections,
+          A.head,
+          O.map(({ point, object }) => {
+            if (object.userData.type !== UserDataTypeEnum.Enum.RotateHandleMesh)
+              return
+
+            traverseUpUntil(
+              object,
+              (o) =>
+                o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
+              (houseTransformsGroup) => {
+                dispatchPointerDown({ point, object })
+
+                const {
+                  obb: {
+                    center,
+                    center: { x: cx, z: cz },
+                  },
+                } = getActiveHouseUserData(houseTransformsGroup)
+
+                const { x: x0, z: z0 } = point
+
+                const angle0 = atan2(cz - z0, cx - x0)
+
+                rotateData.current = {
+                  houseTransformsGroup,
+                  center,
+                  rotation0: houseTransformsGroup.rotation.y,
+                  angle0,
+                  angle: angle0,
+                }
+
+                setCameraControlsEnabled(false)
+              }
+            )
+            return
+          })
+        )
+        break
+      }
+      case last: {
+        dispatchPointerUp()
+        updateIndexedHouseTransforms(rotateData.current!.houseTransformsGroup)
+        setCameraControlsEnabled(true)
+        rotateData.current = null
+        break
+      }
+      default: {
+        if (!rotateData.current)
+          throw new Error(`no rotateData in onDragRotate progress`)
+
+        const [px, pz] = pointer.xz
+
+        const {
+          center: { x: cx, z: cz },
+          houseTransformsGroup,
+        } = rotateData.current
+
+        rotateData.current.angle = atan2(cz - pz, cx - px)
+
+        houseTransformsGroup.rotation.y =
+          rotateData.current.rotation0 -
+          (rotateData.current.angle - rotateData.current.angle0)
+
+        break
+      }
+    }
   }
 
   return useGesture<{
@@ -356,33 +477,45 @@ const useGestures = (rootRef: RefObject<Group>) => {
       mapNearestCutIntersection(intersections, (intersection) => {
         const { object } = intersection
 
-        if (hovering) {
-          document.body.style.cursor = "grab"
-        }
+        switch (object.userData.type) {
+          case UserDataTypeEnum.Enum.ElementMesh: {
+            const scopeItem = elementMeshToScopeItem(object)
+            scope.hovered = scopeItem
 
-        if (object.userData.type !== UserDataTypeEnum.Enum.ElementMesh) return
-
-        const scopeItem = elementMeshToScopeItem(object)
-        scope.hovered = scopeItem
-
-        switch (siteCtx.mode) {
-          case SiteCtxModeEnum.Enum.SITE:
-            dispatchOutline({
-              hoveredObjects: objectToHouseObjects(object),
-            })
-            break
-          case SiteCtxModeEnum.Enum.BUILDING:
-            dispatchOutline({
-              hoveredObjects: objectToIfcTagObjects(object),
-            })
-            // object to all of ifc tag
-            break
-          case SiteCtxModeEnum.Enum.LEVEL:
-            // object to all of module group
-            if (object.parent) {
-              dispatchOutline({ hoveredObjects: object.parent.children })
+            switch (siteCtx.mode) {
+              case SiteCtxModeEnum.Enum.SITE:
+                if (hovering) {
+                  document.body.style.cursor = "grab"
+                }
+                dispatchOutline({
+                  hoveredObjects: objectToHouseObjects(object),
+                })
+                break
+              case SiteCtxModeEnum.Enum.BUILDING:
+                dispatchOutline({
+                  hoveredObjects: objectToIfcTagObjects(object),
+                })
+                // object to all of ifc tag
+                break
+              case SiteCtxModeEnum.Enum.LEVEL:
+                // object to all of module group
+                if (object.parent) {
+                  dispatchOutline({ hoveredObjects: object.parent.children })
+                }
+                break
             }
             break
+          }
+          case UserDataTypeEnum.Enum.StretchHandleMesh:
+          case UserDataTypeEnum.Enum.RotateHandleMesh: {
+            if (hovering) {
+              document.body.style.cursor = "grab"
+            }
+            break
+          }
+          default: {
+            break
+          }
         }
       })
 
@@ -391,16 +524,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
     onClick: ({ event: { intersections } }) => {
       mapNearestCutIntersection(intersections, (intersection) => {
         const { object } = intersection
-        const scopeItem = elementMeshToScopeItem(object)
-        scope.selected = scopeItem
-
-        switch (siteCtx.mode) {
-          case SiteCtxModeEnum.Enum.SITE:
-            dispatchOutline({
-              selectedObjects: objectToHouseObjects(object),
-            })
-            break
-        }
       })
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
