@@ -61,19 +61,19 @@ export const traverseDownUntil = (
 // }
 
 export const getHouseTransformGroup = (
-  rootRef: RefObject<Group>,
+  rootRef: RefObject<Object3D>,
   houseId: string
 ) =>
   pipe(
     rootRef.current?.children,
     O.fromNullable,
     O.chain(A.findFirst((x) => x.userData.houseId === houseId))
-  ) as O.Option<Group>
+  ) as O.Option<Object3D>
 
 export const mapHouseTransformGroup = (
-  rootRef: RefObject<Group>,
+  rootRef: RefObject<Object3D>,
   houseId: string,
-  f: (houseTransformGroup: Group) => void
+  f: (houseTransformGroup: Object3D) => void
 ) => pipe(getHouseTransformGroup(rootRef, houseId), O.map(f))
 
 export const rootHouseGroupParentQuery = (object: Object3D) => {
@@ -152,7 +152,7 @@ export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
     A.partition((x) => x.uuid === houseTransformsGroup.userData.activeChildUuid)
   )
 
-export const getLayoutGroupColumnGroups = (layoutGroup: Group): Group[] =>
+export const getLayoutGroupColumnGroups = (layoutGroup: Object3D): Object3D[] =>
   layoutGroup.children.filter(
     (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
   ) as Group[]

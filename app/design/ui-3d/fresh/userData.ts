@@ -113,14 +113,14 @@ export type UserData =
   | StretchHandleMeshUserData
   | RotateHandlesGroupUserData
 
-export const incrementColumnCount = (layoutGroup: Group) => {
+export const incrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData
   if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
     throw new Error(`incrementColumnCount called on ${userData.type}`)
   userData.columnCount++
 }
 
-export const decrementColumnCount = (layoutGroup: Group) => {
+export const decrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData
   if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
     throw new Error(`incrementColumnCount called on ${userData.type}`)
