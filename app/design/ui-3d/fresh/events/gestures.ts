@@ -289,7 +289,6 @@ const useGestures = (rootRef: RefObject<Group>) => {
                     object.userData.type ===
                     UserDataTypeEnum.Enum.RotateHandlesGroup
                   ) {
-                    console.log(object.uuid)
                     updateActiveRotateHandles(object)
                     return true
                   }
@@ -406,9 +405,11 @@ const useGestures = (rootRef: RefObject<Group>) => {
 
         rotateData.current.angle = atan2(cz - pz, cx - px)
 
+        const angleDifference =
+          rotateData.current.angle - rotateData.current.angle0
+
         houseTransformsGroup.rotation.y =
-          rotateData.current.rotation0 -
-          (rotateData.current.angle - rotateData.current.angle0)
+          rotateData.current.rotation0 - angleDifference
 
         break
       }

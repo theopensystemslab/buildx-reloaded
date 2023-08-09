@@ -23,8 +23,9 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
   const localRef = useRef<Mesh>(null)
   const { size = DEFAULT_SIZE } = props
 
-  usePointerDownListener(({ point: { y } }) => {
+  usePointerDownListener(({ point: { x, y, z } }) => {
     if (!localRef.current) return
+    pointer.xz = [x, z]
     localRef.current.position.setY(y)
     localRef.current.layers.set(RaycasterLayer.ENABLED)
     if (DEBUG) {
