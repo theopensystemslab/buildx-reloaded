@@ -45,7 +45,10 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
     })
   }
 
-  const houseLevelIndexToCutHeight = (houseId: string, levelIndex: number) => {
+  const houseLevelIndexToCutHeight = (
+    houseId: string,
+    levelIndex: number
+  ): O.Option<number> => {
     return pipe(
       getHouseTransformGroup(rootRef, houseId),
       O.chain((houseTransformGroup) =>

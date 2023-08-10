@@ -1,5 +1,5 @@
 import { Fragment, useRef } from "react"
-import { Group, Object3D } from "three"
+import { Group, Material, Mesh, Object3D, Plane } from "three"
 import { useHousesEvents } from "./events/houses"
 import useGestures from "./gestures"
 import useKeyTestInteractions from "./useKeyTestInteractions"
@@ -11,16 +11,23 @@ import siteCtx, {
 } from "../../state/siteCtx"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { pipe } from "fp-ts/lib/function"
-import { O } from "../../../utils/functions"
+import { A, O } from "../../../utils/functions"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
 import { invalidate } from "@react-three/fiber"
 import {
+  getActiveHouseUserData,
   getHouseTransformGroup,
+  mapAllHouseTransformGroups,
   traverseDownUntil,
 } from "./helpers/sceneQueries"
-import { UserDataTypeEnum } from "./userData"
+import {
+  isElementMesh,
+  isHouseTransformsGroup,
+  UserDataTypeEnum,
+} from "./userData"
 import { useSubscribeKey } from "../../../utils/hooks"
 import scope, { ScopeItem } from "../../state/scope"
+import { useKey } from "react-use"
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -80,6 +87,28 @@ const FreshApp = () => {
     )
   }
 
+  useKey("q", () => {
+    pipe(
+      rootRef.current?.children ?? [],
+      A.filter(isHouseTransformsGroup),
+      A.map((houseTransformGroup) => {
+        traverseDownUntil(houseTransformGroup, (object) => {
+          if (isElementMesh(object)) {
+            // const clippingPlaneUuids = object.material.clippingPlanes
+            //   .map((x: Plane) =>
+            //   .join(",")
+            // console.log(
+            //   `houseUuid: ${houseTransformGroup.uuid}; planesUuids: ${clippingPlaneUuids}`
+            // )
+            console.log(object.material.clippingPlanes)
+            return true
+          }
+          return false
+        })
+      })
+    )
+  })
+
   const f = () => {
     const { houseId, levelIndex, mode } = siteCtx
     const { selected } = scope
@@ -90,6 +119,10 @@ const FreshApp = () => {
     ]
 
     hideAllHandles()
+    mapAllHouseTransformGroups(rootRef, (houseTransformGroup) => {
+      const { houseId } = getActiveHouseUserData(houseTransformGroup)
+      setYCut(houseId, BIG_CLIP_NUMBER)
+    })
 
     if (stretchModes.includes(mode)) {
       if (houseId) showHouseStretchHandles(houseId)
@@ -100,6 +133,10 @@ const FreshApp = () => {
         pipe(
           houseLevelIndexToCutHeight(houseId, levelIndex),
           O.map((cutHeight) => {
+            console.log({
+              selected: selected?.houseId,
+              siteCtx: siteCtx.houseId,
+            })
             setYCut(houseId, cutHeight)
           })
         )
@@ -116,7 +153,6 @@ const FreshApp = () => {
     // switch (true) {
     //   default:
     //     if (houseId === null) break
-    //     setYCut(houseId, BIG_CLIP_NUMBER)
     // }
 
     invalidate()

@@ -1,4 +1,4 @@
-import { Group, Object3D, Plane } from "three"
+import { Group, Material, Mesh, Object3D, Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
@@ -14,8 +14,9 @@ import { ScopeItem } from "../../state/scope"
 //     -> GridGroup's as children have
 //       -> ModuleGroup's as children have
 //         -> ElementMesh's as children
-// -> Stretch Handles
-// -> Rotate Handles
+// -> Stretch Handles meshes
+// -> Rotate Handles group
+//   -> Rotate Handles meshes
 
 export const UserDataTypeEnum = z.enum([
   "HouseTransformsGroup",
@@ -28,6 +29,7 @@ export const UserDataTypeEnum = z.enum([
   "RotateHandlesGroup",
   "RotateHandleMesh",
 ])
+
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
 export type HouseTransformsGroupUserData = {
@@ -79,6 +81,8 @@ export type ModuleGroupUserData = {
   length: number
 }
 
+// M
+
 export type ElementMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.ElementMesh
   ifcTag: string
@@ -112,6 +116,51 @@ export type UserData =
   | HouseTransformsGroupUserData
   | StretchHandleMeshUserData
   | RotateHandlesGroupUserData
+
+export const isElementMesh = (
+  node: Object3D
+): node is Mesh & { userData: ElementMeshUserData; material: Material } =>
+  node.userData?.type === UserDataTypeEnum.Enum.ElementMesh
+
+export const isStretchHandleMesh = (
+  node: Object3D
+): node is Mesh & { userData: StretchHandleMeshUserData; material: Material } =>
+  node.userData?.type === UserDataTypeEnum.Enum.StretchHandleMesh
+
+export const isRotateHandleMesh = (
+  node: Object3D
+): node is Mesh & { userData: RotateHandleMeshUserData; material: Material } =>
+  node.userData?.type === UserDataTypeEnum.Enum.RotateHandleMesh
+
+export const isModuleGroup = (
+  node: Object3D
+): node is Group & { userData: ModuleGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.ModuleGroup
+
+export const isGridGroup = (
+  node: Object3D
+): node is Group & { userData: GridGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.GridGroup
+
+export const isColumnGroup = (
+  node: Object3D
+): node is Group & { userData: ColumnGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.ColumnGroup
+
+export const isHouseLayoutGroup = (
+  node: Object3D
+): node is Group & { userData: HouseLayoutGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
+
+export const isHouseTransformsGroup = (
+  node: Object3D
+): node is Group & { userData: HouseTransformsGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.HouseTransformsGroup
+
+export const isRotateHandlesGroup = (
+  node: Object3D
+): node is Group & { userData: RotateHandlesGroupUserData } =>
+  node.userData?.type === UserDataTypeEnum.Enum.RotateHandlesGroup
 
 export const incrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData

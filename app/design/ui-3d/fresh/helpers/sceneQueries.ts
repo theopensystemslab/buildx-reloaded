@@ -5,6 +5,7 @@ import { A, O, someOrError } from "../../../../utils/functions"
 import {
   HouseLayoutGroupUserData,
   HouseTransformsGroupUserData,
+  isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
 
@@ -75,6 +76,17 @@ export const mapHouseTransformGroup = (
   houseId: string,
   f: (houseTransformGroup: Object3D) => void
 ) => pipe(getHouseTransformGroup(rootRef, houseId), O.map(f))
+
+export const mapAllHouseTransformGroups = (
+  rootRef: RefObject<Object3D>,
+  f: (houseTransformGroup: Object3D) => void
+): void =>
+  pipe(
+    rootRef.current?.children ?? [],
+    A.filter(isHouseTransformsGroup),
+    A.map(f),
+    () => void null
+  )
 
 export const rootHouseGroupParentQuery = (object: Object3D) => {
   let x = object
