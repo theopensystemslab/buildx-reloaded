@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
-import { Group, Object3D } from "three"
+import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, O, someOrError } from "../../../../utils/functions"
 import {
   HouseLayoutGroupUserData,
@@ -191,3 +191,47 @@ export const getLayoutGroupBySectionType = (
 //     })
 //   )
 // }
+
+export const objectToHouseObjects = (object: Object3D) =>
+  object.parent!.parent!.parent!.parent!.children.flatMap((x) =>
+    x.children.flatMap((y) => y.children.flatMap((z) => z.children))
+  )
+
+export const objectToIfcTagObjects = (object: Object3D) => {
+  const ifcTag: string = object.userData.ifcTag
+
+  return object.parent!.parent!.parent!.parent!.children.flatMap((x) =>
+    x.children.flatMap((y) =>
+      y.children.flatMap((z) =>
+        z.children.filter((x) => x.userData.ifcTag === ifcTag)
+      )
+    )
+  )
+}
+
+export const mapNearestCutIntersection = (
+  intersections: Intersection[],
+  f: (ix: Intersection) => void
+) => {
+  pipe(
+    intersections,
+    A.findFirst((ix) => {
+      const { object, point } = ix
+      switch (object.userData.type) {
+        case UserDataTypeEnum.Enum.ElementMesh: {
+          return (
+            ((object as Mesh).material as Material).clippingPlanes as Plane[]
+          ).every((plane) => {
+            return plane.distanceToPoint(point) > 0
+          })
+        }
+        case UserDataTypeEnum.Enum.RotateHandleMesh:
+        case UserDataTypeEnum.Enum.StretchHandleMesh:
+          return true
+        default:
+          return false
+      }
+    }),
+    O.map(f)
+  )
+}

@@ -8,7 +8,7 @@ import pointer from "../state/pointer"
 import {
   usePointerDownListener,
   usePointerUpListener,
-} from "./fresh/events/gestures"
+} from "./fresh/gestures/events"
 
 const DEBUG = false
 

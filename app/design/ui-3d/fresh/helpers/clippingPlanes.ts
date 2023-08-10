@@ -75,31 +75,7 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
     )
   }
 
-  useModeChangeListener(({ previous, next }) => {
-    const { houseId, levelIndex } = siteCtx
-
-    switch (true) {
-      case next === SiteCtxModeEnum.Enum.LEVEL:
-        if (houseId === null || levelIndex === null) break
-        // find level index height
-
-        pipe(
-          houseLevelIndexToCutHeight(houseId, levelIndex),
-          O.map((cutHeight) => {
-            setYCut(houseId, cutHeight)
-          })
-        )
-        break
-      default:
-        if (houseId === null) break
-        setYCut(houseId, BIG_CLIP_NUMBER)
-        break
-    }
-
-    invalidate()
-  })
-
-  return { setYCut, initClippingPlanes }
+  return { setYCut, initClippingPlanes, houseLevelIndexToCutHeight }
 }
 
 export default useClippingPlaneHelpers
