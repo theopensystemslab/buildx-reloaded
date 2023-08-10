@@ -1,34 +1,26 @@
+import { invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
 import { Fragment, useRef } from "react"
-import { Group, Material, Mesh, Object3D, Plane } from "three"
-import { useHousesEvents } from "./events/houses"
-import useGestures from "./gestures"
-import useKeyTestInteractions from "./useKeyTestInteractions"
-import XZPlane from "../XZPlane"
+import { Group } from "three"
+import { O } from "../../../utils/functions"
+import { useSubscribeKey } from "../../../utils/hooks"
+import scope from "../../state/scope"
 import siteCtx, {
   SiteCtxMode,
   SiteCtxModeEnum,
   useModeChangeListener,
 } from "../../state/siteCtx"
+import XZPlane from "../XZPlane"
+import { useHousesEvents } from "./events/houses"
+import useGestures from "./gestures"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
-import { pipe } from "fp-ts/lib/function"
-import { A, O, R, S } from "../../../utils/functions"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
-import { invalidate } from "@react-three/fiber"
 import {
   getActiveHouseUserData,
   getHouseTransformGroup,
   mapAllHouseTransformGroups,
-  traverseDownUntil,
 } from "./helpers/sceneQueries"
-import {
-  isElementMesh,
-  isHouseTransformsGroup,
-  UserDataTypeEnum,
-} from "./userData"
-import { useSubscribeKey } from "../../../utils/hooks"
-import scope, { ScopeItem } from "../../state/scope"
-import { useKey } from "react-use"
-import { values } from "fp-ts-std/Record"
+import { UserDataTypeEnum } from "./userData"
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -66,15 +58,6 @@ const FreshApp = () => {
   const { houseLevelIndexToCutHeight, setYCut } =
     useClippingPlaneHelpers(rootRef)
 
-  // const activeRotateHandlesRef = useRef<Object3D | null>(null)
-  // const updateActiveRotateHandles = (object: Object3D) => {
-  //   if (activeRotateHandlesRef.current !== null) {
-  //     activeRotateHandlesRef.current.visible = false
-  //   }
-  //   activeRotateHandlesRef.current = object
-  //   activeRotateHandlesRef.current.visible = true
-  // }
-
   const showHouseRotateHandles = (houseId: string) => {
     pipe(
       getHouseTransformGroup(rootRef, houseId),
@@ -87,49 +70,6 @@ const FreshApp = () => {
       })
     )
   }
-
-  useKey("q", () => {
-    let results: Record<string, string[]> = {}
-
-    mapAllHouseTransformGroups(rootRef, (houseTransformGroup) => {
-      const { uuid: houseUuid } = houseTransformGroup
-
-      if (!results[houseUuid]) {
-        results[houseUuid] = []
-      }
-
-      houseTransformGroup.traverse((node) => {
-        if (isElementMesh(node)) {
-          const { uuid: materialUuid } = node.material
-
-          if (!results[houseUuid].includes(materialUuid)) {
-            results[houseUuid].push(materialUuid)
-          }
-        }
-      })
-    })
-
-    const doesAnyHouseIntersectWithAnother = (
-      results: Record<string, string[]>
-    ): boolean =>
-      pipe(
-        R.toArray(results),
-        A.exists(([houseUuid, uuids]) =>
-          pipe(
-            results,
-            R.filterWithIndex((k2, _) => k2 !== houseUuid),
-            R.collect(S.Ord)((_, uuids2) => uuids2),
-            A.exists(
-              (uuids2) => !A.isEmpty(A.intersection(S.Eq)(uuids, uuids2))
-            )
-          )
-        )
-      )
-
-    const noIntersectionsAtAllEver = !doesAnyHouseIntersectWithAnother(results)
-
-    console.log({ noIntersectionsAtAllEver })
-  })
 
   const f = () => {
     const { houseId, levelIndex, mode } = siteCtx
@@ -155,10 +95,6 @@ const FreshApp = () => {
         pipe(
           houseLevelIndexToCutHeight(houseId, levelIndex),
           O.map((cutHeight) => {
-            console.log({
-              selected: selected?.houseId,
-              siteCtx: siteCtx.houseId,
-            })
             setYCut(houseId, cutHeight)
           })
         )

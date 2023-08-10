@@ -13,16 +13,15 @@ export const insertVanillaColumn = (
   houseTransformsGroup: Group,
   direction: 1 | -1
 ) => {
-  const { systemId, levelTypes, columnCount } =
+  const { systemId, houseId, levelTypes, columnCount } =
     getActiveHouseUserData(houseTransformsGroup)
-
-  // const vanillaColumn =
-  //   vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })]
 
   return pipe(
     getVanillaColumn({ systemId, levelTypes }),
     T.chain(({ gridGroups }) =>
-      pipe(createColumnGroup({ systemId, gridGroups, columnIndex: -1 }))
+      pipe(
+        createColumnGroup({ systemId, houseId, gridGroups, columnIndex: -1 })
+      )
     ),
     T.map((vanillaColumnGroup) => {
       const layoutGroup = getActiveLayoutGroup(houseTransformsGroup)
