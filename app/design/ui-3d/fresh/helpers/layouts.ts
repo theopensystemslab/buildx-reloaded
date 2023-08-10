@@ -119,10 +119,12 @@ export const getGeometry = ({
 
 export const createModuleGroup = async ({
   systemId,
+  houseId,
   gridGroupIndex,
   module: { speckleBranchUrl, length, dna },
 }: {
   systemId: string
+  houseId: string
   gridGroupIndex: number
   module: Module
 }) => {
@@ -136,7 +138,7 @@ export const createModuleGroup = async ({
       const material = getMaterial({
         systemId,
         ifcTag,
-        houseId: "",
+        houseId,
       }) as MeshStandardMaterial
       const mesh = new Mesh(geometry, material)
       mesh.castShadow = true
@@ -182,12 +184,14 @@ export const createModuleGroup = async ({
 export const createColumnGroup =
   ({
     systemId,
+    houseId,
     gridGroups,
     columnIndex,
     startColumn = false,
     endColumn = false,
   }: {
     systemId: string
+    houseId: string
     gridGroups: GridGroup[]
     columnIndex: number
     startColumn?: boolean
@@ -203,6 +207,7 @@ export const createColumnGroup =
       for (let { z, module, gridGroupIndex } of modules) {
         const moduleGroup = await createModuleGroup({
           systemId,
+          houseId,
           module,
           gridGroupIndex,
         })
@@ -246,9 +251,11 @@ export const createColumnGroup =
 
 export const createColumnGroups = ({
   systemId,
+  houseId,
   houseLayout,
 }: {
   systemId: string
+  houseId: string
   houseLayout: ColumnLayout
 }): T.Task<Group[]> =>
   pipe(
@@ -260,6 +267,7 @@ export const createColumnGroups = ({
 
         const task = createColumnGroup({
           systemId,
+          houseId,
           gridGroups,
           startColumn,
           endColumn,
@@ -301,6 +309,7 @@ export const createLayoutGroup = ({
   pipe(
     createColumnGroups({
       systemId,
+      houseId,
       houseLayout,
     }),
     T.chain((columnGroups) => {

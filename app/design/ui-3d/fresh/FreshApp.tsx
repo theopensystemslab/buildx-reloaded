@@ -11,7 +11,7 @@ import siteCtx, {
 } from "../../state/siteCtx"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { pipe } from "fp-ts/lib/function"
-import { A, O } from "../../../utils/functions"
+import { A, O, R, S } from "../../../utils/functions"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
 import { invalidate } from "@react-three/fiber"
 import {
@@ -28,6 +28,7 @@ import {
 import { useSubscribeKey } from "../../../utils/hooks"
 import scope, { ScopeItem } from "../../state/scope"
 import { useKey } from "react-use"
+import { values } from "fp-ts-std/Record"
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -88,25 +89,46 @@ const FreshApp = () => {
   }
 
   useKey("q", () => {
-    pipe(
-      rootRef.current?.children ?? [],
-      A.filter(isHouseTransformsGroup),
-      A.map((houseTransformGroup) => {
-        traverseDownUntil(houseTransformGroup, (object) => {
-          if (isElementMesh(object)) {
-            // const clippingPlaneUuids = object.material.clippingPlanes
-            //   .map((x: Plane) =>
-            //   .join(",")
-            // console.log(
-            //   `houseUuid: ${houseTransformGroup.uuid}; planesUuids: ${clippingPlaneUuids}`
-            // )
-            console.log(object.material.clippingPlanes)
-            return true
+    let results: Record<string, string[]> = {}
+
+    mapAllHouseTransformGroups(rootRef, (houseTransformGroup) => {
+      const { uuid: houseUuid } = houseTransformGroup
+
+      if (!results[houseUuid]) {
+        results[houseUuid] = []
+      }
+
+      houseTransformGroup.traverse((node) => {
+        if (isElementMesh(node)) {
+          const { uuid: materialUuid } = node.material
+
+          if (!results[houseUuid].includes(materialUuid)) {
+            results[houseUuid].push(materialUuid)
           }
-          return false
-        })
+        }
       })
-    )
+    })
+
+    const doesAnyHouseIntersectWithAnother = (
+      results: Record<string, string[]>
+    ): boolean =>
+      pipe(
+        R.toArray(results),
+        A.exists(([houseUuid, uuids]) =>
+          pipe(
+            results,
+            R.filterWithIndex((k2, _) => k2 !== houseUuid),
+            R.collect(S.Ord)((_, uuids2) => uuids2),
+            A.exists(
+              (uuids2) => !A.isEmpty(A.intersection(S.Eq)(uuids, uuids2))
+            )
+          )
+        )
+      )
+
+    const noIntersectionsAtAllEver = !doesAnyHouseIntersectWithAnother(results)
+
+    console.log({ noIntersectionsAtAllEver })
   })
 
   const f = () => {
