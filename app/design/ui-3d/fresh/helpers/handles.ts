@@ -1,7 +1,10 @@
 import { CircleGeometry, Group, Mesh, Object3D, PlaneGeometry } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
 import { PI } from "../../../../utils/math"
-import { setInvisible, setVisibleAndRaycast } from "../../../../utils/three"
+import {
+  setInvisibleNoRaycast,
+  setVisibleAndRaycast,
+} from "../../../../utils/three"
 import handleMaterial from "../handleMaterial"
 import {
   RotateHandleMeshUserData,
@@ -20,7 +23,7 @@ export const setStretchHandleVisibility = (
     if (handleCount === 0) return true
     if (object.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
       if (value) setVisibleAndRaycast(object)
-      else setInvisible(object)
+      else setInvisibleNoRaycast(object)
       console.log(object)
       handleCount--
     }
@@ -74,7 +77,7 @@ export const createStretchHandle = ({
     houseId,
   } as StretchHandleMeshUserData
 
-  setInvisible(mesh)
+  setInvisibleNoRaycast(mesh)
 
   return mesh
 }

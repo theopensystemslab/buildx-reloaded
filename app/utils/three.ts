@@ -200,7 +200,7 @@ export const setVisibleOnly = (object: Object3D) => {
   })
 }
 
-export const setInvisible = (object: Object3D) => {
+export const setInvisibleNoRaycast = (object: Object3D) => {
   object.visible = false
   object.traverse((node) => {
     node.layers.set(CameraLayer.INVISIBLE)
@@ -208,7 +208,7 @@ export const setInvisible = (object: Object3D) => {
   })
 }
 
-export const setInvisibleAndRaycast = (object: Object3D) => {
+export const setInvisibleButRaycast = (object: Object3D) => {
   object.traverse((node) => {
     node.layers.set(CameraLayer.INVISIBLE)
     node.layers.enable(RaycasterLayer.ENABLED)

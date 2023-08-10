@@ -1,6 +1,7 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
+import { useRef } from "react"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import { openMenu } from "../../../state/menu"
@@ -9,7 +10,6 @@ import siteCtx, {
   downMode,
   SiteCtxMode,
   SiteCtxModeEnum,
-  useModeChangeListener,
 } from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
 import {
@@ -32,6 +32,10 @@ const useGestures = () => {
   const onDragMove = useOnDragMove()
   const onDragRotate = useOnDragRotate()
 
+  let stretching = false,
+    moving = false,
+    rotating = false
+
   return useGesture<{
     drag: ThreeEvent<PointerEvent>
     hover: ThreeEvent<PointerEvent>
@@ -49,26 +53,37 @@ const useGestures = () => {
       ]
 
       const type = state.event.object.userData?.type
+      const { first, last } = state
 
       const stretch =
-        stretchModes.includes(siteCtx.mode) &&
-        type === UserDataTypeEnum.Enum.StretchHandleMesh
+        stretching ||
+        (stretchModes.includes(siteCtx.mode) &&
+          type === UserDataTypeEnum.Enum.StretchHandleMesh)
 
-      const move = !stretch && type === UserDataTypeEnum.Enum.ElementMesh
+      const move =
+        moving || (!stretch && type === UserDataTypeEnum.Enum.ElementMesh)
 
-      const rotate = !stretch && type === UserDataTypeEnum.Enum.RotateHandleMesh
+      const rotate =
+        rotating ||
+        (!stretch && type === UserDataTypeEnum.Enum.RotateHandleMesh)
 
       switch (true) {
         case stretch: {
+          if (first) stretching = true
           onDragStretch(state)
+          if (last) stretching = false
           break
         }
         case move: {
+          if (first) moving = true
           onDragMove(state)
+          if (last) moving = false
           break
         }
         case rotate: {
+          if (first) rotating = true
           onDragRotate(state)
+          if (last) rotating = false
           break
         }
         default: {

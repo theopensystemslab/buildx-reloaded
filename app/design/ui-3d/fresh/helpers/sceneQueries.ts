@@ -61,7 +61,7 @@ export const traverseDownUntil = (
 //   }
 // }
 
-export const getHouseTransformGroup = (
+export const getHouseTransformsGroupDown = (
   rootRef: RefObject<Object3D>,
   houseId: string
 ) =>
@@ -75,7 +75,7 @@ export const mapHouseTransformGroup = (
   rootRef: RefObject<Object3D>,
   houseId: string,
   f: (houseTransformGroup: Object3D) => void
-) => pipe(getHouseTransformGroup(rootRef, houseId), O.map(f))
+) => pipe(getHouseTransformsGroupDown(rootRef, houseId), O.map(f))
 
 export const mapAllHouseTransformGroups = (
   rootRef: RefObject<Object3D>,
@@ -88,7 +88,7 @@ export const mapAllHouseTransformGroups = (
     () => void null
   )
 
-export const rootHouseGroupParentQuery = (object: Object3D) => {
+export const getHouseTransformsGroupUp = (object: Object3D) => {
   let x = object
   while (x.parent) {
     if (x.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup) {

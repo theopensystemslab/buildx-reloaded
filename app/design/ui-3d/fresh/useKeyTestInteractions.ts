@@ -7,7 +7,7 @@ import { Group, Object3D, Vector3 } from "three"
 import layoutsDB from "../../../db/layouts"
 import { A, O, R, T } from "../../../utils/functions"
 import { PI } from "../../../utils/math"
-import { setInvisible, yAxis } from "../../../utils/three"
+import { setInvisibleNoRaycast, yAxis } from "../../../utils/three"
 import { updateEverything } from "./dimensions"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { createLayoutGroup } from "./helpers/layouts"
@@ -173,7 +173,7 @@ const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
                     houseLayout,
                   })()
 
-                  setInvisible(layoutGroup)
+                  setInvisibleNoRaycast(layoutGroup)
 
                   houseTransformsGroup.add(layoutGroup)
                 }

@@ -29,7 +29,9 @@ export const insertVanillaColumn = (
 
       if (direction === 1) {
         pipe(
+          // get column groups
           getLayoutGroupColumnGroups(layoutGroup),
+          // last two
           A.filter((x) => x.userData.columnIndex >= columnCount - 2),
           A.sort(
             pipe(
@@ -38,19 +40,25 @@ export const insertVanillaColumn = (
             )
           ),
           ([penultimateColumnGroup, endColumnGroup]) => {
+            // put vanilla column group in place
             vanillaColumnGroup.position.setZ(
               penultimateColumnGroup.position.z +
                 penultimateColumnGroup.userData.length / 2 +
                 vanillaColumnLength / 2
             )
+            // add it
             layoutGroup.add(vanillaColumnGroup)
 
+            // set its index
             vanillaColumnGroup.userData.columnIndex =
               penultimateColumnGroup.userData.columnIndex + 1
 
+            // adjust end's index
             endColumnGroup.userData.columnIndex++
 
             incrementColumnCount(layoutGroup)
+            // n.b. you're already adjusting the endColumnGroup's
+            // position in the handler
           }
         )
       } else if (direction === -1) {

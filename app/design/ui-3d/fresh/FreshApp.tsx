@@ -4,6 +4,10 @@ import { Fragment, useRef } from "react"
 import { Group } from "three"
 import { O } from "../../../utils/functions"
 import { useSubscribeKey } from "../../../utils/hooks"
+import {
+  setInvisibleNoRaycast,
+  setVisibleAndRaycast,
+} from "../../../utils/three"
 import scope from "../../state/scope"
 import siteCtx, {
   SiteCtxMode,
@@ -17,7 +21,7 @@ import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
 import {
   getActiveHouseUserData,
-  getHouseTransformGroup,
+  getHouseTransformsGroupDown,
   mapAllHouseTransformGroups,
 } from "./helpers/sceneQueries"
 import { UserDataTypeEnum } from "./userData"
@@ -33,11 +37,12 @@ const FreshApp = () => {
 
   const showHouseStretchHandles = (houseId: string) => {
     pipe(
-      getHouseTransformGroup(rootRef, houseId),
+      getHouseTransformsGroupDown(rootRef, houseId),
       O.map((houseTransformGroup) => {
         houseTransformGroup.traverse((node) => {
           if (node.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
-            node.visible = true
+            setVisibleAndRaycast(node)
+            // node.visible = true
           }
         })
       })
@@ -50,7 +55,8 @@ const FreshApp = () => {
         node.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh ||
         node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup
       ) {
-        node.visible = false
+        setInvisibleNoRaycast(node)
+        // node.visible = false
       }
     })
   }
@@ -60,11 +66,11 @@ const FreshApp = () => {
 
   const showHouseRotateHandles = (houseId: string) => {
     pipe(
-      getHouseTransformGroup(rootRef, houseId),
+      getHouseTransformsGroupDown(rootRef, houseId),
       O.map((houseTransformGroup) => {
         houseTransformGroup.traverse((node) => {
           if (node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
-            node.visible = true
+            setVisibleAndRaycast(node)
           }
         })
       })
