@@ -295,6 +295,19 @@ liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   }
 )
 
+export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
+  pipe(
+    columnLayout,
+    A.head,
+    O.map(({ gridGroups }) =>
+      pipe(
+        gridGroups,
+        A.map(({ levelType }) => levelType)
+      )
+    ),
+    O.getOrElse((): string[] => [])
+  )
+
 export const createLayoutGroup = ({
   systemId,
   houseId,
@@ -509,66 +522,9 @@ export const createInitialHouse = ({
     })
   )
 
-// export const createHouseGroup = ({
-//   systemId,
-//   houseId,
-//   dnas,
-//   friendlyName,
-// }: {
-//   systemId: string
-//   houseId: string
-//   dnas: string[]
-//   friendlyName: string
-// }): T.Task<Group> =>
-//   pipe(
-//     houseLayouts,
-//     R.lookup(getHouseLayoutsKey({ systemId, dnas })),
-//     O.match(
-//       (): T.Task<ColumnLayout> => async () => {
-//         const layoutsWorker = getLayoutsWorker()
-//         if (!layoutsWorker) throw new Error(`no layouts worker`)
-//         return await layoutsWorker.getLayout({
-//           systemId,
-//           dnas,
-//         })
-//       },
-//       (houseLayout) => T.of(houseLayout)
-//     ),
-//     T.chain((houseLayout) =>
-//       houseLayoutToHouseGroup({ systemId, houseId, houseLayout })
-//     ),
-//     T.map((group) => {
-//       group.userData.friendlyName = friendlyName
-//       return group
-//     })
-//   )
-
-export const removeColumnFromHouse = (
-  houseGroup: Object3D,
-  columnGroup: Object3D
-) =>
-  pipe(
-    houseGroup.children,
-    A.head,
-    O.map((zCenterHouseGroup) => void zCenterHouseGroup.remove(columnGroup))
-  )
-
 export const columnSorter = A.sort(
   pipe(
     Num.Ord,
     Ord.contramap((x: Object3D) => x.userData.columnIndex)
   )
 )
-
-export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
-  pipe(
-    columnLayout,
-    A.head,
-    O.map(({ gridGroups }) =>
-      pipe(
-        gridGroups,
-        A.map(({ levelType }) => levelType)
-      )
-    ),
-    O.getOrElse((): string[] => [])
-  )

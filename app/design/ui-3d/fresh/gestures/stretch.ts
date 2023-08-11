@@ -7,7 +7,8 @@ import { VanillaColumn } from "../../../../db/layouts"
 import { A, Num, O, Ord, T } from "../../../../utils/functions"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import pointer from "../../../state/pointer"
-import { createColumnGroup } from "../helpers/layouts"
+import { dispatchOutline } from "../events/outlines"
+import { columnSorter, createColumnGroup } from "../helpers/layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
@@ -19,6 +20,7 @@ import {
   decrementColumnCount,
   incrementColumnCount,
   StretchHandleMeshUserData,
+  UserDataTypeEnum,
 } from "../userData"
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
 
@@ -50,8 +52,25 @@ type StretchZUpData = {
 type StretchZDownData = {
   direction: -1
   startColumnGroup: Object3D
-  secondColumnGroup: Object3D
+  restColumnGroups: Object3D[]
 } & StretchZDataShared
+
+const recomputeLayoutGroup = (layoutGroup: Object3D) => {
+  const oldLength = layoutGroup.userData.length
+
+  const length = layoutGroup.children
+    .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
+    .reduce((acc, v) => acc + v.userData.length, 0)
+
+  layoutGroup.position.setZ(-length / 2)
+  layoutGroup.userData.length = length
+  layoutGroup.parent?.position.add(
+    new Vector3(0, 0, (length - oldLength) / 2).applyAxisAngle(
+      new Vector3(0, 1, 0),
+      layoutGroup.parent.rotation.y
+    )
+  )
+}
 
 const useOnDragStretch = () => {
   const stretchDataRef = useRef<StretchData | null>(null)
@@ -63,7 +82,74 @@ const useOnDragStretch = () => {
 
     switch (stretchData.direction) {
       case -1: {
-        return
+        // const {
+        //   handleGroup,
+        //   handleGroupPos0,
+        //   point0,
+        //   houseTransformsGroup,
+        //   layoutGroup,
+        //   lastDistance,
+        //   columnsAdded,
+        //   vanillaColumn,
+        //   vanillaColumnGroup,
+        //   startColumnGroup,
+        //   restColumnGroups,
+        // } = stretchData as StretchZDownData
+        // const [x1, z1] = pointer.xz
+        // const distanceVector = new Vector3(x1, 0, z1).sub(point0)
+        // distanceVector.applyAxisAngle(
+        //   new Vector3(0, 1, 0),
+        //   -houseTransformsGroup.rotation.y
+        // )
+        // const distance = distanceVector.z
+        // handleGroup.position.set(0, 0, handleGroupPos0.z + distance)
+        // switch (true) {
+        //   // addy
+        //   case distance < lastDistance: {
+        //     console.log(`addy`)
+        //     if (distance < vanillaColumn.length * -columnsAdded) {
+        //       console.log(`addy go`)
+        //       for (let columnGroup of restColumnGroups) {
+        //         columnGroup.position.add(
+        //           new Vector3(0, 0, vanillaColumn.length)
+        //         )
+        //         columnGroup.userData.columnIndex++
+        //       }
+        //       const [secondColumnGroup] = restColumnGroups
+        //       const newColumnGroup = vanillaColumnGroup.clone()
+        //       newColumnGroup.position.setZ(
+        //         secondColumnGroup.position.z -
+        //           secondColumnGroup.userData.length / 2 -
+        //           vanillaColumn.length / 2
+        //       )
+        //       layoutGroup.add(newColumnGroup)
+        //       // newColumnGroup.userData.columnIndex = 1
+        //       // endColumnGroup.userData.columnIndex++
+        //       // incrementColumnCount(layoutGroup)
+        //       stretchData.columnsAdded++
+        //       // stretchData.vanillaColumnsAdded.push(newColumnGroup)
+        //     }
+        //     break
+        //   }
+        //   // subby
+        //   case distance > lastDistance: {
+        //     // if (distance < vanillaColumn.length * (columnsAdded - 1)) {
+        //     //   pipe(
+        //     //     stretchData.vanillaColumnsAdded,
+        //     //     A.last,
+        //     //     O.map((x) => {
+        //     //       x.removeFromParent()
+        //     //       stretchData.columnsAdded--
+        //     //       decrementColumnCount(layoutGroup)
+        //     //       // endColumnGroup.userData.columnIndex--
+        //     //       stretchData.vanillaColumnsAdded.pop()
+        //     //     })
+        //     //   )
+        //     // }
+        //     break
+        //   }
+        // }
+        // stretchData.lastDistance = distance
       }
       case 1: {
         const {
@@ -91,7 +177,6 @@ const useOnDragStretch = () => {
         handleGroup.position.set(0, 0, handleGroupPos0.z + distance)
 
         switch (true) {
-          // this part works
           case distance > lastDistance: {
             if (distance > vanillaColumn.length * columnsAdded) {
               const newColumnGroup = vanillaColumnGroup.clone()
@@ -114,10 +199,10 @@ const useOnDragStretch = () => {
 
               stretchData.columnsAdded++
               stretchData.vanillaColumnsAdded.push(newColumnGroup)
+              recomputeLayoutGroup(layoutGroup)
             }
             break
           }
-          // this part doesn't work
           case distance < lastDistance: {
             if (distance < vanillaColumn.length * (columnsAdded - 1)) {
               pipe(
@@ -129,6 +214,7 @@ const useOnDragStretch = () => {
                   decrementColumnCount(layoutGroup)
                   endColumnGroup.userData.columnIndex--
                   stretchData.vanillaColumnsAdded.pop()
+                  recomputeLayoutGroup(layoutGroup)
                 })
               )
             }
@@ -156,6 +242,11 @@ const useOnDragStretch = () => {
         setCameraControlsEnabled(false)
         dispatchPointerDown({ point, object })
 
+        // dispatchOutline({
+        //   hoveredObjects: [],
+        //   selectedObjects: [],
+        // })
+
         const { direction, axis } = object.userData as StretchHandleMeshUserData
 
         const handleGroup = handleColumnGroupParentQuery(object)
@@ -176,12 +267,7 @@ const useOnDragStretch = () => {
                     layoutGroup,
                     getLayoutGroupColumnGroups,
                     A.filter((x) => x.userData.columnIndex >= columnCount - 2),
-                    A.sort(
-                      pipe(
-                        Num.Ord,
-                        Ord.contramap((x: Object3D) => x.userData.columnIndex)
-                      )
-                    )
+                    columnSorter
                   )
 
                   const zUpTask = pipe(
@@ -195,7 +281,7 @@ const useOnDragStretch = () => {
                           columnIndex: -1,
                         }),
                         T.map((vanillaColumnGroup) => {
-                          const foo: StretchZUpData = {
+                          const data: StretchZUpData = {
                             systemId,
                             houseId,
                             handleObject: object,
@@ -214,7 +300,7 @@ const useOnDragStretch = () => {
                             vanillaColumnGroup,
                             vanillaColumnsAdded: [],
                           }
-                          stretchDataRef.current = foo
+                          stretchDataRef.current = data
                         })
                       )
                     )
@@ -225,16 +311,10 @@ const useOnDragStretch = () => {
                   break
                 }
                 case -1:
-                  const [startColumnGroup, secondColumnGroup] = pipe(
+                  const [startColumnGroup, ...restColumnGroups] = pipe(
                     layoutGroup,
                     getLayoutGroupColumnGroups,
-                    A.filter((x) => x.userData.columnIndex <= 1),
-                    A.sort(
-                      pipe(
-                        Num.Ord,
-                        Ord.contramap((x: Object3D) => x.userData.columnIndex)
-                      )
-                    )
+                    columnSorter
                   )
 
                   const zDownTask = pipe(
@@ -248,7 +328,7 @@ const useOnDragStretch = () => {
                           columnIndex: -1,
                         }),
                         T.map((vanillaColumnGroup) => {
-                          stretchDataRef.current = {
+                          const data: StretchZDownData = {
                             systemId,
                             houseId,
                             handleObject: object,
@@ -262,11 +342,12 @@ const useOnDragStretch = () => {
                             columnsAdded: 0,
                             vanillaColumn,
                             layoutGroup,
-                            startColumnGroup,
-                            secondColumnGroup,
                             vanillaColumnGroup,
+                            startColumnGroup,
+                            restColumnGroups,
                             vanillaColumnsAdded: [],
-                          } as StretchZDownData
+                          }
+                          stretchDataRef.current = data
                         })
                       )
                     )

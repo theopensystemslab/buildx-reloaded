@@ -79,7 +79,7 @@ export const insertVanillaColumn = (
             )
             layoutGroup.add(vanillaColumnGroup)
 
-            decrementColumnCount(layoutGroup)
+            incrementColumnCount(layoutGroup)
           }
         )
       }
