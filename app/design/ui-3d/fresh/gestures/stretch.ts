@@ -7,6 +7,7 @@ import { VanillaColumn } from "../../../../db/layouts"
 import { A, Num, O, Ord, T } from "../../../../utils/functions"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import pointer from "../../../state/pointer"
+import { updateHouseOBB } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import { columnSorter, createColumnGroup } from "../helpers/layouts"
 import {
@@ -70,6 +71,7 @@ const recomputeLayoutGroup = (layoutGroup: Object3D) => {
       layoutGroup.parent.rotation.y
     )
   )
+  updateHouseOBB(layoutGroup.parent!)
 }
 
 const useOnDragStretch = () => {
@@ -242,10 +244,10 @@ const useOnDragStretch = () => {
         setCameraControlsEnabled(false)
         dispatchPointerDown({ point, object })
 
-        // dispatchOutline({
-        //   hoveredObjects: [],
-        //   selectedObjects: [],
-        // })
+        dispatchOutline({
+          hoveredObjects: [],
+          selectedObjects: [],
+        })
 
         const { direction, axis } = object.userData as StretchHandleMeshUserData
 

@@ -93,10 +93,9 @@ const Effects = () => {
   useOutlineListener((incoming) => {
     if (incoming.hoveredObjects) {
       hoveredObjects.current = incoming.hoveredObjects
-    } else if (incoming.selectedObjects) {
+    }
+    if (incoming.selectedObjects) {
       selectedObjects.current = incoming.selectedObjects
-    } else {
-      return
     }
     setSelection()
   })
