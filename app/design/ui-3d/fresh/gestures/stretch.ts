@@ -1,10 +1,17 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { T } from "../../../../utils/functions"
+import { A, O, T } from "../../../../utils/functions"
+import { setInvisibleNoRaycast } from "../../../../utils/three"
+import { splitColumns } from "../../../../workers/layouts/worker"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup } from "../dimensions"
-import { columnSorter, createColumnGroup } from "../helpers/layouts"
+import {
+  columnSorter,
+  createColumnGroup,
+  splitColumnGroups,
+  vanillaColumns,
+} from "../helpers/layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
@@ -13,6 +20,9 @@ import {
   handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
 import {
+  ColumnGroup,
+  HouseLayoutGroup,
+  HouseTransformsGroup,
   incrementColumnCount,
   StretchHandleMesh,
   StretchHandleMeshUserData,
@@ -23,19 +33,27 @@ const useOnDragStretch = () => {
     direction: number
     point0: Vector3
     handleGroup: Object3D
-    houseTransformsGroup: Object3D
-    layoutGroup: Object3D
+    houseTransformsGroup: HouseTransformsGroup
+    layoutGroup: HouseLayoutGroup
     handleGroupZ0: number
     columnGroups: Object3D[]
+    startColumnGroup: Object3D
+    midColumnGroups: Object3D[]
+    endColumnGroup: Object3D
     templateVanillaColumnGroup: Object3D
     vanillaLength: number
   } | null>(null)
 
+  type Fence = {
+    z: number
+    columnGroup: Object3D
+  }
+
   const stretchZProgressDataRef = useRef<{
-    vanillaColumnGroups: Object3D[]
+    vanillaFences: Fence[]
     lastDistance: number
   }>({
-    vanillaColumnGroups: [],
+    vanillaFences: [],
     lastDistance: 0,
   })
 
@@ -50,6 +68,7 @@ const useOnDragStretch = () => {
       const handleGroup = handleColumnGroupParentQuery(handleObject)
       const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
 
+      const { direction } = handleObject.userData
       const { systemId, houseId, vanillaColumn } =
         getActiveHouseUserData(houseTransformsGroup)
 
@@ -71,8 +90,11 @@ const useOnDragStretch = () => {
               columnIndex: -1,
             }),
             T.map((templateVanillaColumnGroup) => {
+              const { startColumnGroup, midColumnGroups, endColumnGroup } =
+                splitColumnGroups(columnGroups)
+
               stretchZInitialDataRef.current = {
-                direction: handleObject.userData.direction,
+                direction,
                 handleGroup,
                 layoutGroup,
                 houseTransformsGroup,
@@ -81,6 +103,9 @@ const useOnDragStretch = () => {
                 templateVanillaColumnGroup,
                 vanillaLength: templateVanillaColumnGroup.userData.length,
                 columnGroups,
+                startColumnGroup,
+                midColumnGroups,
+                endColumnGroup,
               }
             })
           )
@@ -93,6 +118,7 @@ const useOnDragStretch = () => {
       if (!stretchZInitialDataRef.current) return
 
       const {
+        direction,
         point0,
         houseTransformsGroup,
         handleGroup,
@@ -103,8 +129,7 @@ const useOnDragStretch = () => {
         layoutGroup,
       } = stretchZInitialDataRef.current
 
-      const { lastDistance, vanillaColumnGroups } =
-        stretchZProgressDataRef.current
+      const { lastDistance, vanillaFences } = stretchZProgressDataRef.current
 
       const [x1, z1] = pointer.xz
       const distanceVector = new Vector3(x1, 0, z1).sub(point0)
@@ -112,22 +137,27 @@ const useOnDragStretch = () => {
         new Vector3(0, 1, 0),
         -houseTransformsGroup.rotation.y
       )
-      const distance = distanceVector.z
-      handleGroup.position.set(0, 0, handleGroupZ0 + distance)
+      const distance = distanceVector.z * direction
+      handleGroup.position.set(0, 0, handleGroupZ0 + distance * direction)
 
-      // direction dependent
-      switch (true) {
-        // addy
-        case distance > lastDistance: {
-          if (distance > vanillaLength * vanillaColumnGroups.length) {
-            const newColumnGroup = templateVanillaColumnGroup.clone()
+      // additive
+      if (distance > lastDistance) {
+        // prob check if we need to add some hidden ones
+        if (undefined as any) {
+        }
+
+        // gate check
+        if (distance > vanillaLength * vanillaFences.length) {
+          const newColumnGroup = templateVanillaColumnGroup.clone()
+
+          if (direction === 1) {
             const penultimateColumnGroup = columnGroups[columnGroups.length - 2]
             const endColumnGroup = columnGroups[columnGroups.length - 1]
 
             newColumnGroup.position.setZ(
               penultimateColumnGroup.position.z +
                 penultimateColumnGroup.userData.length / 2 +
-                (vanillaColumnGroups.length + 0.5) * vanillaLength
+                (vanillaFences.length + 0.5) * vanillaLength
             )
 
             layoutGroup.add(newColumnGroup)
@@ -139,17 +169,49 @@ const useOnDragStretch = () => {
 
             incrementColumnCount(layoutGroup)
 
-            stretchZProgressDataRef.current.vanillaColumnGroups.push(
-              newColumnGroup
-            )
+            stretchZProgressDataRef.current.vanillaFences.push({
+              columnGroup: newColumnGroup,
+              z: distance,
+            })
 
             recomputeLayoutGroup(layoutGroup)
           }
-        }
-        // subby
-        case distance < lastDistance: {
-          if (distance < vanillaLength * (vanillaColumnGroups.length - 1)) {
+
+          if (direction === -1) {
+            // newColumnGroup.position.setZ(
+            //   secondColumnGroup.position.z +
+            //     penultimateColumnGroup.userData.length / 2 +
+            //     (vanillaColumnGroups.length + 0.5) * vanillaLength
+            // )
+            // layoutGroup.add(newColumnGroup)
           }
+        }
+      }
+
+      // subtractive
+      if (distance < lastDistance) {
+        // gate check
+        if (distance > 0 && vanillaFences.length > 0) {
+          const foo = pipe(
+            vanillaFences,
+            A.last,
+            O.map(({ z, columnGroup }) => {
+              if (distance < z) {
+                columnGroup.removeFromParent()
+                vanillaFences.pop()
+                // vanillaFences.pop()
+              }
+            })
+          )
+          // if (distance < stretchZProgressDataRef.current.vanillaFences) {
+          //   // we want to be tracking vanilla columns first
+          //   // otherwise
+          // }
+        }
+
+        if (distance < 0) {
+          // column group fence stuff here
+          // we would want to track an index and vis vs. no vis
         }
       }
 
@@ -159,7 +221,7 @@ const useOnDragStretch = () => {
       stretchZInitialDataRef.current = null
       stretchZProgressDataRef.current = {
         lastDistance: 0,
-        vanillaColumnGroups: [],
+        vanillaFences: [],
       }
     },
   }

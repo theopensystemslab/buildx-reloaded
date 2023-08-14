@@ -2,22 +2,24 @@ import { ThreeEvent } from "@react-three/fiber"
 import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
-import { Object3D, Vector3 } from "three"
-import { dispatchPointerDown, dispatchPointerUp } from "./events"
+import { Vector3 } from "three"
 import { A, O } from "../../../../utils/functions"
 import { atan2 } from "../../../../utils/math"
-import { setCameraControlsEnabled } from "../../../state/camera"
 import pointer from "../../../state/pointer"
 import { updateIndexedHouseTransforms } from "../dimensions"
 import {
   getActiveHouseUserData,
-  traverseUpUntil,
+  findFirstGuardUp,
 } from "../helpers/sceneQueries"
-import { UserDataTypeEnum } from "../userData"
+import {
+  HouseTransformsGroup,
+  isHouseTransformsGroup,
+  UserDataTypeEnum,
+} from "../userData"
 
 const useOnDragRotate = () => {
   const rotateData = useRef<{
-    houseTransformsGroup: Object3D
+    houseTransformsGroup: HouseTransformsGroup
     center: Vector3
     rotation0: number
     angle0: number
@@ -42,11 +44,10 @@ const useOnDragRotate = () => {
             if (object.userData.type !== UserDataTypeEnum.Enum.RotateHandleMesh)
               return
 
-            traverseUpUntil(
+            pipe(
               object,
-              (o) =>
-                o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
-              (houseTransformsGroup) => {
+              findFirstGuardUp(isHouseTransformsGroup),
+              O.map((houseTransformsGroup) => {
                 const {
                   obb: {
                     center,
@@ -65,8 +66,9 @@ const useOnDragRotate = () => {
                   angle0,
                   angle: angle0,
                 }
-              }
+              })
             )
+
             return
           })
         )

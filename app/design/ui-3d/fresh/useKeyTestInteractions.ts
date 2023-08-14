@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { liveQuery } from "dexie"
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { useKey } from "react-use"
 import { Group, Object3D, Vector3 } from "three"
@@ -8,11 +8,11 @@ import layoutsDB from "../../../db/layouts"
 import { A, O, R, T } from "../../../utils/functions"
 import { PI } from "../../../utils/math"
 import { setInvisibleNoRaycast, yAxis } from "../../../utils/three"
-import { updateEverything } from "./dimensions"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { createLayoutGroup } from "./helpers/layouts"
 import { debugNextLayout } from "./helpers/sceneChanges"
 import {
+  findAllGuardDown,
   getActiveHouseUserData,
   getLayoutGroupBySectionType,
 } from "./helpers/sceneQueries"
@@ -20,17 +20,20 @@ import {
   insertVanillaColumn,
   subtractPenultimateColumn,
 } from "./helpers/stretchZ"
-import { UserDataTypeEnum } from "./userData"
+import {
+  HouseTransformsGroup,
+  isHouseTransformsGroup,
+  UserDataTypeEnum,
+} from "./userData"
 
 const useKeyTestInteractions = (rootRef: RefObject<Group>) => {
-  const getHouseGroups = () => {
-    return (
-      rootRef.current?.children.filter(
-        (x: Object3D): x is Group =>
-          x.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup
-      ) ?? []
+  const getHouseGroups = () =>
+    pipe(
+      rootRef.current,
+      O.fromNullable,
+      O.map(flow(findAllGuardDown(isHouseTransformsGroup))),
+      O.getOrElse((): HouseTransformsGroup[] => [])
     )
-  }
 
   useKey("z", async () => {
     for (let houseGroup of getHouseGroups()) {

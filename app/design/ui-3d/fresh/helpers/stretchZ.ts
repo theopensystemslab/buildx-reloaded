@@ -1,7 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Vector3 } from "three"
 import { A, Num, Ord, T } from "../../../../utils/functions"
-import { decrementColumnCount, incrementColumnCount } from "../userData"
+import {
+  decrementColumnCount,
+  HouseTransformsGroup,
+  incrementColumnCount,
+} from "../userData"
 import { columnSorter, createColumnGroup, getVanillaColumn } from "./layouts"
 import {
   getActiveHouseUserData,
@@ -10,7 +14,7 @@ import {
 } from "./sceneQueries"
 
 export const insertVanillaColumn = (
-  houseTransformsGroup: Group,
+  houseTransformsGroup: HouseTransformsGroup,
   direction: 1 | -1
 ) => {
   const { systemId, houseId, levelTypes, columnCount } =
@@ -88,12 +92,12 @@ export const insertVanillaColumn = (
 }
 
 export const subtractPenultimateColumn = (
-  houseGroup: Group,
+  houseTransformsGroup: HouseTransformsGroup,
   direction: 1 | -1
 ) => {
-  const layoutGroup = getActiveLayoutGroup(houseGroup)
+  const layoutGroup = getActiveLayoutGroup(houseTransformsGroup)
   const columnGroups = getLayoutGroupColumnGroups(layoutGroup)
-  const { columnCount } = getActiveHouseUserData(houseGroup)
+  const { columnCount } = getActiveHouseUserData(houseTransformsGroup)
 
   if (columnCount <= 3) return
 

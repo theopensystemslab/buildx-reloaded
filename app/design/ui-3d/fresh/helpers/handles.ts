@@ -1,5 +1,7 @@
+import { pipe } from "fp-ts/lib/function"
 import { CircleGeometry, Group, Mesh, Object3D, PlaneGeometry } from "three"
 import { RoundedBoxGeometry } from "three-stdlib"
+import { A } from "../../../../utils/functions"
 import { PI } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
@@ -7,28 +9,26 @@ import {
 } from "../../../../utils/three"
 import handleMaterial from "../handleMaterial"
 import {
+  isStretchHandleMesh,
   RotateHandleMeshUserData,
   RotateHandlesGroupUserData,
   StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
-import { traverseDownUntil } from "./sceneQueries"
+import { takeWhileGuardDown } from "./sceneQueries"
 
-export const setStretchHandleVisibility = (
+export const setStretchHandlesVisibility = (
   houseTransformGroup: Object3D,
   value: boolean
 ) => {
-  let handleCount = 2
-  traverseDownUntil(houseTransformGroup, (object) => {
-    if (handleCount === 0) return true
-    if (object.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
+  pipe(
+    houseTransformGroup,
+    takeWhileGuardDown(isStretchHandleMesh, 2),
+    A.map((object) => {
       if (value) setVisibleAndRaycast(object)
       else setInvisibleNoRaycast(object)
-      console.log(object)
-      handleCount--
-    }
-    return false
-  })
+    })
+  )
 }
 
 export const createStretchHandle = ({

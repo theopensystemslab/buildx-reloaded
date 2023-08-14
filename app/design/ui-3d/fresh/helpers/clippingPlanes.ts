@@ -16,7 +16,7 @@ import { BIG_CLIP_NUMBER } from "./layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
-  getHouseTransformsGroupDown,
+  findHouseTransformsGroupDown,
   getLayoutGroupColumnGroups,
   mapHouseTransformGroup,
 } from "./sceneQueries"
@@ -50,7 +50,7 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
     levelIndex: number
   ): O.Option<number> => {
     return pipe(
-      getHouseTransformsGroupDown(rootRef, houseId),
+      findHouseTransformsGroupDown(rootRef, houseId),
       O.chain((houseTransformGroup) =>
         pipe(
           houseTransformGroup,

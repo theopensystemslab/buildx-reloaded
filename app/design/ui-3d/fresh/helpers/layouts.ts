@@ -24,6 +24,7 @@ import { A, Num, O, Ord, R, S, T } from "../../../../utils/functions"
 import { getLayoutsWorker } from "../../../../workers"
 import { getMaterial } from "../systems"
 import {
+  ColumnGroup,
   ColumnGroupUserData,
   ElementMeshUserData,
   GridGroupUserData,
@@ -548,3 +549,17 @@ export const columnSorter = A.sort(
     Ord.contramap((x: Object3D) => x.userData.columnIndex)
   )
 )
+
+export const splitColumnGroups = (columnGroups: ColumnGroup[]) =>
+  pipe(
+    columnGroups,
+    A.partition(
+      ({ userData: { columnIndex } }) =>
+        columnIndex === 0 || columnIndex === columnGroups.length - 1
+    ),
+    ({ left: midColumnGroups, right: [startColumnGroup, endColumnGroup] }) => ({
+      startColumnGroup,
+      endColumnGroup,
+      midColumnGroups,
+    })
+  )

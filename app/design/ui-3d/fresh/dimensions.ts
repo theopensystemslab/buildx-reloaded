@@ -19,6 +19,8 @@ import {
   getActiveLayoutGroup,
 } from "./helpers/sceneQueries"
 import {
+  HouseLayoutGroup,
+  HouseTransformsGroup,
   HouseTransformsGroupUserData,
   ModuleGroupUserData,
   UserDataTypeEnum,
@@ -42,7 +44,7 @@ const renderOBB = (obb: OBB, scene: Object3D) => {
   lastMesh = mesh
 }
 
-export const updateHouseOBB = (houseTransformsGroup: Object3D) => {
+export const updateHouseOBB = (houseTransformsGroup: HouseTransformsGroup) => {
   const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
   const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
 
@@ -128,7 +130,7 @@ const updateDnas = (houseGroup: Group) => {
 }
 
 export const updateIndexedHouseTransforms = (
-  houseTransformsGroup: Object3D
+  houseTransformsGroup: HouseTransformsGroup
 ) => {
   const { houseId } = getActiveHouseUserData(houseTransformsGroup)
 
@@ -143,7 +145,9 @@ export const updateIndexedHouseTransforms = (
   updateHouseOBB(houseTransformsGroup)
 }
 
-export const updateEverything = (houseTransformsGroup: Group) => {
+export const updateEverything = (
+  houseTransformsGroup: HouseTransformsGroup
+) => {
   updateHouseLength(houseTransformsGroup)
   updateHouseOBB(houseTransformsGroup)
   // updateClippingPlanes(houseTransformsGroup)
@@ -163,7 +167,7 @@ export const updateEverything = (houseTransformsGroup: Group) => {
   invalidate()
 }
 
-export const recomputeLayoutGroup = (layoutGroup: Object3D) => {
+export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
   const oldLength = layoutGroup.userData.length
 
   const length = layoutGroup.children
@@ -178,5 +182,6 @@ export const recomputeLayoutGroup = (layoutGroup: Object3D) => {
       layoutGroup.parent.rotation.y
     )
   )
-  updateHouseOBB(layoutGroup.parent!)
+
+  updateHouseOBB(layoutGroup.parent as HouseTransformsGroup)
 }

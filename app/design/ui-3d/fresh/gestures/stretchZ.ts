@@ -19,6 +19,7 @@ import {
 } from "../helpers/sceneQueries"
 import {
   decrementColumnCount,
+  HouseLayoutGroup,
   incrementColumnCount,
   StretchHandleMeshUserData,
   UserDataTypeEnum,
@@ -35,7 +36,7 @@ type StretchZDataShared = {
   handleObject: Object3D
   houseTransformsGroup: Object3D
   handleGroup: Object3D
-  layoutGroup: Object3D
+  layoutGroup: HouseLayoutGroup
   point0: Vector3
   handleGroupPos0: Vector3
   lastDistance: number

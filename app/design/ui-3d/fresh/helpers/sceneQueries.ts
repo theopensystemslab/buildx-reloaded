@@ -3,65 +3,95 @@ import { RefObject } from "react"
 import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, O, someOrError } from "../../../../utils/functions"
 import {
+  ColumnGroup,
+  HouseLayoutGroup,
   HouseLayoutGroupUserData,
+  HouseTransformsGroup,
   HouseTransformsGroupUserData,
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
 
-export const traverseUpUntil = (
-  object: Object3D,
-  condition: (o: Object3D) => boolean,
-  callback: (o: Object3D) => void
-) => {
-  if (condition(object)) {
-    callback(object)
-    return
-  }
-
-  const parent = object.parent
-
-  if (parent !== null) {
-    traverseUpUntil(parent, condition, callback)
-  }
-}
-export const traverseDownUntil = (
-  object: Object3D,
-  callback: (o: Object3D) => boolean // stops if returns true
-): boolean => {
-  if (callback(object)) {
-    return true
-  }
-
-  const children = object.children
-
-  for (let i = 0, l = children.length; i < l; i++) {
-    if (traverseDownUntil(children[i], callback)) {
-      return true
+export const findFirstGuardUp =
+  <T extends Object3D>(guard: (o: Object3D) => o is T) =>
+  (object: Object3D): O.Option<T> => {
+    if (guard(object)) {
+      return O.some(object)
     }
+
+    const parent = object.parent
+
+    if (parent !== null) {
+      return findFirstGuardUp(guard)(parent)
+    }
+
+    return O.none
   }
 
-  return false
-}
+export const findFirstGuardDown =
+  <T extends Object3D>(guard: (o: Object3D) => o is T) =>
+  (object: Object3D): O.Option<T> => {
+    if (guard(object)) {
+      return O.some(object)
+    }
 
-// export const traverseDownUntil = (
-//   object: Object3D,
-//   condition: (o: Object3D) => boolean,
-//   callback: (o: Object3D) => void
-// ) => {
-//   if (condition(object)) {
-//     callback(object)
-//     return
-//   }
+    const children = object.children
 
-//   const children = object.children
+    for (let i = 0, l = children.length; i < l; i++) {
+      const child = children[i]
+      if (guard(child)) {
+        return O.some(child)
+      }
+    }
 
-//   for (let i = 0, l = children.length; i < l; i++) {
-//     traverseDownUntil(children[i], condition, callback)
-//   }
-// }
+    return O.none
+  }
 
-export const getHouseTransformsGroupDown = (
+// findGuardAllDown will keep searching until no more matches are found.
+export const findAllGuardDown =
+  <T extends Object3D>(guard: (o: Object3D) => o is T) =>
+  (object: Object3D): T[] => {
+    let results: T[] = []
+
+    if (guard(object)) {
+      results.push(object)
+    }
+
+    const children = object.children
+
+    for (let i = 0, l = children.length; i < l; i++) {
+      results = results.concat(findAllGuardDown(guard)(children[i]))
+    }
+
+    return results
+  }
+
+// findGuardNDown will keep searching until N matches are found.
+export const takeWhileGuardDown =
+  <T extends Object3D>(guard: (o: Object3D) => o is T, n: number) =>
+  (object: Object3D): T[] => {
+    let results: T[] = []
+
+    if (results.length >= n) {
+      return results
+    }
+
+    if (guard(object)) {
+      results.push(object)
+    }
+
+    const children = object.children
+
+    for (let i = 0, l = children.length; i < l && results.length < n; i++) {
+      results = results.concat(
+        takeWhileGuardDown(guard, n - results.length)(children[i])
+      )
+    }
+
+    return results
+  }
+
+export const findHouseTransformsGroupDown = (
   rootRef: RefObject<Object3D>,
   houseId: string
 ) =>
@@ -69,13 +99,13 @@ export const getHouseTransformsGroupDown = (
     rootRef.current?.children,
     O.fromNullable,
     O.chain(A.findFirst((x) => x.userData.houseId === houseId))
-  ) as O.Option<Object3D>
+  ) as O.Option<HouseTransformsGroup>
 
 export const mapHouseTransformGroup = (
   rootRef: RefObject<Object3D>,
   houseId: string,
   f: (houseTransformGroup: Object3D) => void
-) => pipe(getHouseTransformsGroupDown(rootRef, houseId), O.map(f))
+) => pipe(findHouseTransformsGroupDown(rootRef, houseId), O.map(f))
 
 export const mapAllHouseTransformGroups = (
   rootRef: RefObject<Object3D>,
@@ -88,12 +118,12 @@ export const mapAllHouseTransformGroups = (
     () => void null
   )
 
-export const getHouseTransformsGroupUp = (object: Object3D) => {
+export const getHouseTransformsGroupUp = (
+  object: Object3D
+): HouseTransformsGroup => {
   let x = object
   while (x.parent) {
-    if (x.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup) {
-      return x as Group
-    }
+    if (isHouseTransformsGroup(x)) return x
     x = x.parent
   }
   throw new Error(
@@ -144,18 +174,16 @@ export const getLayoutGroups = (houseTransformsGroup: Group): Group[] =>
   ) as Group[]
 
 export const getActiveLayoutGroup = (
-  houseTransformsGroup: Object3D
-): Object3D =>
+  houseTransformsGroup: HouseTransformsGroup
+): HouseLayoutGroup =>
   pipe(
     houseTransformsGroup.children,
     A.findFirst(
-      (x) =>
-        x.uuid ===
-        (houseTransformsGroup.userData as HouseTransformsGroupUserData)
-          .activeChildUuid
+      (x): x is HouseLayoutGroup =>
+        x.uuid === houseTransformsGroup.userData.activeChildUuid
     ),
     someOrError(`getActiveLayoutGroup failure`)
-  ) as Group
+  )
 
 export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
   pipe(
@@ -164,10 +192,13 @@ export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
     A.partition((x) => x.uuid === houseTransformsGroup.userData.activeChildUuid)
   )
 
-export const getLayoutGroupColumnGroups = (layoutGroup: Object3D): Object3D[] =>
+export const getLayoutGroupColumnGroups = (
+  layoutGroup: HouseLayoutGroup
+): ColumnGroup[] =>
   layoutGroup.children.filter(
-    (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
-  ) as Group[]
+    (x): x is ColumnGroup =>
+      x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
+  )
 
 export const getLayoutGroupBySectionType = (
   houseTransformsGroup: Group,

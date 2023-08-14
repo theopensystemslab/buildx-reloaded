@@ -21,7 +21,7 @@ import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
 import {
   getActiveHouseUserData,
-  getHouseTransformsGroupDown,
+  findHouseTransformsGroupDown,
   mapAllHouseTransformGroups,
 } from "./helpers/sceneQueries"
 import { UserDataTypeEnum } from "./userData"
@@ -37,7 +37,7 @@ const FreshApp = () => {
 
   const showHouseStretchHandles = (houseId: string) => {
     pipe(
-      getHouseTransformsGroupDown(rootRef, houseId),
+      findHouseTransformsGroupDown(rootRef, houseId),
       O.map((houseTransformGroup) => {
         houseTransformGroup.traverse((node) => {
           if (node.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
@@ -66,7 +66,7 @@ const FreshApp = () => {
 
   const showHouseRotateHandles = (houseId: string) => {
     pipe(
-      getHouseTransformsGroupDown(rootRef, houseId),
+      findHouseTransformsGroupDown(rootRef, houseId),
       O.map((houseTransformGroup) => {
         houseTransformGroup.traverse((node) => {
           if (node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
