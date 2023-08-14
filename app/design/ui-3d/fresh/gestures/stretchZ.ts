@@ -24,6 +24,7 @@ import {
   UserDataTypeEnum,
 } from "../userData"
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
+import useOnDragStretchX from "./stretchX"
 
 type StretchData = StretchZUpData | StretchZDownData
 
@@ -77,12 +78,91 @@ const recomputeLayoutGroup = (layoutGroup: Object3D) => {
 const useOnDragStretch = () => {
   const stretchDataRef = useRef<StretchData | null>(null)
 
-  const onStretchXProgress: Handler<"drag", ThreeEvent<PointerEvent>> = () => {}
+  const onStretchXProgress = useOnDragStretchX()
 
   const onStretchZProgress: Handler<"drag", ThreeEvent<PointerEvent>> = () => {
     const stretchData = stretchDataRef.current!
 
     switch (stretchData.direction) {
+      case 1: {
+        const {
+          handleGroup,
+          handleGroupPos0,
+          point0,
+          houseTransformsGroup,
+          layoutGroup,
+          lastDistance,
+          columnsAdded,
+          vanillaColumn,
+          vanillaColumnGroup,
+          penultimateColumnGroup,
+          endColumnGroup,
+        } = stretchData as StretchZUpData
+
+        const [x1, z1] = pointer.xz
+        const distanceVector = new Vector3(x1, 0, z1).sub(point0)
+        distanceVector.applyAxisAngle(
+          new Vector3(0, 1, 0),
+          -houseTransformsGroup.rotation.y
+        )
+        const distance = distanceVector.z
+
+        handleGroup.position.set(0, 0, handleGroupPos0.z + distance)
+
+        switch (true) {
+          // addy
+          case distance > lastDistance: {
+            if (distance > vanillaColumn.length * columnsAdded) {
+              const newColumnGroup = vanillaColumnGroup.clone()
+
+              newColumnGroup.position.setZ(
+                penultimateColumnGroup.position.z +
+                  penultimateColumnGroup.userData.length / 2 +
+                  columnsAdded * vanillaColumn.length +
+                  vanillaColumn.length / 2
+              )
+
+              layoutGroup.add(newColumnGroup)
+
+              newColumnGroup.userData.columnIndex =
+                penultimateColumnGroup.userData.columnIndex + 1
+
+              endColumnGroup.userData.columnIndex++
+
+              incrementColumnCount(layoutGroup)
+
+              stretchData.columnsAdded++
+              stretchData.vanillaColumnsAdded.push(newColumnGroup)
+              recomputeLayoutGroup(layoutGroup)
+            }
+            break
+          }
+          // subby
+          case distance < lastDistance: {
+            if (distance < vanillaColumn.length * (columnsAdded - 1)) {
+              // only if vanilla columns added
+              // otherwise we need to remove actual stuff!
+              pipe(
+                stretchData.vanillaColumnsAdded,
+                A.last,
+                O.map((x) => {
+                  x.removeFromParent()
+                  stretchData.columnsAdded--
+                  decrementColumnCount(layoutGroup)
+                  endColumnGroup.userData.columnIndex--
+                  stretchData.vanillaColumnsAdded.pop()
+                  recomputeLayoutGroup(layoutGroup)
+                })
+              )
+            }
+            break
+          }
+        }
+
+        stretchData.lastDistance = distance
+
+        return
+      }
       case -1: {
         // const {
         //   handleGroup,
@@ -152,81 +232,6 @@ const useOnDragStretch = () => {
         //   }
         // }
         // stretchData.lastDistance = distance
-      }
-      case 1: {
-        const {
-          handleGroup,
-          handleGroupPos0,
-          point0,
-          houseTransformsGroup,
-          layoutGroup,
-          lastDistance,
-          columnsAdded,
-          vanillaColumn,
-          vanillaColumnGroup,
-          penultimateColumnGroup,
-          endColumnGroup,
-        } = stretchData as StretchZUpData
-
-        const [x1, z1] = pointer.xz
-        const distanceVector = new Vector3(x1, 0, z1).sub(point0)
-        distanceVector.applyAxisAngle(
-          new Vector3(0, 1, 0),
-          -houseTransformsGroup.rotation.y
-        )
-        const distance = distanceVector.z
-
-        handleGroup.position.set(0, 0, handleGroupPos0.z + distance)
-
-        switch (true) {
-          case distance > lastDistance: {
-            if (distance > vanillaColumn.length * columnsAdded) {
-              const newColumnGroup = vanillaColumnGroup.clone()
-
-              newColumnGroup.position.setZ(
-                penultimateColumnGroup.position.z +
-                  penultimateColumnGroup.userData.length / 2 +
-                  columnsAdded * vanillaColumn.length +
-                  vanillaColumn.length / 2
-              )
-
-              layoutGroup.add(newColumnGroup)
-
-              newColumnGroup.userData.columnIndex =
-                penultimateColumnGroup.userData.columnIndex + 1
-
-              endColumnGroup.userData.columnIndex++
-
-              incrementColumnCount(layoutGroup)
-
-              stretchData.columnsAdded++
-              stretchData.vanillaColumnsAdded.push(newColumnGroup)
-              recomputeLayoutGroup(layoutGroup)
-            }
-            break
-          }
-          case distance < lastDistance: {
-            if (distance < vanillaColumn.length * (columnsAdded - 1)) {
-              pipe(
-                stretchData.vanillaColumnsAdded,
-                A.last,
-                O.map((x) => {
-                  x.removeFromParent()
-                  stretchData.columnsAdded--
-                  decrementColumnCount(layoutGroup)
-                  endColumnGroup.userData.columnIndex--
-                  stretchData.vanillaColumnsAdded.pop()
-                  recomputeLayoutGroup(layoutGroup)
-                })
-              )
-            }
-            break
-          }
-        }
-
-        stretchData.lastDistance = distance
-
-        return
       }
     }
   }
@@ -368,6 +373,7 @@ const useOnDragStretch = () => {
         if (stretchDataRef.current === null)
           throw new Error("stretchData.current null unexpectedly")
         dispatchPointerUp()
+        // so we need to...
         stretchDataRef.current = null
         setCameraControlsEnabled(true)
         return

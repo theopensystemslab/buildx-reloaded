@@ -53,8 +53,8 @@ export const createStretchHandle = ({
         ? [0, OFFSET_Y, OFFSET_XZ]
         : [0, OFFSET_Y, -OFFSET_XZ]
       : direction === 1
-      ? [width / 2 + OFFSET_XZ, OFFSET_Y, 0]
-      : [-(width / 2 + OFFSET_XZ), OFFSET_Y, 0]
+      ? [width / 2 + OFFSET_XZ, OFFSET_Y, length / 2]
+      : [-(width / 2 + OFFSET_XZ), OFFSET_Y, length / 2]
 
   const rotation: [number, number, number] =
     axis === "x" ? [0, PI / 2, 0] : [0, 0, 0]

@@ -381,6 +381,26 @@ export const createLayoutGroup = ({
             })
           )
 
+          layoutGroup.add(
+            createStretchHandle({
+              axis: "x",
+              direction: 1,
+              houseId,
+              length,
+              width,
+            })
+          )
+
+          layoutGroup.add(
+            createStretchHandle({
+              axis: "x",
+              direction: -1,
+              houseId,
+              length,
+              width,
+            })
+          )
+
           pipe(
             columnGroups,
             A.findFirst(

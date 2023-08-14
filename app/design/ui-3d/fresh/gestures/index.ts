@@ -25,7 +25,7 @@ import {
 } from "../userData"
 import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
-import useOnDragStretch from "./stretch"
+import useOnDragStretch from "./stretchZ"
 
 const useGestures = () => {
   const onDragStretch = useOnDragStretch()
