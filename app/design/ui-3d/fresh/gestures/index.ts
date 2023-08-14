@@ -4,10 +4,12 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
+import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
 import scope, { ScopeItem } from "../../../state/scope"
 import siteCtx, {
   downMode,
+  getModeBools,
   SiteCtxMode,
   SiteCtxModeEnum,
 } from "../../../state/siteCtx"
@@ -21,20 +23,23 @@ import {
   elementMeshToScopeItem,
   GridGroupUserData,
   HouseTransformsGroupUserData,
+  isElementMesh,
+  isRotateHandleMesh,
+  isStretchHandleMesh,
+  StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
+import { dispatchPointerDown, dispatchPointerUp } from "./events"
 import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
-import useOnDragStretch from "./stretchZ"
+import useOnDragStretch from "./stretch"
 
 const useGestures = () => {
-  const onDragStretch = useOnDragStretch()
+  const { onDragStretchZ, onDragStretchX } = useOnDragStretch()
   const onDragMove = useOnDragMove()
   const onDragRotate = useOnDragRotate()
 
-  let stretching = false,
-    moving = false,
-    rotating = false
+  const firstDragEventRef = useRef<ThreeEvent<PointerEvent> | null>(null)
 
   return useGesture<{
     drag: ThreeEvent<PointerEvent>
@@ -47,48 +52,53 @@ const useGestures = () => {
       React.MouseEvent<EventTarget, MouseEvent>
   }>({
     onDrag: (state) => {
-      const stretchModes: SiteCtxMode[] = [
-        SiteCtxModeEnum.Enum.BUILDING,
-        SiteCtxModeEnum.Enum.LEVEL,
-      ]
-
-      const type = state.event.object.userData?.type
       const { first, last } = state
 
-      const stretch =
-        stretching ||
-        (stretchModes.includes(siteCtx.mode) &&
-          type === UserDataTypeEnum.Enum.StretchHandleMesh)
+      if (first) {
+        setCameraControlsEnabled(false)
+        firstDragEventRef.current = state.event
+        const { point, object } = firstDragEventRef.current
+        dispatchPointerDown({ point, object })
+      }
 
-      const move =
-        moving || (!stretch && type === UserDataTypeEnum.Enum.ElementMesh)
+      const { object, point } = firstDragEventRef.current!
 
-      const rotate =
-        rotating ||
-        (!stretch && type === UserDataTypeEnum.Enum.RotateHandleMesh)
+      const { siteMode, buildingOrLevelMode } = getModeBools()
 
-      switch (true) {
-        case stretch: {
-          if (first) stretching = true
-          onDragStretch(state)
-          if (last) stretching = false
-          break
+      // stretch
+      if (buildingOrLevelMode && isStretchHandleMesh(object)) {
+        const {
+          userData,
+          userData: { axis },
+        } = object
+
+        if (axis === "z" && isStretchHandleMesh(object)) {
+          if (first) onDragStretchZ.first({ handleObject: object, point })
+          if (!first && !last) onDragStretchZ.mid()
+          if (last) onDragStretchZ.last()
         }
-        case move: {
-          if (first) moving = true
+        if (axis === "x") {
+          // if (first) onDragStretchX.first(userData)
+          // if (!first && !last) onDragStretchX.mid(userData)
+          // if (last) onDragStretchX.last(userData)
+        }
+      }
+
+      // move/rotate
+      if (siteMode) {
+        // move
+        if (isElementMesh(object)) {
           onDragMove(state)
-          if (last) moving = false
-          break
-        }
-        case rotate: {
-          if (first) rotating = true
+          // rotate
+        } else if (isRotateHandleMesh(object)) {
           onDragRotate(state)
-          if (last) rotating = false
-          break
         }
-        default: {
-          break
-        }
+      }
+
+      if (last) {
+        firstDragEventRef.current = null
+        dispatchPointerUp()
+        setCameraControlsEnabled(true)
       }
 
       invalidate()

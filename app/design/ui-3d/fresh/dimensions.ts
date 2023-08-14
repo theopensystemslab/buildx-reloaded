@@ -162,3 +162,21 @@ export const updateEverything = (houseTransformsGroup: Group) => {
 
   invalidate()
 }
+
+export const recomputeLayoutGroup = (layoutGroup: Object3D) => {
+  const oldLength = layoutGroup.userData.length
+
+  const length = layoutGroup.children
+    .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
+    .reduce((acc, v) => acc + v.userData.length, 0)
+
+  layoutGroup.position.setZ(-length / 2)
+  layoutGroup.userData.length = length
+  layoutGroup.parent?.position.add(
+    new Vector3(0, 0, (length - oldLength) / 2).applyAxisAngle(
+      new Vector3(0, 1, 0),
+      layoutGroup.parent.rotation.y
+    )
+  )
+  updateHouseOBB(layoutGroup.parent!)
+}

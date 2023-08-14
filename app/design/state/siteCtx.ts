@@ -162,7 +162,9 @@ export const useSystemId = () => {
   return houses[houseId].systemId
 }
 
-export const getModeBools = (mode: SiteCtxMode) => {
+export const getModeBools = (_mode?: SiteCtxMode) => {
+  const mode = _mode ?? siteCtx.mode
+
   const siteMode = mode === SiteCtxModeEnum.Enum.SITE
 
   const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING

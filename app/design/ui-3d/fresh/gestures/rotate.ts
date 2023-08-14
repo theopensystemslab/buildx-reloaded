@@ -47,8 +47,6 @@ const useOnDragRotate = () => {
               (o) =>
                 o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
               (houseTransformsGroup) => {
-                dispatchPointerDown({ point, object })
-
                 const {
                   obb: {
                     center,
@@ -67,8 +65,6 @@ const useOnDragRotate = () => {
                   angle0,
                   angle: angle0,
                 }
-
-                setCameraControlsEnabled(false)
               }
             )
             return
@@ -77,9 +73,7 @@ const useOnDragRotate = () => {
         break
       }
       case last: {
-        dispatchPointerUp()
         updateIndexedHouseTransforms(rotateData.current!.houseTransformsGroup)
-        setCameraControlsEnabled(true)
         rotateData.current = null
         break
       }

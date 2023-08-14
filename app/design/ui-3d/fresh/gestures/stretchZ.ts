@@ -7,7 +7,7 @@ import { VanillaColumn } from "../../../../db/layouts"
 import { A, Num, O, Ord, T } from "../../../../utils/functions"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import pointer from "../../../state/pointer"
-import { updateHouseOBB } from "../dimensions"
+import { recomputeLayoutGroup, updateHouseOBB } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import { columnSorter, createColumnGroup } from "../helpers/layouts"
 import {
@@ -56,24 +56,6 @@ type StretchZDownData = {
   startColumnGroup: Object3D
   restColumnGroups: Object3D[]
 } & StretchZDataShared
-
-const recomputeLayoutGroup = (layoutGroup: Object3D) => {
-  const oldLength = layoutGroup.userData.length
-
-  const length = layoutGroup.children
-    .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
-    .reduce((acc, v) => acc + v.userData.length, 0)
-
-  layoutGroup.position.setZ(-length / 2)
-  layoutGroup.userData.length = length
-  layoutGroup.parent?.position.add(
-    new Vector3(0, 0, (length - oldLength) / 2).applyAxisAngle(
-      new Vector3(0, 1, 0),
-      layoutGroup.parent.rotation.y
-    )
-  )
-  updateHouseOBB(layoutGroup.parent!)
-}
 
 const useOnDragStretch = () => {
   const stretchDataRef = useRef<StretchData | null>(null)
@@ -339,7 +321,7 @@ const useOnDragStretch = () => {
                             systemId,
                             houseId,
                             handleObject: object,
-                            houseTransformsGroup: houseTransformsGroup,
+                            houseTransformsGroup,
                             handleGroup,
                             handleGroupPos0: handleGroup.position.clone(),
                             point0: point,

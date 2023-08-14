@@ -1,4 +1,4 @@
-import { Group, Material, Mesh, Object3D, Plane } from "three"
+import { BufferGeometry, Group, Material, Mesh, Object3D, Plane } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
@@ -117,49 +117,76 @@ export type UserData =
   | StretchHandleMeshUserData
   | RotateHandlesGroupUserData
 
-export const isElementMesh = (
-  node: Object3D
-): node is Mesh & { userData: ElementMeshUserData; material: Material } =>
+// Mesh Types with type variables
+export type ElementMesh = Mesh<BufferGeometry, Material> & {
+  userData: ElementMeshUserData
+}
+
+export type StretchHandleMesh = Mesh<BufferGeometry, Material> & {
+  userData: StretchHandleMeshUserData
+}
+
+export type RotateHandleMesh = Mesh<BufferGeometry, Material> & {
+  userData: RotateHandleMeshUserData
+}
+
+// Group Types remain the same
+export type ModuleGroup = Group & {
+  userData: ModuleGroupUserData
+}
+
+export type GridGroup = Group & {
+  userData: GridGroupUserData
+}
+
+export type ColumnGroup = Group & {
+  userData: ColumnGroupUserData
+}
+
+export type HouseLayoutGroup = Group & {
+  userData: HouseLayoutGroupUserData
+}
+
+export type HouseTransformsGroup = Group & {
+  userData: HouseTransformsGroupUserData
+}
+
+export type RotateHandlesGroup = Group & {
+  userData: RotateHandlesGroupUserData
+}
+
+// Type Guards
+export const isElementMesh = (node: Object3D): node is ElementMesh =>
   node.userData?.type === UserDataTypeEnum.Enum.ElementMesh
 
 export const isStretchHandleMesh = (
   node: Object3D
-): node is Mesh & { userData: StretchHandleMeshUserData; material: Material } =>
+): node is StretchHandleMesh =>
   node.userData?.type === UserDataTypeEnum.Enum.StretchHandleMesh
 
-export const isRotateHandleMesh = (
-  node: Object3D
-): node is Mesh & { userData: RotateHandleMeshUserData; material: Material } =>
+export const isRotateHandleMesh = (node: Object3D): node is RotateHandleMesh =>
   node.userData?.type === UserDataTypeEnum.Enum.RotateHandleMesh
 
-export const isModuleGroup = (
-  node: Object3D
-): node is Group & { userData: ModuleGroupUserData } =>
+export const isModuleGroup = (node: Object3D): node is ModuleGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.ModuleGroup
 
-export const isGridGroup = (
-  node: Object3D
-): node is Group & { userData: GridGroupUserData } =>
+export const isGridGroup = (node: Object3D): node is GridGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.GridGroup
 
-export const isColumnGroup = (
-  node: Object3D
-): node is Group & { userData: ColumnGroupUserData } =>
+export const isColumnGroup = (node: Object3D): node is ColumnGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.ColumnGroup
 
-export const isHouseLayoutGroup = (
-  node: Object3D
-): node is Group & { userData: HouseLayoutGroupUserData } =>
+export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
 
 export const isHouseTransformsGroup = (
   node: Object3D
-): node is Group & { userData: HouseTransformsGroupUserData } =>
+): node is HouseTransformsGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseTransformsGroup
 
 export const isRotateHandlesGroup = (
   node: Object3D
-): node is Group & { userData: RotateHandlesGroupUserData } =>
+): node is RotateHandlesGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.RotateHandlesGroup
 
 export const incrementColumnCount = (layoutGroup: Object3D) => {

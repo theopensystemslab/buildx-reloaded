@@ -46,14 +46,10 @@ const useOnDragMove = () => {
               (o) =>
                 o.userData.type === UserDataTypeEnum.Enum.HouseTransformsGroup,
               (houseTransformGroup) => {
-                dispatchPointerDown({ point, object })
-
                 moveData.current = {
                   houseObject: houseTransformGroup as Group,
                   lastPoint: point.setY(0),
                 }
-
-                setCameraControlsEnabled(false)
 
                 const scopeItem = elementMeshToScopeItem(object)
                 scope.selected = scopeItem
@@ -69,10 +65,8 @@ const useOnDragMove = () => {
         break
       }
       case last: {
-        setCameraControlsEnabled(true)
         updateIndexedHouseTransforms(moveData.current!.houseObject)
         moveData.current = null
-        dispatchPointerUp()
         return
       }
       default: {
