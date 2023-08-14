@@ -2,15 +2,17 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
 import { A, O, T } from "../../../../utils/functions"
-import { setInvisibleNoRaycast } from "../../../../utils/three"
-import { splitColumns } from "../../../../workers/layouts/worker"
+import {
+  replicateObject,
+  setInvisibleNoRaycast,
+  setVisibleAndRaycast,
+} from "../../../../utils/three"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup } from "../dimensions"
 import {
   columnSorter,
   createColumnGroup,
   splitColumnGroups,
-  vanillaColumns,
 } from "../helpers/layouts"
 import {
   getActiveHouseUserData,
@@ -28,6 +30,8 @@ import {
   StretchHandleMeshUserData,
 } from "../userData"
 
+const TMP_MAX_LENGTH = 10
+
 const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
     direction: number
@@ -40,21 +44,24 @@ const useOnDragStretch = () => {
     startColumnGroup: Object3D
     midColumnGroups: Object3D[]
     endColumnGroup: Object3D
-    templateVanillaColumnGroup: Object3D
+    templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
+    maxLength: number
   } | null>(null)
 
   type Fence = {
     z: number
-    columnGroup: Object3D
+    columnGroup: ColumnGroup
   }
 
   const stretchZProgressDataRef = useRef<{
-    vanillaFences: Fence[]
+    fences: Fence[]
     lastDistance: number
+    fenceIndex: number
   }>({
-    vanillaFences: [],
+    fences: [],
     lastDistance: 0,
+    fenceIndex: 0,
   })
 
   const onDragStretchZ = {
@@ -93,6 +100,8 @@ const useOnDragStretch = () => {
               const { startColumnGroup, midColumnGroups, endColumnGroup } =
                 splitColumnGroups(columnGroups)
 
+              const vanillaLength = templateVanillaColumnGroup.userData.length
+
               stretchZInitialDataRef.current = {
                 direction,
                 handleGroup,
@@ -101,11 +110,89 @@ const useOnDragStretch = () => {
                 point0: point,
                 handleGroupZ0: handleGroup.position.z,
                 templateVanillaColumnGroup,
-                vanillaLength: templateVanillaColumnGroup.userData.length,
+                vanillaLength,
                 columnGroups,
                 startColumnGroup,
                 midColumnGroups,
                 endColumnGroup,
+                maxLength: TMP_MAX_LENGTH,
+              }
+
+              if (direction === 1) {
+                let fences: Fence[] = []
+
+                for (let columnGroup of midColumnGroups) {
+                  fences.push({
+                    columnGroup,
+                    z: -(
+                      endColumnGroup.position.z +
+                      endColumnGroup.userData.length / 2 -
+                      columnGroup.position.z +
+                      columnGroup.userData.length / 2
+                    ),
+                  })
+                }
+                replicateObject(3, templateVanillaColumnGroup).forEach(
+                  (columnGroup, i) => {
+                    const lastColumnGroup =
+                      fences[fences.length - 1].columnGroup
+
+                    columnGroup.position.setZ(
+                      lastColumnGroup.position.z +
+                        lastColumnGroup.userData.length / 2 +
+                        vanillaLength * i
+                    )
+
+                    columnGroup.userData.columnIndex =
+                      lastColumnGroup.userData.columnIndex + 1
+
+                    setInvisibleNoRaycast(columnGroup)
+                    layoutGroup.add(columnGroup)
+
+                    fences.push({
+                      columnGroup,
+                      z: i * vanillaLength,
+                    })
+                  }
+                )
+
+                // const fences = pipe(
+                //   midColumnGroups,
+                //   A.reverse,
+                //   A.map(
+                //     (columnGroup): Fence => ({
+                //       columnGroup,
+                //       z: -(
+                //         endColumnGroup.position.z +
+                //         endColumnGroup.userData.length / 2 -
+                //         columnGroup.position.z +
+                //         columnGroup.userData.length / 2
+                //       ),
+                //     })
+                //   ),
+                //   A.reverse,
+                //   A.concat(
+                //     pipe(
+                //       replicateObject(3, templateVanillaColumnGroup),
+                //       A.mapWithIndex((i, columnGroup): Fence => {
+                //         columnGroup.position.z = i * vanillaLength
+                //         columnGroup.userData
+                //         layoutGroup.add(columnGroup)
+                //         return {
+                //           columnGroup,
+                //           z: i * vanillaLength,
+                //         }
+                //       })
+                //     )
+                //   )
+                // )
+
+                stretchZProgressDataRef.current.fences = fences
+                stretchZProgressDataRef.current.fenceIndex = 0
+              }
+
+              if (direction === -1) {
+                // complete me
               }
             })
           )
@@ -129,7 +216,8 @@ const useOnDragStretch = () => {
         layoutGroup,
       } = stretchZInitialDataRef.current
 
-      const { lastDistance, vanillaFences } = stretchZProgressDataRef.current
+      const { lastDistance, fences: vanillaFences } =
+        stretchZProgressDataRef.current
 
       const [x1, z1] = pointer.xz
       const distanceVector = new Vector3(x1, 0, z1).sub(point0)
@@ -139,6 +227,38 @@ const useOnDragStretch = () => {
       )
       const distance = distanceVector.z * direction
       handleGroup.position.set(0, 0, handleGroupZ0 + distance * direction)
+
+      const { fenceIndex, fences } = stretchZProgressDataRef.current
+      const lastVisibleFence = fences[fenceIndex]
+
+      if (direction === 1) {
+        if (distance > lastDistance) {
+          if (fenceIndex + 1 < fences.length) {
+            const nextFence = fences[fenceIndex + 1]
+            if (distance > nextFence.z) {
+              setVisibleAndRaycast(nextFence.columnGroup)
+              console.log(nextFence.columnGroup.position)
+              // function to add another vanilla column group to the fences
+              // so long as not max
+              stretchZProgressDataRef.current.fenceIndex++
+            }
+          }
+        }
+
+        if (distance < lastDistance) {
+          if (fenceIndex - 1 >= 0) {
+            const prevFence = fences[fenceIndex - 1]
+            if (distance < prevFence.z) {
+              setInvisibleNoRaycast(prevFence.columnGroup)
+              stretchZProgressDataRef.current.fenceIndex--
+            }
+          }
+        }
+      }
+
+      stretchZProgressDataRef.current.lastDistance = distance
+
+      return
 
       // additive
       if (distance > lastDistance) {
@@ -169,7 +289,7 @@ const useOnDragStretch = () => {
 
             incrementColumnCount(layoutGroup)
 
-            stretchZProgressDataRef.current.vanillaFences.push({
+            stretchZProgressDataRef.current.fences.push({
               columnGroup: newColumnGroup,
               z: distance,
             })
@@ -192,14 +312,13 @@ const useOnDragStretch = () => {
       if (distance < lastDistance) {
         // gate check
         if (distance > 0 && vanillaFences.length > 0) {
-          const foo = pipe(
+          pipe(
             vanillaFences,
             A.last,
             O.map(({ z, columnGroup }) => {
               if (distance < z) {
                 columnGroup.removeFromParent()
                 vanillaFences.pop()
-                // vanillaFences.pop()
               }
             })
           )
@@ -214,14 +333,13 @@ const useOnDragStretch = () => {
           // we would want to track an index and vis vs. no vis
         }
       }
-
-      stretchZProgressDataRef.current.lastDistance = distance
     },
     last: () => {
       stretchZInitialDataRef.current = null
       stretchZProgressDataRef.current = {
         lastDistance: 0,
-        vanillaFences: [],
+        fences: [],
+        fenceIndex: 0,
       }
     },
   }

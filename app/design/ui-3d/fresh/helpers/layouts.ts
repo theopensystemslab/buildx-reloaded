@@ -197,7 +197,7 @@ export const createColumnGroup =
     columnIndex: number
     startColumn?: boolean
     endColumn?: boolean
-  }): T.Task<Group> =>
+  }): T.Task<ColumnGroup> =>
   async () => {
     const columnGroup = new Group()
 
@@ -247,7 +247,7 @@ export const createColumnGroup =
 
     columnGroup.userData = columnGroupUserData
 
-    return columnGroup
+    return columnGroup as ColumnGroup
   }
 
 export const createColumnGroups = ({

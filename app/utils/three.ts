@@ -214,3 +214,11 @@ export const setInvisibleButRaycast = (object: Object3D) => {
     node.layers.enable(RaycasterLayer.ENABLED)
   })
 }
+
+export const replicateObject = <T extends Object3D>(n: number, obj: T): T[] => {
+  const replicated: T[] = []
+  for (let i = 0; i < n; i++) {
+    replicated.push(obj.clone() as T)
+  }
+  return replicated
+}
