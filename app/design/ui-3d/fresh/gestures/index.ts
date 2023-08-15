@@ -10,7 +10,6 @@ import scope, { ScopeItem } from "../../../state/scope"
 import siteCtx, {
   downMode,
   getModeBools,
-  SiteCtxMode,
   SiteCtxModeEnum,
 } from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
@@ -26,7 +25,6 @@ import {
   isElementMesh,
   isRotateHandleMesh,
   isStretchHandleMesh,
-  StretchHandleMeshUserData,
   UserDataTypeEnum,
 } from "../userData"
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
@@ -68,7 +66,6 @@ const useGestures = () => {
       // stretch
       if (buildingOrLevelMode && isStretchHandleMesh(object)) {
         const {
-          userData,
           userData: { axis },
         } = object
 
@@ -104,7 +101,7 @@ const useGestures = () => {
       invalidate()
     },
     onHover: ({ event, event: { intersections }, hovering }) => {
-      event.stopPropagation()
+      if (firstDragEventRef.current) return
 
       if (intersections.length === 0) {
         document.body.style.cursor = ""

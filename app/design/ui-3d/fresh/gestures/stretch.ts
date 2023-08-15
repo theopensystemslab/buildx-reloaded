@@ -157,7 +157,8 @@ const useOnDragStretch = () => {
                     }
                   })
                 )
-                stretchZProgressDataRef.current.fenceIndex = 0
+                stretchZProgressDataRef.current.fenceIndex =
+                  stretchZProgressDataRef.current.fences.length - 1
 
                 for (let i = 0; i < 3; i++) {
                   addInvisibleVanillaToEnd()
@@ -230,7 +231,10 @@ const useOnDragStretch = () => {
             const realDistance = midEndZ + distance
             const lastVisibleFence = fences[fenceIndex]
 
-            if (realDistance < lastVisibleFence.z) {
+            if (
+              realDistance <
+              lastVisibleFence.z - lastVisibleFence.columnGroup.userData.length
+            ) {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
               stretchZProgressDataRef.current.fenceIndex--
               endColumnGroup.userData.columnIndex--
