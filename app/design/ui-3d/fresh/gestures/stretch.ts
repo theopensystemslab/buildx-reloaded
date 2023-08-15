@@ -51,6 +51,8 @@ const useOnDragStretch = () => {
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
     maxLength: number
+    midStartZ: number
+    midEndZ: number
   } | null>(null)
 
   type Fence = {
@@ -98,11 +100,6 @@ const useOnDragStretch = () => {
       columnGroup,
       z: fenceZ,
     })
-
-    if (DEBUG_FENCES) {
-      addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
-      console.log(`debug line at ${fenceZ}`)
-    }
   }
 
   const onDragStretchZ = {
@@ -157,6 +154,8 @@ const useOnDragStretch = () => {
                 midColumnGroups,
                 endColumnGroup,
                 maxLength: TMP_MAX_LENGTH,
+                midStartZ: startColumnGroup.userData.length,
+                midEndZ: endColumnGroup.position.z,
               }
 
               if (direction === 1) {
@@ -235,6 +234,7 @@ const useOnDragStretch = () => {
         layoutGroup,
         endColumnGroup,
         maxLength,
+        midEndZ,
       } = stretchZInitialDataRef.current
 
       const { lastDistance, fences: vanillaFences } =
@@ -252,15 +252,15 @@ const useOnDragStretch = () => {
       const { fenceIndex, fences } = stretchZProgressDataRef.current
 
       if (direction === 1) {
+        // additive direction to back side
         if (distance > lastDistance) {
           if (fenceIndex + 1 < fences.length) {
             const nextFence = fences[fenceIndex + 1]
-            if (distance >= nextFence.z) {
+            const realDistance = midEndZ + distance
+            if (realDistance >= nextFence.z) {
               setVisibleAndRaycast(nextFence.columnGroup)
               endColumnGroup.userData.columnIndex++
               stretchZProgressDataRef.current.fenceIndex++
-
-              addDebugLineAtZ(layoutGroup, distance, 50, "black")
 
               if (nextFence.z < maxLength) {
                 addInvisibleVanillaToEnd()
@@ -269,14 +269,16 @@ const useOnDragStretch = () => {
           }
         }
 
-        //
+        // subtractive direction to back side
         if (distance < lastDistance) {
-          if (fenceIndex >= 0) {
+          if (fenceIndex > 0) {
+            const realDistance = midEndZ + distance
             const lastVisibleFence = fences[fenceIndex]
 
-            if (distance < lastVisibleFence.z) {
-              // setInvisibleNoRaycast(prevFence.columnGroup)
-              // stretchZProgressDataRef.current.fenceIndex--
+            if (realDistance < lastVisibleFence.z) {
+              setInvisibleNoRaycast(lastVisibleFence.columnGroup)
+              stretchZProgressDataRef.current.fenceIndex--
+              endColumnGroup.userData.columnIndex--
             }
           }
         }
