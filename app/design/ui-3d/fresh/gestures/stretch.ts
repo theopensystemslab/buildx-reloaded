@@ -47,9 +47,7 @@ const useOnDragStretch = () => {
     columnGroups: Object3D[]
     startColumnGroup: Object3D
     midColumnGroups: Object3D[]
-    midStartZ: number
-    midEndZ: number
-    endColumnGroup: Object3D
+    endColumnGroup: ColumnGroup
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
     maxLength: number
@@ -69,6 +67,43 @@ const useOnDragStretch = () => {
     lastDistance: 0,
     fenceIndex: 0,
   })
+
+  const addInvisibleVanillaToEnd = () => {
+    if (!stretchZInitialDataRef.current) return
+
+    const { templateVanillaColumnGroup, layoutGroup, vanillaLength } =
+      stretchZInitialDataRef.current
+    const { fences } = stretchZProgressDataRef.current
+
+    const lastColumnGroup = fences[fences.length - 1].columnGroup
+
+    const columnGroup = templateVanillaColumnGroup.clone()
+
+    columnGroup.userData.columnIndex = lastColumnGroup.userData.columnIndex + 1
+
+    const positionZ =
+      lastColumnGroup.position.z +
+      lastColumnGroup.userData.length / 2 +
+      vanillaLength / 2
+
+    columnGroup.position.setZ(positionZ)
+
+    setInvisibleNoRaycast(columnGroup)
+
+    layoutGroup.add(columnGroup)
+
+    const fenceZ = positionZ
+
+    fences.push({
+      columnGroup,
+      z: fenceZ,
+    })
+
+    if (DEBUG_FENCES) {
+      addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
+      console.log(`debug line at ${fenceZ}`)
+    }
+  }
 
   const onDragStretchZ = {
     first: ({
@@ -122,52 +157,57 @@ const useOnDragStretch = () => {
                 midColumnGroups,
                 endColumnGroup,
                 maxLength: TMP_MAX_LENGTH,
-                midStartZ: midColumnGroups[0].position.z,
-                midEndZ: endColumnGroup.position.z,
               }
 
-              const { midStartZ, midEndZ } = stretchZInitialDataRef.current
-
               if (direction === 1) {
-                let fences: Fence[] = []
-
-                for (let columnGroup of midColumnGroups) {
-                  const z = columnGroup.position.z + columnGroup.userData.length
-                  fences.push({
-                    columnGroup,
-                    z,
-                  })
-                }
-                replicateObject(3, templateVanillaColumnGroup).forEach(
-                  (columnGroup, i) => {
-                    const lastColumnGroup =
-                      fences[fences.length - 1].columnGroup
-
-                    columnGroup.userData.columnIndex =
-                      lastColumnGroup.userData.columnIndex + i + 1
-
-                    const positionZ =
-                      midEndZ + i * vanillaLength + vanillaLength / 2
-
-                    columnGroup.position.setZ(positionZ)
-
-                    layoutGroup.add(columnGroup)
-
-                    const fenceZ = positionZ
-
-                    fences.push({
+                stretchZProgressDataRef.current.fences = pipe(
+                  midColumnGroups,
+                  A.map((columnGroup) => {
+                    const z =
+                      columnGroup.position.z + columnGroup.userData.length
+                    return {
                       columnGroup,
-                      z: fenceZ,
-                    })
-
-                    if (DEBUG_FENCES) {
-                      addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
+                      z,
                     }
-                  }
+                  })
                 )
-
-                stretchZProgressDataRef.current.fences = fences
                 stretchZProgressDataRef.current.fenceIndex = 0
+
+                for (let i = 0; i < 3; i++) {
+                  addInvisibleVanillaToEnd()
+                }
+
+                // replicateObject(3, templateVanillaColumnGroup).forEach(
+                //   (columnGroup) => {
+                //     const lastColumnGroup =
+                //       fences[fences.length - 1].columnGroup
+
+                //     columnGroup.userData.columnIndex =
+                //       lastColumnGroup.userData.columnIndex + 1
+
+                //     const positionZ =
+                //       lastColumnGroup.position.z +
+                //       lastColumnGroup.userData.length / 2 +
+                //       vanillaLength / 2
+
+                //     columnGroup.position.setZ(positionZ)
+
+                //     setInvisibleNoRaycast(columnGroup)
+
+                //     layoutGroup.add(columnGroup)
+
+                //     const fenceZ = positionZ
+
+                //     fences.push({
+                //       columnGroup,
+                //       z: fenceZ,
+                //     })
+
+                //     if (DEBUG_FENCES) {
+                //       addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
+                //     }
+                //   }
+                // )
               }
 
               if (direction === -1) {
@@ -193,6 +233,8 @@ const useOnDragStretch = () => {
         templateVanillaColumnGroup,
         columnGroups,
         layoutGroup,
+        endColumnGroup,
+        maxLength,
       } = stretchZInitialDataRef.current
 
       const { lastDistance, fences: vanillaFences } =
@@ -213,11 +255,16 @@ const useOnDragStretch = () => {
         if (distance > lastDistance) {
           if (fenceIndex + 1 < fences.length) {
             const nextFence = fences[fenceIndex + 1]
-            if (distance > nextFence.z) {
-              // setVisibleAndRaycast(nextFence.columnGroup)
-              // function to add another vanilla column group to the fences
-              // so long as not max
-              // stretchZProgressDataRef.current.fenceIndex++
+            if (distance >= nextFence.z) {
+              setVisibleAndRaycast(nextFence.columnGroup)
+              endColumnGroup.userData.columnIndex++
+              stretchZProgressDataRef.current.fenceIndex++
+
+              addDebugLineAtZ(layoutGroup, distance, 50, "black")
+
+              if (nextFence.z < maxLength) {
+                addInvisibleVanillaToEnd()
+              }
             }
           }
         }
