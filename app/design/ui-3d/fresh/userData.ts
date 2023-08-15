@@ -1,4 +1,11 @@
-import { BufferGeometry, Group, Material, Mesh, Object3D, Plane } from "three"
+import {
+  BufferGeometry,
+  Group,
+  Mesh,
+  MeshStandardMaterial,
+  Object3D,
+  Plane,
+} from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
@@ -118,15 +125,15 @@ export type UserData =
   | RotateHandlesGroupUserData
 
 // Mesh Types with type variables
-export type ElementMesh = Mesh<BufferGeometry, Material> & {
+export type ElementMesh = Mesh<BufferGeometry, MeshStandardMaterial> & {
   userData: ElementMeshUserData
 }
 
-export type StretchHandleMesh = Mesh<BufferGeometry, Material> & {
+export type StretchHandleMesh = Mesh<BufferGeometry, MeshStandardMaterial> & {
   userData: StretchHandleMeshUserData
 }
 
-export type RotateHandleMesh = Mesh<BufferGeometry, Material> & {
+export type RotateHandleMesh = Mesh<BufferGeometry, MeshStandardMaterial> & {
   userData: RotateHandleMeshUserData
 }
 

@@ -3,6 +3,7 @@ import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
 import { A, O, T } from "../../../../utils/functions"
 import {
+  addDebugLineAtZ,
   replicateObject,
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -26,11 +27,14 @@ import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   incrementColumnCount,
+  isElementMesh,
   StretchHandleMesh,
   StretchHandleMeshUserData,
 } from "../userData"
 
 const TMP_MAX_LENGTH = 10
+
+const DEBUG_FENCES = true
 
 const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
@@ -43,6 +47,8 @@ const useOnDragStretch = () => {
     columnGroups: Object3D[]
     startColumnGroup: Object3D
     midColumnGroups: Object3D[]
+    midStartZ: number
+    midEndZ: number
     endColumnGroup: Object3D
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
@@ -116,20 +122,20 @@ const useOnDragStretch = () => {
                 midColumnGroups,
                 endColumnGroup,
                 maxLength: TMP_MAX_LENGTH,
+                midStartZ: midColumnGroups[0].position.z,
+                midEndZ: endColumnGroup.position.z,
               }
+
+              const { midStartZ, midEndZ } = stretchZInitialDataRef.current
 
               if (direction === 1) {
                 let fences: Fence[] = []
 
                 for (let columnGroup of midColumnGroups) {
+                  const z = columnGroup.position.z + columnGroup.userData.length
                   fences.push({
                     columnGroup,
-                    z: -(
-                      endColumnGroup.position.z +
-                      endColumnGroup.userData.length / 2 -
-                      columnGroup.position.z +
-                      columnGroup.userData.length / 2
-                    ),
+                    z,
                   })
                 }
                 replicateObject(3, templateVanillaColumnGroup).forEach(
@@ -137,55 +143,28 @@ const useOnDragStretch = () => {
                     const lastColumnGroup =
                       fences[fences.length - 1].columnGroup
 
-                    columnGroup.position.setZ(
-                      lastColumnGroup.position.z +
-                        lastColumnGroup.userData.length / 2 +
-                        vanillaLength * i
-                    )
-
                     columnGroup.userData.columnIndex =
-                      lastColumnGroup.userData.columnIndex + 1
+                      lastColumnGroup.userData.columnIndex + i + 1
 
-                    setInvisibleNoRaycast(columnGroup)
+                    const positionZ =
+                      midEndZ + i * vanillaLength + vanillaLength / 2
+
+                    columnGroup.position.setZ(positionZ)
+
                     layoutGroup.add(columnGroup)
+
+                    const fenceZ = positionZ
 
                     fences.push({
                       columnGroup,
-                      z: i * vanillaLength,
+                      z: fenceZ,
                     })
+
+                    if (DEBUG_FENCES) {
+                      addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
+                    }
                   }
                 )
-
-                // const fences = pipe(
-                //   midColumnGroups,
-                //   A.reverse,
-                //   A.map(
-                //     (columnGroup): Fence => ({
-                //       columnGroup,
-                //       z: -(
-                //         endColumnGroup.position.z +
-                //         endColumnGroup.userData.length / 2 -
-                //         columnGroup.position.z +
-                //         columnGroup.userData.length / 2
-                //       ),
-                //     })
-                //   ),
-                //   A.reverse,
-                //   A.concat(
-                //     pipe(
-                //       replicateObject(3, templateVanillaColumnGroup),
-                //       A.mapWithIndex((i, columnGroup): Fence => {
-                //         columnGroup.position.z = i * vanillaLength
-                //         columnGroup.userData
-                //         layoutGroup.add(columnGroup)
-                //         return {
-                //           columnGroup,
-                //           z: i * vanillaLength,
-                //         }
-                //       })
-                //     )
-                //   )
-                // )
 
                 stretchZProgressDataRef.current.fences = fences
                 stretchZProgressDataRef.current.fenceIndex = 0
@@ -229,28 +208,28 @@ const useOnDragStretch = () => {
       handleGroup.position.set(0, 0, handleGroupZ0 + distance * direction)
 
       const { fenceIndex, fences } = stretchZProgressDataRef.current
-      const lastVisibleFence = fences[fenceIndex]
 
       if (direction === 1) {
         if (distance > lastDistance) {
           if (fenceIndex + 1 < fences.length) {
             const nextFence = fences[fenceIndex + 1]
             if (distance > nextFence.z) {
-              setVisibleAndRaycast(nextFence.columnGroup)
-              console.log(nextFence.columnGroup.position)
+              // setVisibleAndRaycast(nextFence.columnGroup)
               // function to add another vanilla column group to the fences
               // so long as not max
-              stretchZProgressDataRef.current.fenceIndex++
+              // stretchZProgressDataRef.current.fenceIndex++
             }
           }
         }
 
+        //
         if (distance < lastDistance) {
-          if (fenceIndex - 1 >= 0) {
-            const prevFence = fences[fenceIndex - 1]
-            if (distance < prevFence.z) {
-              setInvisibleNoRaycast(prevFence.columnGroup)
-              stretchZProgressDataRef.current.fenceIndex--
+          if (fenceIndex >= 0) {
+            const lastVisibleFence = fences[fenceIndex]
+
+            if (distance < lastVisibleFence.z) {
+              // setInvisibleNoRaycast(prevFence.columnGroup)
+              // stretchZProgressDataRef.current.fenceIndex--
             }
           }
         }

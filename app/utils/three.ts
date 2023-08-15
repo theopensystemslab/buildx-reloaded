@@ -3,8 +3,12 @@ import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useCallback, useMemo, useRef } from "react"
 import {
+  BufferGeometry,
+  Color,
   DoubleSide,
   Group,
+  Line,
+  LineBasicMaterial,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
@@ -221,4 +225,25 @@ export const replicateObject = <T extends Object3D>(n: number, obj: T): T[] => {
     replicated.push(obj.clone() as T)
   }
   return replicated
+}
+
+export const addDebugLineAtZ = (
+  parent: Object3D,
+  z: number,
+  length: number = 5,
+  color: Color | number | string = 0xff0000
+): void => {
+  // Step 1: Create geometry for the line segment.
+  const lineGeometry = new BufferGeometry().setFromPoints([
+    new Vector3(-length / 2, 0, 0),
+    new Vector3(length / 2, 0, 0),
+  ])
+
+  // Step 2: Create a material for the line.
+  const lineMaterial = new LineBasicMaterial({ color: color })
+
+  // Step 3: Create the line object, set its z position, and add it to the parent.
+  const line = new Line(lineGeometry, lineMaterial)
+  line.position.set(0, 0, z)
+  parent.add(line)
 }

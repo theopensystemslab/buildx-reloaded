@@ -174,6 +174,8 @@ export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
     .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
     .reduce((acc, v) => acc + v.userData.length, 0)
 
+  console.log({ oldLength, length })
+
   layoutGroup.position.setZ(-length / 2)
   layoutGroup.userData.length = length
   layoutGroup.parent?.position.add(

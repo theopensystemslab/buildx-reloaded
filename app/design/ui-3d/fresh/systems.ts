@@ -1,7 +1,12 @@
 import { liveQuery } from "dexie"
 import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
-import { DoubleSide, Material as ThreeMaterial, MeshBasicMaterial } from "three"
+import {
+  DoubleSide,
+  Material as ThreeMaterial,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+} from "three"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
 import { identity, pipe } from "fp-ts/lib/function"
 import { O, R } from "../../../utils/functions"
@@ -24,13 +29,13 @@ liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
   }
 })
 
-const basicMaterial: ThreeMaterial = new MeshBasicMaterial({
+const basicMaterial = new MeshStandardMaterial({
   color: "tomato",
   side: DoubleSide,
 })
 
 // hash(systemId, houseId, material specification) : ThreeMaterial
-const threeMaterials: Record<string, ThreeMaterial> = {}
+const threeMaterials: Record<string, MeshStandardMaterial> = {}
 
 const getMaterialHash = ({
   systemId,
@@ -51,7 +56,7 @@ const getThreeMaterial = ({
   systemId: string
   houseId: string
   material: Material
-}): ThreeMaterial => {
+}): MeshStandardMaterial => {
   const materialHash = getMaterialHash({ systemId, houseId, specification })
   return pipe(
     threeMaterials,
@@ -69,7 +74,7 @@ export const getMaterial = (
     houseId: string
     ifcTag: string
   } | null = null
-): ThreeMaterial => {
+): MeshStandardMaterial => {
   if (input === null) return basicMaterial
 
   const { systemId, houseId, ifcTag } = input

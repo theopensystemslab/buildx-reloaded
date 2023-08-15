@@ -140,7 +140,8 @@ export const createModuleGroup = async ({
         systemId,
         ifcTag,
         houseId,
-      }) as MeshStandardMaterial
+      })
+      material.wireframe = true
       const mesh = new Mesh(geometry, material)
       mesh.castShadow = true
 
