@@ -17,6 +17,7 @@ import { columnSorter } from "./helpers/layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
+  getLayoutGroupColumnGroups,
 } from "./helpers/sceneQueries"
 import {
   HouseLayoutGroup,
@@ -186,4 +187,14 @@ export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
   )
 
   updateHouseOBB(layoutGroup.parent as HouseTransformsGroup)
+
+  pipe(
+    layoutGroup,
+    getLayoutGroupColumnGroups,
+    A.filter((columnGroup) => !columnGroup.visible)
+  ).forEach((columnGroup) => {
+    columnGroup.removeFromParent()
+  })
+
+  console.log(pipe(layoutGroup, getLayoutGroupColumnGroups))
 }

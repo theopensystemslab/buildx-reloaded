@@ -1,25 +1,21 @@
+import { takeRight } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
 import { A, O, T } from "../../../../utils/functions"
 import {
   addDebugLineAtZ,
-  replicateObject,
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup } from "../dimensions"
-import {
-  columnSorter,
-  createColumnGroup,
-  splitColumnGroups,
-} from "../helpers/layouts"
+import { createColumnGroup, splitColumnGroups } from "../helpers/layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
-  getLayoutGroupColumnGroups,
+  getSortedVisibleColumnGroups,
   handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
 import {
@@ -27,7 +23,6 @@ import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   incrementColumnCount,
-  isElementMesh,
   StretchHandleMesh,
   StretchHandleMeshUserData,
 } from "../userData"
@@ -83,22 +78,18 @@ const useOnDragStretch = () => {
 
     columnGroup.userData.columnIndex = lastColumnGroup.userData.columnIndex + 1
 
-    const positionZ =
+    columnGroup.position.z =
       lastColumnGroup.position.z +
       lastColumnGroup.userData.length / 2 +
-      vanillaLength / 2
-
-    columnGroup.position.setZ(positionZ)
+      columnGroup.userData.length / 2
 
     setInvisibleNoRaycast(columnGroup)
 
     layoutGroup.add(columnGroup)
 
-    const fenceZ = positionZ
-
     fences.push({
       columnGroup,
-      z: fenceZ,
+      z: columnGroup.position.z,
     })
   }
 
@@ -118,11 +109,7 @@ const useOnDragStretch = () => {
         getActiveHouseUserData(houseTransformsGroup)
 
       const layoutGroup = getActiveLayoutGroup(houseTransformsGroup)
-      const columnGroups = pipe(
-        layoutGroup,
-        getLayoutGroupColumnGroups,
-        columnSorter
-      )
+      const columnGroups = pipe(layoutGroup, getSortedVisibleColumnGroups)
 
       const task = pipe(
         T.of(vanillaColumn),
@@ -175,38 +162,6 @@ const useOnDragStretch = () => {
                 for (let i = 0; i < 3; i++) {
                   addInvisibleVanillaToEnd()
                 }
-
-                // replicateObject(3, templateVanillaColumnGroup).forEach(
-                //   (columnGroup) => {
-                //     const lastColumnGroup =
-                //       fences[fences.length - 1].columnGroup
-
-                //     columnGroup.userData.columnIndex =
-                //       lastColumnGroup.userData.columnIndex + 1
-
-                //     const positionZ =
-                //       lastColumnGroup.position.z +
-                //       lastColumnGroup.userData.length / 2 +
-                //       vanillaLength / 2
-
-                //     columnGroup.position.setZ(positionZ)
-
-                //     setInvisibleNoRaycast(columnGroup)
-
-                //     layoutGroup.add(columnGroup)
-
-                //     const fenceZ = positionZ
-
-                //     fences.push({
-                //       columnGroup,
-                //       z: fenceZ,
-                //     })
-
-                //     if (DEBUG_FENCES) {
-                //       addDebugLineAtZ(layoutGroup, fenceZ, undefined, "red")
-                //     }
-                //   }
-                // )
               }
 
               if (direction === -1) {
@@ -363,6 +318,23 @@ const useOnDragStretch = () => {
       }
     },
     last: () => {
+      if (!stretchZInitialDataRef.current) return
+      const { layoutGroup, endColumnGroup } = stretchZInitialDataRef.current
+
+      pipe(
+        layoutGroup,
+        getSortedVisibleColumnGroups,
+        takeRight(2),
+        ([penultimateColumnGroup]) => {
+          endColumnGroup.position.setZ(
+            penultimateColumnGroup.position.z +
+              penultimateColumnGroup.userData.length / 2
+          )
+        }
+      )
+
+      recomputeLayoutGroup(layoutGroup)
+
       stretchZInitialDataRef.current = null
       stretchZProgressDataRef.current = {
         lastDistance: 0,

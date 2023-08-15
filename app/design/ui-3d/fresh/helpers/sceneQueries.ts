@@ -1,4 +1,4 @@
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, O, someOrError } from "../../../../utils/functions"
@@ -8,9 +8,11 @@ import {
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
+  isColumnGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
+import { columnSorter } from "./layouts"
 
 export const findFirstGuardUp =
   <T extends Object3D>(guard: (o: Object3D) => o is T) =>
@@ -194,10 +196,19 @@ export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
 
 export const getLayoutGroupColumnGroups = (
   layoutGroup: HouseLayoutGroup
+): ColumnGroup[] => pipe(layoutGroup.children, A.filter(isColumnGroup))
+
+export const getSortedVisibleColumnGroups = (
+  layoutGroup: HouseLayoutGroup
 ): ColumnGroup[] =>
-  layoutGroup.children.filter(
-    (x): x is ColumnGroup =>
-      x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
+  pipe(
+    layoutGroup.children,
+    A.filter((x): x is ColumnGroup => {
+      if (!isColumnGroup(x)) return false
+      if (x.visible === false) return false
+      return true
+    }),
+    columnSorter
   )
 
 export const getLayoutGroupBySectionType = (
