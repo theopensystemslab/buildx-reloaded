@@ -317,23 +317,22 @@ const getLayout = async ({
       )
     )
     const layout = modulesToColumnLayout(modules)
+
     layoutsDB.houseLayouts.put({
       layout,
       systemId,
       dnas,
     })
 
-    const {
-      startColumn: { gridGroups },
-    } = splitColumns(layout)
-
     const getVanillaModule = createVanillaModuleGetter(modulesCache)({
       constrainGridType: false,
       positionType: "MID",
     })
 
+    const { startColumn } = splitColumns(layout)
+
     pipe(
-      gridGroups,
+      startColumn.gridGroups,
       A.traverse(O.Applicative)(
         ({
           levelIndex,
@@ -349,7 +348,8 @@ const getLayout = async ({
                 {
                   module: vanillaModule,
                   gridGroupIndex: 0,
-                  z: 0,
+                  // TODO: document me (quirk)
+                  z: vanillaModule.length / 2,
                 },
               ],
               length: vanillaModule.length,

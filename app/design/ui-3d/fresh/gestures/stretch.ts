@@ -2,14 +2,14 @@ import { takeRight } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, O, T } from "../../../../utils/functions"
+import { A, T } from "../../../../utils/functions"
 import {
-  addDebugLineAtZ,
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup } from "../dimensions"
+import { dispatchOutline } from "../events/outlines"
 import { createColumnGroup, splitColumnGroups } from "../helpers/layouts"
 import {
   getActiveHouseUserData,
@@ -22,14 +22,11 @@ import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
-  incrementColumnCount,
   StretchHandleMesh,
   StretchHandleMeshUserData,
 } from "../userData"
 
 const TMP_MAX_LENGTH = 10
-
-const DEBUG_FENCES = true
 
 const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
@@ -65,23 +62,28 @@ const useOnDragStretch = () => {
     fenceIndex: 0,
   })
 
-  const addInvisibleVanillaToEnd = () => {
+  const addVanilla = (side: 1 | -1) => {
     if (!stretchZInitialDataRef.current) return
 
-    const { templateVanillaColumnGroup, layoutGroup, vanillaLength } =
+    const { templateVanillaColumnGroup, layoutGroup } =
       stretchZInitialDataRef.current
+
     const { fences } = stretchZProgressDataRef.current
 
     const lastColumnGroup = fences[fences.length - 1].columnGroup
-
     const columnGroup = templateVanillaColumnGroup.clone()
 
-    columnGroup.userData.columnIndex = lastColumnGroup.userData.columnIndex + 1
+    columnGroup.userData.columnIndex =
+      lastColumnGroup.userData.columnIndex + 1 * side
 
-    columnGroup.position.z =
-      lastColumnGroup.position.z +
-      lastColumnGroup.userData.length / 2 +
-      columnGroup.userData.length / 2
+    let z = 0
+    if (side === 1) {
+      z = lastColumnGroup.position.z + lastColumnGroup.userData.length
+    } else if (side === -1) {
+      z = lastColumnGroup.position.z - columnGroup.userData.length
+    }
+
+    columnGroup.position.setZ(z)
 
     setInvisibleNoRaycast(columnGroup)
 
@@ -89,7 +91,7 @@ const useOnDragStretch = () => {
 
     fences.push({
       columnGroup,
-      z: columnGroup.position.z,
+      z: z + columnGroup.userData.length / 2,
     })
   }
 
@@ -101,6 +103,11 @@ const useOnDragStretch = () => {
       handleObject: StretchHandleMesh
       point: Vector3
     }) => {
+      dispatchOutline({
+        hoveredObjects: [],
+        selectedObjects: [],
+      })
+
       const handleGroup = handleColumnGroupParentQuery(handleObject)
       const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
 
@@ -149,8 +156,27 @@ const useOnDragStretch = () => {
                 stretchZProgressDataRef.current.fences = pipe(
                   midColumnGroups,
                   A.map((columnGroup) => {
-                    const z =
-                      columnGroup.position.z + columnGroup.userData.length
+                    return {
+                      columnGroup,
+                      z:
+                        columnGroup.position.z +
+                        columnGroup.userData.length / 2,
+                    }
+                  })
+                )
+                stretchZProgressDataRef.current.fenceIndex =
+                  stretchZProgressDataRef.current.fences.length - 1
+
+                for (let i = 0; i < 3; i++) {
+                  addVanilla(direction)
+                }
+              }
+
+              if (direction === -1) {
+                stretchZProgressDataRef.current.fences = pipe(
+                  midColumnGroups,
+                  A.map((columnGroup) => {
+                    const z = columnGroup.position.z
                     return {
                       columnGroup,
                       z,
@@ -159,14 +185,6 @@ const useOnDragStretch = () => {
                 )
                 stretchZProgressDataRef.current.fenceIndex =
                   stretchZProgressDataRef.current.fences.length - 1
-
-                for (let i = 0; i < 3; i++) {
-                  addInvisibleVanillaToEnd()
-                }
-              }
-
-              if (direction === -1) {
-                // complete me
               }
             })
           )
@@ -191,6 +209,7 @@ const useOnDragStretch = () => {
         endColumnGroup,
         maxLength,
         midEndZ,
+        midStartZ,
       } = stretchZInitialDataRef.current
 
       const { lastDistance, fences: vanillaFences } =
@@ -202,12 +221,15 @@ const useOnDragStretch = () => {
         new Vector3(0, 1, 0),
         -houseTransformsGroup.rotation.y
       )
-      const distance = distanceVector.z * direction
-      handleGroup.position.set(0, 0, handleGroupZ0 + distance * direction)
+      const distance = distanceVector.z
+
+      handleGroup.position.set(0, 0, handleGroupZ0 + distance)
 
       const { fenceIndex, fences } = stretchZProgressDataRef.current
 
       if (direction === 1) {
+        // const cl = clamp(lo, hi)
+
         // additive direction to back side
         if (distance > lastDistance) {
           if (fenceIndex + 1 < fences.length) {
@@ -219,7 +241,7 @@ const useOnDragStretch = () => {
               stretchZProgressDataRef.current.fenceIndex++
 
               if (nextFence.z < maxLength) {
-                addInvisibleVanillaToEnd()
+                addVanilla(direction)
               }
             }
           }
@@ -231,10 +253,7 @@ const useOnDragStretch = () => {
             const realDistance = midEndZ + distance
             const lastVisibleFence = fences[fenceIndex]
 
-            if (
-              realDistance <
-              lastVisibleFence.z - lastVisibleFence.columnGroup.userData.length
-            ) {
+            if (realDistance < lastVisibleFence.z) {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
               stretchZProgressDataRef.current.fenceIndex--
               endColumnGroup.userData.columnIndex--
@@ -243,83 +262,40 @@ const useOnDragStretch = () => {
         }
       }
 
+      if (direction === -1) {
+        // const cl = clamp(lo, hi)
+        // additive direction to back side
+        // if (distance > lastDistance) {
+        //   if (fenceIndex + 1 < fences.length) {
+        //     const nextFence = fences[fenceIndex + 1]
+        //     const realDistance = midStartZ - distance
+        //     if (realDistance <= nextFence.z) {
+        //       setVisibleAndRaycast(nextFence.columnGroup)
+        //       // up all column indices ahead
+        //       // endColumnGroup.userData.columnIndex++
+        //       stretchZProgressDataRef.current.fenceIndex++
+        //       // naive
+        //       if (nextFence.z < -maxLength) {
+        //         addVanilla(direction)
+        //       }
+        //     }
+        //   }
+        // }
+        // subtractive direction to back side
+        // if (distance < lastDistance) {
+        //   if (fenceIndex > 0) {
+        //     const realDistance = midEndZ + distance
+        //     const lastVisibleFence = fences[fenceIndex]
+        //     if (realDistance < lastVisibleFence.z) {
+        //       setInvisibleNoRaycast(lastVisibleFence.columnGroup)
+        //       stretchZProgressDataRef.current.fenceIndex--
+        //       endColumnGroup.userData.columnIndex--
+        //     }
+        //   }
+        // }
+      }
+
       stretchZProgressDataRef.current.lastDistance = distance
-
-      return
-
-      // additive
-      if (distance > lastDistance) {
-        // prob check if we need to add some hidden ones
-        if (undefined as any) {
-        }
-
-        // gate check
-        if (distance > vanillaLength * vanillaFences.length) {
-          const newColumnGroup = templateVanillaColumnGroup.clone()
-
-          if (direction === 1) {
-            const penultimateColumnGroup = columnGroups[columnGroups.length - 2]
-            const endColumnGroup = columnGroups[columnGroups.length - 1]
-
-            newColumnGroup.position.setZ(
-              penultimateColumnGroup.position.z +
-                penultimateColumnGroup.userData.length / 2 +
-                (vanillaFences.length + 0.5) * vanillaLength
-            )
-
-            layoutGroup.add(newColumnGroup)
-
-            newColumnGroup.userData.columnIndex =
-              penultimateColumnGroup.userData.columnIndex + 1
-
-            endColumnGroup.userData.columnIndex++
-
-            incrementColumnCount(layoutGroup)
-
-            stretchZProgressDataRef.current.fences.push({
-              columnGroup: newColumnGroup,
-              z: distance,
-            })
-
-            recomputeLayoutGroup(layoutGroup)
-          }
-
-          if (direction === -1) {
-            // newColumnGroup.position.setZ(
-            //   secondColumnGroup.position.z +
-            //     penultimateColumnGroup.userData.length / 2 +
-            //     (vanillaColumnGroups.length + 0.5) * vanillaLength
-            // )
-            // layoutGroup.add(newColumnGroup)
-          }
-        }
-      }
-
-      // subtractive
-      if (distance < lastDistance) {
-        // gate check
-        if (distance > 0 && vanillaFences.length > 0) {
-          pipe(
-            vanillaFences,
-            A.last,
-            O.map(({ z, columnGroup }) => {
-              if (distance < z) {
-                columnGroup.removeFromParent()
-                vanillaFences.pop()
-              }
-            })
-          )
-          // if (distance < stretchZProgressDataRef.current.vanillaFences) {
-          //   // we want to be tracking vanilla columns first
-          //   // otherwise
-          // }
-        }
-
-        if (distance < 0) {
-          // column group fence stuff here
-          // we would want to track an index and vis vs. no vis
-        }
-      }
     },
     last: () => {
       if (!stretchZInitialDataRef.current) return
@@ -332,7 +308,8 @@ const useOnDragStretch = () => {
         ([penultimateColumnGroup]) => {
           endColumnGroup.position.setZ(
             penultimateColumnGroup.position.z +
-              penultimateColumnGroup.userData.length / 2
+              penultimateColumnGroup.userData.length
+            // / 2 + endColumnGroup.userData.length / 2
           )
         }
       )

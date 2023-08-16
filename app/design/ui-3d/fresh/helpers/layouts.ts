@@ -141,6 +141,7 @@ export const createModuleGroup = async ({
         ifcTag,
         houseId,
       })
+      material.wireframe = false
       const mesh = new Mesh(geometry, material)
       mesh.castShadow = true
 
