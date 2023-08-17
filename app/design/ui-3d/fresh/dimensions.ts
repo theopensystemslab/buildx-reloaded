@@ -13,6 +13,7 @@ import {
 import { OBB } from "three-stdlib"
 import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
+import { yAxis } from "../../../utils/three"
 import {
   columnSorter,
   findFirstGuardDown,
@@ -182,7 +183,7 @@ export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
   layoutGroup.userData.length = length
   layoutGroup.parent?.position.add(
     new Vector3(0, 0, (length - oldLength) / 2).applyAxisAngle(
-      new Vector3(0, 1, 0),
+      yAxis,
       layoutGroup.parent.rotation.y
     )
   )

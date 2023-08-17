@@ -1,10 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, pipeLog, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
+  yAxis,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup } from "../dimensions"
@@ -27,6 +28,13 @@ import {
 } from "../userData"
 
 const TMP_MAX_LENGTH = 10
+
+const logColumnGroupZs = (columnGroups: ColumnGroup[]) =>
+  pipe(
+    columnGroups,
+    A.map((x) => x.position.z),
+    pipeLog
+  )
 
 const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
@@ -167,6 +175,15 @@ const useOnDragStretch = () => {
                 for (let i = 0; i < 3; i++) {
                   addVanilla(direction)
                 }
+                console.log(`fences 1`)
+                console.log(
+                  stretchZProgressDataRef.current.fences.map(
+                    ({ columnGroup, z }) => [
+                      columnGroup.userData.columnIndex,
+                      z,
+                    ]
+                  )
+                )
               }
 
               if (direction === -1) {
@@ -188,6 +205,16 @@ const useOnDragStretch = () => {
                   addVanilla(direction)
                 }
               }
+
+              const { fenceIndex, fences } = stretchZProgressDataRef.current
+
+              console.log({
+                fenceIndex,
+                fences: stretchZProgressDataRef.current.fences.map(
+                  ({ columnGroup, z }) => [columnGroup.userData.columnIndex, z]
+                ),
+                fence: fences[fenceIndex],
+              })
             })
           )
         )
@@ -326,32 +353,57 @@ const useOnDragStretch = () => {
     last: () => {
       if (!stretchZInitialDataRef.current) return
 
-      const { layoutGroup } = stretchZInitialDataRef.current
+      const { layoutGroup, direction, houseTransformsGroup } =
+        stretchZInitialDataRef.current
 
       const sortedVisibleColumnGroups = pipe(
         layoutGroup,
         getSortedVisibleColumnGroups
       )
 
-      pipe(
-        sortedVisibleColumnGroups,
-        A.takeRight(2),
-        ([penultimateColumnGroup, endColumnGroup]) => {
-          endColumnGroup.position.setZ(
-            penultimateColumnGroup.position.z +
-              penultimateColumnGroup.userData.length
+      if (direction === 1) {
+        pipe(
+          sortedVisibleColumnGroups,
+          A.takeRight(2),
+          ([penultimateColumnGroup, endColumnGroup]) => {
+            endColumnGroup.position.setZ(
+              penultimateColumnGroup.position.z +
+                penultimateColumnGroup.userData.length
+            )
+          }
+        )
+      }
+
+      logColumnGroupZs(sortedVisibleColumnGroups)
+
+      console.log("------------")
+
+      if (direction === -1) {
+        pipe(
+          sortedVisibleColumnGroups,
+          A.takeLeft(2),
+          ([startColumnGroup, secondColumnGroup]) => {
+            startColumnGroup.position.setZ(
+              secondColumnGroup.position.z - startColumnGroup.userData.length
+            )
+          }
+        )
+
+        const delta = -sortedVisibleColumnGroups[0].position.z
+
+        sortedVisibleColumnGroups.forEach((columnGroup) => {
+          columnGroup.position.z += delta
+        })
+
+        houseTransformsGroup.position.sub(
+          new Vector3(0, 0, delta).applyAxisAngle(
+            yAxis,
+            houseTransformsGroup.rotation.y
           )
-        }
-      )
-      pipe(
-        sortedVisibleColumnGroups,
-        A.takeLeft(2),
-        ([startColumnGroup, secondColumnGroup]) => {
-          startColumnGroup.position.setZ(
-            secondColumnGroup.position.z - startColumnGroup.userData.length
-          )
-        }
-      )
+        )
+      }
+
+      logColumnGroupZs(sortedVisibleColumnGroups)
 
       recomputeLayoutGroup(layoutGroup)
 
