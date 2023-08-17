@@ -544,13 +544,6 @@ export const createInitialHouse = ({
     })
   )
 
-export const columnSorter = A.sort(
-  pipe(
-    Num.Ord,
-    Ord.contramap((x: Object3D) => x.userData.columnIndex)
-  )
-)
-
 export const splitColumnGroups = (columnGroups: ColumnGroup[]) =>
   pipe(
     columnGroups,

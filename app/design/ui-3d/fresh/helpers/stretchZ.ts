@@ -6,8 +6,9 @@ import {
   HouseTransformsGroup,
   incrementColumnCount,
 } from "../userData"
-import { columnSorter, createColumnGroup, getVanillaColumn } from "./layouts"
+import { createColumnGroup, getVanillaColumn } from "./layouts"
 import {
+  columnSorter,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getLayoutGroupColumnGroups,

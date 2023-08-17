@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, pipeLog, T } from "../../../../utils/functions"
+import { A, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -14,9 +14,8 @@ import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
-  getLayoutGroupColumnGroups,
-  getLayoutGroupColumnIndices,
   getSortedVisibleColumnGroups,
+  getVisibleColumnGroups,
   handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
 import {
@@ -168,9 +167,6 @@ const useOnDragStretch = () => {
                 for (let i = 0; i < 3; i++) {
                   addVanilla(direction)
                 }
-
-                console.log(`fences 1`)
-                console.log(stretchZProgressDataRef.current.fences)
               }
 
               if (direction === -1) {
@@ -283,15 +279,16 @@ const useOnDragStretch = () => {
             if (realDistance <= nextFence.z) {
               setVisibleAndRaycast(nextFence.columnGroup)
 
-              nextFence.columnGroup.userData.columnIndex = 1
-
               pipe(
                 layoutGroup,
-                getSortedVisibleColumnGroups,
-                A.dropLeft(2)
+                getVisibleColumnGroups,
+                A.filter((x) => x.userData.columnIndex >= 1)
               ).forEach((columnGroup) => {
                 columnGroup.userData.columnIndex++
               })
+
+              nextFence.columnGroup.userData.columnIndex = 1
+
               stretchZProgressDataRef.current.fenceIndex++
 
               // naive
@@ -313,19 +310,12 @@ const useOnDragStretch = () => {
 
               pipe(
                 layoutGroup,
-                getSortedVisibleColumnGroups,
-                A.dropLeft(2)
+                getVisibleColumnGroups,
+                A.filter((x) => x.userData.columnIndex > 1)
               ).forEach((columnGroup) => {
                 columnGroup.userData.columnIndex--
               })
               stretchZProgressDataRef.current.fenceIndex--
-
-              pipe(
-                layoutGroup,
-                getSortedVisibleColumnGroups,
-                A.map((x) => x.userData.columnIndex),
-                pipeLog
-              )
             }
           }
         }

@@ -1,7 +1,7 @@
 import { flow, pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
-import { A, O, someOrError } from "../../../../utils/functions"
+import { A, Num, O, Ord, someOrError } from "../../../../utils/functions"
 import {
   ColumnGroup,
   HouseLayoutGroup,
@@ -12,7 +12,13 @@ import {
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
-import { columnSorter } from "./layouts"
+
+export const columnSorter = A.sort(
+  pipe(
+    Num.Ord,
+    Ord.contramap((x: ColumnGroup) => x.userData.columnIndex)
+  )
+)
 
 export const findFirstGuardUp =
   <T extends Object3D>(guard: (o: Object3D) => o is T) =>
@@ -198,7 +204,7 @@ export const getLayoutGroupColumnGroups = (
   layoutGroup: HouseLayoutGroup
 ): ColumnGroup[] => pipe(layoutGroup.children, A.filter(isColumnGroup))
 
-export const getSortedVisibleColumnGroups = (
+export const getVisibleColumnGroups = (
   layoutGroup: HouseLayoutGroup
 ): ColumnGroup[] =>
   pipe(
@@ -210,6 +216,11 @@ export const getSortedVisibleColumnGroups = (
     }),
     columnSorter
   )
+
+export const getSortedVisibleColumnGroups = flow(
+  getVisibleColumnGroups,
+  columnSorter
+)
 
 export const getLayoutGroupColumnIndices = flow(
   getSortedVisibleColumnGroups,

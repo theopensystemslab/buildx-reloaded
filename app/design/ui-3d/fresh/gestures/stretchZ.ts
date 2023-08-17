@@ -9,8 +9,9 @@ import { setCameraControlsEnabled } from "../../../state/camera"
 import pointer from "../../../state/pointer"
 import { recomputeLayoutGroup, updateHouseOBB } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
-import { columnSorter, createColumnGroup } from "../helpers/layouts"
+import { createColumnGroup } from "../helpers/layouts"
 import {
+  columnSorter,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,

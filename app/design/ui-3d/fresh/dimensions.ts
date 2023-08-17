@@ -13,16 +13,19 @@ import {
 import { OBB } from "three-stdlib"
 import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
-import { columnSorter } from "./helpers/layouts"
 import {
+  columnSorter,
+  findFirstGuardDown,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getLayoutGroupColumnGroups,
+  getSortedVisibleColumnGroups,
 } from "./helpers/sceneQueries"
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
+  isHouseLayoutGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -98,15 +101,15 @@ export const updateHouseLength = (houseGroup: Group) => {
   )
 }
 
-const updateDnas = (houseGroup: Group) => {
+const updateDnas = (houseTransformsGroup: HouseTransformsGroup) => {
   let result: string[][] = []
   pipe(
-    houseGroup.children,
-    A.lookup(0),
-    O.map((columnsContainerGroup) =>
+    houseTransformsGroup,
+    findFirstGuardDown(isHouseLayoutGroup),
+    O.map((layoutGroup) =>
       pipe(
-        columnsContainerGroup.children,
-        columnSorter,
+        layoutGroup,
+        getSortedVisibleColumnGroups,
         A.map((v) => {
           v.traverse((node) => {
             if (node.userData.type === UserDataTypeEnum.Enum.ModuleGroup) {
@@ -127,7 +130,7 @@ const updateDnas = (houseGroup: Group) => {
       )
     )
   )
-  houseGroup.userData.dnas = result.flat()
+  houseTransformsGroup.userData.dnas = result.flat()
 }
 
 export const updateIndexedHouseTransforms = (
