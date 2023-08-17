@@ -16,11 +16,13 @@ import { A, O } from "../../../utils/functions"
 import { yAxis } from "../../../utils/three"
 import {
   columnSorter,
+  findAllGuardDown,
   findFirstGuardDown,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
+  getVisibleColumnGroups,
 } from "./helpers/sceneQueries"
 import {
   HouseLayoutGroup,
@@ -31,7 +33,7 @@ import {
   UserDataTypeEnum,
 } from "./userData"
 
-export const DEBUG = false
+export const DEBUG = true
 
 let lastMesh: Mesh | null
 
@@ -45,15 +47,20 @@ const renderOBB = (obb: OBB, scene: Object3D) => {
   const mesh = new Mesh(geom, material)
   mesh.position.copy(obb.center)
   mesh.setRotationFromMatrix(new Matrix4().setFromMatrix3(obb.rotation))
+  mesh.userData.type = "OBB"
   scene.add(mesh)
   lastMesh = mesh
 }
 
 export const updateHouseOBB = (houseTransformsGroup: HouseTransformsGroup) => {
-  const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
   const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
 
+  const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
+
   const { x, y, z } = houseTransformsGroup.position
+
+  console.log({ width, height, length })
+  console.log({ x, y, z })
 
   const center = new Vector3(x, y + height / 2, z)
   const halfSize = new Vector3(width / 2, height / 2, length / 2)
@@ -61,8 +68,9 @@ export const updateHouseOBB = (houseTransformsGroup: HouseTransformsGroup) => {
 
   activeLayoutGroup.userData.obb.set(center, halfSize, rotation)
 
-  if (DEBUG && houseTransformsGroup.parent)
+  if (DEBUG && houseTransformsGroup.parent) {
     renderOBB(activeLayoutGroup.userData.obb, houseTransformsGroup.parent)
+  }
 }
 
 export const updateHouseWidth = (houseGroup: Group) => {}
@@ -83,23 +91,6 @@ export const updateClippingPlanes = (houseGroup: Group) => {
   planeY.applyMatrix4(houseGroup.matrix)
   planeZ.set(new Vector3(0, 0, 1), 0)
   planeZ.applyMatrix4(houseGroup.matrix)
-}
-
-export const updateHouseLength = (houseGroup: Group) => {
-  pipe(
-    houseGroup.children,
-    A.head,
-    O.map((zCenterHouseGroup) => {
-      const { children: columnGroups } = zCenterHouseGroup
-
-      houseGroup.userData.length = columnGroups.reduce(
-        (acc, columnGroup) => acc + columnGroup.userData.length,
-        0
-      )
-
-      zCenterHouseGroup.position.setZ(-houseGroup.userData.length / 2)
-    })
-  )
 }
 
 const updateDnas = (houseTransformsGroup: HouseTransformsGroup) => {
@@ -153,7 +144,6 @@ export const updateIndexedHouseTransforms = (
 export const updateEverything = (
   houseTransformsGroup: HouseTransformsGroup
 ) => {
-  updateHouseLength(houseTransformsGroup)
   updateHouseOBB(houseTransformsGroup)
   // updateClippingPlanes(houseTransformsGroup)
   updateDnas(houseTransformsGroup)
@@ -173,6 +163,14 @@ export const updateEverything = (
 }
 
 export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
+  pipe(
+    layoutGroup,
+    getLayoutGroupColumnGroups,
+    A.filter((columnGroup) => !columnGroup.visible)
+  ).forEach((columnGroup) => {
+    columnGroup.removeFromParent()
+  })
+
   const oldLength = layoutGroup.userData.length
 
   const length = layoutGroup.children
@@ -189,12 +187,4 @@ export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
   )
 
   updateHouseOBB(layoutGroup.parent as HouseTransformsGroup)
-
-  pipe(
-    layoutGroup,
-    getLayoutGroupColumnGroups,
-    A.filter((columnGroup) => !columnGroup.visible)
-  ).forEach((columnGroup) => {
-    columnGroup.removeFromParent()
-  })
 }

@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, pipeLog, T } from "../../../../utils/functions"
+import { A, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -28,13 +28,6 @@ import {
 } from "../userData"
 
 const TMP_MAX_LENGTH = 10
-
-const logColumnGroupZs = (columnGroups: ColumnGroup[]) =>
-  pipe(
-    columnGroups,
-    A.map((x) => x.position.z),
-    pipeLog
-  )
 
 const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
@@ -374,10 +367,6 @@ const useOnDragStretch = () => {
         )
       }
 
-      logColumnGroupZs(sortedVisibleColumnGroups)
-
-      console.log("------------")
-
       if (direction === -1) {
         pipe(
           sortedVisibleColumnGroups,
@@ -402,8 +391,6 @@ const useOnDragStretch = () => {
           )
         )
       }
-
-      logColumnGroupZs(sortedVisibleColumnGroups)
 
       recomputeLayoutGroup(layoutGroup)
 
