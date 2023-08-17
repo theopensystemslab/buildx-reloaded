@@ -211,6 +211,11 @@ export const getSortedVisibleColumnGroups = (
     columnSorter
   )
 
+export const getLayoutGroupColumnIndices = flow(
+  getSortedVisibleColumnGroups,
+  A.map((x) => x.userData.columnIndex)
+)
+
 export const getLayoutGroupBySectionType = (
   houseTransformsGroup: Group,
   sectionType: string

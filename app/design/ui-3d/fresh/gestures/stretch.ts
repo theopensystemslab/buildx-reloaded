@@ -1,8 +1,7 @@
-import { takeRight } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, pipeLog, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -15,6 +14,8 @@ import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
+  getLayoutGroupColumnGroups,
+  getLayoutGroupColumnIndices,
   getSortedVisibleColumnGroups,
   handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
@@ -72,9 +73,6 @@ const useOnDragStretch = () => {
 
     const lastColumnGroup = fences[fences.length - 1].columnGroup
     const columnGroup = templateVanillaColumnGroup.clone()
-
-    columnGroup.userData.columnIndex =
-      lastColumnGroup.userData.columnIndex + 1 * side
 
     let z = 0
     if (side === 1) {
@@ -170,11 +168,15 @@ const useOnDragStretch = () => {
                 for (let i = 0; i < 3; i++) {
                   addVanilla(direction)
                 }
+
+                console.log(`fences 1`)
+                console.log(stretchZProgressDataRef.current.fences)
               }
 
               if (direction === -1) {
                 stretchZProgressDataRef.current.fences = pipe(
                   midColumnGroups,
+                  A.reverse,
                   A.map((columnGroup) => {
                     const z = columnGroup.position.z
                     return {
@@ -185,6 +187,10 @@ const useOnDragStretch = () => {
                 )
                 stretchZProgressDataRef.current.fenceIndex =
                   stretchZProgressDataRef.current.fences.length - 1
+
+                for (let i = 0; i < 3; i++) {
+                  addVanilla(direction)
+                }
               }
             })
           )
@@ -227,6 +233,7 @@ const useOnDragStretch = () => {
 
       const { fenceIndex, fences } = stretchZProgressDataRef.current
 
+      // back side
       if (direction === 1) {
         // const cl = clamp(lo, hi)
 
@@ -238,6 +245,8 @@ const useOnDragStretch = () => {
             if (realDistance >= nextFence.z) {
               setVisibleAndRaycast(nextFence.columnGroup)
               endColumnGroup.userData.columnIndex++
+              nextFence.columnGroup.userData.columnIndex =
+                endColumnGroup.userData.columnIndex - 1
               stretchZProgressDataRef.current.fenceIndex++
 
               if (nextFence.z < maxLength) {
@@ -256,60 +265,100 @@ const useOnDragStretch = () => {
             if (realDistance < lastVisibleFence.z) {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
               stretchZProgressDataRef.current.fenceIndex--
+              lastVisibleFence.columnGroup.userData.columnIndex = -1
               endColumnGroup.userData.columnIndex--
             }
           }
         }
       }
 
+      // front side
       if (direction === -1) {
         // const cl = clamp(lo, hi)
-        // additive direction to back side
-        // if (distance > lastDistance) {
-        //   if (fenceIndex + 1 < fences.length) {
-        //     const nextFence = fences[fenceIndex + 1]
-        //     const realDistance = midStartZ - distance
-        //     if (realDistance <= nextFence.z) {
-        //       setVisibleAndRaycast(nextFence.columnGroup)
-        //       // up all column indices ahead
-        //       // endColumnGroup.userData.columnIndex++
-        //       stretchZProgressDataRef.current.fenceIndex++
-        //       // naive
-        //       if (nextFence.z < -maxLength) {
-        //         addVanilla(direction)
-        //       }
-        //     }
-        //   }
-        // }
-        // subtractive direction to back side
-        // if (distance < lastDistance) {
-        //   if (fenceIndex > 0) {
-        //     const realDistance = midEndZ + distance
-        //     const lastVisibleFence = fences[fenceIndex]
-        //     if (realDistance < lastVisibleFence.z) {
-        //       setInvisibleNoRaycast(lastVisibleFence.columnGroup)
-        //       stretchZProgressDataRef.current.fenceIndex--
-        //       endColumnGroup.userData.columnIndex--
-        //     }
-        //   }
-        // }
+        // additive direction to front side
+        if (distance < lastDistance) {
+          if (fenceIndex + 1 < fences.length) {
+            const nextFence = fences[fenceIndex + 1]
+            const realDistance = midStartZ + distance
+            if (realDistance <= nextFence.z) {
+              setVisibleAndRaycast(nextFence.columnGroup)
+
+              nextFence.columnGroup.userData.columnIndex = 1
+
+              pipe(
+                layoutGroup,
+                getSortedVisibleColumnGroups,
+                A.dropLeft(2)
+              ).forEach((columnGroup) => {
+                columnGroup.userData.columnIndex++
+              })
+              stretchZProgressDataRef.current.fenceIndex++
+
+              // naive
+              if (nextFence.z < maxLength) {
+                addVanilla(direction)
+              }
+            }
+          }
+        }
+        // subtractive direction to front side
+        if (distance > lastDistance) {
+          if (fenceIndex > 0) {
+            const realDistance = midStartZ + distance
+            const lastVisibleFence = fences[fenceIndex]
+
+            if (realDistance > lastVisibleFence.z) {
+              setInvisibleNoRaycast(lastVisibleFence.columnGroup)
+              lastVisibleFence.columnGroup.userData.columnIndex = -1
+
+              pipe(
+                layoutGroup,
+                getSortedVisibleColumnGroups,
+                A.dropLeft(2)
+              ).forEach((columnGroup) => {
+                columnGroup.userData.columnIndex--
+              })
+              stretchZProgressDataRef.current.fenceIndex--
+
+              pipe(
+                layoutGroup,
+                getSortedVisibleColumnGroups,
+                A.map((x) => x.userData.columnIndex),
+                pipeLog
+              )
+            }
+          }
+        }
       }
 
       stretchZProgressDataRef.current.lastDistance = distance
     },
     last: () => {
       if (!stretchZInitialDataRef.current) return
-      const { layoutGroup, endColumnGroup } = stretchZInitialDataRef.current
+
+      const { layoutGroup } = stretchZInitialDataRef.current
+
+      const sortedVisibleColumnGroups = pipe(
+        layoutGroup,
+        getSortedVisibleColumnGroups
+      )
 
       pipe(
-        layoutGroup,
-        getSortedVisibleColumnGroups,
-        takeRight(2),
-        ([penultimateColumnGroup]) => {
+        sortedVisibleColumnGroups,
+        A.takeRight(2),
+        ([penultimateColumnGroup, endColumnGroup]) => {
           endColumnGroup.position.setZ(
             penultimateColumnGroup.position.z +
               penultimateColumnGroup.userData.length
-            // / 2 + endColumnGroup.userData.length / 2
+          )
+        }
+      )
+      pipe(
+        sortedVisibleColumnGroups,
+        A.takeLeft(2),
+        ([startColumnGroup, secondColumnGroup]) => {
+          startColumnGroup.position.setZ(
+            secondColumnGroup.position.z - startColumnGroup.userData.length
           )
         }
       )
