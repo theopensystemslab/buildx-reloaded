@@ -62,8 +62,11 @@ export const createStretchHandle = ({
   const geometry = new RoundedBoxGeometry(
     ((axis === "z" ? width : length) * 2) / 1.5,
     1,
-    1
+    1,
+    undefined,
+    0.5
   )
+
   const material = handleMaterial
 
   const mesh = new Mesh(geometry, material)
