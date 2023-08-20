@@ -6,7 +6,7 @@ import { Group, Vector3 } from "three"
 import { HouseType } from "../../../../../server/data/houseTypes"
 import userDB, { House } from "../../../../db/user"
 import { A } from "../../../../utils/functions"
-import { setVisibleAndRaycast } from "../../../../utils/three"
+import { setRaycasting, setVisibleAndRaycast } from "../../../../utils/three"
 import { nanoid } from "nanoid"
 import { floor } from "../../../../utils/math"
 import { createInitialHouse } from "../helpers/layouts"
@@ -75,7 +75,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
     houseGroup.position.set(position.x, position.y, position.z)
     houseGroup.rotation.set(0, rotation, 0)
 
-    setVisibleAndRaycast(houseGroup)
+    setRaycasting(houseGroup, true)
 
     rootRef.current.add(houseGroup)
     // liveHouses[houseId] = houseGroup

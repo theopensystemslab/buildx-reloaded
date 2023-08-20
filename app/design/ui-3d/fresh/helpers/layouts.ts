@@ -397,7 +397,7 @@ export const createLayoutGroup = ({
           //   console.log("refreshing handles")
           //   removeAllHandles()
 
-          const { buildingOrLevelMode, siteMode } = getModeBools(siteCtx.mode)
+          const { siteMode } = getModeBools(siteCtx.mode)
 
           //   const stretchViz = (handle: StretchHandleMesh) => {
           //     if (buildingOrLevelMode) {
@@ -492,7 +492,7 @@ export const createLayoutGroup = ({
           const { startColumnGroup, endColumnGroup } =
             splitColumnGroups(columnGroups)
 
-          const stretchHandles = pipe(
+          pipe(
             [1, -1] as Array<1 | -1>,
             cartesian(["x", "z"] as Array<"z" | "x">),
             A.map(([axis, side]) => {
@@ -502,7 +502,6 @@ export const createLayoutGroup = ({
                 houseLength: length,
                 houseWidth: width,
               })
-              setVisibility(stretchHandleGroup, buildingOrLevelMode)
               if (axis === "z") {
                 if (side === 1) {
                   endColumnGroup.add(stretchHandleGroup)
@@ -512,6 +511,7 @@ export const createLayoutGroup = ({
               } else {
                 layoutGroup.add(stretchHandleGroup)
               }
+              setVisibility(stretchHandleGroup, !siteMode)
               // return stretchHandleGroup
             })
           )

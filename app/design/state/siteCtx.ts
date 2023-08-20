@@ -171,15 +171,10 @@ export const getModeBools = (_mode?: SiteCtxMode) => {
 
   const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
 
-  const buildingOrLevelMode = (
-    [SiteCtxModeEnum.Enum.BUILDING, SiteCtxModeEnum.Enum.LEVEL] as SiteCtxMode[]
-  ).includes(mode)
-
   return {
     siteMode,
     buildingMode,
     levelMode,
-    buildingOrLevelMode,
   }
 }
 

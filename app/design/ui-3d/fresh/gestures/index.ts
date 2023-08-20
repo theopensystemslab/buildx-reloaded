@@ -62,11 +62,10 @@ const useGestures = () => {
 
       const { object, point } = firstDragEventRef.current!
 
-      const { siteMode, buildingOrLevelMode } = getModeBools()
+      const { siteMode } = getModeBools()
 
       // stretch
-      if (buildingOrLevelMode && isStretchHandleMesh(object)) {
-        console.log("hello stretch")
+      if (!siteMode && isStretchHandleMesh(object)) {
         const handleGroup = object.parent as StretchHandleGroup
         const {
           userData: { axis },

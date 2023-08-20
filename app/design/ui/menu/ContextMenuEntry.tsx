@@ -58,8 +58,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props.onClose?.()
   }
 
-  const { siteMode, buildingMode, levelMode, buildingOrLevelMode } =
-    getModeBools(mode)
+  const { siteMode, buildingMode, levelMode } = getModeBools(mode)
 
   const houseTypes = useHouseTypes()
 

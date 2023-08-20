@@ -22,11 +22,11 @@ export const useRouting = () => {
     if (urlChangingLock.current) return
     if (!location.startsWith("/design")) return
 
-    const { buildingOrLevelMode, levelMode } = getModeBools(siteCtx.mode)
+    const { siteMode, levelMode } = getModeBools(siteCtx.mode)
 
     let path = "/design"
 
-    if (siteCtx.houseId && buildingOrLevelMode) {
+    if (siteCtx.houseId && !siteMode) {
       path += `?houseId=${siteCtx.houseId}`
       if (levelMode) {
         path += `&levelIndex=${siteCtx.levelIndex}`

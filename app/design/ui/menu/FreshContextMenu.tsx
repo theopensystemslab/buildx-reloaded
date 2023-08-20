@@ -1,23 +1,19 @@
-import React, { Fragment, useMemo, useState } from "react"
-import { Pencil, TextCursor } from "../../../ui/icons"
+import { Fragment, useMemo, useState } from "react"
 import { ScopeItem } from "../../state/scope"
 import siteCtx, { downMode, getModeBools } from "../../state/siteCtx"
-import RenameForm from "../RenameForm"
 import ContextMenu from "./ContextMenu"
-import ContextMenuButton from "./ContextMenuButton"
 
 const FreshContextMenu = () => {
   const [item, setItem] = useState<ScopeItem | null>(null)
   const [{ pageX, pageY }, setPageXY] = useState({ pageX: 0, pageY: 0 })
 
-  const { buildingMode, buildingOrLevelMode, levelMode, siteMode } =
-    useMemo(() => {
-      const modeBools = getModeBools(siteCtx.mode)
-      return {
-        ...modeBools,
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [item])
+  const { siteMode } = useMemo(() => {
+    const modeBools = getModeBools(siteCtx.mode)
+    return {
+      ...modeBools,
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item])
 
   const editBuilding = () => {
     if (!item) return

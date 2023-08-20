@@ -65,7 +65,7 @@ const FreshApp = () => {
   const hideAllHandles = () => {
     rootRef.current?.traverse((node) => {
       if (
-        node.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh ||
+        node.userData.type === UserDataTypeEnum.Enum.StretchHandleGroup ||
         node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup
       ) {
         setInvisibleNoRaycast(node)
@@ -103,11 +103,9 @@ const FreshApp = () => {
     const { houseId, levelIndex, mode } = siteCtx
     const { selected } = scope
 
-    const stretchModes: SiteCtxMode[] = [
-      SiteCtxModeEnum.Enum.BUILDING,
-      SiteCtxModeEnum.Enum.LEVEL,
-    ]
+    const { buildingMode, levelMode, siteMode } = getModeBools()
 
+    console.log(`hide all handles`)
     hideAllHandles()
 
     const allHouseTransformGroups = pipe(
@@ -124,11 +122,12 @@ const FreshApp = () => {
       })
     )
 
-    if (stretchModes.includes(mode)) {
-      if (houseId) showHouseStretchHandles(houseId)
+    if (houseId && (buildingMode || levelMode)) {
+      console.log("show stretch handles")
+      showHouseStretchHandles(houseId)
     }
 
-    if (mode === SiteCtxModeEnum.Enum.LEVEL) {
+    if (levelMode) {
       if (houseId !== null && levelIndex !== null) {
         pipe(
           houseLevelIndexToCutHeight(houseId, levelIndex),
@@ -139,7 +138,7 @@ const FreshApp = () => {
       }
     }
 
-    if (mode === SiteCtxModeEnum.Enum.SITE) {
+    if (siteMode) {
       if (selected !== null) {
         const { houseId } = selected
         showHouseRotateHandles(houseId)

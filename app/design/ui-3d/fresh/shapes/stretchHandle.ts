@@ -45,7 +45,7 @@ const createStretchHandle = ({
     boxMesh.scale.setX(houseWidth)
 
     if (side === 1) {
-      handleGroup.position.setZ(houseLength + OFFSET)
+      handleGroup.position.setZ(OFFSET * 1.75)
     } else if (side === -1) {
       handleGroup.position.setZ(-OFFSET)
     }
