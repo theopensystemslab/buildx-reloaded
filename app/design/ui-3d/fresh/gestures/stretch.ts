@@ -8,7 +8,7 @@ import {
   yAxis,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
-import { recomputeLayoutGroup } from "../dimensions"
+import { updateLayoutGroupLength } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import { createColumnGroup, splitColumnGroups } from "../helpers/layouts"
 import {
@@ -23,6 +23,7 @@ import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
+  StretchHandleGroup,
   StretchHandleMesh,
   StretchHandleMeshUserData,
 } from "../userData"
@@ -33,7 +34,7 @@ const useOnDragStretch = () => {
   const stretchZInitialDataRef = useRef<{
     direction: number
     point0: Vector3
-    handleGroup: Object3D
+    handleColumnGroup: Object3D
     houseTransformsGroup: HouseTransformsGroup
     layoutGroup: HouseLayoutGroup
     handleGroupZ0: number
@@ -66,6 +67,8 @@ const useOnDragStretch = () => {
   const addVanilla = (side: 1 | -1) => {
     if (!stretchZInitialDataRef.current) return
 
+    console.log(`add vanilla`)
+
     const { templateVanillaColumnGroup, layoutGroup } =
       stretchZInitialDataRef.current
 
@@ -95,10 +98,10 @@ const useOnDragStretch = () => {
 
   const onDragStretchZ = {
     first: ({
-      handleObject,
+      handleGroup,
       point,
     }: {
-      handleObject: StretchHandleMesh
+      handleGroup: StretchHandleGroup
       point: Vector3
     }) => {
       dispatchOutline({
@@ -106,10 +109,10 @@ const useOnDragStretch = () => {
         selectedObjects: [],
       })
 
-      const handleGroup = handleColumnGroupParentQuery(handleObject)
-      const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
+      const handleColumnGroup = handleColumnGroupParentQuery(handleGroup)
+      const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
 
-      const { direction } = handleObject.userData
+      const { side } = handleGroup.userData
       const { systemId, houseId, vanillaColumn } =
         getActiveHouseUserData(houseTransformsGroup)
 
@@ -133,12 +136,12 @@ const useOnDragStretch = () => {
               const vanillaLength = templateVanillaColumnGroup.userData.length
 
               stretchZInitialDataRef.current = {
-                direction,
-                handleGroup,
+                direction: side,
+                handleColumnGroup: handleColumnGroup,
                 layoutGroup,
                 houseTransformsGroup,
                 point0: point,
-                handleGroupZ0: handleGroup.position.z,
+                handleGroupZ0: handleColumnGroup.position.z,
                 templateVanillaColumnGroup,
                 vanillaLength,
                 columnGroups,
@@ -150,7 +153,7 @@ const useOnDragStretch = () => {
                 midEndZ: endColumnGroup.position.z,
               }
 
-              if (direction === 1) {
+              if (side === 1) {
                 stretchZProgressDataRef.current.fences = pipe(
                   midColumnGroups,
                   A.map((columnGroup) => {
@@ -166,20 +169,11 @@ const useOnDragStretch = () => {
                   stretchZProgressDataRef.current.fences.length - 1
 
                 for (let i = 0; i < 3; i++) {
-                  addVanilla(direction)
+                  addVanilla(side)
                 }
-                console.log(`fences 1`)
-                console.log(
-                  stretchZProgressDataRef.current.fences.map(
-                    ({ columnGroup, z }) => [
-                      columnGroup.userData.columnIndex,
-                      z,
-                    ]
-                  )
-                )
               }
 
-              if (direction === -1) {
+              if (side === -1) {
                 stretchZProgressDataRef.current.fences = pipe(
                   midColumnGroups,
                   A.reverse,
@@ -195,19 +189,11 @@ const useOnDragStretch = () => {
                   stretchZProgressDataRef.current.fences.length - 1
 
                 for (let i = 0; i < 3; i++) {
-                  addVanilla(direction)
+                  addVanilla(side)
                 }
               }
 
-              const { fenceIndex, fences } = stretchZProgressDataRef.current
-
-              console.log({
-                fenceIndex,
-                fences: stretchZProgressDataRef.current.fences.map(
-                  ({ columnGroup, z }) => [columnGroup.userData.columnIndex, z]
-                ),
-                fence: fences[fenceIndex],
-              })
+              console.log(stretchZProgressDataRef.current.fences)
             })
           )
         )
@@ -222,7 +208,7 @@ const useOnDragStretch = () => {
         direction,
         point0,
         houseTransformsGroup,
-        handleGroup,
+        handleColumnGroup: handleGroup,
         handleGroupZ0,
         vanillaLength,
         templateVanillaColumnGroup,
@@ -234,7 +220,7 @@ const useOnDragStretch = () => {
         midStartZ,
       } = stretchZInitialDataRef.current
 
-      const { lastDistance, fences: vanillaFences } =
+      const { lastDistance, fences, fenceIndex } =
         stretchZProgressDataRef.current
 
       const [x1, z1] = pointer.xz
@@ -246,8 +232,6 @@ const useOnDragStretch = () => {
       const distance = distanceVector.z
 
       handleGroup.position.set(0, 0, handleGroupZ0 + distance)
-
-      const { fenceIndex, fences } = stretchZProgressDataRef.current
 
       // back side
       if (direction === 1) {
@@ -392,7 +376,7 @@ const useOnDragStretch = () => {
         )
       }
 
-      recomputeLayoutGroup(layoutGroup)
+      updateLayoutGroupLength(layoutGroup)
 
       stretchZInitialDataRef.current = null
       stretchZProgressDataRef.current = {

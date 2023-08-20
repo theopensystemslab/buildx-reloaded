@@ -99,33 +99,6 @@ export const takeWhileGuardDown =
     return results
   }
 
-export const findHouseTransformsGroupDown = (
-  rootRef: RefObject<Object3D>,
-  houseId: string
-) =>
-  pipe(
-    rootRef.current?.children,
-    O.fromNullable,
-    O.chain(A.findFirst((x) => x.userData.houseId === houseId))
-  ) as O.Option<HouseTransformsGroup>
-
-export const mapHouseTransformGroup = (
-  rootRef: RefObject<Object3D>,
-  houseId: string,
-  f: (houseTransformGroup: Object3D) => void
-) => pipe(findHouseTransformsGroupDown(rootRef, houseId), O.map(f))
-
-export const mapAllHouseTransformGroups = (
-  rootRef: RefObject<Object3D>,
-  f: (houseTransformGroup: Object3D) => void
-): void =>
-  pipe(
-    rootRef.current?.children ?? [],
-    A.filter(isHouseTransformsGroup),
-    A.map(f),
-    () => void null
-  )
-
 export const getHouseTransformsGroupUp = (
   object: Object3D
 ): HouseTransformsGroup => {

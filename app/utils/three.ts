@@ -191,8 +191,8 @@ export const useRotations = () => {
 }
 
 export const setVisibleAndRaycast = (object: Object3D) => {
-  object.visible = true
   object.traverse((node) => {
+    node.visible = true
     node.layers.set(CameraLayer.VISIBLE)
     node.layers.enable(RaycasterLayer.ENABLED)
   })
@@ -217,6 +217,11 @@ export const setInvisibleButRaycast = (object: Object3D) => {
     node.layers.set(CameraLayer.INVISIBLE)
     node.layers.enable(RaycasterLayer.ENABLED)
   })
+}
+
+export const setVisibility = (object: Object3D, bool: boolean) => {
+  if (bool) setVisibleAndRaycast(object)
+  else setInvisibleNoRaycast(object)
 }
 
 export const replicateObject = <T extends Object3D>(n: number, obj: T): T[] => {

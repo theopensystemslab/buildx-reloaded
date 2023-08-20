@@ -132,3 +132,10 @@ export const headTail = <T>(xs: T[]) =>
       middle,
     })
   )
+
+type Guard<T> = (obj: any) => obj is T
+
+export const combineGuards =
+  <A, B>(guard1: Guard<A>, guard2: Guard<B>): Guard<A | B> =>
+  (obj: any): obj is A | B =>
+    guard1(obj) || guard2(obj)

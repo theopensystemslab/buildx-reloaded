@@ -1,59 +1,69 @@
-import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Material, Mesh } from "three"
 import { A, O } from "../../../../utils/functions"
-import siteCtx, {
-  SiteCtxModeEnum,
-  useModeChangeListener,
-} from "../../../state/siteCtx"
 import {
   GridGroupUserData,
   HouseTransformsGroupUserData,
+  isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
-import { BIG_CLIP_NUMBER } from "./layouts"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,
-  findHouseTransformsGroupDown,
   getLayoutGroupColumnGroups,
-  mapHouseTransformGroup,
 } from "./sceneQueries"
 
 const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
   const initClippingPlanes = (houseId: string) => {
-    mapHouseTransformGroup(rootRef, houseId, (houseTransformGroup) => {
-      const { clippingPlanes } =
-        houseTransformGroup.userData as HouseTransformsGroupUserData
+    if (!rootRef.current) return
 
-      houseTransformGroup.traverse((x) => {
-        if (x.userData.type === UserDataTypeEnum.Enum.ElementMesh) {
-          ;((x as Mesh).material as Material).clippingPlanes = clippingPlanes
-        }
+    pipe(
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup),
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((houseTransformsGroup) => {
+        const { clippingPlanes } =
+          houseTransformsGroup.userData as HouseTransformsGroupUserData
+
+        houseTransformsGroup.traverse((x) => {
+          if (x.userData.type === UserDataTypeEnum.Enum.ElementMesh) {
+            ;((x as Mesh).material as Material).clippingPlanes = clippingPlanes
+          }
+        })
       })
-    })
+    )
   }
 
   const setYCut = (houseId: string, y: number) => {
-    mapHouseTransformGroup(rootRef, houseId, (houseTransformGroup) => {
-      const {
-        clippingPlanes: [, cpy],
-        height,
-      } = getActiveHouseUserData(houseTransformGroup)
-      cpy.constant = y
-    })
+    if (!rootRef.current) return
+
+    pipe(
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup),
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((houseTransformsGroup) => {
+        const {
+          clippingPlanes: [, cpy],
+          height,
+        } = getActiveHouseUserData(houseTransformsGroup)
+        cpy.constant = y
+      })
+    )
   }
 
   const houseLevelIndexToCutHeight = (
     houseId: string,
     levelIndex: number
   ): O.Option<number> => {
+    if (!rootRef.current) return O.none
+
     return pipe(
-      findHouseTransformsGroupDown(rootRef, houseId),
-      O.chain((houseTransformGroup) =>
-        pipe(
-          houseTransformGroup,
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup),
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.chain(
+        flow(
           getActiveLayoutGroup,
           getLayoutGroupColumnGroups,
           A.head,
@@ -66,15 +76,15 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
                   gridGroup.userData as GridGroupUserData
 
                 return gridGroupUserData.levelIndex === levelIndex
+              }),
+              O.map((gridGroup) => {
+                const { height } = gridGroup.userData as GridGroupUserData
+                return gridGroup.position.y + height / 2
               })
             )
           })
         )
-      ),
-      O.map((gridGroup) => {
-        const { height } = gridGroup.userData as GridGroupUserData
-        return gridGroup.position.y + height / 2
-      })
+      )
     )
   }
 

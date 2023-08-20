@@ -33,11 +33,11 @@ import {
   UserDataTypeEnum,
 } from "./userData"
 
-export const DEBUG = true
+export const DEBUG = false
 
 let lastMesh: Mesh | null
 
-const renderOBB = (obb: OBB, scene: Object3D) => {
+export const renderOBB = (obb: OBB, scene: Object3D) => {
   const size = obb.halfSize.clone().multiplyScalar(2)
 
   if (lastMesh) scene.remove(lastMesh)
@@ -58,9 +58,6 @@ export const updateHouseOBB = (houseTransformsGroup: HouseTransformsGroup) => {
   const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
 
   const { x, y, z } = houseTransformsGroup.position
-
-  console.log({ width, height, length })
-  console.log({ x, y, z })
 
   const center = new Vector3(x, y + height / 2, z)
   const halfSize = new Vector3(width / 2, height / 2, length / 2)
@@ -162,7 +159,8 @@ export const updateEverything = (
   invalidate()
 }
 
-export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
+// triggers trap for OBB etc
+export const updateLayoutGroupLength = (layoutGroup: HouseLayoutGroup) => {
   pipe(
     layoutGroup,
     getLayoutGroupColumnGroups,
@@ -171,20 +169,9 @@ export const recomputeLayoutGroup = (layoutGroup: HouseLayoutGroup) => {
     columnGroup.removeFromParent()
   })
 
-  const oldLength = layoutGroup.userData.length
-
   const length = layoutGroup.children
     .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
     .reduce((acc, v) => acc + v.userData.length, 0)
 
-  layoutGroup.position.setZ(-length / 2)
   layoutGroup.userData.length = length
-  layoutGroup.parent?.position.add(
-    new Vector3(0, 0, (length - oldLength) / 2).applyAxisAngle(
-      yAxis,
-      layoutGroup.parent.rotation.y
-    )
-  )
-
-  updateHouseOBB(layoutGroup.parent as HouseTransformsGroup)
 }

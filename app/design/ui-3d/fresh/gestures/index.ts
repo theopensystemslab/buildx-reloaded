@@ -25,6 +25,7 @@ import {
   isElementMesh,
   isRotateHandleMesh,
   isStretchHandleMesh,
+  StretchHandleGroup,
   UserDataTypeEnum,
 } from "../userData"
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
@@ -65,12 +66,14 @@ const useGestures = () => {
 
       // stretch
       if (buildingOrLevelMode && isStretchHandleMesh(object)) {
+        console.log("hello stretch")
+        const handleGroup = object.parent as StretchHandleGroup
         const {
           userData: { axis },
-        } = object
+        } = handleGroup
 
         if (axis === "z" && isStretchHandleMesh(object)) {
-          if (first) onDragStretchZ.first({ handleObject: object, point })
+          if (first) onDragStretchZ.first({ handleGroup, point })
           if (!first && !last) onDragStretchZ.mid()
           if (last) onDragStretchZ.last()
         }

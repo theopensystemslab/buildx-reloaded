@@ -29,8 +29,6 @@ const useOnDragMove = () => {
       event: { intersections, stopPropagation },
     } = state
 
-    stopPropagation()
-
     switch (true) {
       case first: {
         pipe(

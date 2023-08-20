@@ -1,15 +1,18 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useRef } from "react"
+import { useKey } from "react-use"
 import { Group } from "three"
-import { O } from "../../../utils/functions"
+import { A, O } from "../../../utils/functions"
 import { useSubscribeKey } from "../../../utils/hooks"
 import {
   setInvisibleNoRaycast,
+  setVisibility,
   setVisibleAndRaycast,
 } from "../../../utils/three"
 import scope from "../../state/scope"
 import siteCtx, {
+  getModeBools,
   SiteCtxMode,
   SiteCtxModeEnum,
   useModeChangeListener,
@@ -20,11 +23,15 @@ import useGestures from "./gestures"
 import useClippingPlaneHelpers from "./helpers/clippingPlanes"
 import { BIG_CLIP_NUMBER } from "./helpers/layouts"
 import {
+  findAllGuardDown,
   getActiveHouseUserData,
-  findHouseTransformsGroupDown,
-  mapAllHouseTransformGroups,
 } from "./helpers/sceneQueries"
-import { UserDataTypeEnum } from "./userData"
+import createStretchHandle from "./shapes/stretchHandle"
+import {
+  isHouseTransformsGroup,
+  isStretchHandleGroup,
+  UserDataTypeEnum,
+} from "./userData"
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -33,19 +40,25 @@ const FreshApp = () => {
 
   const bindAll = useGestures()
 
-  // useKeyTestInteractions(rootRef)
-
   const showHouseStretchHandles = (houseId: string) => {
+    if (!rootRef.current) return
+
+    const allHouseTransformGroups = pipe(
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup)
+    )
+
     pipe(
-      findHouseTransformsGroupDown(rootRef, houseId),
-      O.map((houseTransformGroup) => {
-        houseTransformGroup.traverse((node) => {
-          if (node.userData.type === UserDataTypeEnum.Enum.StretchHandleMesh) {
-            setVisibleAndRaycast(node)
-            // node.visible = true
-          }
+      allHouseTransformGroups,
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((houseTransformsGroup) =>
+        pipe(
+          houseTransformsGroup,
+          findAllGuardDown(isStretchHandleGroup)
+        ).forEach((handleGroup) => {
+          setVisibleAndRaycast(handleGroup)
         })
-      })
+      )
     )
   }
 
@@ -56,7 +69,6 @@ const FreshApp = () => {
         node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup
       ) {
         setInvisibleNoRaycast(node)
-        // node.visible = false
       }
     })
   }
@@ -65,19 +77,29 @@ const FreshApp = () => {
     useClippingPlaneHelpers(rootRef)
 
   const showHouseRotateHandles = (houseId: string) => {
+    if (!rootRef.current) return
+
+    const allHouseTransformGroups = pipe(
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup)
+    )
+
     pipe(
-      findHouseTransformsGroupDown(rootRef, houseId),
-      O.map((houseTransformGroup) => {
-        houseTransformGroup.traverse((node) => {
+      allHouseTransformGroups,
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((houseTransformsGroup) =>
+        houseTransformsGroup.traverse((node) => {
           if (node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
             setVisibleAndRaycast(node)
           }
         })
-      })
+      )
     )
   }
 
   const f = () => {
+    if (!rootRef.current) return
+
     const { houseId, levelIndex, mode } = siteCtx
     const { selected } = scope
 
@@ -87,10 +109,20 @@ const FreshApp = () => {
     ]
 
     hideAllHandles()
-    mapAllHouseTransformGroups(rootRef, (houseTransformGroup) => {
-      const { houseId } = getActiveHouseUserData(houseTransformGroup)
-      setYCut(houseId, BIG_CLIP_NUMBER)
-    })
+
+    const allHouseTransformGroups = pipe(
+      rootRef.current.children,
+      A.filter(isHouseTransformsGroup)
+    )
+
+    pipe(
+      allHouseTransformGroups,
+      A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((houseTransformsGroup) => {
+        const { houseId } = getActiveHouseUserData(houseTransformsGroup)
+        setYCut(houseId, BIG_CLIP_NUMBER)
+      })
+    )
 
     if (stretchModes.includes(mode)) {
       if (houseId) showHouseStretchHandles(houseId)
@@ -113,11 +145,6 @@ const FreshApp = () => {
         showHouseRotateHandles(houseId)
       }
     }
-
-    // switch (true) {
-    //   default:
-    //     if (houseId === null) break
-    // }
 
     invalidate()
   }

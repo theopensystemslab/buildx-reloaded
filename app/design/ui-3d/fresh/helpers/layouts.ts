@@ -1,12 +1,12 @@
 import { liveQuery } from "dexie"
+import { cartesian } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import {
   BufferGeometry,
   BufferGeometryLoader,
   Group,
+  Matrix3,
   Mesh,
-  MeshStandardMaterial,
-  Object3D,
   Plane,
   Vector3,
 } from "three"
@@ -20,8 +20,18 @@ import layoutsDB, {
   VanillaColumn,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
-import { A, Num, O, Ord, R, S, T } from "../../../../utils/functions"
+import { A, combineGuards, O, R, S, T } from "../../../../utils/functions"
+import {
+  setInvisibleNoRaycast,
+  setVisibility,
+  setVisibleAndRaycast,
+  yAxis,
+} from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
+import siteCtx, { getModeBools } from "../../../state/siteCtx"
+import { renderOBB } from "../dimensions"
+import createRotateHandles from "../shapes/rotateHandles"
+import createStretchHandle from "../shapes/stretchHandle"
 import { getMaterial } from "../systems"
 import {
   ColumnGroup,
@@ -30,10 +40,14 @@ import {
   GridGroupUserData,
   HouseLayoutGroupUserData,
   HouseTransformsGroupUserData,
+  isRotateHandlesGroup,
+  isStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "../userData"
-import { createRotateHandles, createStretchHandle } from "./handles"
+import { findAllGuardDown } from "./sceneQueries"
+
+export const DEBUG = false
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -259,7 +273,7 @@ export const createColumnGroups = ({
   systemId: string
   houseId: string
   houseLayout: ColumnLayout
-}): T.Task<Group[]> =>
+}): T.Task<ColumnGroup[]> =>
   pipe(
     houseLayout,
     A.traverseWithIndex(T.ApplicativeSeq)(
@@ -364,117 +378,201 @@ export const createLayoutGroup = ({
             modifiedMaterials: {},
             vanillaColumn,
           }
-          layoutGroup.userData = userData
+
           layoutGroup.position.setZ(-length / 2)
           layoutGroup.add(...columnGroups)
 
-          pipe(
-            columnGroups,
-            A.findFirst((x) => x.userData.columnIndex === 0),
-            O.map((firstColumn) => {
-              const stretchHandle = createStretchHandle({
-                houseId,
-                axis: "z",
-                direction: -1,
-                length,
-                width,
+          // const removeAllHandles = () => {
+          //   pipe(
+          //     layoutGroup,
+          //     findAllGuardDown(
+          //       combineGuards(isRotateHandlesGroup, isStretchHandleMesh)
+          //     )
+          //   ).forEach((x) => {
+          //     x.removeFromParent()
+          //   })
+          // }
+
+          // const refreshHandles = () => {
+          //   console.log("refreshing handles")
+          //   removeAllHandles()
+
+          const { buildingOrLevelMode, siteMode } = getModeBools(siteCtx.mode)
+
+          //   const stretchViz = (handle: StretchHandleMesh) => {
+          //     if (buildingOrLevelMode) {
+          //       setVisibleAndRaycast(handle)
+          //     } else {
+          //       setInvisibleNoRaycast(handle)
+          //     }
+          //     return handle
+          //   }
+
+          //   const stretchXHandleUp = createStretchHandle({
+          //     axis: "x",
+          //     direction: 1,
+          //     houseId,
+          //     length,
+          //     width,
+          //   })
+          //   stretchViz(stretchXHandleUp)
+
+          //   layoutGroup.add(stretchXHandleUp)
+
+          //   const stretchXHandleDown = createStretchHandle({
+          //     axis: "x",
+          //     direction: -1,
+          //     houseId,
+          //     length,
+          //     width,
+          //   })
+          //   stretchViz(stretchXHandleDown)
+          //   layoutGroup.add(stretchXHandleDown)
+
+          //   pipe(
+          //     columnGroups,
+          //     A.findFirst((x) => x.userData.columnIndex === 0),
+          //     O.map((firstColumn) => {
+          //       const handle = createStretchHandle({
+          //         houseId,
+          //         axis: "z",
+          //         direction: -1,
+          //         length,
+          //         width,
+          //       })
+          //       firstColumn.add(handle)
+          //       stretchViz(handle)
+          //     })
+          //   )
+
+          //   pipe(
+          //     columnGroups,
+          //     A.findFirst(
+          //       (x) => x.userData.columnIndex === columnGroups.length - 1
+          //     ),
+          //     O.map((lastColumn) => {
+          //       const stretchHandle = createStretchHandle({
+          //         houseId,
+          //         axis: "z",
+          //         direction: 1,
+          //         length,
+          //         width,
+          //       })
+          //       stretchHandle.position.z += lastColumn.userData.length
+          //       lastColumn.add(stretchHandle)
+          //       stretchViz(stretchHandle)
+          //     })
+          //   )
+
+          //   const rotateHandlesGroup = createRotateHandlesGroup({
+          //     width,
+          //     length,
+          //   })
+
+          //   if (siteMode) {
+          //     setVisibleAndRaycast(rotateHandlesGroup)
+          //   } else {
+          //     setInvisibleNoRaycast(rotateHandlesGroup)
+          //   }
+
+          //   layoutGroup.add(rotateHandlesGroup)
+          // }
+
+          // refreshHandles()
+
+          const rotateHandles = createRotateHandles({
+            houseWidth: width,
+            houseLength: length,
+          })
+
+          setVisibility(rotateHandles, siteMode)
+
+          layoutGroup.add(rotateHandles)
+
+          const { startColumnGroup, endColumnGroup } =
+            splitColumnGroups(columnGroups)
+
+          const stretchHandles = pipe(
+            [1, -1] as Array<1 | -1>,
+            cartesian(["x", "z"] as Array<"z" | "x">),
+            A.map(([axis, side]) => {
+              const stretchHandleGroup = createStretchHandle({
+                axis,
+                side,
+                houseLength: length,
+                houseWidth: width,
               })
-              firstColumn.add(stretchHandle)
+              setVisibility(stretchHandleGroup, buildingOrLevelMode)
+              if (axis === "z") {
+                if (side === 1) {
+                  endColumnGroup.add(stretchHandleGroup)
+                } else {
+                  startColumnGroup.add(stretchHandleGroup)
+                }
+              } else {
+                layoutGroup.add(stretchHandleGroup)
+              }
+              // return stretchHandleGroup
             })
           )
+          // layoutGroup.add(...stretchHandles)
 
-          layoutGroup.add(
-            createStretchHandle({
-              axis: "x",
-              direction: 1,
-              houseId,
-              length,
-              width,
-            })
-          )
+          const userDataHandler: ProxyHandler<HouseLayoutGroupUserData> = {
+            set: function (target: any, prop: any, value: any) {
+              if (prop === "length") {
+                const oldLength = target[prop]
+                const newLength = value
+                target[prop] = value
 
-          layoutGroup.add(
-            createStretchHandle({
-              axis: "x",
-              direction: -1,
-              houseId,
-              length,
-              width,
-            })
-          )
+                console.log(
+                  `doing stuff, oldLength: ${oldLength}; newLength: ${newLength}`
+                )
 
-          pipe(
-            columnGroups,
-            A.findFirst(
-              (x) => x.userData.columnIndex === columnGroups.length - 1
-            ),
-            O.map((lastColumn) => {
-              const stretchHandle = createStretchHandle({
-                houseId,
-                axis: "z",
-                direction: 1,
-                length,
-                width,
-              })
-              stretchHandle.position.z += lastColumn.userData.length
-              lastColumn.add(stretchHandle)
-            })
-          )
+                layoutGroup.position.setZ(-newLength / 2)
 
-          layoutGroup.add(createRotateHandles({ width, length }))
+                layoutGroup.parent?.position.add(
+                  new Vector3(0, 0, (newLength - oldLength) / 2).applyAxisAngle(
+                    yAxis,
+                    layoutGroup.parent.rotation.y
+                  )
+                )
 
+                const houseTransformsGroup = layoutGroup.parent!
+
+                const { x, y, z } = houseTransformsGroup.position
+
+                const center = new Vector3(x, y + height / 2, z)
+                const halfSize = new Vector3(
+                  width / 2,
+                  height / 2,
+                  newLength / 2
+                )
+                const rotation = new Matrix3().setFromMatrix4(
+                  houseTransformsGroup.matrix
+                )
+
+                layoutGroup.userData.obb.set(center, halfSize, rotation)
+
+                if (DEBUG && houseTransformsGroup.parent) {
+                  renderOBB(
+                    layoutGroup.userData.obb,
+                    houseTransformsGroup.parent
+                  )
+                }
+
+                // refreshHandles()
+              }
+
+              return true // Indicate assignment success
+            },
+          }
+
+          layoutGroup.userData = new Proxy(userData, userDataHandler)
           return layoutGroup
         })
       )
     })
   )
-
-// export const createTransformsGroup = () => {}
-
-// export const houseLayoutToHouseGroup = ({
-//   systemId,
-//   houseId,
-//   houseLayout,
-// }: {
-//   systemId: string
-//   houseId: string
-//   houseLayout: ColumnLayout
-// }): T.Task<Group> =>
-//   pipe(
-//     createColumnGroups({
-//       systemId,
-//       houseLayout,
-//     }),
-//     T.chain((columnGroups) => async () => {
-//       const transformsGroup = new Group()
-//       const layoutGroup = new Group()
-
-//       const BIG_NUMBER = 999
-
-//       const clippingPlanes: Plane[] = [
-//         new Plane(new Vector3(BIG_NUMBER, 0, 0), 0),
-//         new Plane(new Vector3(0, BIG_NUMBER, 0), 0),
-//         new Plane(new Vector3(0, 0, BIG_NUMBER), 0),
-//       ]
-
-//       const houseTransformsGroupUserData: Partial<HouseTransformsGroupUserData> =
-//         {
-//           type: UserDataTypeEnum.Enum.HouseTransformsGroup,
-//           systemId,
-//           houseId,
-//           clippingPlanes,
-//         }
-//       transformsGroup.userData = houseTransformsGroupUserData
-
-//       layoutGroup.add(...columnGroups)
-//       layoutGroup.position.setZ(-length / 2)
-//       layoutGroup.userData.type = UserDataTypeEnum.Enum.HouseLayoutGroup
-
-//       transformsGroup.add(layoutGroup)
-
-//       return transformsGroup
-//     })
-//   )
 
 export const getHouseLayout = ({
   systemId,

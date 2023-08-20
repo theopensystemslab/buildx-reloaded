@@ -32,6 +32,7 @@ export const UserDataTypeEnum = z.enum([
   "GridGroup",
   "ModuleGroup",
   "ElementMesh",
+  "StretchHandleGroup",
   "StretchHandleMesh",
   "RotateHandlesGroup",
   "RotateHandleMesh",
@@ -40,7 +41,6 @@ export const UserDataTypeEnum = z.enum([
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
 export type HouseTransformsGroupUserData = {
-  // all
   type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
   systemId: string
   houseId: string
@@ -48,7 +48,6 @@ export type HouseTransformsGroupUserData = {
   friendlyName: string
   clippingPlanes: Plane[]
   activeChildUuid: string
-  // preview specific
 }
 
 export type HouseLayoutGroupUserData = {
@@ -97,11 +96,14 @@ export type ElementMeshUserData = {
 
 // --- HANDLES ---
 
+export type StretchHandleGroupUserData = {
+  type: typeof UserDataTypeEnum.Enum.StretchHandleGroup
+  axis: "z" | "x"
+  side: 1 | -1
+}
+
 export type StretchHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleMesh
-  axis: "z" | "x"
-  direction: 1 | -1
-  houseId: string
 }
 
 export type RotateHandlesGroupUserData = {
@@ -162,6 +164,10 @@ export type RotateHandlesGroup = Group & {
   userData: RotateHandlesGroupUserData
 }
 
+export type StretchHandleGroup = Group & {
+  userData: StretchHandleGroupUserData
+}
+
 // Type Guards
 export const isElementMesh = (node: Object3D): node is ElementMesh =>
   node.userData?.type === UserDataTypeEnum.Enum.ElementMesh
@@ -195,6 +201,11 @@ export const isRotateHandlesGroup = (
   node: Object3D
 ): node is RotateHandlesGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.RotateHandlesGroup
+
+export const isStretchHandleGroup = (
+  node: Object3D
+): node is StretchHandleGroup =>
+  node.userData?.type === UserDataTypeEnum.Enum.StretchHandleGroup
 
 export const incrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData
