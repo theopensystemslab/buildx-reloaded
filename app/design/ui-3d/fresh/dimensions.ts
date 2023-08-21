@@ -15,7 +15,7 @@ import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { yAxis } from "../../../utils/three"
 import {
-  columnSorter,
+  sortColumnsByIndex,
   findAllGuardDown,
   findFirstGuardDown,
   getActiveHouseUserData,

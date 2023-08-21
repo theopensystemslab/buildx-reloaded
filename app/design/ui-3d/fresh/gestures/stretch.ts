@@ -1,11 +1,13 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, someOrError, T } from "../../../../utils/functions"
+import { A, O, pipeLog, someOrError, T } from "../../../../utils/functions"
+import { abs } from "../../../../utils/math"
 import {
   addDebugLineAtX,
   addDebugLineAtZ,
   setInvisibleNoRaycast,
+  setVisibility,
   setVisibleAndRaycast,
   yAxis,
 } from "../../../../utils/three"
@@ -22,6 +24,7 @@ import {
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
   handleColumnGroupParentQuery,
+  sortLayoutGroupsByWidth,
 } from "../helpers/sceneQueries"
 import {
   ColumnGroup,
@@ -234,7 +237,7 @@ const useOnDragStretch = () => {
       )
       const distance = distanceVector.z
 
-      handleColumnGroup.position.set(0, 0, handleGroupZ0 + distance)
+      handleColumnGroup.position.setZ(handleGroupZ0 + distance)
 
       // back side
       if (direction === 1) {
@@ -251,9 +254,6 @@ const useOnDragStretch = () => {
               nextFence.columnGroup.userData.columnIndex =
                 endColumnGroup.userData.columnIndex - 1
               stretchZProgressDataRef.current.fenceIndex++
-
-              // layoutGroup.userData.length +=
-              //   nextFence.columnGroup.userData.length
 
               if (nextFence.z < maxLength) {
                 addVanilla(direction)
@@ -272,9 +272,6 @@ const useOnDragStretch = () => {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
               stretchZProgressDataRef.current.fenceIndex--
               lastVisibleFence.columnGroup.userData.columnIndex = -1
-
-              // layoutGroup.userData.length +=
-              //   lastVisibleFence.columnGroup.userData.length
 
               endColumnGroup.userData.columnIndex--
             }
@@ -303,9 +300,6 @@ const useOnDragStretch = () => {
 
               nextFence.columnGroup.userData.columnIndex = 1
 
-              // layoutGroup.userData.length +=
-              //   nextFence.columnGroup.userData.length
-
               stretchZProgressDataRef.current.fenceIndex++
 
               // naive
@@ -323,9 +317,6 @@ const useOnDragStretch = () => {
 
             if (realDistance > lastVisibleFence.z) {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
-
-              // layoutGroup.userData.length -=
-              //   lastVisibleFence.columnGroup.userData.length
 
               lastVisibleFence.columnGroup.userData.columnIndex = -1
 
@@ -411,9 +402,13 @@ const useOnDragStretch = () => {
 
   const stretchXData = useRef<{
     point0: Vector3
+    handleGroupX0: number
     houseTransformsGroup: HouseTransformsGroup
     handleGroup: StretchHandleGroup
     otherSideHandleGroup: StretchHandleGroup
+    fences: FenceX[]
+    fenceIndex: number
+    lastDistance: number
   } | null>(null)
 
   const onDragStretchX = {
@@ -448,29 +443,49 @@ const useOnDragStretch = () => {
         someOrError(`other side handle group not found`)
       )
 
+      let fenceIndex = 0
+
       const fences = pipe(
-        otherLayoutGroups,
-        A.map((x) => (x.userData.width / 2) * side)
+        [activeLayoutGroup, ...otherLayoutGroups],
+        sortLayoutGroupsByWidth,
+        A.mapWithIndex((i, layoutGroup): FenceX => {
+          if (layoutGroup.uuid === activeLayoutGroup.uuid) fenceIndex = i
+          return {
+            layoutGroup,
+            x:
+              (layoutGroup.userData.width - activeLayoutGroup.userData.width) /
+              2,
+          }
+        })
       )
-
-      console.log(fences)
-
-      fences.forEach((fence) => {
-        console.log(`adding fence`)
-        addDebugLineAtX(activeLayoutGroup, fence)
-      })
 
       stretchXData.current = {
         handleGroup,
         otherSideHandleGroup,
         houseTransformsGroup,
         point0: point,
+        fences,
+        handleGroupX0: handleGroup.position.x,
+        fenceIndex,
+        lastDistance: 0,
       }
     },
     mid: () => {
       if (!stretchXData.current) return
 
-      const { point0, houseTransformsGroup } = stretchXData.current
+      const {
+        point0,
+        houseTransformsGroup,
+        handleGroup,
+        otherSideHandleGroup,
+        handleGroupX0,
+        fences,
+        fenceIndex,
+        lastDistance,
+      } = stretchXData.current
+
+      const { side } = handleGroup.userData
+
       const [x1, z1] = pointer.xz
       const distanceVector = new Vector3(x1, 0, z1).sub(point0)
       distanceVector.applyAxisAngle(
@@ -478,7 +493,39 @@ const useOnDragStretch = () => {
         -houseTransformsGroup.rotation.y
       )
       const distance = distanceVector.x
-      // handleGroup.position.set(handleGroupX0 + distance, 0)
+      handleGroup.position.setX(handleGroupX0 + distance)
+
+      const adjustedDistance = side * distance
+      const adjustedLastDistance = side * lastDistance
+
+      if (adjustedDistance > adjustedLastDistance) {
+        pipe(
+          fences,
+          A.lookup(fenceIndex + 1),
+          O.map(({ x }) => {
+            if (adjustedDistance >= x) {
+              // swap it
+              setVisibility(fences[fenceIndex + 1].layoutGroup, true)
+              setVisibility(fences[fenceIndex].layoutGroup, false)
+              stretchXData.current!.fenceIndex++
+            }
+          })
+        )
+      } else if (adjustedDistance < adjustedLastDistance) {
+        pipe(
+          fences,
+          A.lookup(fenceIndex - 1),
+          O.map(({ x }) => {
+            if (adjustedDistance >= x) {
+              setVisibility(fences[fenceIndex].layoutGroup, true)
+              setVisibility(fences[fenceIndex + 1].layoutGroup, false)
+              stretchXData.current!.fenceIndex--
+            }
+          })
+        )
+        // tbc
+      }
+      // if next fence up
     },
     last: () => {},
   }

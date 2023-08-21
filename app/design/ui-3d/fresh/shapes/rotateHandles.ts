@@ -54,6 +54,7 @@ const createRotateHandles = ({
 
   const handleGroup = new Group()
   handleGroup.add(circleMesh1, planeMesh1, circleMesh2, planeMesh2)
+  handleGroup.position.setY(0.01)
 
   const groupUserData: RotateHandlesGroupUserData = {
     type: UserDataTypeEnum.Enum.RotateHandlesGroup,

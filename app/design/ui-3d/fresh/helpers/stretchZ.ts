@@ -8,7 +8,7 @@ import {
 } from "../userData"
 import { createColumnGroup, getVanillaColumn } from "./layouts"
 import {
-  columnSorter,
+  sortColumnsByIndex,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getLayoutGroupColumnGroups,
@@ -69,7 +69,7 @@ export const insertVanillaColumn = (
       } else if (direction === -1) {
         pipe(
           getLayoutGroupColumnGroups(layoutGroup),
-          columnSorter,
+          sortColumnsByIndex,
           ([startColumnGroup, ...restColumnGroups]) => {
             for (let columnGroup of restColumnGroups) {
               columnGroup.position.add(new Vector3(0, 0, vanillaColumnLength))

@@ -116,7 +116,7 @@ type IndexedAltSectionTypeLayouts = {
   houseId: string
   altSectionTypeLayouts: Record<
     string,
-    { layout: ColumnLayout; sectionType: SectionType }
+    { layout: ColumnLayout; dnas: string[]; sectionType: SectionType }
   >
 }
 

@@ -14,10 +14,17 @@ import {
   UserDataTypeEnum,
 } from "../userData"
 
-export const columnSorter = A.sort(
+export const sortColumnsByIndex = A.sort(
   pipe(
     Num.Ord,
     Ord.contramap((x: ColumnGroup) => x.userData.columnIndex)
+  )
+)
+
+export const sortLayoutGroupsByWidth = A.sort(
+  pipe(
+    Num.Ord,
+    Ord.contramap((x: HouseLayoutGroup) => x.userData.width)
   )
 )
 
@@ -196,12 +203,12 @@ export const getVisibleColumnGroups = (
       if (x.visible === false) return false
       return true
     }),
-    columnSorter
+    sortColumnsByIndex
   )
 
 export const getSortedVisibleColumnGroups = flow(
   getVisibleColumnGroups,
-  columnSorter
+  sortColumnsByIndex
 )
 
 export const getLayoutGroupColumnIndices = flow(

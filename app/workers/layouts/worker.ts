@@ -439,7 +439,6 @@ export const columnLayoutToDnas = (
   ) as string[]
 
 if (!isSSR()) {
-  // CONT
   liveQuery(async () => {
     const houses = await userDB.houses.toArray()
     const sectionTypes = await systemsDB.sectionTypes.toArray()
@@ -447,7 +446,6 @@ if (!isSSR()) {
     return { houses, sectionTypes }
   }).subscribe(async ({ houses, sectionTypes }) => {
     // for each house, for each section type
-
     for (const house of houses) {
       const { systemId, dnas, houseId: houseId } = house
 
@@ -633,13 +631,17 @@ if (!isSSR()) {
           (
             acc: Record<
               string,
-              { layout: ColumnLayout; sectionType: SectionType }
+              { layout: ColumnLayout; sectionType: SectionType; dnas: string[] }
             >,
             { layout, sectionType }
           ) => {
             return {
               ...acc,
-              [sectionType.code]: { layout, sectionType },
+              [sectionType.code]: {
+                layout,
+                sectionType,
+                dnas: columnLayoutToDnas(layout),
+              },
             }
           }
         )
