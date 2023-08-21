@@ -42,7 +42,7 @@ import {
 } from "../userData"
 import { findAllGuardDown } from "./sceneQueries"
 
-export const DEBUG = true
+export const DEBUG = false
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -356,8 +356,6 @@ export const createLayoutGroup = ({
       const obb = new OBB()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
-      const { siteMode } = getModeBools(siteCtx.mode)
-
       return pipe(
         getVanillaColumn({ systemId, levelTypes }),
         T.map((vanillaColumn) => {
@@ -448,6 +446,8 @@ export const createLayoutGroup = ({
           const refreshHandles = () => {
             removeAllHandles()
 
+            const { siteMode } = getModeBools(siteCtx.mode)
+
             const { length: houseLength, width: houseWidth } =
               layoutGroup.userData
 
@@ -467,8 +467,8 @@ export const createLayoutGroup = ({
                 const stretchHandleGroup = createStretchHandle({
                   axis,
                   side,
-                  houseLength: length,
-                  houseWidth: width,
+                  houseLength,
+                  houseWidth,
                 })
                 if (axis === "z") {
                   if (side === 1) {
