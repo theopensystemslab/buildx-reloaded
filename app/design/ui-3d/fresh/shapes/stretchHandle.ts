@@ -56,7 +56,7 @@ const createStretchHandle = ({
     })
     boxMesh.scale.setZ(houseLength)
     handleGroup.position.setX((side * houseWidth) / 2 + OFFSET * side)
-    handleGroup.position.setZ(houseLength / 2)
+    // handleGroup.position.setZ(houseLength / 2)
   }
 
   handleGroup.scale.setScalar(0.5)

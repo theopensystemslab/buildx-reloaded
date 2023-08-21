@@ -21,12 +21,7 @@ import layoutsDB, {
   VanillaColumnsKey,
 } from "../../../../db/layouts"
 import { A, combineGuards, O, R, S, T } from "../../../../utils/functions"
-import {
-  setInvisibleNoRaycast,
-  setVisibility,
-  setVisibleAndRaycast,
-  yAxis,
-} from "../../../../utils/three"
+import { addDebugLineAtZ, setVisibility, yAxis } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import { renderOBB } from "../dimensions"
@@ -41,13 +36,13 @@ import {
   HouseLayoutGroupUserData,
   HouseTransformsGroupUserData,
   isRotateHandlesGroup,
-  isStretchHandleGroup,
+  isStretchHandleMesh,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "../userData"
 import { findAllGuardDown } from "./sceneQueries"
 
-export const DEBUG = false
+export const DEBUG = true
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -361,6 +356,8 @@ export const createLayoutGroup = ({
       const obb = new OBB()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
+      const { siteMode } = getModeBools(siteCtx.mode)
+
       return pipe(
         getVanillaColumn({ systemId, levelTypes }),
         T.map((vanillaColumn) => {
@@ -382,140 +379,19 @@ export const createLayoutGroup = ({
           layoutGroup.position.setZ(-length / 2)
           layoutGroup.add(...columnGroups)
 
-          // const removeAllHandles = () => {
-          //   pipe(
-          //     layoutGroup,
-          //     findAllGuardDown(
-          //       combineGuards(isRotateHandlesGroup, isStretchHandleMesh)
-          //     )
-          //   ).forEach((x) => {
-          //     x.removeFromParent()
-          //   })
-          // }
-
-          // const refreshHandles = () => {
-          //   console.log("refreshing handles")
-          //   removeAllHandles()
-
-          const { siteMode } = getModeBools(siteCtx.mode)
-
-          //   const stretchViz = (handle: StretchHandleMesh) => {
-          //     if (buildingOrLevelMode) {
-          //       setVisibleAndRaycast(handle)
-          //     } else {
-          //       setInvisibleNoRaycast(handle)
-          //     }
-          //     return handle
-          //   }
-
-          //   const stretchXHandleUp = createStretchHandle({
-          //     axis: "x",
-          //     direction: 1,
-          //     houseId,
-          //     length,
-          //     width,
-          //   })
-          //   stretchViz(stretchXHandleUp)
-
-          //   layoutGroup.add(stretchXHandleUp)
-
-          //   const stretchXHandleDown = createStretchHandle({
-          //     axis: "x",
-          //     direction: -1,
-          //     houseId,
-          //     length,
-          //     width,
-          //   })
-          //   stretchViz(stretchXHandleDown)
-          //   layoutGroup.add(stretchXHandleDown)
-
-          //   pipe(
-          //     columnGroups,
-          //     A.findFirst((x) => x.userData.columnIndex === 0),
-          //     O.map((firstColumn) => {
-          //       const handle = createStretchHandle({
-          //         houseId,
-          //         axis: "z",
-          //         direction: -1,
-          //         length,
-          //         width,
-          //       })
-          //       firstColumn.add(handle)
-          //       stretchViz(handle)
-          //     })
-          //   )
-
-          //   pipe(
-          //     columnGroups,
-          //     A.findFirst(
-          //       (x) => x.userData.columnIndex === columnGroups.length - 1
-          //     ),
-          //     O.map((lastColumn) => {
-          //       const stretchHandle = createStretchHandle({
-          //         houseId,
-          //         axis: "z",
-          //         direction: 1,
-          //         length,
-          //         width,
-          //       })
-          //       stretchHandle.position.z += lastColumn.userData.length
-          //       lastColumn.add(stretchHandle)
-          //       stretchViz(stretchHandle)
-          //     })
-          //   )
-
-          //   const rotateHandlesGroup = createRotateHandlesGroup({
-          //     width,
-          //     length,
-          //   })
-
-          //   if (siteMode) {
-          //     setVisibleAndRaycast(rotateHandlesGroup)
-          //   } else {
-          //     setInvisibleNoRaycast(rotateHandlesGroup)
-          //   }
-
-          //   layoutGroup.add(rotateHandlesGroup)
-          // }
-
-          // refreshHandles()
-
-          const rotateHandles = createRotateHandles({
-            houseWidth: width,
-            houseLength: length,
-          })
-
-          setVisibility(rotateHandles, siteMode)
-
-          layoutGroup.add(rotateHandles)
-
           const { startColumnGroup, endColumnGroup } =
             splitColumnGroups(columnGroups)
 
-          pipe(
-            [1, -1] as Array<1 | -1>,
-            cartesian(["x", "z"] as Array<"z" | "x">),
-            A.map(([axis, side]) => {
-              const stretchHandleGroup = createStretchHandle({
-                axis,
-                side,
-                houseLength: length,
-                houseWidth: width,
-              })
-              if (axis === "z") {
-                if (side === 1) {
-                  endColumnGroup.add(stretchHandleGroup)
-                } else {
-                  startColumnGroup.add(stretchHandleGroup)
-                }
-              } else {
-                layoutGroup.add(stretchHandleGroup)
-              }
-              setVisibility(stretchHandleGroup, !siteMode)
-              // return stretchHandleGroup
+          const removeAllHandles = () => {
+            pipe(
+              layoutGroup,
+              findAllGuardDown(
+                combineGuards(isRotateHandlesGroup, isStretchHandleMesh)
+              )
+            ).forEach((x) => {
+              x.removeFromParent()
             })
-          )
-          // layoutGroup.add(...stretchHandles)
+          }
 
           const userDataHandler: ProxyHandler<HouseLayoutGroupUserData> = {
             set: function (target: any, prop: any, value: any) {
@@ -560,7 +436,7 @@ export const createLayoutGroup = ({
                   )
                 }
 
-                // refreshHandles()
+                refreshHandles()
               }
 
               return true // Indicate assignment success
@@ -568,6 +444,49 @@ export const createLayoutGroup = ({
           }
 
           layoutGroup.userData = new Proxy(userData, userDataHandler)
+
+          const refreshHandles = () => {
+            removeAllHandles()
+
+            const { length: houseLength, width: houseWidth } =
+              layoutGroup.userData
+
+            const rotateHandles = createRotateHandles({
+              houseWidth,
+              houseLength,
+            })
+
+            setVisibility(rotateHandles, siteMode)
+
+            layoutGroup.add(rotateHandles)
+
+            pipe(
+              [1, -1] as Array<1 | -1>,
+              cartesian(["x", "z"] as Array<"z" | "x">),
+              A.map(([axis, side]) => {
+                const stretchHandleGroup = createStretchHandle({
+                  axis,
+                  side,
+                  houseLength: length,
+                  houseWidth: width,
+                })
+                if (axis === "z") {
+                  if (side === 1) {
+                    endColumnGroup.add(stretchHandleGroup)
+                  } else {
+                    startColumnGroup.add(stretchHandleGroup)
+                  }
+                } else {
+                  stretchHandleGroup.position.setZ(houseLength / 2)
+                  layoutGroup.add(stretchHandleGroup)
+                }
+                setVisibility(stretchHandleGroup, !siteMode)
+              })
+            )
+          }
+
+          refreshHandles()
+
           return layoutGroup
         })
       )

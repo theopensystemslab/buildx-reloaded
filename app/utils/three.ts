@@ -269,3 +269,23 @@ export const addDebugLineAtZ = (
   line.position.set(0, 0, z)
   parent.add(line)
 }
+
+export const addDebugLineAtX = (
+  parent: Object3D,
+  x: number,
+  length: number = 5,
+  color: Color | number | string = 0xff0000
+): void => {
+  // Step 1: Create geometry for the line segment.
+  const lineGeometry = new BufferGeometry().setFromPoints([
+    new Vector3(x, 0, -length / 2),
+    new Vector3(x, 0, length / 2),
+  ])
+
+  // Step 2: Create a material for the line.
+  const lineMaterial = new LineBasicMaterial({ color: color })
+
+  // Step 3: Create the line object and add it to the parent.
+  const line = new Line(lineGeometry, lineMaterial)
+  parent.add(line)
+}

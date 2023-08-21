@@ -9,6 +9,7 @@ import {
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   isColumnGroup,
+  isHouseLayoutGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../userData"
@@ -149,10 +150,10 @@ export const getActiveHouseUserData = (houseTransformsGroup: Object3D) =>
     someOrError(`getActiveHouseUserData failure`)
   )
 
-export const getLayoutGroups = (houseTransformsGroup: Group): Group[] =>
-  houseTransformsGroup.children.filter(
-    (x) => x.userData.type === UserDataTypeEnum.Enum.HouseLayoutGroup
-  ) as Group[]
+export const getLayoutGroups = (
+  houseTransformsGroup: HouseTransformsGroup
+): HouseLayoutGroup[] =>
+  houseTransformsGroup.children.filter(isHouseLayoutGroup)
 
 export const getActiveLayoutGroup = (
   houseTransformsGroup: HouseTransformsGroup
@@ -166,11 +167,19 @@ export const getActiveLayoutGroup = (
     someOrError(`getActiveLayoutGroup failure`)
   )
 
-export const getPartitionedLayoutGroups = (houseTransformsGroup: Group) =>
+export const getPartitionedLayoutGroups = (
+  houseTransformsGroup: HouseTransformsGroup
+) =>
   pipe(
     houseTransformsGroup,
     getLayoutGroups,
-    A.partition((x) => x.uuid === houseTransformsGroup.userData.activeChildUuid)
+    A.partition(
+      (x) => x.uuid === houseTransformsGroup.userData.activeChildUuid
+    ),
+    ({ left: otherLayoutGroups, right: [activeLayoutGroup] }) => ({
+      activeLayoutGroup,
+      otherLayoutGroups,
+    })
   )
 
 export const getLayoutGroupColumnGroups = (

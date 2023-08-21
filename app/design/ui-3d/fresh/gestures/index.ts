@@ -77,9 +77,9 @@ const useGestures = () => {
           if (last) onDragStretchZ.last()
         }
         if (axis === "x") {
-          // if (first) onDragStretchX.first(userData)
-          // if (!first && !last) onDragStretchX.mid(userData)
-          // if (last) onDragStretchX.last(userData)
+          if (first) onDragStretchX.first({ handleGroup, point })
+          if (!first && !last) onDragStretchX.mid()
+          if (last) onDragStretchX.last()
         }
       }
 

@@ -1,8 +1,10 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, someOrError, T } from "../../../../utils/functions"
 import {
+  addDebugLineAtX,
+  addDebugLineAtZ,
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
   yAxis,
@@ -12,9 +14,11 @@ import { updateLayoutGroupLength } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import { createColumnGroup, splitColumnGroups } from "../helpers/layouts"
 import {
+  findAllGuardDown,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
+  getPartitionedLayoutGroups,
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
   handleColumnGroupParentQuery,
@@ -23,6 +27,7 @@ import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
+  isStretchHandleGroup,
   StretchHandleGroup,
   StretchHandleMesh,
   StretchHandleMeshUserData,
@@ -49,13 +54,13 @@ const useOnDragStretch = () => {
     midEndZ: number
   } | null>(null)
 
-  type Fence = {
+  type FenceZ = {
     z: number
     columnGroup: ColumnGroup
   }
 
   const stretchZProgressDataRef = useRef<{
-    fences: Fence[]
+    fences: FenceZ[]
     lastDistance: number
     fenceIndex: number
   }>({
@@ -66,8 +71,6 @@ const useOnDragStretch = () => {
 
   const addVanilla = (side: 1 | -1) => {
     if (!stretchZInitialDataRef.current) return
-
-    console.log(`add vanilla`)
 
     const { templateVanillaColumnGroup, layoutGroup } =
       stretchZInitialDataRef.current
@@ -208,7 +211,7 @@ const useOnDragStretch = () => {
         direction,
         point0,
         houseTransformsGroup,
-        handleColumnGroup: handleGroup,
+        handleColumnGroup,
         handleGroupZ0,
         vanillaLength,
         templateVanillaColumnGroup,
@@ -231,7 +234,7 @@ const useOnDragStretch = () => {
       )
       const distance = distanceVector.z
 
-      handleGroup.position.set(0, 0, handleGroupZ0 + distance)
+      handleColumnGroup.position.set(0, 0, handleGroupZ0 + distance)
 
       // back side
       if (direction === 1) {
@@ -248,6 +251,9 @@ const useOnDragStretch = () => {
               nextFence.columnGroup.userData.columnIndex =
                 endColumnGroup.userData.columnIndex - 1
               stretchZProgressDataRef.current.fenceIndex++
+
+              // layoutGroup.userData.length +=
+              //   nextFence.columnGroup.userData.length
 
               if (nextFence.z < maxLength) {
                 addVanilla(direction)
@@ -266,6 +272,10 @@ const useOnDragStretch = () => {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
               stretchZProgressDataRef.current.fenceIndex--
               lastVisibleFence.columnGroup.userData.columnIndex = -1
+
+              // layoutGroup.userData.length +=
+              //   lastVisibleFence.columnGroup.userData.length
+
               endColumnGroup.userData.columnIndex--
             }
           }
@@ -293,6 +303,9 @@ const useOnDragStretch = () => {
 
               nextFence.columnGroup.userData.columnIndex = 1
 
+              // layoutGroup.userData.length +=
+              //   nextFence.columnGroup.userData.length
+
               stretchZProgressDataRef.current.fenceIndex++
 
               // naive
@@ -310,6 +323,10 @@ const useOnDragStretch = () => {
 
             if (realDistance > lastVisibleFence.z) {
               setInvisibleNoRaycast(lastVisibleFence.columnGroup)
+
+              // layoutGroup.userData.length -=
+              //   lastVisibleFence.columnGroup.userData.length
+
               lastVisibleFence.columnGroup.userData.columnIndex = -1
 
               pipe(
@@ -387,12 +404,83 @@ const useOnDragStretch = () => {
     },
   }
 
-  const stretchXData = useRef<{} | null>(null)
+  type FenceX = {
+    x: number
+    layoutGroup: HouseLayoutGroup
+  }
+
+  const stretchXData = useRef<{
+    point0: Vector3
+    houseTransformsGroup: HouseTransformsGroup
+    handleGroup: StretchHandleGroup
+    otherSideHandleGroup: StretchHandleGroup
+  } | null>(null)
 
   const onDragStretchX = {
-    first: (stretchHandleUserData: StretchHandleMeshUserData) => {},
-    mid: (stretchHandleUserData: StretchHandleMeshUserData) => {},
-    last: (stretchHandleUserData: StretchHandleMeshUserData) => {},
+    first: ({
+      point,
+      handleGroup,
+    }: {
+      handleGroup: StretchHandleGroup
+      point: Vector3
+    }) => {
+      dispatchOutline({
+        hoveredObjects: [],
+        selectedObjects: [],
+      })
+
+      const { side } = handleGroup.userData
+      const otherSide = side * -1
+
+      const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
+      const { activeLayoutGroup, otherLayoutGroups } =
+        getPartitionedLayoutGroups(houseTransformsGroup)
+
+      const otherSideHandleGroup = pipe(
+        activeLayoutGroup.children,
+        A.findFirst((x): x is StretchHandleGroup => {
+          return (
+            isStretchHandleGroup(x) &&
+            x.userData.axis === "x" &&
+            x.userData.side === otherSide
+          )
+        }),
+        someOrError(`other side handle group not found`)
+      )
+
+      const fences = pipe(
+        otherLayoutGroups,
+        A.map((x) => (x.userData.width / 2) * side)
+      )
+
+      console.log(fences)
+
+      fences.forEach((fence) => {
+        console.log(`adding fence`)
+        addDebugLineAtX(activeLayoutGroup, fence)
+      })
+
+      stretchXData.current = {
+        handleGroup,
+        otherSideHandleGroup,
+        houseTransformsGroup,
+        point0: point,
+      }
+    },
+    mid: () => {
+      if (!stretchXData.current) return
+
+      const { point0, houseTransformsGroup } = stretchXData.current
+      const [x1, z1] = pointer.xz
+      const distanceVector = new Vector3(x1, 0, z1).sub(point0)
+      distanceVector.applyAxisAngle(
+        new Vector3(0, 1, 0),
+        -houseTransformsGroup.rotation.y
+      )
+      const distance = distanceVector.x
+      // handleGroup.position.set(handleGroupX0 + distance, 0)
+    },
+    last: () => {},
   }
 
   return { onDragStretchZ, onDragStretchX }

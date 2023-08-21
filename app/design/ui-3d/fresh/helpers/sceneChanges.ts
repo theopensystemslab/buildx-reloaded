@@ -1,24 +1,22 @@
 import { pipe } from "fp-ts/lib/function"
-import { Group } from "three"
 import { A, O } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
+import { HouseTransformsGroup } from "../userData"
 import { getPartitionedLayoutGroups } from "./sceneQueries"
 
-export const debugNextLayout = (houseTransformsGroup: Group) => {
-  const {
-    left: rest,
-    right: [active],
-  } = getPartitionedLayoutGroups(houseTransformsGroup)
+export const debugNextLayout = (houseTransformsGroup: HouseTransformsGroup) => {
+  const { activeLayoutGroup, otherLayoutGroups } =
+    getPartitionedLayoutGroups(houseTransformsGroup)
 
   pipe(
-    rest,
+    otherLayoutGroups,
     A.head,
     O.map((nextLayout) => {
       setVisibleAndRaycast(nextLayout)
-      setInvisibleNoRaycast(active)
+      setInvisibleNoRaycast(activeLayoutGroup)
       houseTransformsGroup.userData.activeChildUuid = nextLayout.uuid
     })
   )
