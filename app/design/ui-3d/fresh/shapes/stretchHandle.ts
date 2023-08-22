@@ -66,8 +66,12 @@ const createStretchHandle = ({
     axis,
     side,
     type: UserDataTypeEnum.Enum.StretchHandleGroup,
-    updateXHandleLength: (length: number) => {
-      boxMesh.scale.setZ(length)
+    updateXHandleLength: (nextLength: number) => {
+      boxMesh.scale.setZ(nextLength)
+      sphereMeshes.forEach((sphereMesh, i) => {
+        const sign = i === 0 ? 1 : -1
+        sphereMesh.position.setZ((nextLength / 2) * sign)
+      })
     },
   }
 

@@ -12,23 +12,28 @@ import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
 import { ScopeItem } from "../../../state/scope"
 
 // HouseTransformsGroup has
-
+// -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
+//   -> Stretch X Handle groups
+//     -> Stretch X Handle meshes
+//   -> Rotate Handles group
+//     -> Rotate Handles meshes
 // -> HouseLayoutGroup's as children
 //      (alternative layouts;
 //         visibility/raycasting disabled
 //           except 1)
 //   -> ColumnsGroup's as children have
 //     -> GridGroup's as children have
+//     -> Z-Stretch handles (special case)
 //       -> ModuleGroup's as children have
 //         -> ElementMesh's as children
-// -> Stretch Handles meshes
-// -> Rotate Handles group
-//   -> Rotate Handles meshes
 
 export const UserDataTypeEnum = z.enum([
   "HouseTransformsGroup",
+  "HouseTransformsHandlesGroup",
   "HouseLayoutGroup",
   "ColumnGroup",
+  // layout group handles go in start/end column groups
+  //   this is a special case for stretch Z handles
   "GridGroup",
   "ModuleGroup",
   "ElementMesh",
@@ -49,10 +54,13 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   initRotateAndStretchXHandles: () => void
-  syncWidthHandles: () => void
-  syncRotateHandles: () => void
+  syncLength: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setWidthHandlesVisible: (bool?: boolean) => void
+}
+
+export type HouseTransformsHandlesGroupUserData = {
+  type: typeof UserDataTypeEnum.Enum.HouseTransformsHandlesGroup
 }
 
 export type HouseLayoutGroupUserData = {
@@ -132,6 +140,7 @@ export type UserData =
   | ColumnGroupUserData
   | HouseLayoutGroupUserData
   | HouseTransformsGroupUserData
+  | HouseTransformsHandlesGroupUserData
   | StretchHandleMeshUserData
   | RotateHandlesGroupUserData
 
@@ -175,6 +184,10 @@ export type RotateHandlesGroup = Group & {
 
 export type StretchHandleGroup = Group & {
   userData: StretchHandleGroupUserData
+}
+
+export type HouseTransformsHandlesGroup = Group & {
+  userData: HouseTransformsHandlesGroupUserData
 }
 
 // Type Guards

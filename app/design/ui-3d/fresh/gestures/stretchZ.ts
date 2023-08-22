@@ -240,7 +240,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex =
               endColumnGroup.userData.columnIndex - 1
             stretchZProgressDataRef.current.fenceIndex++
-            houseTransformsGroup.userData.syncWidthHandles()
 
             if (nextFence.z < maxLength) {
               addVanilla(direction)
@@ -260,7 +259,6 @@ const useOnDragStretchZ = () => {
             stretchZProgressDataRef.current.fenceIndex--
             lastVisibleFence.columnGroup.userData.columnIndex = -1
             endColumnGroup.userData.columnIndex--
-            houseTransformsGroup.userData.syncWidthHandles()
           }
         }
       }
@@ -288,7 +286,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex = 1
 
             stretchZProgressDataRef.current.fenceIndex++
-            houseTransformsGroup.userData.syncWidthHandles()
 
             // naive
             if (nextFence.z < maxLength) {
@@ -316,7 +313,6 @@ const useOnDragStretchZ = () => {
               columnGroup.userData.columnIndex--
             })
             stretchZProgressDataRef.current.fenceIndex--
-            houseTransformsGroup.userData.syncWidthHandles()
           }
         }
       }
@@ -375,7 +371,7 @@ const useOnDragStretchZ = () => {
     }
 
     layoutGroup.userData.updateLength()
-    houseTransformsGroup.userData.syncWidthHandles()
+    houseTransformsGroup.userData.syncLength()
     houseTransformsGroup.userData.setWidthHandlesVisible(true)
     layoutGroup.userData.updateDnas()
 

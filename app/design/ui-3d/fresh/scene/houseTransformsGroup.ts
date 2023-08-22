@@ -13,6 +13,7 @@ import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
+  HouseTransformsHandlesGroup,
   isHouseLayoutGroup,
   isStretchHandleGroup,
   isStretchXHandleGroup,
@@ -52,6 +53,9 @@ export const createHouseTransformsGroup = ({
         new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
       ]
 
+      const handlesGroup = new Group() as HouseTransformsHandlesGroup
+      handlesGroup.position.setZ(-layoutGroup.userData.length / 2)
+
       const initHandles = () => {
         const { width: houseWidth, length: houseLength } =
           getActiveHouseUserData(houseTransformsGroup)
@@ -65,7 +69,7 @@ export const createHouseTransformsGroup = ({
 
         setVisible(rotateHandles, siteMode)
 
-        houseTransformsGroup.add(rotateHandles)
+        handlesGroup.add(rotateHandles)
 
         const stretchXUpHandleGroup = createStretchHandle({
           axis: "x",
@@ -84,24 +88,26 @@ export const createHouseTransformsGroup = ({
         ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
           handle.position.setZ(houseLength / 2)
 
-          houseTransformsGroup.add(handle)
+          handlesGroup.add(handle)
           setVisible(handle, !siteMode)
         })
+
+        houseTransformsGroup.add(handlesGroup)
       }
 
-      const syncRotateHandles = () => {}
+      const syncLength = () => {
+        const { length: houseLength } =
+          getActiveHouseUserData(houseTransformsGroup)
 
-      const syncWidthHandles = () => {
-        const widthHandles = pipe(
-          houseTransformsGroup.children,
-          A.filter((x): x is StretchHandleGroup => {
-            return isStretchHandleGroup(x) && x.userData.axis === "x"
-          })
+        // handlesGroup.position.setZ(-houseLength / 2)
+
+        const xStretchHandles = pipe(
+          handlesGroup,
+          findAllGuardDown(isStretchXHandleGroup)
         )
 
-        widthHandles.forEach((handle) => {
-          const { length } = getActiveHouseUserData(houseTransformsGroup)
-          handle.userData.updateXHandleLength(length)
+        xStretchHandles.forEach((handle) => {
+          handle.userData.updateXHandleLength(houseLength)
         })
       }
 
@@ -141,8 +147,7 @@ export const createHouseTransformsGroup = ({
         activeLayoutGroupUuid: layoutGroup.uuid,
         houseTypeId,
         initRotateAndStretchXHandles: initHandles,
-        syncRotateHandles,
-        syncWidthHandles,
+        syncLength,
         setActiveLayoutGroup,
         setWidthHandlesVisible,
       }
