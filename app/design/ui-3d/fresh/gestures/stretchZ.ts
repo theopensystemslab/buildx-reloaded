@@ -377,6 +377,7 @@ const useOnDragStretchZ = () => {
     layoutGroup.userData.updateLength()
     houseTransformsGroup.userData.syncWidthHandles()
     houseTransformsGroup.userData.setWidthHandlesVisible(true)
+    layoutGroup.userData.updateDnas()
 
     stretchZInitialDataRef.current = null
     stretchZProgressDataRef.current = {

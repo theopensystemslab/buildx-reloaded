@@ -122,22 +122,27 @@ export const createHouseLayoutGroup = ({
       return pipe(
         getVanillaColumn({ systemId, levelTypes }),
         T.map((vanillaColumn) => {
-          const updateLength = () => {
-            const { length: oldLength } = layoutGroup.userData
-
+          const computeLength = () =>
             pipe(
               layoutGroup,
               getLayoutGroupColumnGroups,
-              A.filter((columnGroup) => !columnGroup.visible)
-            ).forEach((columnGroup) => {
-              columnGroup.removeFromParent()
-            })
+              A.partition((columnGroup) => columnGroup.visible),
+              ({ left: hiddenColumnGroups, right: activeColumnGroups }) => {
+                hiddenColumnGroups.forEach((columnGroup) => {
+                  columnGroup.removeFromParent()
+                })
 
-            const nextLength = layoutGroup.children
-              .filter(
-                (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
-              )
-              .reduce((acc, v) => acc + v.userData.length, 0)
+                return activeColumnGroups.reduce(
+                  (acc, v) => acc + v.userData.length,
+                  0
+                )
+              }
+            )
+
+          const updateLength = (maybeLength?: number) => {
+            const { length: oldLength } = layoutGroup.userData
+
+            const nextLength = maybeLength ?? computeLength()
 
             layoutGroup.userData.length = nextLength
 
