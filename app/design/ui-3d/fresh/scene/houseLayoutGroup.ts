@@ -16,6 +16,7 @@ import { findAllGuardDown } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
 import {
+  HouseLayoutGroup,
   HouseLayoutGroupUserData,
   isRotateHandlesGroup,
   isStretchHandleMesh,
@@ -84,7 +85,7 @@ export const createHouseLayoutGroup = ({
   houseId: string
   dnas: string[]
   houseLayout: ColumnLayout
-}) =>
+}): T.Task<HouseLayoutGroup> =>
   pipe(
     createColumnGroups({
       systemId,
@@ -135,17 +136,6 @@ export const createHouseLayoutGroup = ({
           const { startColumnGroup, endColumnGroup } =
             splitColumnGroups(columnGroups)
 
-          const removeAllHandles = () => {
-            pipe(
-              layoutGroup,
-              findAllGuardDown(
-                combineGuards(isRotateHandlesGroup, isStretchHandleMesh)
-              )
-            ).forEach((x) => {
-              x.removeFromParent()
-            })
-          }
-
           const userDataHandler: ProxyHandler<HouseLayoutGroupUserData> = {
             set: function (target: any, prop: any, value: any) {
               if (prop === "length") {
@@ -189,7 +179,7 @@ export const createHouseLayoutGroup = ({
                   )
                 }
 
-                refreshHandles()
+                // refreshHandles()
               }
 
               return true // Indicate assignment success
@@ -198,51 +188,27 @@ export const createHouseLayoutGroup = ({
 
           layoutGroup.userData = new Proxy(userData, userDataHandler)
 
-          const refreshHandles = () => {
-            removeAllHandles()
+          const { siteMode } = getModeBools(siteCtx.mode)
 
-            const { siteMode } = getModeBools(siteCtx.mode)
+          const backStretchZHandleGroup = createStretchHandle({
+            axis: "z",
+            side: 1,
+            houseLength: length,
+            houseWidth: width,
+          })
+          endColumnGroup.add(backStretchZHandleGroup)
+          setVisibility(backStretchZHandleGroup, !siteMode)
 
-            const { length: houseLength, width: houseWidth } =
-              layoutGroup.userData
+          const frontStretchZHandleGroup = createStretchHandle({
+            axis: "z",
+            side: -1,
+            houseLength: length,
+            houseWidth: width,
+          })
+          startColumnGroup.add(frontStretchZHandleGroup)
+          setVisibility(frontStretchZHandleGroup, !siteMode)
 
-            const rotateHandles = createRotateHandles({
-              houseWidth,
-              houseLength,
-            })
-
-            setVisibility(rotateHandles, siteMode)
-
-            layoutGroup.add(rotateHandles)
-
-            pipe(
-              [1, -1] as Array<1 | -1>,
-              cartesian(["x", "z"] as Array<"z" | "x">),
-              A.map(([axis, side]) => {
-                const stretchHandleGroup = createStretchHandle({
-                  axis,
-                  side,
-                  houseLength,
-                  houseWidth,
-                })
-                if (axis === "z") {
-                  if (side === 1) {
-                    endColumnGroup.add(stretchHandleGroup)
-                  } else {
-                    startColumnGroup.add(stretchHandleGroup)
-                  }
-                } else {
-                  stretchHandleGroup.position.setZ(houseLength / 2)
-                  layoutGroup.add(stretchHandleGroup)
-                }
-                setVisibility(stretchHandleGroup, !siteMode)
-              })
-            )
-          }
-
-          refreshHandles()
-
-          return layoutGroup
+          return layoutGroup as HouseLayoutGroup
         })
       )
     })
