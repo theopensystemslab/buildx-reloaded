@@ -44,6 +44,25 @@ export const findFirstGuardUp =
     return O.none
   }
 
+export const findFirstGuardAcross =
+  <T extends Object3D>(guard: (o: Object3D) => o is T) =>
+  (object: Object3D): O.Option<T> => {
+    const queue: Object3D[] = [object]
+
+    while (queue.length > 0) {
+      const current = queue.shift()
+      if (!current) continue
+
+      if (guard(current)) {
+        return O.some(current)
+      }
+
+      queue.push(...current.children)
+    }
+
+    return O.none
+  }
+
 export const findFirstGuardDown =
   <T extends Object3D>(guard: (o: Object3D) => o is T) =>
   (object: Object3D): O.Option<T> => {
@@ -55,8 +74,9 @@ export const findFirstGuardDown =
 
     for (let i = 0, l = children.length; i < l; i++) {
       const child = children[i]
-      if (guard(child)) {
-        return O.some(child)
+      const result = findFirstGuardDown(guard)(child)
+      if (O.isSome(result)) {
+        return result
       }
     }
 

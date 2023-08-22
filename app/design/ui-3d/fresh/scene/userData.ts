@@ -224,6 +224,11 @@ export const isHouseTransformsGroup = (
 ): node is HouseTransformsGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseTransformsGroup
 
+export const isHouseTransformsHandlesGroup = (
+  node: Object3D
+): node is HouseTransformsHandlesGroup =>
+  node.userData?.type === UserDataTypeEnum.Enum.HouseTransformsHandlesGroup
+
 export const isRotateHandlesGroup = (
   node: Object3D
 ): node is RotateHandlesGroup =>

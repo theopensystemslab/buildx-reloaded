@@ -5,6 +5,9 @@ import { A, O, someOrError } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
+  findAllGuardDown,
+  findFirstGuardAcross,
+  findFirstGuardDown,
   getHouseTransformsGroupUp,
   getPartitionedLayoutGroups,
   sortLayoutGroupsByWidth,
@@ -12,7 +15,10 @@ import {
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
+  isHouseTransformsGroup,
+  isHouseTransformsHandlesGroup,
   isStretchHandleGroup,
+  isStretchXHandleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
 
@@ -54,14 +60,11 @@ const useOnDragStretchX = () => {
       getPartitionedLayoutGroups(houseTransformsGroup)
 
     const otherSideHandleGroup = pipe(
-      houseTransformsGroup.children,
-      A.findFirst((x): x is StretchHandleGroup => {
-        return (
-          isStretchHandleGroup(x) &&
-          x.userData.axis === "x" &&
-          x.userData.side === otherSide
-        )
-      }),
+      houseTransformsGroup,
+      findFirstGuardAcross(
+        (x): x is StretchHandleGroup =>
+          isStretchXHandleGroup(x) && x.userData.side === otherSide
+      ),
       someOrError(`other side handle group not found`)
     )
 
