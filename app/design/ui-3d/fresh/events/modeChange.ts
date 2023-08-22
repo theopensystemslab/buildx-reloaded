@@ -14,7 +14,6 @@ import siteCtx, {
   useModeChangeListener,
 } from "~/design/state/siteCtx"
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
-import { BIG_CLIP_NUMBER, createLayoutGroup } from "../helpers/layouts"
 import {
   findAllGuardDown,
   findFirstGuardDown,
@@ -31,6 +30,8 @@ import {
 import { RefObject } from "react"
 import { Group } from "three"
 import layoutsDB from "../../../../db/layouts"
+import { BIG_CLIP_NUMBER } from "../scene/houseTransformsGroup"
+import { createHouseLayoutGroup } from "../scene/houseLayoutGroup"
 
 const useModeChange = (rootRef: RefObject<Group>) => {
   const showHouseStretchHandles = (houseId: string) => {
@@ -181,7 +182,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
           pipe(
             dbResult.altSectionTypeLayouts,
             R.map(({ layout, dnas }) => {
-              createLayoutGroup({
+              createHouseLayoutGroup({
                 systemId,
                 houseId,
                 houseLayout: layout,

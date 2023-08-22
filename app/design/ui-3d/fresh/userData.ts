@@ -47,7 +47,7 @@ export type HouseTransformsGroupUserData = {
   houseTypeId: string
   friendlyName: string
   clippingPlanes: Plane[]
-  activeChildUuid: string
+  activeLayoutUuid: string
 }
 
 export type HouseLayoutGroupUserData = {

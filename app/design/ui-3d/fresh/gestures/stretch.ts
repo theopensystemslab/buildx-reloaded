@@ -1,11 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, O, pipeLog, someOrError, T } from "../../../../utils/functions"
-import { abs } from "../../../../utils/math"
+import { A, O, someOrError, T } from "../../../../utils/functions"
 import {
-  addDebugLineAtX,
-  addDebugLineAtZ,
   setInvisibleNoRaycast,
   setVisibility,
   setVisibleAndRaycast,
@@ -14,9 +11,7 @@ import {
 import pointer from "../../../state/pointer"
 import { updateLayoutGroupLength } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
-import { createColumnGroup, splitColumnGroups } from "../helpers/layouts"
 import {
-  findAllGuardDown,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
@@ -26,14 +21,13 @@ import {
   handleColumnGroupParentQuery,
   sortLayoutGroupsByWidth,
 } from "../helpers/sceneQueries"
+import { createColumnGroup, splitColumnGroups } from "../scene/columnGroup"
 import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
   isStretchHandleGroup,
   StretchHandleGroup,
-  StretchHandleMesh,
-  StretchHandleMeshUserData,
 } from "../userData"
 
 const TMP_MAX_LENGTH = 10

@@ -12,7 +12,7 @@ import { A } from "../../../../utils/functions"
 import { floor } from "../../../../utils/math"
 import { setRaycasting } from "../../../../utils/three"
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
-import { createInitialHouse } from "../helpers/layouts"
+import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
@@ -66,7 +66,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
       houseTypeId,
     } = house
 
-    const houseGroup = await createInitialHouse({
+    const houseGroup = await createHouseTransformsGroup({
       systemId,
       houseId,
       dnas,
