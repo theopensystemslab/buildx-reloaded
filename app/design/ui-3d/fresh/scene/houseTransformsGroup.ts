@@ -1,16 +1,16 @@
 import { pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, O, pipeLog, T } from "../../../../utils/functions"
 import { setVisibility } from "../../../../utils/three"
 import { getModeBools } from "../../../state/siteCtx"
-import {
-  getActiveHouseUserData,
-  getActiveLayoutGroup,
-} from "../helpers/sceneQueries"
+import { getActiveHouseUserData } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
 import {
+  HouseLayoutGroup,
+  HouseTransformsGroup,
   HouseTransformsGroupUserData,
+  isHouseLayoutGroup,
   isStretchHandleGroup,
   StretchHandleGroup,
   UserDataTypeEnum,
@@ -38,7 +38,7 @@ export const createHouseTransformsGroup = ({
       createHouseLayoutGroup({ houseLayout, dnas, systemId, houseId })
     ),
     T.map((layoutGroup) => {
-      const houseTransformsGroup = new Group()
+      const houseTransformsGroup = new Group() as HouseTransformsGroup
 
       const NORMAL_DIRECTION = -1
 
@@ -86,6 +86,7 @@ export const createHouseTransformsGroup = ({
       }
 
       const syncRotateHandles = () => {}
+
       const syncWidthHandles = () => {
         const widthHandles = pipe(
           houseTransformsGroup.children,
@@ -100,19 +101,40 @@ export const createHouseTransformsGroup = ({
         })
       }
 
+      const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
+        pipe(
+          houseTransformsGroup.children,
+          A.findFirst(
+            (x): x is HouseLayoutGroup =>
+              isHouseLayoutGroup(x) &&
+              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+          ),
+          O.map((lastLayoutGroup) => {
+            console.log(`in ${nextLayoutGroup.uuid}`)
+            console.log(`out ${lastLayoutGroup.uuid}`)
+            setVisibility(nextLayoutGroup, true)
+            setVisibility(lastLayoutGroup, false)
+            houseTransformsGroup.userData.activeLayoutGroupUuid =
+              nextLayoutGroup.uuid
+          })
+        )
+      }
+
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
         systemId,
         houseId,
         clippingPlanes,
         friendlyName,
-        activeLayoutUuid: layoutGroup.uuid,
+        activeLayoutGroupUuid: layoutGroup.uuid,
         houseTypeId,
         initHandles,
         syncRotateHandles,
         syncWidthHandles,
+        setActiveLayoutGroup,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
+
       houseTransformsGroup.add(layoutGroup)
 
       initHandles()

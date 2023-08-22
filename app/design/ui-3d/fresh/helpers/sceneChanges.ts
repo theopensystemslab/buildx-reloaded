@@ -17,7 +17,7 @@ export const debugNextLayout = (houseTransformsGroup: HouseTransformsGroup) => {
     O.map((nextLayout) => {
       setVisibleAndRaycast(nextLayout)
       setInvisibleNoRaycast(activeLayoutGroup)
-      houseTransformsGroup.userData.activeLayoutUuid = nextLayout.uuid
+      houseTransformsGroup.userData.activeLayoutGroupUuid = nextLayout.uuid
     })
   )
 }

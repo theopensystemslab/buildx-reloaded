@@ -147,7 +147,7 @@ export const getActiveHouseUserData = (houseTransformsGroup: Object3D) =>
     A.findFirstMap((x) =>
       x.uuid ===
       (houseTransformsGroup.userData as HouseTransformsGroupUserData)
-        .activeLayoutUuid
+        .activeLayoutGroupUuid
         ? O.some({
             ...(houseTransformsGroup.userData as HouseTransformsGroupUserData),
             ...(x.userData as HouseLayoutGroupUserData),
@@ -169,7 +169,7 @@ export const getActiveLayoutGroup = (
     houseTransformsGroup.children,
     A.findFirst(
       (x): x is HouseLayoutGroup =>
-        x.uuid === houseTransformsGroup.userData.activeLayoutUuid
+        x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
     ),
     someOrError(`getActiveLayoutGroup failure`)
   )
@@ -181,7 +181,7 @@ export const getPartitionedLayoutGroups = (
     houseTransformsGroup,
     getLayoutGroups,
     A.partition(
-      (x) => x.uuid === houseTransformsGroup.userData.activeLayoutUuid
+      (x) => x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
     ),
     ({ left: otherLayoutGroups, right: [activeLayoutGroup] }) => ({
       activeLayoutGroup,

@@ -457,6 +457,8 @@ const useOnDragStretch = () => {
         })
       )
 
+      console.log(fences)
+
       stretchXData.current = {
         handleGroup,
         otherSideHandleGroup,
@@ -505,9 +507,10 @@ const useOnDragStretch = () => {
           A.lookup(fenceIndex + 1),
           O.map(({ x }) => {
             if (adjustedDistance >= x) {
-              // swap it
-              setVisibility(fences[fenceIndex + 1].layoutGroup, true)
-              setVisibility(fences[fenceIndex].layoutGroup, false)
+              console.log(1)
+              houseTransformsGroup.userData.setActiveLayoutGroup(
+                fences[fenceIndex + 1].layoutGroup
+              )
               stretchXData.current!.fenceIndex++
             }
           })
@@ -517,9 +520,10 @@ const useOnDragStretch = () => {
           fences,
           A.lookup(fenceIndex - 1),
           O.map(({ x }) => {
-            if (adjustedDistance >= x) {
-              setVisibility(fences[fenceIndex].layoutGroup, true)
-              setVisibility(fences[fenceIndex + 1].layoutGroup, false)
+            if (adjustedDistance <= x) {
+              houseTransformsGroup.userData.setActiveLayoutGroup(
+                fences[fenceIndex - 1].layoutGroup
+              )
               stretchXData.current!.fenceIndex--
             }
           })
