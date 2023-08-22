@@ -231,7 +231,7 @@ export const setInvisibleButRaycast = (object: Object3D) => {
   })
 }
 
-export const setVisibility = (object: Object3D, bool: boolean) => {
+export const setVisible = (object: Object3D, bool: boolean) => {
   if (bool) {
     setVisibleAndRaycast(object)
   } else {

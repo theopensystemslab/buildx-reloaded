@@ -2,7 +2,7 @@ import { pipe } from "fp-ts/lib/function"
 import { BoxGeometry, Group, Mesh, SphereGeometry } from "three"
 import { A } from "../../../../utils/functions"
 import handleMaterial from "../handleMaterial"
-import { StretchHandleGroupUserData, UserDataTypeEnum } from "../userData"
+import { StretchHandleGroupUserData, UserDataTypeEnum } from "../scene/userData"
 
 const OFFSET = 0.5
 const sphereGeom = new SphereGeometry(0.5)

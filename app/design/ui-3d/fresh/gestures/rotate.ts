@@ -15,7 +15,7 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 
 const useOnDragRotate = () => {
   const rotateData = useRef<{

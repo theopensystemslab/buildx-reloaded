@@ -8,25 +8,32 @@ import layoutsDB, {
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import { A, combineGuards, O, R, T } from "../../../../utils/functions"
-import { setVisibility, yAxis } from "../../../../utils/three"
+import { setVisible, yAxis } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import { renderOBB } from "../dimensions"
-import { findAllGuardDown } from "../helpers/sceneQueries"
+import {
+  findAllGuardDown,
+  getLayoutGroupColumnGroups,
+  getSortedVisibleColumnGroups,
+} from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
 import {
   HouseLayoutGroup,
   HouseLayoutGroupUserData,
+  isModuleGroup,
   isRotateHandlesGroup,
   isStretchHandleMesh,
+  ModuleGroupUserData,
   UserDataTypeEnum,
-} from "../userData"
+} from "./userData"
 import {
   createColumnGroups,
   getVanillaColumn,
   splitColumnGroups,
 } from "./columnGroup"
+import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
 
 const DEBUG = false
 
@@ -93,7 +100,7 @@ export const createHouseLayoutGroup = ({
       houseLayout,
     }),
     T.chain((columnGroups) => {
-      const layoutGroup = new Group()
+      const layoutGroup = new Group() as HouseLayoutGroup
 
       const columnCount = columnGroups.length
 
@@ -115,6 +122,109 @@ export const createHouseLayoutGroup = ({
       return pipe(
         getVanillaColumn({ systemId, levelTypes }),
         T.map((vanillaColumn) => {
+          const updateLength = () => {
+            const { length: oldLength } = layoutGroup.userData
+
+            pipe(
+              layoutGroup,
+              getLayoutGroupColumnGroups,
+              A.filter((columnGroup) => !columnGroup.visible)
+            ).forEach((columnGroup) => {
+              columnGroup.removeFromParent()
+            })
+
+            const nextLength = layoutGroup.children
+              .filter(
+                (x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup
+              )
+              .reduce((acc, v) => acc + v.userData.length, 0)
+
+            layoutGroup.userData.length = nextLength
+
+            layoutGroup.position.setZ(-nextLength / 2)
+
+            layoutGroup.parent?.position.add(
+              new Vector3(0, 0, (nextLength - oldLength) / 2).applyAxisAngle(
+                yAxis,
+                layoutGroup.parent.rotation.y
+              )
+            )
+
+            const houseTransformsGroup = layoutGroup.parent!
+
+            const { x, y, z } = houseTransformsGroup.position
+
+            const center = new Vector3(x, y + height / 2, z)
+            const halfSize = new Vector3(width / 2, height / 2, nextLength / 2)
+            const rotation = new Matrix3().setFromMatrix4(
+              houseTransformsGroup.matrix
+            )
+
+            layoutGroup.userData.obb.set(center, halfSize, rotation)
+
+            // if (DEBUG && houseTransformsGroup.parent) {
+            //   renderOBB(
+            //     layoutGroup.userData.obb,
+            //     houseTransformsGroup.parent
+            //   )
+            // }
+          }
+
+          const updateDnas = () => {
+            let result: string[][] = []
+            pipe(
+              layoutGroup,
+              getSortedVisibleColumnGroups,
+              // -> findAllGuardDown
+              A.map((v) => {
+                v.traverse((node) => {
+                  if (isModuleGroup(node)) {
+                    const { dna } = node.userData as ModuleGroupUserData
+                    if (
+                      node.parent?.userData.type !==
+                      UserDataTypeEnum.Enum.GridGroup
+                    )
+                      throw new Error("non-GridGroup parent of ModuleGroup")
+
+                    const levelIndex = node.parent!.userData.levelIndex
+                    if (!result[levelIndex]) {
+                      result[levelIndex] = []
+                    }
+                    result[levelIndex].push(dna)
+                  }
+                })
+              })
+            )
+            layoutGroup.userData.dnas = result.flat()
+          }
+
+          const initStretchZHandles = () => {
+            const { startColumnGroup, endColumnGroup } =
+              splitColumnGroups(columnGroups)
+
+            const { siteMode } = getModeBools(siteCtx.mode)
+
+            const { length: houseLength, width: houseWidth } =
+              layoutGroup.userData
+            const backStretchZHandleGroup = createStretchHandle({
+              axis: "z",
+              side: 1,
+              houseLength,
+              houseWidth,
+            })
+            endColumnGroup.add(backStretchZHandleGroup)
+            setVisible(backStretchZHandleGroup, !siteMode)
+
+            const frontStretchZHandleGroup = createStretchHandle({
+              axis: "z",
+              side: -1,
+              houseLength,
+              houseWidth,
+            })
+            startColumnGroup.add(frontStretchZHandleGroup)
+            setVisible(frontStretchZHandleGroup, !siteMode)
+          }
+
           const userData: HouseLayoutGroupUserData = {
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
@@ -128,85 +238,15 @@ export const createHouseLayoutGroup = ({
             obb,
             modifiedMaterials: {},
             vanillaColumn,
+            initStretchZHandles,
+            updateLength,
+            updateDnas,
           }
 
-          layoutGroup.position.setZ(-length / 2)
+          layoutGroup.userData = userData
           layoutGroup.add(...columnGroups)
-
-          const { startColumnGroup, endColumnGroup } =
-            splitColumnGroups(columnGroups)
-
-          const userDataHandler: ProxyHandler<HouseLayoutGroupUserData> = {
-            set: function (target: any, prop: any, value: any) {
-              if (prop === "length") {
-                const oldLength = target[prop]
-                const newLength = value
-                target[prop] = value
-
-                console.log(
-                  `doing stuff, oldLength: ${oldLength}; newLength: ${newLength}`
-                )
-
-                layoutGroup.position.setZ(-newLength / 2)
-
-                layoutGroup.parent?.position.add(
-                  new Vector3(0, 0, (newLength - oldLength) / 2).applyAxisAngle(
-                    yAxis,
-                    layoutGroup.parent.rotation.y
-                  )
-                )
-
-                const houseTransformsGroup = layoutGroup.parent!
-
-                const { x, y, z } = houseTransformsGroup.position
-
-                const center = new Vector3(x, y + height / 2, z)
-                const halfSize = new Vector3(
-                  width / 2,
-                  height / 2,
-                  newLength / 2
-                )
-                const rotation = new Matrix3().setFromMatrix4(
-                  houseTransformsGroup.matrix
-                )
-
-                layoutGroup.userData.obb.set(center, halfSize, rotation)
-
-                if (DEBUG && houseTransformsGroup.parent) {
-                  renderOBB(
-                    layoutGroup.userData.obb,
-                    houseTransformsGroup.parent
-                  )
-                }
-
-                // refreshHandles()
-              }
-
-              return true // Indicate assignment success
-            },
-          }
-
-          layoutGroup.userData = new Proxy(userData, userDataHandler)
-
-          const { siteMode } = getModeBools(siteCtx.mode)
-
-          const backStretchZHandleGroup = createStretchHandle({
-            axis: "z",
-            side: 1,
-            houseLength: length,
-            houseWidth: width,
-          })
-          endColumnGroup.add(backStretchZHandleGroup)
-          setVisibility(backStretchZHandleGroup, !siteMode)
-
-          const frontStretchZHandleGroup = createStretchHandle({
-            axis: "z",
-            side: -1,
-            houseLength: length,
-            houseWidth: width,
-          })
-          startColumnGroup.add(frontStretchZHandleGroup)
-          setVisibility(frontStretchZHandleGroup, !siteMode)
+          layoutGroup.position.setZ(-length / 2)
+          layoutGroup.userData.initStretchZHandles()
 
           return layoutGroup as HouseLayoutGroup
         })

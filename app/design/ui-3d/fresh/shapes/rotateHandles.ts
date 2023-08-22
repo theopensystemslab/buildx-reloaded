@@ -5,7 +5,7 @@ import {
   RotateHandleMeshUserData,
   RotateHandlesGroupUserData,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 
 const ROTATE_HANDLE_OFFSET = 5
 const ROTATE_HANDLE_SIZE = 0.3

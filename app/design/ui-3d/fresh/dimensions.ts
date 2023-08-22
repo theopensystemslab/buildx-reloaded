@@ -31,7 +31,7 @@ import {
   isHouseLayoutGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
-} from "./userData"
+} from "./scene/userData"
 
 export const DEBUG = false
 

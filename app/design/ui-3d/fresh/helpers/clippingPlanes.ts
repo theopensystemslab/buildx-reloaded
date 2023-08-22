@@ -7,7 +7,7 @@ import {
   HouseTransformsGroupUserData,
   isHouseTransformsGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 import {
   getActiveHouseUserData,
   getActiveLayoutGroup,

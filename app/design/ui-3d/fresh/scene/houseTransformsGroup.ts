@@ -1,9 +1,12 @@
 import { pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
 import { A, O, pipeLog, T } from "../../../../utils/functions"
-import { setVisibility } from "../../../../utils/three"
+import { setVisible } from "../../../../utils/three"
 import { getModeBools } from "../../../state/siteCtx"
-import { getActiveHouseUserData } from "../helpers/sceneQueries"
+import {
+  findAllGuardDown,
+  getActiveHouseUserData,
+} from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
 import {
@@ -12,9 +15,10 @@ import {
   HouseTransformsGroupUserData,
   isHouseLayoutGroup,
   isStretchHandleGroup,
+  isStretchXHandleGroup,
   StretchHandleGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "./userData"
 import { createHouseLayoutGroup, getHouseLayout } from "./houseLayoutGroup"
 
 export const BIG_CLIP_NUMBER = 999
@@ -59,7 +63,7 @@ export const createHouseTransformsGroup = ({
           houseLength,
         })
 
-        setVisibility(rotateHandles, siteMode)
+        setVisible(rotateHandles, siteMode)
 
         houseTransformsGroup.add(rotateHandles)
 
@@ -81,7 +85,7 @@ export const createHouseTransformsGroup = ({
           handle.position.setZ(houseLength / 2)
 
           houseTransformsGroup.add(handle)
-          setVisibility(handle, !siteMode)
+          setVisible(handle, !siteMode)
         })
       }
 
@@ -112,11 +116,19 @@ export const createHouseTransformsGroup = ({
           O.map((lastLayoutGroup) => {
             console.log(`in ${nextLayoutGroup.uuid}`)
             console.log(`out ${lastLayoutGroup.uuid}`)
-            setVisibility(nextLayoutGroup, true)
-            setVisibility(lastLayoutGroup, false)
+            setVisible(nextLayoutGroup, true)
+            setVisible(lastLayoutGroup, false)
             houseTransformsGroup.userData.activeLayoutGroupUuid =
               nextLayoutGroup.uuid
           })
+        )
+      }
+
+      const setWidthHandlesVisible = (bool: boolean = true) => {
+        pipe(
+          houseTransformsGroup,
+          findAllGuardDown(isStretchXHandleGroup),
+          A.map((x) => void setVisible(x, bool))
         )
       }
 
@@ -128,10 +140,11 @@ export const createHouseTransformsGroup = ({
         friendlyName,
         activeLayoutGroupUuid: layoutGroup.uuid,
         houseTypeId,
-        initHandles,
+        initRotateAndStretchXHandles: initHandles,
         syncRotateHandles,
         syncWidthHandles,
         setActiveLayoutGroup,
+        setWidthHandlesVisible,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
 

@@ -4,7 +4,7 @@ import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
-import { HouseTransformsGroup } from "../userData"
+import { HouseTransformsGroup } from "../scene/userData"
 import { getPartitionedLayoutGroups } from "./sceneQueries"
 
 export const debugNextLayout = (houseTransformsGroup: HouseTransformsGroup) => {

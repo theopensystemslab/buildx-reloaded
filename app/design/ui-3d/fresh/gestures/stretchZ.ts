@@ -24,7 +24,7 @@ import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   StretchHandleGroup,
-} from "../userData"
+} from "../scene/userData"
 
 const TMP_MAX_LENGTH = 10
 
@@ -106,6 +106,7 @@ const useOnDragStretchZ = () => {
 
     const handleColumnGroup = handleColumnGroupParentQuery(handleGroup)
     const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
+    houseTransformsGroup.userData.setWidthHandlesVisible(false)
 
     const { side } = handleGroup.userData
     const { systemId, houseId, vanillaColumn } =
@@ -185,8 +186,6 @@ const useOnDragStretchZ = () => {
                 addVanilla(side)
               }
             }
-
-            console.log(stretchZProgressDataRef.current.fences)
           })
         )
       )
@@ -375,7 +374,9 @@ const useOnDragStretchZ = () => {
       )
     }
 
-    updateLayoutGroupLength(layoutGroup)
+    layoutGroup.userData.updateLength()
+    houseTransformsGroup.userData.syncWidthHandles()
+    houseTransformsGroup.userData.setWidthHandlesVisible(true)
 
     stretchZInitialDataRef.current = null
     stretchZProgressDataRef.current = {

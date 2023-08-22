@@ -14,7 +14,7 @@ import {
   HouseTransformsGroup,
   isStretchHandleGroup,
   StretchHandleGroup,
-} from "../userData"
+} from "../scene/userData"
 
 type FenceX = {
   x: number

@@ -12,7 +12,7 @@ import {
   isHouseLayoutGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 
 export const sortColumnsByIndex = A.sort(
   pipe(

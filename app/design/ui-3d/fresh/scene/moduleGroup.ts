@@ -9,7 +9,7 @@ import {
   ElementMeshUserData,
   ModuleGroupUserData,
   UserDataTypeEnum,
-} from "../userData"
+} from "./userData"
 
 // speckle branch url : geometry by ifc tag
 export let models: Record<string, Record<string, BufferGeometry>> = {}

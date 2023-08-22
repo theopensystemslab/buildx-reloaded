@@ -4,7 +4,7 @@ import { Group } from "three"
 import { useSubscribe } from "../../../utils/hooks"
 import settings from "../../state/settings"
 import siteCtx from "../../state/siteCtx"
-import { UserData, UserDataTypeEnum } from "./userData"
+import { UserData, UserDataTypeEnum } from "./scene/userData"
 
 const useCuts = (rootRef: RefObject<Group>) => {
   useSubscribe(

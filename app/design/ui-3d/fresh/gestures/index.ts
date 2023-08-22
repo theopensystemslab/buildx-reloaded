@@ -27,7 +27,7 @@ import {
   isStretchHandleMesh,
   StretchHandleGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
 import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"

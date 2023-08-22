@@ -21,7 +21,7 @@ import layoutsDB, {
   VanillaColumnsKey,
 } from "../../../../db/layouts"
 import { A, combineGuards, O, R, S, T } from "../../../../utils/functions"
-import { addDebugLineAtZ, setVisibility, yAxis } from "../../../../utils/three"
+import { addDebugLineAtZ, setVisible, yAxis } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import { renderOBB } from "../dimensions"
@@ -39,7 +39,7 @@ import {
   isStretchHandleMesh,
   ModuleGroupUserData,
   UserDataTypeEnum,
-} from "../userData"
+} from "./userData"
 import { findAllGuardDown } from "../helpers/sceneQueries"
 import { createModuleGroup } from "./moduleGroup"
 

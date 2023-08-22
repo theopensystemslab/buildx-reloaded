@@ -8,8 +8,8 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
-import { ColumnLayout, VanillaColumn } from "../../../db/layouts"
-import { ScopeItem } from "../../state/scope"
+import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
+import { ScopeItem } from "../../../state/scope"
 
 // HouseTransformsGroup has
 
@@ -48,10 +48,11 @@ export type HouseTransformsGroupUserData = {
   friendlyName: string
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
-  initHandles: () => void
+  initRotateAndStretchXHandles: () => void
   syncWidthHandles: () => void
   syncRotateHandles: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
+  setWidthHandlesVisible: (bool?: boolean) => void
 }
 
 export type HouseLayoutGroupUserData = {
@@ -67,6 +68,9 @@ export type HouseLayoutGroupUserData = {
   columnCount: number
   sectionType: string
   modifiedMaterials: Record<string, string>
+  initStretchZHandles: () => void
+  updateLength: () => void
+  updateDnas: () => void
 }
 
 export type ColumnGroupUserData = {
@@ -216,6 +220,11 @@ export const isStretchHandleGroup = (
   node: Object3D
 ): node is StretchHandleGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.StretchHandleGroup
+
+export const isStretchXHandleGroup = (
+  node: Object3D
+): node is StretchHandleGroup =>
+  isStretchHandleGroup(node) && node.userData.axis === "x"
 
 export const incrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData

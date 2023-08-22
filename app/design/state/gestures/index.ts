@@ -11,7 +11,7 @@ import {
   GridGroupUserData,
   HouseTransformsGroupUserData,
   UserDataTypeEnum,
-} from "../../ui-3d/fresh/userData"
+} from "../../ui-3d/fresh/scene/userData"
 import { setCameraControlsEnabled } from "../camera"
 import { getHouseCenter } from "../dimensions"
 import { dispatchMoveHouseIntent } from "../events/moveRotate"

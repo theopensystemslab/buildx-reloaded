@@ -14,7 +14,7 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 
 const useOnDragMove = () => {
   const moveData = useRef<{

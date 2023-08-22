@@ -4,7 +4,7 @@ import { A, O, R } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import {
   setInvisibleNoRaycast,
-  setVisibility,
+  setVisible,
   setVisibleAndRaycast,
 } from "~/utils/three"
 import scope from "~/design/state/scope"
@@ -26,7 +26,7 @@ import {
   isHouseTransformsGroup,
   isStretchHandleGroup,
   UserDataTypeEnum,
-} from "../userData"
+} from "../scene/userData"
 import { RefObject } from "react"
 import { Group } from "three"
 import layoutsDB from "../../../../db/layouts"
@@ -188,7 +188,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                 houseLayout: layout,
                 dnas,
               })().then((layoutGroup) => {
-                setVisibility(layoutGroup, false)
+                setVisible(layoutGroup, false)
 
                 // remove same dnas ones
                 pipe(
