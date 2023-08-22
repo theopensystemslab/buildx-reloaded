@@ -22,6 +22,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import {
   HouseLayoutGroup,
   HouseLayoutGroupUserData,
+  HouseTransformsGroup,
+  isHouseLayoutGroup,
   isModuleGroup,
   isRotateHandlesGroup,
   isStretchHandleMesh,
@@ -34,6 +36,7 @@ import {
   splitColumnGroups,
 } from "./columnGroup"
 import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
+import userDB from "../../../../db/user"
 
 const DEBUG = false
 
@@ -201,6 +204,20 @@ export const createHouseLayoutGroup = ({
               })
             )
             layoutGroup.userData.dnas = result.flat()
+
+            const houseTransformsGroup =
+              layoutGroup.parent as HouseTransformsGroup
+
+            houseTransformsGroup.userData.refreshAltLayouts()
+
+            if (
+              houseTransformsGroup.userData.activeLayoutGroupUuid ===
+              layoutGroup.uuid
+            ) {
+              userDB.houses.update(houseId, {
+                dnas,
+              })
+            }
           }
 
           const initStretchZHandles = () => {

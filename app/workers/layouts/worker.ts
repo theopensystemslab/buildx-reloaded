@@ -438,6 +438,18 @@ export const columnLayoutToDnas = (
     RA.flatten
   ) as string[]
 
+const foo = ({
+  systemId,
+  houseId,
+  dnas,
+}: {
+  systemId: string
+  houseId: string
+  dnas: string[]
+}) => {
+  console.log({ systemId, houseId, dnas })
+}
+
 if (!isSSR()) {
   liveQuery(async () => {
     const houses = await userDB.houses.toArray()

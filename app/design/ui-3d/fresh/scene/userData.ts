@@ -53,10 +53,12 @@ export type HouseTransformsGroupUserData = {
   friendlyName: string
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
+  activeLayoutDnas: string[]
   initRotateAndStretchXHandles: () => void
   syncLength: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setWidthHandlesVisible: (bool?: boolean) => void
+  refreshAltLayouts: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {

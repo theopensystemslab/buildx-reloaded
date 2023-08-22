@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { A, O, R } from "~/utils/functions"
+import { A, O, R, T } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import {
   setInvisibleNoRaycast,
@@ -16,22 +16,25 @@ import siteCtx, {
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
 import {
   findAllGuardDown,
+  findFirstGuardAcross,
   findFirstGuardDown,
   getActiveHouseUserData,
   getActiveLayoutGroup,
 } from "../helpers/sceneQueries"
 import {
+  HouseLayoutGroup,
   HouseTransformsGroup,
   isHouseLayoutGroup,
   isHouseTransformsGroup,
   isStretchHandleGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
-import { RefObject } from "react"
+import { RefObject, useEffect } from "react"
 import { Group } from "three"
 import layoutsDB from "../../../../db/layouts"
 import { BIG_CLIP_NUMBER } from "../scene/houseTransformsGroup"
 import { createHouseLayoutGroup } from "../scene/houseLayoutGroup"
+import { liveQuery } from "dexie"
 
 const useModeChange = (rootRef: RefObject<Group>) => {
   const showHouseStretchHandles = (houseId: string) => {
@@ -146,69 +149,143 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     }
   }
 
+  // set up a separate listener for when houses dnas changes in the db
+
+  useEffect(() => {
+    const { unsubscribe } = liveQuery(() =>
+      layoutsDB.altSectionTypeLayouts.toArray()
+    ).subscribe((dbAltSectionTypeLayouts) => {
+      if (!rootRef.current) return
+
+      for (let { houseId, altSectionTypeLayouts } of dbAltSectionTypeLayouts) {
+        pipe(
+          rootRef.current,
+          findFirstGuardAcross(
+            (x): x is HouseTransformsGroup =>
+              isHouseTransformsGroup(x) && x.userData.houseId === houseId
+          ),
+          O.map((houseTransformsGroup) => {
+            // delete non-active layout groups
+            // return active layout group
+            const maybeActiveLayoutGroup = pipe(
+              houseTransformsGroup.children,
+              A.partition(
+                (x): x is HouseLayoutGroup =>
+                  isHouseLayoutGroup(x) &&
+                  x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+              ),
+              ({ right: activeLayoutGroups, right: otherLayoutGroups }) => {
+                otherLayoutGroups.forEach((x) => {
+                  console.log(`removing for st ${x.userData.sectionType}`)
+                  x.removeFromParent()
+                })
+                return pipe(activeLayoutGroups, A.head)
+              }
+            )
+
+            if (houseId === siteCtx.houseId) {
+              pipe(
+                maybeActiveLayoutGroup,
+                O.map((activeLayoutGroup) => {
+                  pipe(
+                    altSectionTypeLayouts,
+                    R.filterMap(({ sectionType, layout, dnas }) => {
+                      // maybe add the active section type to the house transforms group?
+                      if (
+                        sectionType.code ===
+                        activeLayoutGroup.userData.sectionType
+                      )
+                        return O.none
+
+                      createHouseLayoutGroup({
+                        systemId: houseTransformsGroup.userData.systemId,
+                        dnas,
+                        houseId,
+                        houseLayout: layout,
+                      })().then((layoutGroup) => {
+                        console.log(`posting for st ${sectionType.code}`)
+                        setInvisibleNoRaycast(layoutGroup)
+                        houseTransformsGroup.add(layoutGroup)
+                      })
+
+                      return O.none
+                    })
+                  )
+                })
+              )
+            }
+          })
+        )
+      }
+    })
+
+    return unsubscribe
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useSubscribeKey(scope, "selected", processHandles)
   useModeChangeListener(async ({ previous, next }) => {
     processHandles()
     processClippingPlanes()
-    if (
-      previous === SiteCtxModeEnum.Enum.SITE &&
-      next === SiteCtxModeEnum.Enum.BUILDING
-    ) {
-      // house Id
-      // get the stretch x stuff out of the db?
-      // maybe clean out old stuff
-      // ultimately pop some alternative invisible layouts in there!
+    // if (
+    //   previous === SiteCtxModeEnum.Enum.SITE &&
+    //   next === SiteCtxModeEnum.Enum.BUILDING
+    // ) {
+    //   // house Id
+    //   // get the stretch x stuff out of the db?
+    //   // maybe clean out old stuff
+    //   // ultimately pop some alternative invisible layouts in there!
 
-      const { houseId } = siteCtx
+    //   const { houseId } = siteCtx
 
-      if (!houseId) return
+    //   if (!houseId) return
 
-      const dbResult = await layoutsDB.altSectionTypeLayouts.get(houseId)
+    //   const dbResult = await layoutsDB.altSectionTypeLayouts.get(houseId)
 
-      if (!dbResult) return
+    //   if (!dbResult) return
 
-      if (!rootRef.current) return
+    //   if (!rootRef.current) return
 
-      pipe(
-        rootRef.current,
-        findFirstGuardDown((x): x is HouseTransformsGroup => {
-          if (!isHouseTransformsGroup(x)) return false
-          if (x.userData.houseId !== houseId) return false
-          return true
-        }),
-        O.map((houseTransformsGroup) => {
-          const { systemId } = getActiveHouseUserData(houseTransformsGroup)
+    //   pipe(
+    //     rootRef.current,
+    //     findFirstGuardDown((x): x is HouseTransformsGroup => {
+    //       if (!isHouseTransformsGroup(x)) return false
+    //       if (x.userData.houseId !== houseId) return false
+    //       return true
+    //     }),
+    //     O.map((houseTransformsGroup) => {
+    //       const { systemId } = getActiveHouseUserData(houseTransformsGroup)
 
-          pipe(
-            dbResult.altSectionTypeLayouts,
-            R.map(({ layout, dnas }) => {
-              createHouseLayoutGroup({
-                systemId,
-                houseId,
-                houseLayout: layout,
-                dnas,
-              })().then((layoutGroup) => {
-                setVisible(layoutGroup, false)
+    //       pipe(
+    //         dbResult.altSectionTypeLayouts,
+    //         R.map(({ layout, dnas }) => {
+    //           createHouseLayoutGroup({
+    //             systemId,
+    //             houseId,
+    //             houseLayout: layout,
+    //             dnas,
+    //           })().then((layoutGroup) => {
+    //             setVisible(layoutGroup, false)
 
-                // remove same dnas ones
-                pipe(
-                  houseTransformsGroup,
-                  findAllGuardDown(isHouseLayoutGroup),
-                  A.filter(
-                    (x) => x.userData.dnas.toString() === dnas.toString()
-                  )
-                ).forEach((layoutGroup) => {
-                  console.log(`removing ${layoutGroup.userData.sectionType}`)
-                  layoutGroup.removeFromParent()
-                })
-                houseTransformsGroup.add(layoutGroup)
-                console.log(houseTransformsGroup.children)
-              })
-            })
-          )
-        })
-      )
-    }
+    //             // remove same dnas ones
+    //             pipe(
+    //               houseTransformsGroup,
+    //               findAllGuardDown(isHouseLayoutGroup),
+    //               A.filter(
+    //                 (x) => x.userData.dnas.toString() === dnas.toString()
+    //               )
+    //             ).forEach((layoutGroup) => {
+    //               console.log(`removing ${layoutGroup.userData.sectionType}`)
+    //               layoutGroup.removeFromParent()
+    //             })
+    //             houseTransformsGroup.add(layoutGroup)
+    //             console.log(houseTransformsGroup.children)
+    //           })
+    //         })
+    //       )
+    //     })
+    //   )
+    // }
   })
 }
 

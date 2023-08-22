@@ -120,12 +120,12 @@ export const createHouseTransformsGroup = ({
               x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
           ),
           O.map((lastLayoutGroup) => {
-            console.log(`in ${nextLayoutGroup.uuid}`)
-            console.log(`out ${lastLayoutGroup.uuid}`)
             setVisible(nextLayoutGroup, true)
             setVisible(lastLayoutGroup, false)
             houseTransformsGroup.userData.activeLayoutGroupUuid =
               nextLayoutGroup.uuid
+            houseTransformsGroup.userData.activeLayoutDnas =
+              nextLayoutGroup.userData.dnas
           })
         )
       }
@@ -138,18 +138,34 @@ export const createHouseTransformsGroup = ({
         )
       }
 
+      const refreshAltLayouts = () => {
+        // remove old alts
+        // pipe(
+        //   houseTransformsGroup.children,
+        //   A.filter(
+        //     (x): x is HouseLayoutGroup =>
+        //       isHouseLayoutGroup(x) && x.uuid !== houseTransformsGroup.uuid
+        //   )
+        // ).forEach((x) => {
+        //   x.removeFromParent()
+        // })
+        // section type layouts
+      }
+
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
         systemId,
+        houseTypeId,
         houseId,
+        activeLayoutGroupUuid: layoutGroup.uuid,
+        activeLayoutDnas: layoutGroup.userData.dnas,
         clippingPlanes,
         friendlyName,
-        activeLayoutGroupUuid: layoutGroup.uuid,
-        houseTypeId,
         initRotateAndStretchXHandles: initHandles,
         syncLength,
         setActiveLayoutGroup,
         setWidthHandlesVisible,
+        refreshAltLayouts,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
 
