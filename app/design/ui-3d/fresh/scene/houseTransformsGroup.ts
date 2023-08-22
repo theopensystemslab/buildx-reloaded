@@ -95,7 +95,8 @@ export const createHouseTransformsGroup = ({
         )
 
         widthHandles.forEach((handle) => {
-          // cont
+          const { length } = getActiveHouseUserData(houseTransformsGroup)
+          handle.userData.updateXHandleLength(length)
         })
       }
 
@@ -113,6 +114,8 @@ export const createHouseTransformsGroup = ({
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
       houseTransformsGroup.add(layoutGroup)
+
+      initHandles()
 
       return houseTransformsGroup
     })

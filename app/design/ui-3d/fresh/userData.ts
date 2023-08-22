@@ -103,6 +103,7 @@ export type StretchHandleGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleGroup
   axis: "z" | "x"
   side: 1 | -1
+  updateXHandleLength: (length: number) => void
 }
 
 export type StretchHandleMeshUserData = {

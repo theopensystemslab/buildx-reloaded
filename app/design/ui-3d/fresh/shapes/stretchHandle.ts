@@ -62,11 +62,16 @@ const createStretchHandle = ({
   handleGroup.scale.setScalar(0.5)
   handleGroup.position.setY(0.01)
 
-  handleGroup.userData = {
+  const userData: StretchHandleGroupUserData = {
     axis,
     side,
     type: UserDataTypeEnum.Enum.StretchHandleGroup,
-  } as StretchHandleGroupUserData
+    updateXHandleLength: (length: number) => {
+      boxMesh.scale.setZ(length)
+    },
+  }
+
+  handleGroup.userData = userData
 
   return handleGroup
 }
