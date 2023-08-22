@@ -1,12 +1,20 @@
 import { pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
-import { T } from "../../../../utils/functions"
+import { A, T } from "../../../../utils/functions"
 import { setVisibility } from "../../../../utils/three"
 import { getModeBools } from "../../../state/siteCtx"
-import { getActiveHouseUserData } from "../helpers/sceneQueries"
+import {
+  getActiveHouseUserData,
+  getActiveLayoutGroup,
+} from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
-import { HouseTransformsGroupUserData, UserDataTypeEnum } from "../userData"
+import {
+  HouseTransformsGroupUserData,
+  isStretchHandleGroup,
+  StretchHandleGroup,
+  UserDataTypeEnum,
+} from "../userData"
 import { createHouseLayoutGroup, getHouseLayout } from "./houseLayoutGroup"
 
 export const BIG_CLIP_NUMBER = 999
@@ -40,39 +48,56 @@ export const createHouseTransformsGroup = ({
         new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
       ]
 
-      const { width: houseWidth, length: houseLength } = layoutGroup.userData
+      const initHandles = () => {
+        const { width: houseWidth, length: houseLength } =
+          getActiveHouseUserData(houseTransformsGroup)
 
-      const { siteMode } = getModeBools()
+        const { siteMode } = getModeBools()
 
-      const rotateHandles = createRotateHandles({
-        houseWidth,
-        houseLength,
-      })
+        const rotateHandles = createRotateHandles({
+          houseWidth,
+          houseLength,
+        })
 
-      setVisibility(rotateHandles, siteMode)
+        setVisibility(rotateHandles, siteMode)
 
-      houseTransformsGroup.add(rotateHandles)
+        houseTransformsGroup.add(rotateHandles)
 
-      const stretchXUpHandleGroup = createStretchHandle({
-        axis: "x",
-        side: 1,
-        houseLength,
-        houseWidth,
-      })
+        const stretchXUpHandleGroup = createStretchHandle({
+          axis: "x",
+          side: 1,
+          houseLength,
+          houseWidth,
+        })
 
-      const stretchXDownHandleGroup = createStretchHandle({
-        axis: "x",
-        side: -1,
-        houseLength,
-        houseWidth,
-      })
+        const stretchXDownHandleGroup = createStretchHandle({
+          axis: "x",
+          side: -1,
+          houseLength,
+          houseWidth,
+        })
 
-      ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
-        handle.position.setZ(houseLength / 2)
+        ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
+          handle.position.setZ(houseLength / 2)
 
-        houseTransformsGroup.add(handle)
-        setVisibility(handle, !siteMode)
-      })
+          houseTransformsGroup.add(handle)
+          setVisibility(handle, !siteMode)
+        })
+      }
+
+      const syncRotateHandles = () => {}
+      const syncWidthHandles = () => {
+        const widthHandles = pipe(
+          houseTransformsGroup.children,
+          A.filter((x): x is StretchHandleGroup => {
+            return isStretchHandleGroup(x) && x.userData.axis === "x"
+          })
+        )
+
+        widthHandles.forEach((handle) => {
+          // cont
+        })
+      }
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
@@ -82,6 +107,9 @@ export const createHouseTransformsGroup = ({
         friendlyName,
         activeLayoutUuid: layoutGroup.uuid,
         houseTypeId,
+        initHandles,
+        syncRotateHandles,
+        syncWidthHandles,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
       houseTransformsGroup.add(layoutGroup)

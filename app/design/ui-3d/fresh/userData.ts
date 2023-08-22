@@ -48,6 +48,9 @@ export type HouseTransformsGroupUserData = {
   friendlyName: string
   clippingPlanes: Plane[]
   activeLayoutUuid: string
+  initHandles: () => void
+  syncWidthHandles: () => void
+  syncRotateHandles: () => void
 }
 
 export type HouseLayoutGroupUserData = {
