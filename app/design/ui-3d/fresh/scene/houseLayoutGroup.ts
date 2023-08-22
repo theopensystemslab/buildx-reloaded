@@ -214,6 +214,7 @@ export const createHouseLayoutGroup = ({
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
               layoutGroup.uuid
             ) {
+              console.log(`updating dnas in db`)
               userDB.houses.update(houseId, {
                 dnas,
               })

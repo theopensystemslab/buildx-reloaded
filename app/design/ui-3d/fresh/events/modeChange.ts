@@ -155,6 +155,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     const { unsubscribe } = liveQuery(() =>
       layoutsDB.altSectionTypeLayouts.toArray()
     ).subscribe((dbAltSectionTypeLayouts) => {
+      console.log(`db alt section layouts type sub run`)
       if (!rootRef.current) return
 
       for (let { houseId, altSectionTypeLayouts } of dbAltSectionTypeLayouts) {
@@ -165,16 +166,22 @@ const useModeChange = (rootRef: RefObject<Group>) => {
               isHouseTransformsGroup(x) && x.userData.houseId === houseId
           ),
           O.map((houseTransformsGroup) => {
+            console.log(`house transforms group`, houseTransformsGroup)
             // delete non-active layout groups
             // return active layout group
             const maybeActiveLayoutGroup = pipe(
               houseTransformsGroup.children,
+              A.filter(isHouseLayoutGroup),
               A.partition(
-                (x): x is HouseLayoutGroup =>
-                  isHouseLayoutGroup(x) &&
-                  x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+                (x) =>
+                  x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
               ),
-              ({ right: activeLayoutGroups, right: otherLayoutGroups }) => {
+              ({ left: otherLayoutGroups, right: activeLayoutGroups }) => {
+                console.log({
+                  uuid: houseTransformsGroup.userData.activeLayoutGroupUuid,
+                  activeLayoutGroups,
+                  otherLayoutGroups,
+                })
                 otherLayoutGroups.forEach((x) => {
                   console.log(`removing for st ${x.userData.sectionType}`)
                   x.removeFromParent()
@@ -182,6 +189,10 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                 return pipe(activeLayoutGroups, A.head)
               }
             )
+
+            console.log(maybeActiveLayoutGroup)
+
+            console.log(siteCtx.houseId)
 
             if (houseId === siteCtx.houseId) {
               pipe(
@@ -196,6 +207,8 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                         activeLayoutGroup.userData.sectionType
                       )
                         return O.none
+
+                      console.log(`hello ${houseId} ${sectionType.code}`)
 
                       createHouseLayoutGroup({
                         systemId: houseTransformsGroup.userData.systemId,
