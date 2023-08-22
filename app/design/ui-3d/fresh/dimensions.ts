@@ -90,7 +90,7 @@ export const updateClippingPlanes = (houseGroup: Group) => {
   planeZ.applyMatrix4(houseGroup.matrix)
 }
 
-const updateDnas = (houseTransformsGroup: HouseTransformsGroup) => {
+export const updateDnas = (houseTransformsGroup: HouseTransformsGroup) => {
   let result: string[][] = []
   pipe(
     houseTransformsGroup,

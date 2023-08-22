@@ -197,6 +197,11 @@ export const isColumnGroup = (node: Object3D): node is ColumnGroup =>
 export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
 
+export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
+  isHouseLayoutGroup(node) &&
+  node.uuid ===
+    (node.parent as HouseTransformsGroup).userData.activeLayoutGroupUuid
+
 export const isHouseTransformsGroup = (
   node: Object3D
 ): node is HouseTransformsGroup =>

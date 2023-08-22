@@ -31,12 +31,15 @@ import {
 import { dispatchPointerDown, dispatchPointerUp } from "./events"
 import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
-import useOnDragStretch from "./stretch"
+import useOnDragStretchX from "./stretchX"
+import useOnDragStretchZ from "./stretchZ"
 
 const useGestures = () => {
-  const { onDragStretchZ, onDragStretchX } = useOnDragStretch()
   const onDragMove = useOnDragMove()
   const onDragRotate = useOnDragRotate()
+
+  const onDragStretchZ = useOnDragStretchZ()
+  const onDragStretchX = useOnDragStretchX()
 
   const firstDragEventRef = useRef<ThreeEvent<PointerEvent> | null>(null)
 
