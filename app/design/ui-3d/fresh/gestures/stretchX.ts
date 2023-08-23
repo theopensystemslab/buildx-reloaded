@@ -13,7 +13,7 @@ import {
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
-  isStretchXHandleGroup,
+  isXStretchHandleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
 
@@ -33,6 +33,8 @@ const useOnDragStretchX = () => {
     fences: FenceX[]
     fenceIndex: number
     lastDistance: number
+    lo: number
+    hi: number
   } | null>(null)
 
   const first = ({
@@ -54,11 +56,15 @@ const useOnDragStretchX = () => {
     const { activeLayoutGroup, otherLayoutGroups } =
       getPartitionedLayoutGroups(houseTransformsGroup)
 
+    ;[activeLayoutGroup, ...otherLayoutGroups].forEach((x) => {
+      x.userData.setLengthHandlesVisible(false)
+    })
+
     const otherSideHandleGroup = pipe(
       houseTransformsGroup,
       findFirstGuardAcross(
         (x): x is StretchHandleGroup =>
-          isStretchXHandleGroup(x) && x.userData.side === otherSide
+          isXStretchHandleGroup(x) && x.userData.side === otherSide
       ),
       someOrError(`other side handle group not found`)
     )
@@ -78,6 +84,9 @@ const useOnDragStretchX = () => {
       })
     )
 
+    const lo = side * fences[0].x
+    const hi = side * fences[fences.length - 1].x
+
     stretchXData.current = {
       handleGroup,
       otherSideHandleGroup,
@@ -88,6 +97,8 @@ const useOnDragStretchX = () => {
       handleGroupX0: handleGroup.position.x,
       fenceIndex,
       lastDistance: 0,
+      lo,
+      hi,
     }
   }
   const mid = () => {
@@ -103,24 +114,9 @@ const useOnDragStretchX = () => {
       fences,
       fenceIndex,
       lastDistance,
+      lo,
+      hi,
     } = stretchXData.current
-
-    // const minX = pipe(
-    //   fences,
-    //   A.head,
-    //   O.match(
-    //     () => activeLayoutGroup.userData.width,
-    //     (x) => activeLayoutGroup.userData.width + x.x
-    //   )
-    // )
-    // const maxX = pipe(
-    //   fences,
-    //   A.last,
-    //   O.match(
-    //     () => activeLayoutGroup.userData.width,
-    //     (x) => activeLayoutGroup.userData.width + x.x
-    //   )
-    // )
 
     const { side } = handleGroup.userData
 
@@ -132,12 +128,25 @@ const useOnDragStretchX = () => {
     )
     const distance = distanceVector.x
 
-    const lo = handleGroupX0 + fences[0].x
-    const hi = handleGroupX0 + fences[fences.length - 1].x
-    handleGroup.position.setX(clamp(lo, hi)(handleGroupX0 + distance))
+    const distanceWithSide = side * distance
+
+    const clampedDistance = clamp(side * lo, side * hi)(distanceWithSide)
+
+    // const lo = handleGroupX0 + side * fences[0].x
+    // const hi = handleGroupX0 + side * fences[fences.length - 1].x
+
+    // const c = clamp(lo, hi)
+
+    console.log({ lo, hi, distance, distanceWithSide })
+
+    handleGroup.position.setX(handleGroupX0 + side * clampedDistance)
+
+    console.log({ side: handleGroup.userData.side })
+
+    // const c2 = clamp(-hi, -lo)
 
     otherSideHandleGroup.position.setX(
-      clamp(-hi, -lo)(otherSideHandleGroupX0 - distance)
+      otherSideHandleGroupX0 - side * clampedDistance
     )
 
     const adjustedDistance = side * distance
@@ -149,9 +158,9 @@ const useOnDragStretchX = () => {
         A.lookup(fenceIndex + 1),
         O.map(({ x }) => {
           if (adjustedDistance >= x) {
-            houseTransformsGroup.userData.setActiveLayoutGroup(
-              fences[fenceIndex + 1].layoutGroup
-            )
+            const layoutGroup = fences[fenceIndex + 1].layoutGroup
+            houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+            layoutGroup.userData.setLengthHandlesVisible(false)
             stretchXData.current!.fenceIndex++
           }
         })
@@ -162,9 +171,9 @@ const useOnDragStretchX = () => {
         A.lookup(fenceIndex - 1),
         O.map(({ x }) => {
           if (adjustedDistance <= x) {
-            houseTransformsGroup.userData.setActiveLayoutGroup(
-              fences[fenceIndex - 1].layoutGroup
-            )
+            const layoutGroup = fences[fenceIndex - 1].layoutGroup
+            houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+            layoutGroup.userData.setLengthHandlesVisible(false)
             stretchXData.current!.fenceIndex--
           }
         })
@@ -174,7 +183,13 @@ const useOnDragStretchX = () => {
     // if next fence up
   }
 
-  const last = () => {}
+  const last = () => {
+    const { fences, fenceIndex } = stretchXData.current!
+    const activeLayoutGroup = fences[fenceIndex].layoutGroup
+    activeLayoutGroup.userData.setLengthHandlesVisible(true)
+
+    stretchXData.current = null
+  }
 
   return { first, mid, last }
 }

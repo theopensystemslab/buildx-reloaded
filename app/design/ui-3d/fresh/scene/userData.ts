@@ -80,6 +80,7 @@ export type HouseLayoutGroupUserData = {
   sectionType: string
   modifiedMaterials: Record<string, string>
   initStretchZHandles: () => void
+  setLengthHandlesVisible: (bool?: boolean) => void
   updateLength: () => void
   updateDnas: () => void
 }
@@ -242,10 +243,15 @@ export const isStretchHandleGroup = (
 ): node is StretchHandleGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.StretchHandleGroup
 
-export const isStretchXHandleGroup = (
+export const isXStretchHandleGroup = (
   node: Object3D
 ): node is StretchHandleGroup =>
   isStretchHandleGroup(node) && node.userData.axis === "x"
+
+export const isZStretchHandleGroup = (
+  node: Object3D
+): node is StretchHandleGroup =>
+  isStretchHandleGroup(node) && node.userData.axis === "z"
 
 export const incrementColumnCount = (layoutGroup: Object3D) => {
   const userData = layoutGroup.userData as HouseLayoutGroupUserData

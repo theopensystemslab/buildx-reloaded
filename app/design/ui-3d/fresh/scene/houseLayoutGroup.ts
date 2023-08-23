@@ -6,6 +6,7 @@ import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import {
+  findAllGuardDown,
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
 } from "../helpers/sceneQueries"
@@ -20,6 +21,8 @@ import {
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   isModuleGroup,
+  isXStretchHandleGroup,
+  isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -55,7 +58,7 @@ export const createHouseLayoutGroup = ({
       houseLayout,
     }),
     T.chain((columnGroups) => {
-      const layoutGroup = new Group() as HouseLayoutGroup
+      const houseLayoutGroup = new Group() as HouseLayoutGroup
 
       const columnCount = columnGroups.length
 
@@ -79,7 +82,7 @@ export const createHouseLayoutGroup = ({
         T.map((vanillaColumn) => {
           const computeLength = () =>
             pipe(
-              layoutGroup,
+              houseLayoutGroup,
               getLayoutGroupColumnGroups,
               A.partition((columnGroup) => columnGroup.visible),
               ({ left: hiddenColumnGroups, right: activeColumnGroups }) => {
@@ -95,22 +98,22 @@ export const createHouseLayoutGroup = ({
             )
 
           const updateLength = (maybeLength?: number) => {
-            const { length: oldLength } = layoutGroup.userData
+            const { length: oldLength } = houseLayoutGroup.userData
 
             const nextLength = maybeLength ?? computeLength()
 
-            layoutGroup.userData.length = nextLength
+            houseLayoutGroup.userData.length = nextLength
 
-            layoutGroup.position.setZ(-nextLength / 2)
+            houseLayoutGroup.position.setZ(-nextLength / 2)
 
-            layoutGroup.parent?.position.add(
+            houseLayoutGroup.parent?.position.add(
               new Vector3(0, 0, (nextLength - oldLength) / 2).applyAxisAngle(
                 yAxis,
-                layoutGroup.parent.rotation.y
+                houseLayoutGroup.parent.rotation.y
               )
             )
 
-            const houseTransformsGroup = layoutGroup.parent!
+            const houseTransformsGroup = houseLayoutGroup.parent!
 
             const { x, y, z } = houseTransformsGroup.position
 
@@ -120,7 +123,7 @@ export const createHouseLayoutGroup = ({
               houseTransformsGroup.matrix
             )
 
-            layoutGroup.userData.obb.set(center, halfSize, rotation)
+            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
 
             // if (DEBUG && houseTransformsGroup.parent) {
             //   renderOBB(
@@ -133,7 +136,7 @@ export const createHouseLayoutGroup = ({
           const updateDnas = () => {
             let result: string[][] = []
             pipe(
-              layoutGroup,
+              houseLayoutGroup,
               getSortedVisibleColumnGroups,
               // -> findAllGuardDown
               A.map((v) => {
@@ -156,16 +159,16 @@ export const createHouseLayoutGroup = ({
               })
             )
             const nextDnas = result.flat()
-            layoutGroup.userData.dnas = nextDnas
+            houseLayoutGroup.userData.dnas = nextDnas
 
             const houseTransformsGroup =
-              layoutGroup.parent as HouseTransformsGroup
+              houseLayoutGroup.parent as HouseTransformsGroup
 
             houseTransformsGroup.userData.refreshAltLayouts()
 
             if (
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
-              layoutGroup.uuid
+              houseLayoutGroup.uuid
             ) {
               houseTransformsGroup.userData.updateActiveLayoutDnas(nextDnas)
             }
@@ -178,7 +181,7 @@ export const createHouseLayoutGroup = ({
             const { siteMode } = getModeBools(siteCtx.mode)
 
             const { length: houseLength, width: houseWidth } =
-              layoutGroup.userData
+              houseLayoutGroup.userData
             const backStretchZHandleGroup = createStretchHandle({
               axis: "z",
               side: 1,
@@ -198,6 +201,14 @@ export const createHouseLayoutGroup = ({
             setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
+          const setLengthHandlesVisible = (bool: boolean = true) => {
+            pipe(
+              houseLayoutGroup,
+              findAllGuardDown(isZStretchHandleGroup),
+              A.map((x) => void setVisible(x, bool))
+            )
+          }
+
           const userData: HouseLayoutGroupUserData = {
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
@@ -214,14 +225,15 @@ export const createHouseLayoutGroup = ({
             initStretchZHandles,
             updateLength,
             updateDnas,
+            setLengthHandlesVisible,
           }
 
-          layoutGroup.userData = userData
-          layoutGroup.add(...columnGroups)
-          layoutGroup.position.setZ(-length / 2)
-          layoutGroup.userData.initStretchZHandles()
+          houseLayoutGroup.userData = userData
+          houseLayoutGroup.add(...columnGroups)
+          houseLayoutGroup.position.setZ(-length / 2)
+          houseLayoutGroup.userData.initStretchZHandles()
 
-          return layoutGroup as HouseLayoutGroup
+          return houseLayoutGroup as HouseLayoutGroup
         })
       )
     })

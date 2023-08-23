@@ -17,7 +17,7 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   isHouseLayoutGroup,
-  isStretchXHandleGroup,
+  isXStretchHandleGroup,
   UserDataTypeEnum,
 } from "./userData"
 import layoutsDB, {
@@ -93,7 +93,7 @@ export const createHouseTransformsGroup = ({
       const handlesGroup = new Group() as HouseTransformsHandlesGroup
       handlesGroup.position.setZ(-layoutGroup.userData.length / 2)
 
-      const initHandles = () => {
+      const initRotateAndStretchXHandles = () => {
         const { width: houseWidth, length: houseLength } =
           getActiveHouseUserData(houseTransformsGroup)
 
@@ -140,12 +140,17 @@ export const createHouseTransformsGroup = ({
 
         const xStretchHandles = pipe(
           handlesGroup,
-          findAllGuardDown(isStretchXHandleGroup)
+          findAllGuardDown(isXStretchHandleGroup)
         )
 
         xStretchHandles.forEach((handle) => {
           handle.userData.updateXHandleLength(houseLength)
         })
+      }
+
+      const updateActiveLayoutDnas = (nextDnas: string[]) => {
+        houseTransformsGroup.userData.activeLayoutDnas = nextDnas
+        userDB.houses.update(houseId, { dnas: nextDnas })
       }
 
       const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
@@ -170,7 +175,7 @@ export const createHouseTransformsGroup = ({
       const setWidthHandlesVisible = (bool: boolean = true) => {
         pipe(
           houseTransformsGroup,
-          findAllGuardDown(isStretchXHandleGroup),
+          findAllGuardDown(isXStretchHandleGroup),
           A.map((x) => void setVisible(x, bool))
         )
       }
@@ -189,10 +194,6 @@ export const createHouseTransformsGroup = ({
         // section type layouts
       }
 
-      const updateActiveLayoutDnas = (nextDnas: string[]) => {
-        userDB.houses.update(houseId, { dnas: nextDnas })
-      }
-
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
         systemId,
@@ -203,7 +204,7 @@ export const createHouseTransformsGroup = ({
         clippingPlanes,
         friendlyName,
         updateActiveLayoutDnas,
-        initRotateAndStretchXHandles: initHandles,
+        initRotateAndStretchXHandles,
         syncLength,
         setActiveLayoutGroup,
         setWidthHandlesVisible,
@@ -213,7 +214,7 @@ export const createHouseTransformsGroup = ({
 
       houseTransformsGroup.add(layoutGroup)
 
-      initHandles()
+      initRotateAndStretchXHandles()
 
       return houseTransformsGroup
     })

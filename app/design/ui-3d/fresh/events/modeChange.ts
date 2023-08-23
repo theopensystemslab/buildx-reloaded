@@ -147,7 +147,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     const { unsubscribe } = liveQuery(() =>
       layoutsDB.altSectionTypeLayouts.toArray()
     ).subscribe((dbAltSectionTypeLayouts) => {
-      console.log(`db alt section layouts type sub run`)
       if (!rootRef.current) return
 
       for (let { houseId, altSectionTypeLayouts } of dbAltSectionTypeLayouts) {
@@ -168,13 +167,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                   x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
               ),
               ({ left: otherLayoutGroups, right: activeLayoutGroups }) => {
-                console.log({
-                  uuid: houseTransformsGroup.userData.activeLayoutGroupUuid,
-                  activeLayoutGroups,
-                  otherLayoutGroups,
-                })
                 otherLayoutGroups.forEach((x) => {
-                  console.log(`removing for st ${x.userData.sectionType}`)
                   x.removeFromParent()
                 })
                 return pipe(activeLayoutGroups, A.head)
@@ -201,7 +194,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                         houseId,
                         houseLayout: layout,
                       })().then((layoutGroup) => {
-                        console.log(`posting for st ${sectionType.code}`)
                         setInvisibleNoRaycast(layoutGroup)
                         houseTransformsGroup.add(layoutGroup)
                       })
@@ -225,65 +217,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   useModeChangeListener(async ({ previous, next }) => {
     processHandles()
     processClippingPlanes()
-    // if (
-    //   previous === SiteCtxModeEnum.Enum.SITE &&
-    //   next === SiteCtxModeEnum.Enum.BUILDING
-    // ) {
-    //   // house Id
-    //   // get the stretch x stuff out of the db?
-    //   // maybe clean out old stuff
-    //   // ultimately pop some alternative invisible layouts in there!
-
-    //   const { houseId } = siteCtx
-
-    //   if (!houseId) return
-
-    //   const dbResult = await layoutsDB.altSectionTypeLayouts.get(houseId)
-
-    //   if (!dbResult) return
-
-    //   if (!rootRef.current) return
-
-    //   pipe(
-    //     rootRef.current,
-    //     findFirstGuardDown((x): x is HouseTransformsGroup => {
-    //       if (!isHouseTransformsGroup(x)) return false
-    //       if (x.userData.houseId !== houseId) return false
-    //       return true
-    //     }),
-    //     O.map((houseTransformsGroup) => {
-    //       const { systemId } = getActiveHouseUserData(houseTransformsGroup)
-
-    //       pipe(
-    //         dbResult.altSectionTypeLayouts,
-    //         R.map(({ layout, dnas }) => {
-    //           createHouseLayoutGroup({
-    //             systemId,
-    //             houseId,
-    //             houseLayout: layout,
-    //             dnas,
-    //           })().then((layoutGroup) => {
-    //             setVisible(layoutGroup, false)
-
-    //             // remove same dnas ones
-    //             pipe(
-    //               houseTransformsGroup,
-    //               findAllGuardDown(isHouseLayoutGroup),
-    //               A.filter(
-    //                 (x) => x.userData.dnas.toString() === dnas.toString()
-    //               )
-    //             ).forEach((layoutGroup) => {
-    //               console.log(`removing ${layoutGroup.userData.sectionType}`)
-    //               layoutGroup.removeFromParent()
-    //             })
-    //             houseTransformsGroup.add(layoutGroup)
-    //             console.log(houseTransformsGroup.children)
-    //           })
-    //         })
-    //       )
-    //     })
-    //   )
-    // }
   })
 }
 
