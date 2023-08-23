@@ -208,8 +208,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                       )
                         return O.none
 
-                      console.log(`hello ${houseId} ${sectionType.code}`)
-
                       createHouseLayoutGroup({
                         systemId: houseTransformsGroup.userData.systemId,
                         dnas,
