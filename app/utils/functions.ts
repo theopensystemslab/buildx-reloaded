@@ -3,16 +3,14 @@ import { flow, identity, pipe } from "fp-ts/lib/function"
 import * as Mon from "fp-ts/Monoid"
 import * as Num from "fp-ts/number"
 import * as O from "fp-ts/Option"
-import { clamp } from "fp-ts/Ord"
+import * as Ord from "fp-ts/Ord"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as R from "fp-ts/Record"
 import * as S from "fp-ts/string"
 import * as T from "fp-ts/Task"
-const clamp_ = clamp(Num.Ord)
 
 export * as M from "fp-ts/Map"
 export * as NEA from "fp-ts/NonEmptyArray"
-export * as Ord from "fp-ts/Ord"
 export * as RM from "fp-ts/ReadonlyMap"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
@@ -20,8 +18,9 @@ export * as SG from "fp-ts/Semigroup"
 export * as TO from "fp-ts/TaskOption"
 export * as TE from "fp-ts/TaskEither"
 
-export { clamp_ as clamp }
-export { A, Num, O, R, RA, S, T }
+const clamp = Ord.clamp(Num.Ord)
+
+export { A, Num, O, Ord, R, RA, S, T, clamp }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)

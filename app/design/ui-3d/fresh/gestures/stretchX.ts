@@ -1,13 +1,11 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Vector3 } from "three"
-import { A, O, someOrError } from "../../../../utils/functions"
+import { A, clamp, O, someOrError } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
-  findAllGuardDown,
   findFirstGuardAcross,
-  findFirstGuardDown,
   getHouseTransformsGroupUp,
   getPartitionedLayoutGroups,
   sortLayoutGroupsByWidth,
@@ -15,9 +13,6 @@ import {
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
-  isHouseTransformsGroup,
-  isHouseTransformsHandlesGroup,
-  isStretchHandleGroup,
   isStretchXHandleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
@@ -83,8 +78,6 @@ const useOnDragStretchX = () => {
       })
     )
 
-    console.log(fences)
-
     stretchXData.current = {
       handleGroup,
       otherSideHandleGroup,
@@ -112,6 +105,23 @@ const useOnDragStretchX = () => {
       lastDistance,
     } = stretchXData.current
 
+    // const minX = pipe(
+    //   fences,
+    //   A.head,
+    //   O.match(
+    //     () => activeLayoutGroup.userData.width,
+    //     (x) => activeLayoutGroup.userData.width + x.x
+    //   )
+    // )
+    // const maxX = pipe(
+    //   fences,
+    //   A.last,
+    //   O.match(
+    //     () => activeLayoutGroup.userData.width,
+    //     (x) => activeLayoutGroup.userData.width + x.x
+    //   )
+    // )
+
     const { side } = handleGroup.userData
 
     const [x1, z1] = pointer.xz
@@ -121,8 +131,14 @@ const useOnDragStretchX = () => {
       -houseTransformsGroup.rotation.y
     )
     const distance = distanceVector.x
-    handleGroup.position.setX(handleGroupX0 + distance)
-    otherSideHandleGroup.position.setX(otherSideHandleGroupX0 - distance)
+
+    const lo = handleGroupX0 + fences[0].x
+    const hi = handleGroupX0 + fences[fences.length - 1].x
+    handleGroup.position.setX(clamp(lo, hi)(handleGroupX0 + distance))
+
+    otherSideHandleGroup.position.setX(
+      clamp(-hi, -lo)(otherSideHandleGroupX0 - distance)
+    )
 
     const adjustedDistance = side * distance
     const adjustedLastDistance = side * lastDistance
@@ -133,7 +149,6 @@ const useOnDragStretchX = () => {
         A.lookup(fenceIndex + 1),
         O.map(({ x }) => {
           if (adjustedDistance >= x) {
-            console.log(1)
             houseTransformsGroup.userData.setActiveLayoutGroup(
               fences[fenceIndex + 1].layoutGroup
             )
