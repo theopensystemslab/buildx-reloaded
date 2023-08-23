@@ -43,7 +43,11 @@ if (!isSSR()) {
   liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
     (dbVanillaColumns) => {
       for (let { systemId, levelTypes, vanillaColumn } of dbVanillaColumns) {
-        const vanillaColumnsKey = getVanillaColumnsKey({ systemId, levelTypes })
+        const vanillaColumnsKey = getVanillaColumnsKey({
+          systemId,
+          sectionType: "",
+          levelTypes,
+        })
         vanillaColumns[vanillaColumnsKey] = vanillaColumn
       }
     }

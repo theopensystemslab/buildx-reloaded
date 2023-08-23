@@ -1,6 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
-import { A, O, pipeLog, T } from "../../../../utils/functions"
+import userDB from "../../../../db/user"
+import { A, O, T } from "../../../../utils/functions"
 import { setVisible } from "../../../../utils/three"
 import { getModeBools } from "../../../state/siteCtx"
 import {
@@ -9,20 +10,56 @@ import {
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
+import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   isHouseLayoutGroup,
-  isStretchHandleGroup,
   isStretchXHandleGroup,
-  StretchHandleGroup,
   UserDataTypeEnum,
 } from "./userData"
-import { createHouseLayoutGroup, getHouseLayout } from "./houseLayoutGroup"
-
+import layoutsDB, {
+  ColumnLayout,
+  getHouseLayoutsKey,
+} from "../../../../db/layouts"
+import { R } from "../../../../utils/functions"
+import { getLayoutsWorker } from "../../../../workers"
+import { liveQuery } from "dexie"
 export const BIG_CLIP_NUMBER = 999
+
+let houseLayouts: Record<string, ColumnLayout> = {}
+liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
+  (dbHouseLayouts) => {
+    for (let { systemId, dnas, layout } of dbHouseLayouts) {
+      houseLayouts[getHouseLayoutsKey({ systemId, dnas })] = layout
+    }
+  }
+)
+
+const getHouseLayout = ({
+  systemId,
+  dnas,
+}: {
+  systemId: string
+  dnas: string[]
+}): T.Task<ColumnLayout> =>
+  pipe(
+    houseLayouts,
+    R.lookup(getHouseLayoutsKey({ systemId, dnas })),
+    O.match(
+      (): T.Task<ColumnLayout> => async () => {
+        const layoutsWorker = getLayoutsWorker()
+        if (!layoutsWorker) throw new Error(`no layouts worker`)
+        return await layoutsWorker.getLayout({
+          systemId,
+          dnas,
+        })
+      },
+      (houseLayout) => T.of(houseLayout)
+    )
+  )
 
 export const createHouseTransformsGroup = ({
   systemId,
@@ -152,6 +189,10 @@ export const createHouseTransformsGroup = ({
         // section type layouts
       }
 
+      const updateActiveLayoutDnas = (nextDnas: string[]) => {
+        userDB.houses.update(houseId, { dnas })
+      }
+
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
         systemId,
@@ -161,6 +202,7 @@ export const createHouseTransformsGroup = ({
         activeLayoutDnas: layoutGroup.userData.dnas,
         clippingPlanes,
         friendlyName,
+        updateActiveLayoutDnas,
         initRotateAndStretchXHandles: initHandles,
         syncLength,
         setActiveLayoutGroup,

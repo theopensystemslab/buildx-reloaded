@@ -92,24 +92,27 @@ export type VanillaColumn = Omit<PositionedColumn, "z" | "columnIndex">
 
 export type IndexedVanillaColumn = {
   systemId: string
+  sectionType: string
   levelTypes: string[]
   vanillaColumn: VanillaColumn
 }
 
 export type VanillaColumnsKey = {
   systemId: string
+  sectionType: string
   levelTypes: string[]
 }
 
 export const getVanillaColumnsKey = ({
   systemId,
+  sectionType,
   levelTypes,
-}: VanillaColumnsKey): string => `${systemId}:${levelTypes}`
+}: VanillaColumnsKey): string => `${systemId}:${sectionType}:${levelTypes}`
 
 export const invertVanillaColumnsKey = (key: string): VanillaColumnsKey => {
-  const [systemId, levelTypesString] = key.split(":")
+  const [systemId, sectionType, levelTypesString] = key.split(":")
   const levelTypes = levelTypesString.split(",")
-  return { systemId, levelTypes }
+  return { systemId, sectionType, levelTypes }
 }
 
 type IndexedAltSectionTypeLayouts = {
@@ -133,7 +136,7 @@ class LayoutsDatabase extends Dexie {
       models: "speckleBranchUrl,systemId",
       houseLayouts: "[systemId+dnas]",
       vanillaModules: "[systemId+sectionType+positionType+levelType+gridType]",
-      vanillaColumns: "[systemId+levelTypes]",
+      vanillaColumns: "[systemId+sectionType+levelTypes]",
       altSectionTypeLayouts: "houseId",
     })
     this.houseLayouts = this.table("houseLayouts")

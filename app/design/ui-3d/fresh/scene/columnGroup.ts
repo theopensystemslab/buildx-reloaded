@@ -49,18 +49,21 @@ export let vanillaColumns: Record<string, VanillaColumn> = {}
 liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
   (dbVanillaColumns) => {
     for (let dbVanillaColumn of dbVanillaColumns) {
-      const { systemId, levelTypes, vanillaColumn } = dbVanillaColumn
-      vanillaColumns[getVanillaColumnsKey({ systemId, levelTypes })] =
-        vanillaColumn
+      const { systemId, sectionType, levelTypes, vanillaColumn } =
+        dbVanillaColumn
+      vanillaColumns[
+        getVanillaColumnsKey({ systemId, sectionType, levelTypes })
+      ] = vanillaColumn
     }
   }
 )
 
 export const getVanillaColumn = ({
   systemId,
+  sectionType,
   levelTypes,
 }: VanillaColumnsKey): T.Task<VanillaColumn> => {
-  const key = getVanillaColumnsKey({ systemId, levelTypes })
+  const key = getVanillaColumnsKey({ systemId, sectionType, levelTypes })
 
   return pipe(
     vanillaColumns,
@@ -72,6 +75,7 @@ export const getVanillaColumn = ({
         return () =>
           layoutsWorker.getVanillaColumn({
             systemId,
+            sectionType,
             levelTypes,
           })
       },

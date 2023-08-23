@@ -1,54 +1,28 @@
-import { liveQuery } from "dexie"
-import { cartesian } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import { Group, Matrix3, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import layoutsDB, {
-  ColumnLayout,
-  getHouseLayoutsKey,
-} from "../../../../db/layouts"
-import { A, combineGuards, O, R, T } from "../../../../utils/functions"
+import { ColumnLayout } from "../../../../db/layouts"
+import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
-import { renderOBB } from "../dimensions"
 import {
-  findAllGuardDown,
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
 } from "../helpers/sceneQueries"
-import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
-import {
-  HouseLayoutGroup,
-  HouseLayoutGroupUserData,
-  HouseTransformsGroup,
-  isHouseLayoutGroup,
-  isModuleGroup,
-  isRotateHandlesGroup,
-  isStretchHandleMesh,
-  ModuleGroupUserData,
-  UserDataTypeEnum,
-} from "./userData"
 import {
   createColumnGroups,
   getVanillaColumn,
   splitColumnGroups,
 } from "./columnGroup"
-import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
-import userDB from "../../../../db/user"
-
-const DEBUG = false
-
-export let houseLayouts: Record<string, ColumnLayout> = {}
-
-liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
-  (dbHouseLayouts) => {
-    for (let { systemId, dnas, layout } of dbHouseLayouts) {
-      houseLayouts[getHouseLayoutsKey({ systemId, dnas })] = layout
-    }
-  }
-)
+import {
+  HouseLayoutGroup,
+  HouseLayoutGroupUserData,
+  HouseTransformsGroup,
+  isModuleGroup,
+  ModuleGroupUserData,
+  UserDataTypeEnum,
+} from "./userData"
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
@@ -63,28 +37,6 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
     O.getOrElse((): string[] => [])
   )
 
-export const getHouseLayout = ({
-  systemId,
-  dnas,
-}: {
-  systemId: string
-  dnas: string[]
-}): T.Task<ColumnLayout> =>
-  pipe(
-    houseLayouts,
-    R.lookup(getHouseLayoutsKey({ systemId, dnas })),
-    O.match(
-      (): T.Task<ColumnLayout> => async () => {
-        const layoutsWorker = getLayoutsWorker()
-        if (!layoutsWorker) throw new Error(`no layouts worker`)
-        return await layoutsWorker.getLayout({
-          systemId,
-          dnas,
-        })
-      },
-      (houseLayout) => T.of(houseLayout)
-    )
-  )
 export const createHouseLayoutGroup = ({
   systemId,
   houseId,
@@ -123,7 +75,7 @@ export const createHouseLayoutGroup = ({
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
       return pipe(
-        getVanillaColumn({ systemId, levelTypes }),
+        getVanillaColumn({ systemId, sectionType, levelTypes }),
         T.map((vanillaColumn) => {
           const computeLength = () =>
             pipe(
@@ -214,10 +166,7 @@ export const createHouseLayoutGroup = ({
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
               layoutGroup.uuid
             ) {
-              console.log(`updating dnas in db`)
-              userDB.houses.update(houseId, {
-                dnas,
-              })
+              houseTransformsGroup.userData.updateActiveLayoutDnas(dnas)
             }
           }
 

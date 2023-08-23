@@ -166,7 +166,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
               isHouseTransformsGroup(x) && x.userData.houseId === houseId
           ),
           O.map((houseTransformsGroup) => {
-            console.log(`house transforms group`, houseTransformsGroup)
             // delete non-active layout groups
             // return active layout group
             const maybeActiveLayoutGroup = pipe(
@@ -189,10 +188,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                 return pipe(activeLayoutGroups, A.head)
               }
             )
-
-            console.log(maybeActiveLayoutGroup)
-
-            console.log(siteCtx.houseId)
 
             if (houseId === siteCtx.houseId) {
               pipe(

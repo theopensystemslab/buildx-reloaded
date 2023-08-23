@@ -54,6 +54,7 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
+  updateActiveLayoutDnas: (x: string[]) => void
   initRotateAndStretchXHandles: () => void
   syncLength: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void

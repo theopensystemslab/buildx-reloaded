@@ -278,6 +278,79 @@ const modulesToColumnLayout = (modules: Module[]) => {
   )
 }
 
+const postVanillaColumn = (arbitraryColumn: PositionedColumn) => {
+  const getVanillaModule = createVanillaModuleGetter(modulesCache)({
+    constrainGridType: false,
+    positionType: "MID",
+  })
+
+  pipe(
+    arbitraryColumn.gridGroups,
+    A.traverse(O.Applicative)(
+      ({
+        levelIndex,
+        levelType,
+        y,
+        modules: [{ module }],
+      }): O.Option<PositionedRow> =>
+        pipe(
+          module,
+          getVanillaModule,
+          O.map((vanillaModule) => ({
+            modules: [
+              {
+                module: vanillaModule,
+                gridGroupIndex: 0,
+                // TODO: document me (quirk)
+                z: vanillaModule.length / 2,
+              },
+            ],
+            length: vanillaModule.length,
+            y,
+            levelIndex,
+            levelType,
+          }))
+        )
+    ),
+    O.map((gridGroups) => {
+      const levelTypes = pipe(
+        gridGroups,
+        A.map((gridGroup) => gridGroup.levelType)
+      )
+
+      pipe(
+        gridGroups,
+        A.head,
+        O.chain((gridGroup) =>
+          pipe(
+            gridGroup.modules,
+            A.head,
+            O.map((firstModule) => {
+              const {
+                module: {
+                  systemId,
+                  structuredDna: { sectionType },
+                  length,
+                },
+              } = firstModule
+
+              layoutsDB.vanillaColumns.put({
+                systemId,
+                levelTypes,
+                sectionType,
+                vanillaColumn: {
+                  gridGroups,
+                  length,
+                },
+              })
+            })
+          )
+        )
+      )
+    })
+  )
+}
+
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
     layout,
@@ -324,57 +397,7 @@ const getLayout = async ({
       dnas,
     })
 
-    const getVanillaModule = createVanillaModuleGetter(modulesCache)({
-      constrainGridType: false,
-      positionType: "MID",
-    })
-
-    const { startColumn } = splitColumns(layout)
-
-    pipe(
-      startColumn.gridGroups,
-      A.traverse(O.Applicative)(
-        ({
-          levelIndex,
-          levelType,
-          y,
-          modules: [{ module }],
-        }): O.Option<PositionedRow> =>
-          pipe(
-            module,
-            getVanillaModule,
-            O.map((vanillaModule) => ({
-              modules: [
-                {
-                  module: vanillaModule,
-                  gridGroupIndex: 0,
-                  // TODO: document me (quirk)
-                  z: vanillaModule.length / 2,
-                },
-              ],
-              length: vanillaModule.length,
-              y,
-              levelIndex,
-              levelType,
-            }))
-          )
-      ),
-      O.map((gridGroups) => {
-        const levelTypes = pipe(
-          gridGroups,
-          A.map((gridGroup) => gridGroup.levelType)
-        )
-
-        layoutsDB.vanillaColumns.put({
-          systemId,
-          levelTypes,
-          vanillaColumn: {
-            gridGroups,
-            length: gridGroups[0].length,
-          },
-        })
-      })
-    )
+    postVanillaColumn(splitColumns(layout).startColumn)
 
     return layout
   }
@@ -647,6 +670,9 @@ if (!isSSR()) {
             >,
             { layout, sectionType }
           ) => {
+            const { startColumn } = splitColumns(layout)
+            postVanillaColumn(startColumn)
+
             return {
               ...acc,
               [sectionType.code]: {
