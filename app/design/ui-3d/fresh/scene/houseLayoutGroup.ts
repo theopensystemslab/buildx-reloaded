@@ -155,7 +155,8 @@ export const createHouseLayoutGroup = ({
                 })
               })
             )
-            layoutGroup.userData.dnas = result.flat()
+            const nextDnas = result.flat()
+            layoutGroup.userData.dnas = nextDnas
 
             const houseTransformsGroup =
               layoutGroup.parent as HouseTransformsGroup
@@ -166,7 +167,7 @@ export const createHouseLayoutGroup = ({
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
               layoutGroup.uuid
             ) {
-              houseTransformsGroup.userData.updateActiveLayoutDnas(dnas)
+              houseTransformsGroup.userData.updateActiveLayoutDnas(nextDnas)
             }
           }
 

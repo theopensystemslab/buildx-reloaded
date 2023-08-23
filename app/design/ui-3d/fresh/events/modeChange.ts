@@ -1,40 +1,32 @@
 import { invalidate } from "@react-three/fiber"
+import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
-import { A, O, R, T } from "~/utils/functions"
-import { useSubscribeKey } from "~/utils/hooks"
-import {
-  setInvisibleNoRaycast,
-  setVisible,
-  setVisibleAndRaycast,
-} from "~/utils/three"
+import { RefObject, useEffect } from "react"
+import { Group } from "three"
 import scope from "~/design/state/scope"
 import siteCtx, {
   getModeBools,
-  SiteCtxModeEnum,
   useModeChangeListener,
 } from "~/design/state/siteCtx"
+import { A, O, R } from "~/utils/functions"
+import { useSubscribeKey } from "~/utils/hooks"
+import { setInvisibleNoRaycast, setVisibleAndRaycast } from "~/utils/three"
+import layoutsDB from "../../../../db/layouts"
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
 import {
   findAllGuardDown,
   findFirstGuardAcross,
-  findFirstGuardDown,
   getActiveHouseUserData,
-  getActiveLayoutGroup,
 } from "../helpers/sceneQueries"
+import { createHouseLayoutGroup } from "../scene/houseLayoutGroup"
+import { BIG_CLIP_NUMBER } from "../scene/houseTransformsGroup"
 import {
-  HouseLayoutGroup,
   HouseTransformsGroup,
   isHouseLayoutGroup,
   isHouseTransformsGroup,
   isStretchHandleGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
-import { RefObject, useEffect } from "react"
-import { Group } from "three"
-import layoutsDB from "../../../../db/layouts"
-import { BIG_CLIP_NUMBER } from "../scene/houseTransformsGroup"
-import { createHouseLayoutGroup } from "../scene/houseLayoutGroup"
-import { liveQuery } from "dexie"
 
 const useModeChange = (rootRef: RefObject<Group>) => {
   const showHouseStretchHandles = (houseId: string) => {

@@ -190,7 +190,7 @@ export const createHouseTransformsGroup = ({
       }
 
       const updateActiveLayoutDnas = (nextDnas: string[]) => {
-        userDB.houses.update(houseId, { dnas })
+        userDB.houses.update(houseId, { dnas: nextDnas })
       }
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
