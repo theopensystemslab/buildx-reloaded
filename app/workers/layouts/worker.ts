@@ -26,10 +26,15 @@ import userDB from "../../db/user"
 import { A, O, reduceToOption, T, TO, unwrapSome } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
-import { syncModels } from "./models"
 import { createVanillaModuleGetter, getIndexedVanillaModule } from "./vanilla"
 
 let modulesCache: LastFetchStamped<Module>[] = []
+const getModules = async () => {
+  if (modulesCache.length > 0) return modulesCache
+  modulesCache = await systemsDB.modules.toArray()
+  return modulesCache
+}
+
 let layoutsQueue: HouseLayoutsKey[] = []
 
 const modulesToRows = (modules: Module[]): Module[][] => {
@@ -278,8 +283,10 @@ const modulesToColumnLayout = (modules: Module[]) => {
   )
 }
 
-const postVanillaColumn = (arbitraryColumn: PositionedColumn) => {
-  const getVanillaModule = createVanillaModuleGetter(modulesCache)({
+const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
+  const modules = await getModules()
+
+  const getVanillaModule = createVanillaModuleGetter(modules)({
     constrainGridType: false,
     positionType: "MID",
   })
@@ -370,6 +377,7 @@ const getLayout = async ({
   systemId,
   dnas,
 }: HouseLayoutsKey): Promise<ColumnLayout> => {
+  const allModules = await getModules()
   const maybeLayout = await layoutsDB.houseLayouts
     .get(getHouseLayoutsKey({ systemId, dnas }))
     .then((x) => x?.layout)
@@ -381,7 +389,7 @@ const getLayout = async ({
       dnas,
       A.filterMap((dna) =>
         pipe(
-          modulesCache,
+          allModules,
           A.findFirst(
             (systemModule: Module) =>
               systemModule.systemId === systemId && systemModule.dna === dna
@@ -397,17 +405,15 @@ const getLayout = async ({
       dnas,
     })
 
-    postVanillaColumn(splitColumns(layout).startColumn)
+    const { startColumn } = splitColumns(layout)
+
+    postVanillaColumn(startColumn)
 
     return layout
   }
 }
 
 const processLayoutsQueue = async () => {
-  if (modulesCache.length === 0) {
-    return
-  }
-
   // Process queue one item at a time
   while (layoutsQueue.length > 0) {
     const layoutsKey = layoutsQueue.shift()
@@ -415,14 +421,6 @@ const processLayoutsQueue = async () => {
       await getLayout(layoutsKey)
     }
   }
-}
-
-if (!isSSR()) {
-  liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) => {
-    syncModels(modules)
-    modulesCache = modules
-    processLayoutsQueue()
-  })
 }
 
 const postLayout = (key: HouseLayoutsKey) => {
@@ -461,19 +459,7 @@ export const columnLayoutToDnas = (
     RA.flatten
   ) as string[]
 
-export const foo = ({
-  systemId,
-  houseId,
-  dnas,
-}: {
-  systemId: string
-  houseId: string
-  dnas: string[]
-}) => {
-  console.log({ systemId, houseId, dnas })
-}
-
-const changeLayoutSectionType = ({
+const changeLayoutSectionType = async ({
   systemId,
   layout,
   sectionType: st,
@@ -483,6 +469,8 @@ const changeLayoutSectionType = ({
   sectionType: SectionType
 }) => {
   const { code: sectionType } = st
+
+  const allModules = await getModules()
 
   return pipe(
     layout,
@@ -516,7 +504,7 @@ const changeLayoutSectionType = ({
                 O.fromNullable,
                 O.chain((a) =>
                   pipe(
-                    modulesCache,
+                    allModules,
                     A.findFirst(
                       (b) => a.systemId === b.systemId && a.moduleDna === b.dna
                     )
@@ -544,7 +532,7 @@ const changeLayoutSectionType = ({
                     } as Module
 
                     const compatModules = pipe(
-                      modulesCache,
+                      allModules,
                       filterCompatibleModules()(target)
                     )
 
@@ -690,66 +678,6 @@ if (!isSSR()) {
   })
 }
 
-// const updateAltSectionTypeLayouts = async ({
-//   houseId,
-//   currentSectionTypeCode
-// }: {
-//   houseId: string
-//   currentSectionTypeCode: string
-// }) => {
-//   layoutsDB.altSectionTypeLayouts.delete(houseId)
-
-//   const dbSectionTypes = await systemsDB.sectionTypes.toArray()
-
-//   const otherSectionTypes = dbSectionTypes.filter(
-//     (x) =>
-//       x.code !==
-//       currentSectionTypeCode
-//   )
-
-//   const otherLayouts = await pipe(
-//     otherSectionTypes,
-//     A.map(
-//       (
-//           sectionType
-//         ): TO.TaskOption<{
-//           layout: ColumnLayout
-//           sectionType: SectionType
-//         }> =>
-//         () =>
-//           changeLayoutSectionType({ systemId, layout, sectionType }).then(
-//             O.map((layout) => ({ layout, sectionType }))
-//           )
-//     ),
-//     A.sequence(T.ApplicativeSeq),
-//     unwrapSome,
-//     (x) => x
-//   )()
-//   const altSectionTypeLayouts = pipe(
-//     otherLayouts,
-//     A.reduce(
-//       {},
-//       (
-//         acc: Record<
-//           string,
-//           { layout: ColumnLayout; sectionType: SectionType; dnas: string[] }
-//         >,
-//         { layout, sectionType }
-//       ) => {
-//         return {
-//           ...acc,
-//           [sectionType.code]: {
-//             layout,
-//             sectionType,
-//             dnas: columnLayoutToDnas(layout),
-//           },
-//         }
-//       }
-//     )
-//   )
-//   layoutsDB.altSectionTypeLayouts.put({ houseId, altSectionTypeLayouts })
-// }
-
 const getVanillaColumn = async (key: VanillaColumnsKey) => {
   const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(
     getVanillaColumnsKey(key)
@@ -766,7 +694,6 @@ const api = {
   postLayout,
   postLayouts,
   getLayout,
-  syncModels,
   getVanillaColumn,
   // updateAltSectionTypeLayouts,
 }

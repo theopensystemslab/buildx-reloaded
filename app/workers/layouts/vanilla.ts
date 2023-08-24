@@ -6,7 +6,7 @@ import systemsDB, { LastFetchStamped } from "../../db/systems"
 import { A, all, O, Ord, S } from "../../utils/functions"
 
 export const createVanillaModuleGetter =
-  (modulesCache: LastFetchStamped<Module>[]) =>
+  (modules: LastFetchStamped<Module>[]) =>
   (
     opts: {
       positionType?: string
@@ -24,7 +24,7 @@ export const createVanillaModuleGetter =
     } = opts
 
     return pipe(
-      modulesCache,
+      modules,
       A.filter((sysModule) =>
         all(
           sysModule.systemId === module.systemId,
