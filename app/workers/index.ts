@@ -15,6 +15,7 @@ export const initSystemsWorker = () => {
 }
 
 export const getSystemsWorker = () => {
+  if (isSSR()) return undefined as any
   if (systemsWorker === null) throw new Error(`couldn't get systemsWorker`)
   return systemsWorker
 }
@@ -28,6 +29,7 @@ export const initLayoutsWorker = () => {
 }
 
 export const getLayoutsWorker = () => {
+  if (isSSR()) return undefined as any
   if (layoutsWorker === null) throw new Error(`couldn't get layoutsWorker`)
   return layoutsWorker
 }
@@ -39,6 +41,7 @@ export const initModelsWorker = () => {
 }
 
 export const getModelsWorker = () => {
+  if (isSSR()) return undefined as any
   if (modelsWorker === null) throw new Error(`couldn't get modelsWorker`)
   return modelsWorker
 }
