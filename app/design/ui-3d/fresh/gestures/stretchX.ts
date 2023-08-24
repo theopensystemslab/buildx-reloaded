@@ -132,18 +132,7 @@ const useOnDragStretchX = () => {
 
     const clampedDistance = clamp(side * lo, side * hi)(distanceWithSide)
 
-    // const lo = handleGroupX0 + side * fences[0].x
-    // const hi = handleGroupX0 + side * fences[fences.length - 1].x
-
-    // const c = clamp(lo, hi)
-
-    console.log({ lo, hi, distance, distanceWithSide })
-
     handleGroup.position.setX(handleGroupX0 + side * clampedDistance)
-
-    console.log({ side: handleGroup.userData.side })
-
-    // const c2 = clamp(-hi, -lo)
 
     otherSideHandleGroup.position.setX(
       otherSideHandleGroupX0 - side * clampedDistance
@@ -178,9 +167,7 @@ const useOnDragStretchX = () => {
           }
         })
       )
-      // tbc
     }
-    // if next fence up
   }
 
   const last = () => {

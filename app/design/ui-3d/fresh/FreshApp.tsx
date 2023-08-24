@@ -10,6 +10,7 @@ const FreshApp = () => {
 
   useHousesEvents(rootRef)
   useModeChange(rootRef)
+
   const bindAll = useGestures()
 
   return (
