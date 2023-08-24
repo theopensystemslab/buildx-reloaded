@@ -4,11 +4,11 @@ import {
   useLayoutOptions,
   useStairsOptions,
 } from "~/design/state/interactions/layouts"
-import { HouseModuleIdentifier } from "~/design/state/layouts"
 import { Menu, Pencil } from "~/ui/icons"
 import Radio from "~/ui//Radio"
 import ContextMenuNested from "../ContextMenuNested"
 import houses from "../../../state/houses"
+import { HouseModuleIdentifier } from "../../../../db/layouts"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

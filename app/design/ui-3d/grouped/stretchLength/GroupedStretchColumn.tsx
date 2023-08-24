@@ -1,10 +1,11 @@
-import { GridGroup } from "~/design/state/layouts"
-import { RA } from "~/utils/functions"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Group } from "three"
-import { stretchLengthClamped } from "~/design/state/transients/stretchLength"
-import { useSubscribeKey } from "~/utils/hooks"
+import { RA } from "~/utils/functions"
+import { GridGroup, HouseLayoutsKey } from "../../../../db/layouts"
+import { getLayoutsWorker } from "../../../../workers"
+import { useZStretchHouseListener } from "../../../state/events/stretch"
 import GroupedStretchModule from "./GroupedStretchModule"
 
 type Props = {
@@ -14,20 +15,41 @@ type Props = {
   direction: number
   columnZ: number
   columnLength: number
+  i: number
+  layoutKey: HouseLayoutsKey
 }
 
 const GroupedStretchColumn = (props: Props) => {
-  const { systemId, houseId, gridGroups: rows, columnZ, columnLength } = props
+  const {
+    systemId,
+    houseId,
+    gridGroups: rows,
+    columnZ,
+    columnLength,
+    i,
+    direction,
+    layoutKey,
+  } = props
 
   const groupRef = useRef<Group>(null)
 
-  useSubscribeKey(stretchLengthClamped, houseId, () => {
-    if (!stretchLengthClamped[houseId]) {
-      groupRef.current?.scale.set(0, 0, 0)
-      return
-    }
+  // useEffect(() => {
+  //   const layoutsWorker = getLayoutsWorker()
+  //   if (!layoutsWorker) {
+  //     return
+  //   }
+  //   layoutsWorker.processZStretchLayout({ direction, i, layoutKey })
+  // }, [direction, houseId, i, layoutKey])
 
-    const { distance, direction } = stretchLengthClamped[houseId]
+  useZStretchHouseListener((detail) => {
+    if (houseId !== detail.houseId) return
+
+    const { distance, direction, dx, dz, last } = detail
+
+    // if (!stretchLengthClamped[houseId]) {
+    //   groupRef.current?.scale.set(0, 0, 0)
+    //   return
+    // }
 
     if (direction !== props.direction) return
 
@@ -36,9 +58,15 @@ const GroupedStretchColumn = (props: Props) => {
     } else if (direction === -1 && distance + columnLength / 2 < columnZ) {
       groupRef.current?.scale.set(1, 1, 1)
     } else {
-      groupRef.current?.scale.set(0, 0, 0)
+      // groupRef.current?.scale.set(0, 0, 0)
     }
+
+    invalidate()
   })
+
+  useEffect(() => {
+    groupRef.current?.scale.set(1, 1, 1)
+  }, [])
 
   return (
     <group ref={groupRef} scale={[0, 0, 0]}>

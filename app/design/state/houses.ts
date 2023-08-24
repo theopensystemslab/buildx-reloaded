@@ -1,41 +1,66 @@
+import { Module } from "@/server/data/modules"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { none, some } from "fp-ts/lib/Option"
 import { keys } from "fp-ts/lib/ReadonlyRecord"
 import produce from "immer"
 import { nanoid } from "nanoid"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useKey } from "react-use"
 import { Vector3 } from "three"
-import { proxy, subscribe, useSnapshot } from "valtio"
-import { BUILDX_LOCAL_STORAGE_HOUSES_KEY } from "./constants"
-import { getHousesFromLocalStorage, House, Houses } from "../../data/houses"
-import { Module } from "@/server/data/modules"
-import { A, R, RA, RNEA, RR, S } from "~/utils/functions"
-import { useModules, useSystemModules } from "../../data/modules"
+import { useDebouncedCallback } from "use-debounce"
+import { proxy, ref, snapshot, subscribe, useSnapshot } from "valtio"
+import { A, clearRecord, R, RA, RR, S } from "~/utils/functions"
 import { useHouseTypes } from "../../data/houseTypes"
+import { useModules, useSystemModules } from "../../data/modules"
+import userDB, { House } from "../../db/user"
+import { isSSR } from "../../utils/next"
+import Dexie from "dexie"
 
-const houses = proxy<Houses>(getHousesFromLocalStorage())
+const houses = proxy<Record<string, House>>({})
 
-export const useLocallyStoredHouses = () =>
-  useEffect(
-    () =>
-      subscribe(houses, () => {
-        localStorage.setItem(
-          BUILDX_LOCAL_STORAGE_HOUSES_KEY,
-          JSON.stringify(houses)
-        )
-      }),
-    []
-  )
+const initHouses = async () => {
+  if (isSSR()) return
+
+  const housesArray = await userDB.houses.toArray()
+  if (!A.isNonEmpty(housesArray)) {
+    clearRecord(houses)
+  }
+
+  housesArray.forEach((house) => {
+    houses[house.houseId] = ref(house)
+  })
+}
+
+initHouses().then(() => {
+  subscribe(houses, () => {
+    Object.values(houses).forEach(async (house) => {
+      const existingHouse = await userDB.houses.get(house.houseId)
+
+      if (existingHouse) {
+        userDB.houses.update(house.houseId, Dexie.deepClone(house))
+      } else {
+        userDB.houses.add(Dexie.deepClone(house))
+      }
+    })
+  })
+})
+
+export const useSetHouse = (houseId: string) => {
+  return useDebouncedCallback((nextHouse: House) => {
+    houses[houseId] = ref({
+      ...nextHouse,
+      position: ref(nextHouse.position),
+      dnas: ref(nextHouse.dnas),
+    })
+  }, 300)
+}
 
 export const useHouses = () => {
-  useLocallyStoredHouses()
   return useSnapshot(houses) as typeof houses
 }
 
 export const useHouseKeys = () => {
-  useLocallyStoredHouses()
   return pipe(useSnapshot(houses) as typeof houses, RR.keys)
 }
 
@@ -113,33 +138,6 @@ export const useGetHouseModules = () => {
   }
 }
 
-export const modulesToRows = (
-  modules: readonly Module[]
-): readonly Module[][] => {
-  const jumpIndices = pipe(
-    modules,
-    RA.filterMapWithIndex((i, m) =>
-      m.structuredDna.positionType === "END" ? some(i) : none
-    ),
-    RA.filterWithIndex((i) => i % 2 === 0)
-  )
-
-  return pipe(
-    modules,
-    RA.reduceWithIndex(
-      [],
-      (moduleIndex, modules: Module[][], module: Module) => {
-        return jumpIndices.includes(moduleIndex)
-          ? [...modules, [{ ...module, moduleIndex }]]
-          : produce(
-              (draft) =>
-                void draft[draft.length - 1].push({ ...module, moduleIndex })
-            )(modules)
-      }
-    )
-  )
-}
-
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses
   return pipe(
@@ -190,9 +188,9 @@ export const useInsert1000Skylarks = () => {
 
       for (let x = startX; x < incX * count; x += incX) {
         for (let z = startZ; z < incZ * count; z += incZ) {
-          const id = nanoid()
-          houses[id] = {
-            id,
+          const houseId = nanoid()
+          houses[houseId] = ref({
+            houseId,
             houseTypeId,
             systemId: houseType.systemId,
             position: new Vector3(x, 0, z),
@@ -200,7 +198,7 @@ export const useInsert1000Skylarks = () => {
             dnas: houseType.dnas as string[],
             modifiedMaterials: {},
             friendlyName: `Building ${keys(houses).length + 1}`,
-          }
+          })
         }
       }
     },

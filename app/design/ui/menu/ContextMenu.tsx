@@ -9,7 +9,6 @@ import { useClickAway, useEscape } from "~/ui/utils"
 export type ContextMenuProps = {
   pageX: number
   pageY: number
-  selected: ScopeItem
   onClose?: () => void
   children?: ReactNode
 }

@@ -69,7 +69,7 @@ export const useOrderListData = () => {
 
     return pipe(
       selectedHouses,
-      A.chain(({ id: houseId, dnas: dnas, ...house }) =>
+      A.chain(({ houseId: houseId, dnas: dnas, ...house }) =>
         pipe(
           dnas,
           A.map((dna) => ({

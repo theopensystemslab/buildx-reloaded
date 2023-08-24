@@ -15,11 +15,11 @@ import { type WindowType } from "@/server/data/windowTypes"
 import { useSelectedHouseIds } from "../ui/HousesPillsSelector"
 import { useElements } from "../../data/elements"
 import { useEnergyInfos } from "../../data/energyInfos"
-import { type House } from "../../data/houses"
 import { useMaterials } from "../../data/materials"
 import { useSpaceTypes } from "../../data/spaceTypes"
 import { useWindowTypes } from "../../data/windowTypes"
 import { useGetHouseModules, useHouses } from "../../design/state/houses"
+import { type House } from "../../db/user"
 
 export type SystemsData = {
   houseTypes: Array<HouseType>

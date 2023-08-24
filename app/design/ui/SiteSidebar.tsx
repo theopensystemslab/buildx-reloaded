@@ -1,17 +1,16 @@
-import { useCameraGroundRaycast } from "../state/camera"
 import { System, systems } from "@/server/data/system"
-// import houses from "@/src/stores/houses"
-import Sidebar from "~/ui//Sidebar"
 import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
-import { keys } from "fp-ts/lib/ReadonlyRecord"
 import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
 import { Vector3 } from "three"
+import { ref } from "valtio"
 import { useHouseTypes } from "~/data/houseTypes"
-import houses from "~/design/state/houses"
+import Sidebar from "~/ui//Sidebar"
+import { useCameraGroundRaycast } from "../state/camera"
+import { dispatchAddHouseIntent } from "../ui-3d/fresh/events/houses"
+import houses from "../state/houses"
 import HouseThumbnail from "./HouseThumbnail"
-// import HouseThumbnail from "./HouseThumbnail"
 
 type Props = {
   open: boolean
@@ -74,20 +73,20 @@ const SiteSidebar = ({ open, close }: Props) => {
                       key={index}
                       houseType={houseType}
                       onAdd={() => {
-                        const id = nanoid()
-                        const position =
-                          cameraGroundRaycast() ?? new Vector3(0, 0, 0)
+                        dispatchAddHouseIntent(houseType)
 
-                        houses[id] = {
-                          id,
-                          houseTypeId: houseType.id,
-                          systemId: houseType.systemId,
-                          position,
-                          rotation: 0,
-                          dnas: houseType.dnas as string[],
-                          modifiedMaterials: {},
-                          friendlyName: `Building ${keys(houses).length + 1}`,
-                        }
+                        // dispatchAddHouseIntent({
+                        //   id,
+                        //   houseTypeId: houseType.id,
+                        //   systemId: houseType.systemId,
+                        //   position,
+                        //   rotation: 0,
+                        //   dnas: houseType.dnas,
+                        //   modifiedMaterials: {},
+                        //   friendlyName: `Building ${
+                        //     Object.keys(houses).length + 1
+                        //   }`,
+                        // })
 
                         close()
                       }}

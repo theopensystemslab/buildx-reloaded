@@ -1,3 +1,4 @@
+"use client"
 import { useRoute } from "~/utils/wouter"
 import { useEffect, useRef } from "react"
 import { useLocation } from "wouter"
@@ -21,11 +22,11 @@ export const useRouting = () => {
     if (urlChangingLock.current) return
     if (!location.startsWith("/design")) return
 
-    const { buildingOrLevelMode, levelMode } = getModeBools(siteCtx.mode)
+    const { siteMode, levelMode } = getModeBools(siteCtx.mode)
 
     let path = "/design"
 
-    if (siteCtx.houseId && buildingOrLevelMode) {
+    if (siteCtx.houseId && !siteMode) {
       path += `?houseId=${siteCtx.houseId}`
       if (levelMode) {
         path += `&levelIndex=${siteCtx.levelIndex}`
@@ -51,10 +52,17 @@ export const useRouting = () => {
         enterLevelMode(levelIndex)
         break
       }
-      case !("houseId" in params):
+      case !("houseId" in params): {
         exitBuildingMode()
+        break
+      }
     }
 
     urlChangingLock.current = false
   }, [params])
+}
+
+export const Routing = () => {
+  useRouting()
+  return null
 }

@@ -1,12 +1,14 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
+import dynamic from "next/dynamic"
 import { Fragment } from "react"
 import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import { useSiteCurrency } from "../../design/state/siteCtx"
-import HousesView from "./HousesView"
 import css from "./page.module.css"
+
+const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
   const { formatWithSymbol } = useSiteCurrency()

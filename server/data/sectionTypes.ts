@@ -10,6 +10,7 @@ export type SectionType = {
   code: string
   description: string
   width: number
+  lastModified: number
 }
 
 export const sectionTypeParser = z.object({
@@ -18,6 +19,17 @@ export const sectionTypeParser = z.object({
     section_code: z.string().min(1),
     description: z.string().default(""),
     section_width: z.number(),
+    last_modified: z.string().refine(
+      (value) => {
+        // Attempt to parse the value as a date and check that it's valid
+        const date = new Date(value)
+        return !isNaN(date.getTime())
+      },
+      {
+        // Custom error message
+        message: "Invalid date string",
+      }
+    ),
   }),
 })
 
@@ -37,13 +49,19 @@ export const sectionTypesQuery: QueryFn<SectionType> =
               sectionTypeParser.transform(
                 ({
                   id,
-                  fields: { section_code, description, section_width },
+                  fields: {
+                    section_code,
+                    description,
+                    section_width,
+                    last_modified,
+                  },
                 }) => ({
                   id,
                   systemId,
                   code: section_code,
                   description,
                   width: section_width,
+                  lastModified: new Date(last_modified).getTime(),
                 })
               )
             ).parse

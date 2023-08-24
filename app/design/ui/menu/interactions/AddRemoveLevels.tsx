@@ -6,7 +6,6 @@ import { useGetStairsModule, usePadColumn } from "~/data/modules"
 import houses from "~/design/state/houses"
 import {
   columnMatrixToDna,
-  HouseModuleIdentifier,
   rowMatrixToDna,
   useColumnMatrix,
 } from "~/design/state/layouts"
@@ -15,6 +14,7 @@ import { useGetVanillaModule } from "~/design/state/vanilla"
 import { A, errorThrower, O } from "~/utils/functions"
 import { AddLevel, RemoveLevel } from "~/ui/icons"
 import ContextMenuButton from "../ContextMenuButton"
+import { HouseModuleIdentifier } from "../../../../db/layouts"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

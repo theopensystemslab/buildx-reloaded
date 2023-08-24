@@ -3,22 +3,24 @@ import { flow, identity, pipe } from "fp-ts/lib/function"
 import * as Mon from "fp-ts/Monoid"
 import * as Num from "fp-ts/number"
 import * as O from "fp-ts/Option"
-import { clamp } from "fp-ts/Ord"
+import * as Ord from "fp-ts/Ord"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as R from "fp-ts/Record"
 import * as S from "fp-ts/string"
-
-const clamp_ = clamp(Num.Ord)
+import * as T from "fp-ts/Task"
 
 export * as M from "fp-ts/Map"
 export * as NEA from "fp-ts/NonEmptyArray"
-export * as Ord from "fp-ts/Ord"
 export * as RM from "fp-ts/ReadonlyMap"
 export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
-export { clamp_ as clamp }
-export { A, Num, O, R, RA, S }
+export * as TO from "fp-ts/TaskOption"
+export * as TE from "fp-ts/TaskEither"
+
+const clamp = Ord.clamp(Num.Ord)
+
+export { A, Num, O, Ord, R, RA, S, T, clamp }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)
@@ -102,3 +104,37 @@ export const capitalizeFirstLetters = (str: string): string =>
     .split(" ")
     .map((x) => x.charAt(0).toUpperCase())
     .join("")
+
+export const clearRecord = (obj: Record<string, any>) => {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      delete obj[key]
+    }
+  }
+}
+
+export const unwrapSome = <A>(
+  taskOptionArray: T.Task<O.Option<A>[]>
+): T.Task<A[]> =>
+  pipe(
+    taskOptionArray,
+    T.map(A.compact) // compact function removes None and unwraps Some values
+  )
+
+export const headTail = <T>(xs: T[]) =>
+  pipe(
+    xs,
+    A.partitionWithIndex((i) => i === 0 || i === xs.length - 1),
+    ({ left: middle, right: [start, end] }) => ({
+      start,
+      end,
+      middle,
+    })
+  )
+
+type Guard<T> = (obj: any) => obj is T
+
+export const combineGuards =
+  <A, B>(guard1: Guard<A>, guard2: Guard<B>): Guard<A | B> =>
+  (obj: any): obj is A | B =>
+    guard1(obj) || guard2(obj)

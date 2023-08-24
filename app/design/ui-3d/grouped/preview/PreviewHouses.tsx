@@ -23,6 +23,7 @@ const PreviewHouses = (props: Props) => {
         R.collect(S.Ord)((k, { value }) => {
           return (
             <PreviewHouse
+              // is k not houseId?
               key={`${houseId}:${k}`}
               houseId={houseId}
               systemId={systemId}

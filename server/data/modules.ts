@@ -83,7 +83,18 @@ export const moduleParser = z
       visual_reference: z
         .array(z.object({ url: z.string().optional() }).optional())
         .optional(),
-      description: z.string().optional(),
+      description: z.string().default(""),
+      last_modified: z.string().refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      ),
     }),
   })
   .transform(
@@ -112,6 +123,7 @@ export const moduleParser = z
         embodied_carbon,
         visual_reference,
         description,
+        last_modified,
       },
     }) => ({
       id,
@@ -138,6 +150,7 @@ export const moduleParser = z
       embodiedCarbon: embodied_carbon ?? -400,
       description,
       visualReference: visual_reference?.[0]?.url,
+      lastModified: new Date(last_modified).getTime(),
     })
   )
 

@@ -19,7 +19,7 @@ const camera = proxy<CameraProxy>({
   lastLookAt: [...defaultCamPos, ...defaultCamTgt],
 })
 
-export const setCameraEnabled = (b: boolean) => {
+export const setCameraControlsEnabled = (b: boolean) => {
   if (camera.controls) camera.controls.enabled = b
 }
 

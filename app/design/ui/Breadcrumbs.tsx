@@ -85,8 +85,11 @@ const Breadcrumbs = () => {
             : projectName
         }
         onClick={() => {
-          if (mode !== SiteCtxModeEnum.Enum.SITE) exitBuildingMode()
-          else if (!renamingProject) setRenamingProject(true)
+          if (mode !== SiteCtxModeEnum.Enum.SITE) {
+            exitBuildingMode()
+          } else if (!renamingProject) {
+            setRenamingProject(true)
+          }
         }}
       />
       {renamingProject && (

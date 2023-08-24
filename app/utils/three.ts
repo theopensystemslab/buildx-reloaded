@@ -3,8 +3,12 @@ import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
 import { useCallback, useMemo, useRef } from "react"
 import {
+  BufferGeometry,
+  Color,
   DoubleSide,
   Group,
+  Line,
+  LineBasicMaterial,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
@@ -30,10 +34,7 @@ export const isMesh = (x: Object3D): x is Mesh => x.type === "Mesh"
 
 export const onCreated = (state: RootState) => {
   state.gl.localClippingEnabled = true
-  state.raycaster.layers.disableAll()
-  state.raycaster.layers.enable(CameraLayer.VISIBLE)
-  state.raycaster.layers.enable(CameraLayer.INVISIBLE)
-  state.raycaster.layers.enable(RaycasterLayer.ENABLED)
+  state.raycaster.layers.set(RaycasterLayer.ENABLED)
 }
 
 export const createMaterial = (config: Material) => {
@@ -47,6 +48,7 @@ export const createMaterial = (config: Material) => {
       // wireframe: true,
       // opacity: 0.6,
       // depthTest: false,
+      clipShadows: true,
     })
   }
 
@@ -152,7 +154,9 @@ export const useSetRotation = (houseId: string) => {
   )
 }
 
+export const xAxis = new Vector3(1, 0, 0)
 export const yAxis = new Vector3(0, 1, 0)
+export const zAxis = new Vector3(0, 0, 1)
 
 export const useRotations = () => {
   const rotationMatrix = useRef(new Matrix4())
@@ -184,4 +188,102 @@ export const useRotations = () => {
   )
 
   return { rotateV2, unrotateV2 }
+}
+
+export const setRaycasting = (object: Object3D, bool: boolean) => {
+  object.traverse((node) => {
+    if (bool) {
+      node.layers.enable(RaycasterLayer.ENABLED)
+      node.layers.disable(RaycasterLayer.DISABLED)
+    } else {
+      node.layers.enable(RaycasterLayer.DISABLED)
+      node.layers.disable(RaycasterLayer.ENABLED)
+    }
+  })
+}
+
+export const setVisibleAndRaycast = (object: Object3D) => {
+  object.traverse((node) => {
+    node.visible = true
+    node.layers.set(CameraLayer.VISIBLE)
+    node.layers.enable(RaycasterLayer.ENABLED)
+  })
+}
+
+export const setVisibleOnly = (object: Object3D) => {
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.VISIBLE)
+  })
+}
+
+export const setInvisibleNoRaycast = (object: Object3D) => {
+  object.visible = false
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.INVISIBLE)
+    node.layers.enable(RaycasterLayer.DISABLED)
+  })
+}
+
+export const setInvisibleButRaycast = (object: Object3D) => {
+  object.traverse((node) => {
+    node.layers.set(CameraLayer.INVISIBLE)
+    node.layers.enable(RaycasterLayer.ENABLED)
+  })
+}
+
+export const setVisible = (object: Object3D, bool: boolean) => {
+  if (bool) {
+    setVisibleAndRaycast(object)
+  } else {
+    setInvisibleNoRaycast(object)
+  }
+}
+
+export const replicateObject = <T extends Object3D>(n: number, obj: T): T[] => {
+  const replicated: T[] = []
+  for (let i = 0; i < n; i++) {
+    replicated.push(obj.clone() as T)
+  }
+  return replicated
+}
+
+export const addDebugLineAtZ = (
+  parent: Object3D,
+  z: number,
+  length: number = 5,
+  color: Color | number | string = 0xff0000
+): void => {
+  // Step 1: Create geometry for the line segment.
+  const lineGeometry = new BufferGeometry().setFromPoints([
+    new Vector3(-length / 2, 0, 0),
+    new Vector3(length / 2, 0, 0),
+  ])
+
+  // Step 2: Create a material for the line.
+  const lineMaterial = new LineBasicMaterial({ color: color })
+
+  // Step 3: Create the line object, set its z position, and add it to the parent.
+  const line = new Line(lineGeometry, lineMaterial)
+  line.position.set(0, 0, z)
+  parent.add(line)
+}
+
+export const addDebugLineAtX = (
+  parent: Object3D,
+  x: number,
+  length: number = 5,
+  color: Color | number | string = 0xff0000
+): void => {
+  // Step 1: Create geometry for the line segment.
+  const lineGeometry = new BufferGeometry().setFromPoints([
+    new Vector3(x, 0, -length / 2),
+    new Vector3(x, 0, length / 2),
+  ])
+
+  // Step 2: Create a material for the line.
+  const lineMaterial = new LineBasicMaterial({ color: color })
+
+  // Step 3: Create the line object and add it to the parent.
+  const line = new Line(lineGeometry, lineMaterial)
+  parent.add(line)
 }

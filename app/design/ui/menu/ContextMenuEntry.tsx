@@ -1,7 +1,6 @@
 import { Reset, TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
-import { House } from "~/data/houses"
 import { useHouseTypes } from "~/data/houseTypes"
 import scope, { useScope } from "~/design/state/scope"
 import { Pencil, TextCursor } from "~/ui/icons"
@@ -13,6 +12,7 @@ import {
   getModeBools,
   useSiteCtx,
 } from "../../state/siteCtx"
+import { dispatchDeleteHouse } from "../../ui-3d/fresh/events/houses"
 import RenameForm from "../../ui/RenameForm"
 import ContextMenu, { ContextMenuProps } from "./ContextMenu"
 import ContextMenuButton from "./ContextMenuButton"
@@ -36,13 +36,17 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
       closeMenu()
       invalidate()
     },
-    selected,
   }
 
-  const { houseId, columnIndex, levelIndex, gridGroupIndex, elementName } =
-    selected
+  const {
+    houseId,
+    columnIndex,
+    levelIndex,
+    gridGroupIndex,
+    ifcTag: elementName,
+  } = selected
 
-  const house = useHouse(houseId) as House
+  const house = useHouse(houseId)
 
   const editBuilding = () => {
     downMode(selected)
@@ -54,8 +58,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     props.onClose?.()
   }
 
-  const { siteMode, buildingMode, levelMode, buildingOrLevelMode } =
-    getModeBools(mode)
+  const { siteMode, buildingMode, levelMode } = getModeBools(mode)
 
   const houseTypes = useHouseTypes()
 
@@ -70,7 +73,10 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   }
 
   const deleteBuilding = () => {
-    delete houses[houseId]
+    dispatchDeleteHouse({
+      houseId,
+    })
+    // delete houses[houseId]
     scope.selected = null
 
     if (Object.keys(houses).length === 0) {

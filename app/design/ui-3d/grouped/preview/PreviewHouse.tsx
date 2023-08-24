@@ -1,10 +1,10 @@
-import { useDnasColumnLayout } from "~/design/state/layouts"
-import { A } from "~/utils/functions"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Group } from "three"
+import { useDnasLayout } from "~/design/state/layouts"
 import previews from "~/design/state/previews"
+import { A } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
 import PreviewColumn from "./PreviewColumn"
 
@@ -20,7 +20,7 @@ const PreviewHouse = (props: Props) => {
 
   const { houseId, systemId, dnas, setHouseVisible, ...restProps } = props
 
-  const layout = useDnasColumnLayout(systemId, dnas)
+  const layout = useDnasLayout({ systemId, dnas })
 
   const key = dnas.toString()
 

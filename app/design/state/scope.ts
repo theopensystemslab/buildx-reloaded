@@ -3,9 +3,12 @@ import { pipe } from "fp-ts/lib/function"
 import { proxy, useSnapshot } from "valtio"
 import { A, O } from "~/utils/functions"
 import { columnLayoutToMatrix, layouts } from "~/design/state/layouts"
+import { getHouseLayoutsKey } from "../../db/layouts"
+import houses from "./houses"
 
 export type ScopeItem = {
-  elementName: string
+  ifcTag: string
+  dna: string
   gridGroupIndex: number
   levelIndex: number
   columnIndex: number
@@ -28,7 +31,11 @@ export const getSelectedModule = () => {
   if (scope.selected === null) return null
   const { houseId, columnIndex, levelIndex, gridGroupIndex } = scope.selected
 
-  return layouts[houseId][columnIndex].gridGroups[levelIndex].modules[
+  const { systemId, dnas } = houses[houseId]
+
+  const layoutsKey = getHouseLayoutsKey({ systemId, dnas })
+
+  return layouts[layoutsKey][columnIndex].gridGroups[levelIndex].modules[
     gridGroupIndex
   ].module
 }
@@ -39,7 +46,9 @@ export const getSelectedLevelType = () =>
 export const getSelectedColumnMatrix = () => {
   if (scope.selected === null) return null
   const { houseId } = scope.selected
-  return columnLayoutToMatrix(layouts[houseId])
+  const { systemId, dnas } = houses[houseId]
+  const layoutsKey = getHouseLayoutsKey({ systemId, dnas })
+  return columnLayoutToMatrix(layouts[layoutsKey])
 }
 export const getSelectedLevelModules = () => {
   if (scope.selected === null) return null

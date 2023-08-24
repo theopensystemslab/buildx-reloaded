@@ -1,51 +1,14 @@
 import { Remote, wrap } from "comlink"
 import { useEffect, useRef } from "react"
 import { useEvent } from "react-use"
-import houses from "../houses"
-import { ExportersWorkerAPI } from "./worker"
-
-export const UPDATE_EXPORT_MODELS_EVENT = "UpdateExportModels"
-export const GET_EXPORT_MODEL_EVENT = "GetExportModel"
-
-export type UpdateWorkerGroupEventDetail = {
-  houseId: string
-  payload: any
-}
-
-export type UpdateWorkerGroupEvent = {
-  type: typeof UPDATE_EXPORT_MODELS_EVENT
-  detail: UpdateWorkerGroupEventDetail
-}
-
-export type GetModelEventDetail = {
-  houseId: string
-  format: "OBJ" | "GLB"
-}
-
-export type GetModelEvent = {
-  type: typeof GET_EXPORT_MODEL_EVENT
-  detail: GetModelEventDetail
-}
-
-export const dispatchUpdateExportModelsEvent = ({
-  houseId,
-  payload,
-}: UpdateWorkerGroupEventDetail) => {
-  dispatchEvent(
-    new CustomEvent(UPDATE_EXPORT_MODELS_EVENT, {
-      detail: { houseId, payload },
-    })
-  )
-}
-
-export const dispatchGetModelEvent = ({
-  houseId,
-  format,
-}: GetModelEventDetail) => {
-  dispatchEvent(
-    new CustomEvent(GET_EXPORT_MODEL_EVENT, { detail: { houseId, format } })
-  )
-}
+import houses from "../../design/state/houses"
+import {
+  GetModelEvent,
+  UpdateWorkerGroupEvent,
+  GET_EXPORT_MODEL_EVENT,
+  UPDATE_EXPORT_MODELS_EVENT,
+} from "./events"
+import type { ExportersWorkerAPI } from "./worker"
 
 export const useExportersWorker = () => {
   const ref = useRef<Remote<ExportersWorkerAPI> | null>(null)

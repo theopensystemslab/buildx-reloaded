@@ -33,6 +33,17 @@ export const houseTypeParser = z
         description: z.string().min(1),
         cost: z.number(),
         embodied_carbon: z.number(),
+        last_modified: z.string().refine(
+          (value) => {
+            // Attempt to parse the value as a date and check that it's valid
+            const date = new Date(value)
+            return !isNaN(date.getTime())
+          },
+          {
+            // Custom error message
+            message: "Invalid date string",
+          }
+        ),
       })
       .passthrough(),
     id: z.string().min(1),
@@ -47,6 +58,7 @@ export const houseTypeParser = z
         description,
         cost,
         embodied_carbon,
+        last_modified,
       },
     }) => ({
       id,
@@ -56,6 +68,7 @@ export const houseTypeParser = z
       description,
       cost,
       carbon: embodied_carbon,
+      lastModified: new Date(last_modified).getTime(),
     })
   )
 

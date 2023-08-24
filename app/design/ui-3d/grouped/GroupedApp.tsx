@@ -2,32 +2,30 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import { usePreviews } from "~/design/state/previews"
-import { useRouting } from "~/design/state/routing"
-import { RA } from "~/utils/functions"
-import { useExportersWorker } from "../../state/exporters"
+import { A, R } from "~/utils/functions"
+import { useExportersWorker } from "../../../workers/exporters/hook"
 import { useDragHandler, useGestures } from "../../state/gestures"
-import { useHouseKeys } from "../../state/houses"
+import { useHouses } from "../../state/houses"
 import XZPlane from "../XZPlane"
 import YPlane from "../YPlane"
-import GroupedHouse from "./GroupedHouse"
+import GroupedHouse2 from "./GroupedHouse2"
 
 const GroupedApp = () => {
-  const houseKeys = useHouseKeys()
+  const houses = useHouses()
   usePreviews()
   const bindAll = useGestures()
   useDragHandler()
-  useRouting()
-
   useExportersWorker()
 
   return (
     <Fragment>
       <group {...bindAll()}>
         {pipe(
-          houseKeys,
-          RA.map((houseId) => (
+          houses,
+          R.toArray,
+          A.map(([houseId, house]) => (
             <Suspense key={houseId} fallback={null}>
-              <GroupedHouse houseId={houseId} />
+              <GroupedHouse2 house={{ ...house }} />
             </Suspense>
           ))
         )}

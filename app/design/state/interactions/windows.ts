@@ -6,13 +6,12 @@ import { WindowType } from "@/server/data/windowTypes"
 import { useSystemWindowTypes } from "~/data/windowTypes"
 import { A, O, S } from "~/utils/functions"
 import { getSide, Side } from "~/design/state/camera"
-import {
-  columnLayoutToDNA,
-  HouseModuleIdentifier,
-  layouts,
-} from "~/design/state/layouts"
+import { layouts } from "~/design/state/layouts"
 import siteCtx from "~/design/state/siteCtx"
 import { useChangeModuleLayout } from "./layouts"
+import { HouseModuleIdentifier, getHouseLayoutsKey } from "../../../db/layouts"
+import houses from "../houses"
+import { columnLayoutToDnas } from "../../../workers/layouts/worker"
 
 export type WindowTypeOption = {
   label: string
@@ -29,9 +28,15 @@ export const useWindowOptions = ({
   options: WindowTypeOption[]
   selected: WindowTypeOption["value"]
 } => {
+  const layoutsKey = getHouseLayoutsKey({
+    systemId: houses[houseId].systemId,
+    dnas: houses[houseId].dnas,
+  })
+
   const m =
-    layouts[houseId][columnIndex].gridGroups[levelIndex].modules[gridGroupIndex]
-      .module
+    layouts[layoutsKey][columnIndex].gridGroups[levelIndex].modules[
+      gridGroupIndex
+    ].module
 
   const { systemId } = m
 
@@ -106,7 +111,7 @@ export const useWindowOptions = ({
   const selected = pipe(
     options,
     A.findFirstMap(({ value }) => {
-      const houseDna = columnLayoutToDNA(layouts[houseId])
+      const houseDna = columnLayoutToDnas(layouts[layoutsKey])
       return eq.equals(value.houseDna, houseDna) ? O.some(value) : O.none
     }),
     O.getOrElse(() => {

@@ -3,7 +3,7 @@ import { useSubscribe, useSubscribeKey } from "~/utils/hooks"
 import { createMaterial, isMesh } from "~/utils/three"
 import { invalidate } from "@react-three/fiber"
 import { identity, pipe } from "fp-ts/lib/function"
-import { MutableRefObject, useEffect, useMemo, useRef } from "react"
+import { MutableRefObject, RefObject, useEffect, useMemo, useRef } from "react"
 import { Group, Material, Matrix4, Plane, Vector3 } from "three"
 import { proxy, ref } from "valtio"
 import { useElements, useSystemElements } from "~/data/elements"
@@ -15,6 +15,7 @@ import { useHousePreviews } from "./previews"
 import settings from "./settings"
 import siteCtx from "./siteCtx"
 import { postTransformsTransients } from "./transients/transforms"
+import { HouseLayoutsKey } from "../../db/layouts"
 
 const getMaterialHash = ({
   systemId,
@@ -232,10 +233,15 @@ const usePlaneMatrix = (houseId: string) => {
   }
 }
 
-export const useHouseMaterialOps = (
-  houseId: string,
-  houseGroupRef: MutableRefObject<Group>
-) => {
+export const useHouseMaterialOps = ({
+  ref,
+  houseId,
+  layoutsKey,
+}: {
+  houseId: string
+  ref: RefObject<Group>
+  layoutsKey: string
+}) => {
   const systemId = houses[houseId].systemId
   const elementMaterials = useRef<Record<string, Material>>({})
   const categoryElements = useRef<Record<string, string[]>>({})
@@ -254,8 +260,8 @@ export const useHouseMaterialOps = (
   const levelHeight =
     siteCtx.levelIndex === null
       ? Infinity
-      : layouts[houseId][0].gridGroups[siteCtx.levelIndex].y +
-        layouts[houseId][0].gridGroups[siteCtx.levelIndex].modules[0].module
+      : layouts[layoutsKey][0].gridGroups[siteCtx.levelIndex].y +
+        layouts[layoutsKey][0].gridGroups[siteCtx.levelIndex].modules[0].module
           .height /
           2
 
@@ -274,7 +280,7 @@ export const useHouseMaterialOps = (
   useSubscribeKey(postTransformsTransients, houseId, updateMatrices, true)
 
   useEffect(() => {
-    houseGroupRef.current?.traverse((o3) => {
+    ref.current?.traverse((o3) => {
       if (
         !isMesh(o3) ||
         Array.isArray(o3.material) ||
@@ -307,7 +313,7 @@ export const useHouseMaterialOps = (
       elementMaterials.current = {}
       categoryElements.current = {}
     }
-  }, [elements, houseGroupRef])
+  }, [elements, ref])
 
   useSubscribe(
     elementCategories,

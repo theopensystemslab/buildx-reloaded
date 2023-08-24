@@ -1,13 +1,12 @@
-import { invalidate } from "@react-three/fiber"
 import { MutableRefObject, useEffect, useRef } from "react"
 import { Group, Object3D } from "three"
 import { proxy, ref } from "valtio"
-import { useSubscribe } from "~/utils/hooks"
-import { isMesh } from "~/utils/three"
 import { HouseElementIdentifier } from "~/design/state/gestures/drag"
 import { useHouse } from "~/design/state/houses"
-import scope from "./scope"
 import siteCtx, { SiteCtxModeEnum } from "~/design/state/siteCtx"
+import { useSubscribe } from "~/utils/hooks"
+import { isMesh } from "~/utils/three"
+import scope from "./scope"
 
 type Highights = {
   outlined: Array<Object3D>
@@ -120,19 +119,19 @@ export const useHouseElementOutline = (
           if (scope.hovered !== null) {
             if (
               scope.hovered.houseId === houseId &&
-              scope.hovered.elementName in elementObjects.current &&
-              elementObjects.current[scope.hovered.elementName].length > 0
+              scope.hovered.ifcTag in elementObjects.current &&
+              elementObjects.current[scope.hovered.ifcTag].length > 0
             ) {
-              o3s.push(...elementObjects.current[scope.hovered.elementName])
+              o3s.push(...elementObjects.current[scope.hovered.ifcTag])
             }
           }
           if (scope.selected !== null) {
             if (
               scope.selected.houseId === houseId &&
-              scope.selected.elementName in elementObjects.current &&
-              elementObjects.current[scope.selected.elementName].length > 0
+              scope.selected.ifcTag in elementObjects.current &&
+              elementObjects.current[scope.selected.ifcTag].length > 0
             ) {
-              o3s.push(...elementObjects.current[scope.selected.elementName])
+              o3s.push(...elementObjects.current[scope.selected.ifcTag])
             }
           }
           break

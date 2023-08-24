@@ -5,11 +5,12 @@ import { OBB } from "three-stdlib"
 import { proxy, ref, useSnapshot } from "valtio"
 import { useSubscribeKey } from "~/utils/hooks"
 import { yAxis } from "~/utils/three"
-import houses from "./houses"
+import { getHouseLayoutsKey } from "../../db/layouts"
+import houses, { useHouse } from "./houses"
 import { layouts } from "./layouts"
 import { postTransformsTransients, Transforms } from "./transients/transforms"
 
-type Dimensions = {
+export type Dimensions = {
   obb: OBB
   width: number
   height: number
@@ -68,54 +69,67 @@ export const usePostTransMatrix = (houseId: string) => {
   }
 }
 
+export const useLayoutsKey = (houseId: string) => {
+  const { systemId, dnas } = useHouse(houseId)
+
+  return getHouseLayoutsKey({ systemId, dnas })
+}
+
 export const useComputeDimensions = (houseId: string) => {
   const translationMatrix = useRef(new Matrix4())
   const rotationMatrix = useRef(new Matrix4())
 
-  return (transients: Transforms = {}): Dimensions => {
-    const {
-      rotation: dr = 0,
-      position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
-    } = transients
+  const layoutsKey = useLayoutsKey(houseId)
 
-    const columns = layouts[houseId]
+  return useCallback(
+    (transients: Transforms = {}): Dimensions => {
+      const {
+        rotation: dr = 0,
+        position: { dx, dy, dz } = { dx: 0, dy: 0, dz: 0 },
+      } = transients
 
-    const width = columns[0].gridGroups[0].modules[0].module.width
-    const height = columns[0].gridGroups.reduce(
-      (acc, gg) => acc + gg.modules[0].module.height,
-      0
-    )
-    const z0 = columns[0].gridGroups[0].modules[0].z
-    const lastColumn = columns[columns.length - 1]
-    const lastGridGroup =
-      lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
-    const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
-    const z1 = lastColumn.z + lastModule.z + lastModule.module.length
+      const columns = layouts[layoutsKey]
 
-    const length = z1 - z0
+      const width = columns[0].gridGroups[0].modules[0].module.width
+      const height = columns[0].gridGroups.reduce(
+        (acc, gg) => acc + gg.modules[0].module.height,
+        0
+      )
+      const z0 = columns[0].gridGroups[0].modules[0].z
+      const lastColumn = columns[columns.length - 1]
+      const lastGridGroup =
+        lastColumn.gridGroups[lastColumn.gridGroups.length - 1]
+      const lastModule = lastGridGroup.modules[lastGridGroup.modules.length - 1]
+      const z1 = lastColumn.z + lastModule.z + lastModule.module.length
 
-    const { x: px, y: py, z: pz } = houses[houseId].position
+      const length = z1 - z0
 
-    const halfSize = new Vector3(width / 2, height / 2, length / 2)
-    const center = new Vector3(0, 0, 0)
-    const obb = new OBB(center, halfSize)
+      const { x: px, y: py, z: pz } = houses[houseId].position
 
-    rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
-    translationMatrix.current.makeTranslation(
-      px + dx,
-      py + dy + height / 2,
-      pz + dz
-    )
+      const halfSize = new Vector3(width / 2, height / 2, length / 2)
+      const center = new Vector3(0, 0, 0)
+      const obb = new OBB(center, halfSize)
 
-    obb.applyMatrix4(translationMatrix.current.multiply(rotationMatrix.current))
+      rotationMatrix.current.makeRotationY(houses[houseId].rotation + dr)
+      translationMatrix.current.makeTranslation(
+        px + dx,
+        py + dy + height / 2,
+        pz + dz
+      )
 
-    return {
-      width,
-      height,
-      length,
-      obb,
-    }
-  }
+      obb.applyMatrix4(
+        translationMatrix.current.multiply(rotationMatrix.current)
+      )
+
+      return {
+        width,
+        height,
+        length,
+        obb,
+      }
+    },
+    [houseId, layoutsKey]
+  )
 }
 
 export const useHouseDimensionsUpdates = (houseId: string) => {

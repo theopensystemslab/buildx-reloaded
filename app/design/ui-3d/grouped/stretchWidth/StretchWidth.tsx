@@ -9,13 +9,6 @@ import { useSystemSectionTypes } from "~/data/sectionTypes"
 import dimensions, {
   useHouseDimensionsUpdates,
 } from "../../../state/dimensions"
-import {
-  ColumnLayout,
-  columnLayoutToDNA,
-  GridGroup,
-  PositionedColumn,
-  PositionedModule,
-} from "~/design/state/layouts"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import {
   A,
@@ -38,7 +31,21 @@ import { proxy, ref } from "valtio"
 import houses, { useHouse } from "../../../state/houses"
 import previews from "~/design/state/previews"
 import StretchHandle from "../../handles/StretchHandle"
-import { useIsStretchable } from "../../../state/siteCtx"
+import { useTransformabilityBooleans } from "../../../state/siteCtx"
+import {
+  ColumnLayout,
+  GridGroup,
+  PositionedColumn,
+  PositionedModule,
+} from "../../../../db/layouts"
+import { columnLayoutToDnas } from "../../../../workers/layouts/worker"
+
+export type AugSectionType = SectionType & {
+  // live: boolean
+  houseDna: string[]
+  houseDnaKey: string
+  dx: number
+}
 
 export type StretchWidthRaw = {
   direction: 1 | -1
@@ -66,7 +73,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   const rightHandleRef = useRef<Group>(null!)
   const leftHandleRef = useRef<Group>(null!)
 
-  const isStretchable = useIsStretchable(houseId)
+  const { stretchEnabled } = useTransformabilityBooleans(houseId)
 
   const systemId = houses[houseId].systemId
 
@@ -78,13 +85,6 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   const module0 = columnLayout[0].gridGroups[0].modules[0].module
 
   const { width: houseWidth } = useHouseDimensionsUpdates(houseId)
-
-  type AugSectionType = SectionType & {
-    // live: boolean
-    houseDna: string[]
-    houseDnaKey: string
-    dx: number
-  }
 
   const augSectionTypes: NonEmptyArray<AugSectionType> = pipe(
     sectionTypes,
@@ -192,7 +192,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
             )
         ),
         O.map((columnLayout): AugSectionType => {
-          const houseDna = columnLayoutToDNA(columnLayout)
+          const houseDna = columnLayoutToDnas(columnLayout)
           return {
             ...st,
             dx: (st.width - houseWidth) / 2,
@@ -347,7 +347,7 @@ const StretchWidth = forwardRef<Group, Props>((props, rootRef) => {
   return (
     <group
       ref={rootRef}
-      scale={isStretchable && canStretchWidth ? [1, 1, 1] : [0, 0, 0]}
+      scale={stretchEnabled && canStretchWidth ? [1, 1, 1] : [0, 0, 0]}
       {...groupProps}
     >
       <StretchHandle

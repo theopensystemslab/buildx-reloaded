@@ -1,5 +1,5 @@
 import { ArrowDown } from "@carbon/icons-react"
-import { dispatchGetModelEvent } from "../../../state/exporters"
+import { dispatchGetModelEvent } from "../../../../workers/exporters/events"
 import ContextMenuButton from "../ContextMenuButton"
 import ContextMenuNested from "../ContextMenuNested"
 

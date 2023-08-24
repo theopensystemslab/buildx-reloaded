@@ -1,14 +1,14 @@
-import highlights from "~/design/state/highlights"
 import { useFBO } from "@react-three/drei"
-import { invalidate, useFrame, useThree } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import {
   EffectComposer,
   EffectPass,
   OutlineEffect as OutlineEffectRaw,
   RenderPass,
 } from "postprocessing"
-import { useEffect, useMemo } from "react"
-import { subscribeKey } from "valtio/utils"
+import { useEffect, useMemo, useRef } from "react"
+import { Object3D } from "three"
+import { useOutlineListener } from "../fresh/events/outlines"
 
 export type UseOutlineEffectParams = ConstructorParameters<
   typeof OutlineEffectRaw
@@ -36,7 +36,10 @@ const defaultRenderPriority: number = 1
 const Effects = () => {
   const { gl, camera, size, scene } = useThree()
 
-  const renderTarget = useFBO(size.width, size.height, { depthBuffer: true })
+  const renderTarget = useFBO(size.width, size.height, {
+    depthBuffer: true,
+    // stencilBuffer: true,
+  })
 
   // const selectiveBloomEffect = useMemo(() => {
   //   const effect = new SelectiveBloomEffect(scene, camera, {
@@ -78,16 +81,24 @@ const Effects = () => {
     // selectiveBloomEffect
   ])
 
-  const outline = () => {
-    if (highlights.outlined.length > 0) {
-      outlineEffect.selection.set(highlights.outlined)
-    } else {
-      outlineEffect.selection.clear()
-    }
-    invalidate()
+  const hoveredObjects = useRef<Object3D[]>([])
+  const selectedObjects = useRef<Object3D[]>([])
+
+  const setSelection = () => {
+    outlineEffect.selection.set(
+      selectedObjects.current.concat(hoveredObjects.current)
+    )
   }
 
-  subscribeKey(highlights, "outlined", outline, true)
+  useOutlineListener((incoming) => {
+    if (incoming.hoveredObjects) {
+      hoveredObjects.current = incoming.hoveredObjects
+    }
+    if (incoming.selectedObjects) {
+      selectedObjects.current = incoming.selectedObjects
+    }
+    setSelection()
+  })
 
   // subscribeKey(highlights, "illuminated", () => {
   //   if (highlights.illuminated.length > 0) {

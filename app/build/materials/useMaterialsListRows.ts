@@ -136,7 +136,7 @@ export const useMaterialsListRows = () => {
               embodiedCarbonPerUnit,
               linkUrl,
               unit,
-            } = getElementMaterial(house.id, item)
+            } = getElementMaterial(house.houseId, item)
 
             const quantity = pipe(houseModules, A.reduce(0, reducer))
 

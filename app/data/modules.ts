@@ -101,13 +101,15 @@ export const filterCompatibleModules =
       "gridType",
     ]
   ) =>
-  (module: Module) =>
-    A.filter((m: Module) =>
-      ks.reduce(
-        (acc: boolean, k) =>
-          acc && m.structuredDna[k] === module.structuredDna[k],
-        true
-      )
+  (moduleA: Module) =>
+    A.filter(
+      (moduleB: Module) =>
+        moduleB.systemId === moduleA.systemId &&
+        ks.reduce(
+          (acc: boolean, k) =>
+            acc && moduleB.structuredDna[k] === moduleA.structuredDna[k],
+          true
+        )
     )
 
 export const keysFilter =

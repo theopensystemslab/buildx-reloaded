@@ -1,11 +1,9 @@
 import { Module } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
-import { useModuleElements } from "~/data/elements"
-import {
-  indicesToKey,
-  SystemHouseModuleIdentifier,
-} from "~/design/state/layouts"
-import { R, S } from "~/utils/functions"
+import { useSpeckleObject } from "~/data/elements"
+import { indicesToKey } from "~/design/state/layouts"
+import { O, R, S } from "~/utils/functions"
+import { SystemHouseModuleIdentifier } from "../../../db/layouts"
 import GroupedElement from "./GroupedElement"
 
 export type ModuleProps = SystemHouseModuleIdentifier & {
@@ -24,16 +22,18 @@ const GroupedModule = (props: ModuleProps) => {
     levelIndex,
     gridGroupIndex,
     module,
+    module: { speckleBranchUrl },
     levelY,
     moduleZ,
     startColumn,
     endColumn,
   } = props
 
-  const elements = useModuleElements(module)
+  const elements = useSpeckleObject(speckleBranchUrl)
 
   const children = pipe(
     elements,
+    O.getOrElse(() => ({})),
     R.collect(S.Ord)((elementName, geometry) => {
       const key = indicesToKey({
         houseId,
