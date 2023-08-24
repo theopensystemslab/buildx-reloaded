@@ -72,9 +72,17 @@ const getModuleModel = async ({
 }
 
 if (!isSSR()) {
-  liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) =>
-    pipe(modules, A.map(putModuleModel))
-  )
+  liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) => {
+    pipe(
+      modules,
+      A.map((x) => {
+        console.log(`putting module model ${x.dna}`)
+        putModuleModel(x).then(() => {
+          console.log(`have PUT ${x.dna}`)
+        })
+      })
+    )
+  })
 }
 
 export const syncModuleModels = (modules: LastFetchStamped<Module>[]) => {

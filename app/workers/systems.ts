@@ -139,6 +139,7 @@ const initLevelTypes = async () => {
 }
 
 const init = () => {
+  console.log(`init`)
   initModules()
   initHouseTypes()
   initElements()
