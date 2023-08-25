@@ -1,14 +1,9 @@
 import { liveQuery } from "dexie"
+import { identity, pipe } from "fp-ts/lib/function"
+import { DoubleSide, MeshStandardMaterial } from "three"
 import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
-import {
-  DoubleSide,
-  Material as ThreeMaterial,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-} from "three"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
-import { identity, pipe } from "fp-ts/lib/function"
 import { O, R } from "../../../utils/functions"
 import { createMaterial } from "../../../utils/three"
 

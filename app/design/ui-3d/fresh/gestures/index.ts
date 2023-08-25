@@ -14,17 +14,21 @@ import siteCtx, {
 } from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
 import {
+  getActiveHouseUserData,
+  getHouseTransformsGroupUp,
   mapNearestCutIntersection,
   objectToHouseObjects,
   objectToIfcTagObjects,
 } from "../helpers/sceneQueries"
 import {
+  ColumnGroupUserData,
   elementMeshToScopeItem,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   isElementMesh,
   isRotateHandleMesh,
   isStretchHandleMesh,
+  ModuleGroupUserData,
   StretchHandleGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
@@ -181,8 +185,28 @@ const useGestures = () => {
             x.object.material.visible
           )
         }),
-        O.map(({ object: { userData } }) => {
-          scope.selected = userData as ScopeItem
+        O.map(({ object }) => {
+          if (!isElementMesh(object)) return
+
+          const { ifcTag } = object.userData
+          const { gridGroupIndex, dna } = object.parent!
+            .userData as ModuleGroupUserData
+          const { levelIndex } = object.parent!.parent!
+            .userData as GridGroupUserData
+          const { columnIndex } = object.parent!.parent!.parent!
+            .userData as ColumnGroupUserData
+          const { houseId } = object.parent!.parent!.parent!.parent!.parent!
+            .userData as HouseTransformsGroupUserData
+
+          scope.selected = {
+            houseId,
+            columnIndex,
+            levelIndex,
+            gridGroupIndex,
+            dna,
+            ifcTag,
+          } as ScopeItem
+
           openMenu(pageX, pageY)
         })
       )

@@ -214,7 +214,8 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   }, [])
 
   useSubscribeKey(scope, "selected", processHandles)
-  useModeChangeListener(async ({ previous, next }) => {
+
+  useModeChangeListener(() => {
     processHandles()
     processClippingPlanes()
   })
