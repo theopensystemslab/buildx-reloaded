@@ -41,7 +41,7 @@
     "js-yaml-loader": "^1.2.2",
     "leva": "^0.9.34",
     "mapbox-gl": "^2.11.1",
-    "next": "^13.4.3",
+    "next": "^13.4.19",
     "postprocessing": "^6.31.0",
     "react": "18.2.0",
     "react-cool-portal": "^1.2.0",
