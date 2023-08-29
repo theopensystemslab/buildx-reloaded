@@ -9,7 +9,7 @@ import {
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
-import { ScopeItem } from "../../../state/scope"
+import { ScopeElement } from "../../../state/scope"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -54,6 +54,7 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
+  dbSync: () => void
   updateActiveLayoutDnas: (x: string[]) => void
   initRotateAndStretchXHandles: () => void
   syncLength: () => void
@@ -267,15 +268,11 @@ export const decrementColumnCount = (layoutGroup: Object3D) => {
   userData.columnCount--
 }
 
-export const elementMeshToScopeItem = (object: Object3D): ScopeItem => {
-  const userData = object.userData as ElementMeshUserData
+export const elementMeshToScopeItem = (object: Object3D): ScopeElement => {
+  if (!isElementMesh(object))
+    throw new Error(`called elementMeshToScopeItem on non ElementMesh`)
 
-  if (userData.type !== UserDataTypeEnum.Enum.ElementMesh)
-    throw new Error(
-      `userData.type is ${userData.type} in elementMeshToScopeItem`
-    )
-
-  const { ifcTag } = userData
+  const { ifcTag } = object.userData
   const { gridGroupIndex, dna } = object.parent!.userData as ModuleGroupUserData
   const { levelIndex } = object.parent!.parent!.userData as GridGroupUserData
   const { columnIndex } = object.parent!.parent!.parent!
@@ -290,5 +287,6 @@ export const elementMeshToScopeItem = (object: Object3D): ScopeItem => {
     columnIndex,
     houseId,
     dna,
+    object,
   }
 }

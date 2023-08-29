@@ -21,78 +21,82 @@ const ChangeMaterials = ({
   elementName: string
   onComplete?: () => void
 }) => {
-  const systemId = houses[houseId].systemId
+  // const systemId = houses[houseId].systemId
 
-  const elements = useSystemElements({ systemId })
-  const materials = useSystemMaterials({ systemId })
+  // const elements = useSystemElements({ systemId })
+  // const materials = useSystemMaterials({ systemId })
 
-  const house = useHouse(houseId)
+  // const house = useHouse(houseId)
 
-  return pipe(
-    elements,
-    findFirst(
-      (element) =>
-        element.systemId === house.systemId && element.name === elementName
-    ),
-    O.map((element) => {
-      const thumbnailsByMaterial = element
-        ? (() => {
-            const record: Record<string, string> = {}
-            materials.forEach((material) => {
-              if (
-                material.systemId === house.systemId &&
-                element.materialOptions.includes(material.specification)
-              ) {
-                record[material.specification] = material.imageUrl
-              }
-            })
-            return record
-          })()
-        : {}
+  // needs a re-write
 
-      const options = element.materialOptions.map((option) => ({
-        label: option,
-        value: option,
-        thumbnail: thumbnailsByMaterial[option],
-      }))
+  return null
 
-      return options.length < 1 ? null : (
-        <ContextMenuNested
-          icon={<WatsonHealthSubVolume size={20} />}
-          label={`Change material`}
-        >
-          <ContextMenuHeading>{elementName}</ContextMenuHeading>
-          <Radio
-            options={options}
-            selected={
-              house.modifiedMaterials?.[element.name] ?? element.defaultMaterial
-            }
-            onChange={(newMaterial) => {
-              houses[houseId].modifiedMaterials = {
-                ...(house.modifiedMaterials ?? {}),
-                [element.name]: newMaterial,
-              }
-              onComplete?.()
-            }}
-            onHoverChange={(hoveredMaterial) => {
-              if (
-                hoveredMaterial &&
-                !(hoveredMaterial in previews[houseId].materials)
-              ) {
-                previews[houseId].materials[element.name] = hoveredMaterial
-              } else if (
-                hoveredMaterial === null &&
-                Object.keys(previews[houseId].materials).length !== 0
-              ) {
-                previews[houseId].materials = {}
-              }
-            }}
-          />
-        </ContextMenuNested>
-      )
-    }),
-    toNullable
-  )
+  // return pipe(
+  //   elements,
+  //   findFirst(
+  //     (element) =>
+  //       element.systemId === house.systemId && element.name === elementName
+  //   ),
+  //   O.map((element) => {
+  //     const thumbnailsByMaterial = element
+  //       ? (() => {
+  //           const record: Record<string, string> = {}
+  //           materials.forEach((material) => {
+  //             if (
+  //               material.systemId === house.systemId &&
+  //               element.materialOptions.includes(material.specification)
+  //             ) {
+  //               record[material.specification] = material.imageUrl
+  //             }
+  //           })
+  //           return record
+  //         })()
+  //       : {}
+
+  //     const options = element.materialOptions.map((option) => ({
+  //       label: option,
+  //       value: option,
+  //       thumbnail: thumbnailsByMaterial[option],
+  //     }))
+
+  //     return options.length < 1 ? null : (
+  //       <ContextMenuNested
+  //         icon={<WatsonHealthSubVolume size={20} />}
+  //         label={`Change material`}
+  //       >
+  //         <ContextMenuHeading>{elementName}</ContextMenuHeading>
+  //         <Radio
+  //           options={options}
+  //           selected={
+  //             house.modifiedMaterials?.[element.name] ?? element.defaultMaterial
+  //           }
+  //           onChange={(newMaterial) => {
+  //             houses[houseId].modifiedMaterials = {
+  //               ...(house.modifiedMaterials ?? {}),
+  //               [element.name]: newMaterial,
+  //             }
+  //             onComplete?.()
+  //           }}
+  //           onHoverChange={(hoveredMaterial) => {
+  //             if (
+  //               hoveredMaterial &&
+  //               !(hoveredMaterial in previews[houseId].materials)
+  //             ) {
+  //               previews[houseId].materials[element.name] = hoveredMaterial
+  //             } else if (
+  //               hoveredMaterial === null &&
+  //               Object.keys(previews[houseId].materials).length !== 0
+  //             ) {
+  //               previews[houseId].materials = {}
+  //             }
+  //           }}
+  //         />
+  //       </ContextMenuNested>
+  //     )
+  //   }),
+  //   toNullable
+  // )
 }
 
 export default ChangeMaterials

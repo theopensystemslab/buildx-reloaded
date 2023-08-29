@@ -62,7 +62,8 @@ const useOnDragMove = () => {
         break
       }
       case last: {
-        updateIndexedHouseTransforms(moveData.current!.houseTransformsGroup)
+        const { houseTransformsGroup } = moveData.current!
+        houseTransformsGroup.userData.dbSync()
         moveData.current = null
         return
       }

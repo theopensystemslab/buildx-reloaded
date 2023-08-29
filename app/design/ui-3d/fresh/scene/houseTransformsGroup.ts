@@ -148,9 +148,16 @@ export const createHouseTransformsGroup = ({
         })
       }
 
+      const dbSync = () => {
+        const rotation = houseTransformsGroup.rotation.y
+        const position = houseTransformsGroup.position
+        const dnas = houseTransformsGroup.userData.activeLayoutDnas
+        userDB.houses.update(houseId, { dnas, position, rotation })
+      }
+
       const updateActiveLayoutDnas = (nextDnas: string[]) => {
         houseTransformsGroup.userData.activeLayoutDnas = nextDnas
-        userDB.houses.update(houseId, { dnas: nextDnas })
+        dbSync()
       }
 
       const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
@@ -203,6 +210,7 @@ export const createHouseTransformsGroup = ({
         activeLayoutDnas: layoutGroup.userData.dnas,
         clippingPlanes,
         friendlyName,
+        dbSync,
         updateActiveLayoutDnas,
         initRotateAndStretchXHandles,
         syncLength,
