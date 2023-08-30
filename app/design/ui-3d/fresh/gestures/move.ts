@@ -3,6 +3,7 @@ import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Vector3 } from "three"
+import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
@@ -48,7 +49,7 @@ const useOnDragMove = () => {
                 }
 
                 const scopeItem = elementMeshToScopeItem(object)
-                scope.selected = scopeItem
+                scope.selected = ref(scopeItem)
 
                 dispatchOutline({
                   selectedObjects: objectToHouseObjects(object),

@@ -10,7 +10,6 @@ import previews from "~/design/state/previews"
 import { A } from "~/utils/functions"
 import { Opening } from "~/ui/icons"
 import Radio from "~/ui//Radio"
-import ContextMenuNested from "../ContextMenuNested"
 import { HouseModuleIdentifier } from "../../../../db/layouts"
 
 type Props = HouseModuleIdentifier & {

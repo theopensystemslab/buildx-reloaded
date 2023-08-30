@@ -1,5 +1,5 @@
-import ContextMenuHeading from "../ContextMenuHeading"
-import ContextMenuNested from "../ContextMenuNested"
+import ContextMenuHeading from "../../menu/common/ContextMenuHeading"
+// import ContextMenuNested from "../ContextMenuNested"
 import { findFirst } from "fp-ts/lib/Array"
 import { pipe } from "fp-ts/lib/function"
 import { toNullable } from "fp-ts/lib/Option"

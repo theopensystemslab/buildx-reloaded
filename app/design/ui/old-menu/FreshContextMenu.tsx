@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from "react"
 import { ScopeElement } from "../../state/scope"
 import siteCtx, { downMode, getModeBools } from "../../state/siteCtx"
-import ContextMenu from "./ContextMenu"
+import ContextMenu from "../menu/common/ContextMenu"
 
 const FreshContextMenu = () => {
   const [item, setItem] = useState<ScopeElement | null>(null)

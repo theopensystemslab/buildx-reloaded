@@ -142,7 +142,6 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   }
 
   // set up a separate listener for when houses dnas changes in the db
-
   useEffect(() => {
     const { unsubscribe } = liveQuery(() =>
       layoutsDB.altSectionTypeLayouts.toArray()

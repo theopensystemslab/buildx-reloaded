@@ -1,5 +1,5 @@
 import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
-import { Fragment, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import IconButton from "~/ui/IconButton"
 import IconMenu from "~/ui/IconMenu"
 import { Menu, SectionCuts } from "~/ui/icons"
@@ -28,9 +28,9 @@ import elementCategories, {
 } from "../state/elementCategories"
 import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
-import { useSiteCtx } from "../state/siteCtx"
+import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
-import ContextMenuEntry from "./menu/ContextMenuEntry"
+import SiteModeContextMenu from "./menu/SiteModeContextMenu"
 
 type Props = {
   controlsEnabled: boolean
@@ -50,8 +50,6 @@ const HtmlUi = (props: Props) => {
   const [verticalCuts, setVerticalCuts] = useVerticalCuts()
   // useInsert1000Skylarks()
 
-  const menu = useMenu()
-
   const { Portal: HeaderEndPortal } = usePortal({
     containerId: "headerEnd",
     autoRemoveContainer: false,
@@ -67,6 +65,28 @@ const HtmlUi = (props: Props) => {
   const { mode } = useSiteCtx()
   const { hovered, selected } = useScope()
 
+  const menu = useMenu()
+
+  const ContextMenu = useMemo((): (() => JSX.Element | null) => {
+    if (!menu.open || selected === null) return () => null
+
+    const scopeElement = selected
+
+    const { x, y } = menu
+
+    switch (mode) {
+      case SiteCtxModeEnum.Enum.SITE:
+        return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
+      default:
+        return () => null
+      // case SiteCtxModeEnum.Enum.BUILDING:
+      //   return <BuildingModeContextMenu {...{x, y,  scopeElement}}/>
+      // case SiteCtxModeEnum.Enum.LEVEL:
+      //   return <LevelModeContextMenu {...{x, y,  scopeElement}}/>
+    }
+  }, [menu, selected, mode])
+
+  // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
   const DEBUG = false
 
   return (
@@ -195,7 +215,8 @@ const HtmlUi = (props: Props) => {
 
       <HeaderStartPortal>{/* <Breadcrumbs /> */}</HeaderStartPortal>
 
-      {menu.open && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
+      <ContextMenu />
+
       {DEBUG && (
         <div className="absolute bottom-0 right-0 pointer-events-none">
           <pre>{JSON.stringify({ mode, hovered, selected }, null, 2)}</pre>

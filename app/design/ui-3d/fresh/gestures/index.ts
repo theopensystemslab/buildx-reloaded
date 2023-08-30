@@ -2,6 +2,7 @@ import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
+import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
@@ -190,7 +191,7 @@ const useGestures = () => {
 
           const scopeItem = elementMeshToScopeItem(object)
 
-          scope.selected = scopeItem
+          scope.selected = ref(scopeItem)
 
           openMenu(pageX, pageY)
         })

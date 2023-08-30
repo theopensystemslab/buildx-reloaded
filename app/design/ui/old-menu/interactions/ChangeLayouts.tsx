@@ -6,9 +6,9 @@ import {
 } from "~/design/state/interactions/layouts"
 import { Menu, Pencil } from "~/ui/icons"
 import Radio from "~/ui//Radio"
-import ContextMenuNested from "../ContextMenuNested"
 import houses from "../../../state/houses"
 import { HouseModuleIdentifier } from "../../../../db/layouts"
+import ContextMenuNested from "../../menu/common/ContextMenuNested"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

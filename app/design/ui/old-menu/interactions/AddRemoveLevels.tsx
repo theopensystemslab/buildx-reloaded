@@ -13,8 +13,8 @@ import previews from "~/design/state/previews"
 import { useGetVanillaModule } from "~/design/state/vanilla"
 import { A, errorThrower, O } from "~/utils/functions"
 import { AddLevel, RemoveLevel } from "~/ui/icons"
-import ContextMenuButton from "../ContextMenuButton"
 import { HouseModuleIdentifier } from "../../../../db/layouts"
+import ContextMenuButton from "../../menu/common/ContextMenuButton"
 
 type Props = HouseModuleIdentifier & {
   onComplete?: () => void

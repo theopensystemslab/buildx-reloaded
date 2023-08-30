@@ -10,7 +10,7 @@ import { ref } from "valtio"
 import houses from "~/design/state/houses"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import ContextMenuNested from "../ContextMenuNested"
+import ContextMenuNested from "../../menu/common/ContextMenuNested"
 
 type Props = {
   houseId: string
