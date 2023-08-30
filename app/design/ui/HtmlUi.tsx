@@ -30,7 +30,7 @@ import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
 import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
-import SiteModeContextMenu from "./menu/SiteModeContextMenu"
+import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 
 type Props = {
   controlsEnabled: boolean

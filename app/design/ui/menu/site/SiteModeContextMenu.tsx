@@ -1,26 +1,20 @@
-import { Reset, TrashCan } from "@carbon/icons-react"
+import { TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
-import { flow, pipe } from "fp-ts/lib/function"
-import React, { Fragment, useEffect, useState } from "react"
-import { ColumnLayout } from "../../../db/layouts"
-import systemsDB from "../../../db/systems"
-import userDB from "../../../db/user"
-import { Pencil, TextCursor } from "../../../ui/icons"
-import { O, someOrError, T, TO } from "../../../utils/functions"
-import { setInvisibleNoRaycast } from "../../../utils/three"
-import { getLayoutsWorker } from "../../../workers"
-import { closeMenu } from "../../state/menu"
-import scope from "../../state/scope"
-import { downMode, exitBuildingMode } from "../../state/siteCtx"
-import { dispatchDeleteHouse } from "../../ui-3d/fresh/events/houses"
-import { findFirstGuardUp } from "../../ui-3d/fresh/helpers/sceneQueries"
-import { createHouseLayoutGroup } from "../../ui-3d/fresh/scene/houseLayoutGroup"
-import { isHouseTransformsGroup } from "../../ui-3d/fresh/scene/userData"
-import RenameForm from "../RenameForm"
-import ContextMenu from "./common/ContextMenu"
-import ContextMenuButton from "./common/ContextMenuButton"
-import { ModeContextMenuProps } from "./common/props"
-import ResetContextMenuButton from "./interactions/ResetContextMenuButton"
+import { pipe } from "fp-ts/lib/function"
+import { Fragment, useState } from "react"
+import userDB from "../../../../db/user"
+import { Pencil, TextCursor } from "../../../../ui/icons"
+import { someOrError } from "../../../../utils/functions"
+import { closeMenu } from "../../../state/menu"
+import scope from "../../../state/scope"
+import { downMode, exitBuildingMode } from "../../../state/siteCtx"
+import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
+import RenameForm from "../../RenameForm"
+import ContextMenu from "../common/ContextMenu"
+import ContextMenuButton from "../common/ContextMenuButton"
+import { ModeContextMenuProps } from "../common/props"
+import ResetContextMenuButton from "./ResetContextMenuButton"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const { object } = scopeElement
@@ -45,7 +39,6 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const deleteHouse = () => {
     const { houseId } = scopeElement
     houseTransformsGroup.removeFromParent()
-    console.log(houseTransformsGroup)
     userDB.houses.delete(houseId)
     scope.selected = null
     exitBuildingMode()
@@ -79,9 +72,10 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
         />
         {renaming && (
           <RenameForm
-            currentName={""}
+            currentName={houseTransformsGroup.userData.friendlyName}
             onNewName={(friendlyName) => {
               const { houseId } = houseTransformsGroup.userData
+              houseTransformsGroup.userData.friendlyName = friendlyName
               userDB.houses.update(houseId, {
                 friendlyName,
               })
