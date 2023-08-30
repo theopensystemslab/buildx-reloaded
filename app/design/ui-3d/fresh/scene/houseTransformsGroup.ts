@@ -1,5 +1,5 @@
 import { pipe } from "fp-ts/lib/function"
-import { Group, Plane, Vector3 } from "three"
+import { Group, Matrix3, Plane, Vector3 } from "three"
 import userDB from "../../../../db/user"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible } from "../../../../utils/three"
@@ -7,6 +7,7 @@ import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
   getActiveHouseUserData,
+  getActiveLayoutGroup,
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
@@ -17,7 +18,9 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   isHouseLayoutGroup,
+  isRotateHandlesGroup,
   isXStretchHandleGroup,
+  isZStretchHandleGroup,
   UserDataTypeEnum,
 } from "./userData"
 import layoutsDB, {
@@ -27,6 +30,8 @@ import layoutsDB, {
 import { R } from "../../../../utils/functions"
 import { getLayoutsWorker } from "../../../../workers"
 import { liveQuery } from "dexie"
+import { DEBUG } from "../../../state/constants"
+import { renderOBB } from "../dimensions"
 export const BIG_CLIP_NUMBER = 999
 
 let houseLayouts: Record<string, ColumnLayout> = {}
@@ -77,7 +82,13 @@ export const createHouseTransformsGroup = ({
   pipe(
     getHouseLayout({ systemId, dnas }),
     T.chain((houseLayout) =>
-      createHouseLayoutGroup({ houseLayout, dnas, systemId, houseId })
+      createHouseLayoutGroup({
+        houseLayout,
+        dnas,
+        systemId,
+        houseId,
+        creator: `createHouseTransformsGroup`,
+      })
     ),
     T.map((layoutGroup) => {
       const houseTransformsGroup = new Group() as HouseTransformsGroup
@@ -132,12 +143,9 @@ export const createHouseTransformsGroup = ({
         houseTransformsGroup.add(handlesGroup)
       }
 
-      const syncLength = () => {
+      const updateXStretchHandleLengths = () => {
         const { length: houseLength } =
           getActiveHouseUserData(houseTransformsGroup)
-
-        // handlesGroup.position.setZ(-houseLength / 2)
-
         const xStretchHandles = pipe(
           handlesGroup,
           findAllGuardDown(isXStretchHandleGroup)
@@ -169,7 +177,9 @@ export const createHouseTransformsGroup = ({
               x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
           ),
           O.map((lastLayoutGroup) => {
+            console.log(`nextLayoutGroup`, nextLayoutGroup.userData.creator)
             setVisible(nextLayoutGroup, true)
+            console.log(`lastLayoutGroup`, lastLayoutGroup.userData.creator)
             setVisible(lastLayoutGroup, false)
             houseTransformsGroup.userData.activeLayoutGroupUuid =
               nextLayoutGroup.uuid
@@ -179,7 +189,7 @@ export const createHouseTransformsGroup = ({
         )
       }
 
-      const setWidthHandlesVisible = (bool: boolean = true) => {
+      const setXStretchHandlesVisible = (bool: boolean = true) => {
         pipe(
           houseTransformsGroup,
           findAllGuardDown(isXStretchHandleGroup),
@@ -187,18 +197,41 @@ export const createHouseTransformsGroup = ({
         )
       }
 
-      const refreshAltLayouts = () => {
-        // remove old alts
-        // pipe(
-        //   houseTransformsGroup.children,
-        //   A.filter(
-        //     (x): x is HouseLayoutGroup =>
-        //       isHouseLayoutGroup(x) && x.uuid !== houseTransformsGroup.uuid
-        //   )
-        // ).forEach((x) => {
-        //   x.removeFromParent()
-        // })
-        // section type layouts
+      const setZStretchHandlesVisible = (bool: boolean = true) => {
+        pipe(
+          houseTransformsGroup,
+          findAllGuardDown(isZStretchHandleGroup),
+          A.map((x) => void setVisible(x, bool))
+        )
+      }
+
+      const setRotateHandlesVisible = (bool: boolean = true) => {
+        pipe(
+          houseTransformsGroup,
+          findAllGuardDown(isRotateHandlesGroup),
+          A.map((x) => void setVisible(x, bool))
+        )
+      }
+
+      const updateTransforms = () => {
+        const rotation = houseTransformsGroup.rotation.y
+        const position = houseTransformsGroup.position
+
+        userDB.houses.update(houseId, {
+          position,
+          rotation,
+        })
+
+        pipe(
+          houseTransformsGroup.children,
+          A.findFirst(
+            (x) =>
+              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+          ),
+          O.map((activeLayoutGroup) => {
+            activeLayoutGroup.userData.updateOBB()
+          })
+        )
       }
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
@@ -213,10 +246,12 @@ export const createHouseTransformsGroup = ({
         dbSync,
         updateActiveLayoutDnas,
         initRotateAndStretchXHandles,
-        syncLength,
+        updateXStretchHandleLengths,
         setActiveLayoutGroup,
-        setWidthHandlesVisible,
-        refreshAltLayouts,
+        setXStretchHandlesVisible,
+        setZStretchHandlesVisible,
+        setRotateHandlesVisible,
+        updateTransforms,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
 

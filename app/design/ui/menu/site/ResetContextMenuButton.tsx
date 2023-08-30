@@ -47,6 +47,7 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
                       houseId,
                       dnas,
                       houseLayout,
+                      creator: `ResetContextMenuButton`,
                     })
                   )
                 )

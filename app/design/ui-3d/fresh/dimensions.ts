@@ -14,6 +14,7 @@ import { OBB } from "three-stdlib"
 import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { yAxis } from "../../../utils/three"
+import { DEBUG } from "../../state/constants"
 import {
   sortColumnsByIndex,
   findAllGuardDown,
@@ -33,8 +34,6 @@ import {
   UserDataTypeEnum,
 } from "./scene/userData"
 
-export const DEBUG = false
-
 let lastMesh: Mesh | null
 
 export const renderOBB = (obb: OBB, scene: Object3D) => {
@@ -50,24 +49,6 @@ export const renderOBB = (obb: OBB, scene: Object3D) => {
   mesh.userData.type = "OBB"
   scene.add(mesh)
   lastMesh = mesh
-}
-
-export const updateHouseOBB = (houseTransformsGroup: HouseTransformsGroup) => {
-  const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
-
-  const { width, height, length } = getActiveHouseUserData(houseTransformsGroup)
-
-  const { x, y, z } = houseTransformsGroup.position
-
-  const center = new Vector3(x, y + height / 2, z)
-  const halfSize = new Vector3(width / 2, height / 2, length / 2)
-  const rotation = new Matrix3().setFromMatrix4(houseTransformsGroup.matrix)
-
-  activeLayoutGroup.userData.obb.set(center, halfSize, rotation)
-
-  if (DEBUG && houseTransformsGroup.parent) {
-    renderOBB(activeLayoutGroup.userData.obb, houseTransformsGroup.parent)
-  }
 }
 
 export const updateHouseWidth = (houseGroup: Group) => {}
@@ -120,58 +101,4 @@ export const updateDnas = (houseTransformsGroup: HouseTransformsGroup) => {
     )
   )
   houseTransformsGroup.userData.dnas = result.flat()
-}
-
-export const updateIndexedHouseTransforms = (
-  houseTransformsGroup: HouseTransformsGroup
-) => {
-  const { houseId } = getActiveHouseUserData(houseTransformsGroup)
-
-  const rotation = houseTransformsGroup.rotation.y
-  const position = houseTransformsGroup.position
-
-  userDB.houses.update(houseId, {
-    position,
-    rotation,
-  })
-
-  updateHouseOBB(houseTransformsGroup)
-}
-
-export const updateEverything = (
-  houseTransformsGroup: HouseTransformsGroup
-) => {
-  updateHouseOBB(houseTransformsGroup)
-  // updateClippingPlanes(houseTransformsGroup)
-  updateDnas(houseTransformsGroup)
-
-  const { dnas, houseId } = getActiveHouseUserData(houseTransformsGroup)
-
-  const rotation = houseTransformsGroup.rotation.y
-  const position = houseTransformsGroup.position
-
-  userDB.houses.update(houseId, {
-    dnas,
-    position,
-    rotation,
-  })
-
-  invalidate()
-}
-
-// triggers trap for OBB etc
-export const updateLayoutGroupLength = (layoutGroup: HouseLayoutGroup) => {
-  pipe(
-    layoutGroup,
-    getLayoutGroupColumnGroups,
-    A.filter((columnGroup) => !columnGroup.visible)
-  ).forEach((columnGroup) => {
-    columnGroup.removeFromParent()
-  })
-
-  const length = layoutGroup.children
-    .filter((x) => x.userData.type === UserDataTypeEnum.Enum.ColumnGroup)
-    .reduce((acc, v) => acc + v.userData.length, 0)
-
-  layoutGroup.userData.length = length
 }

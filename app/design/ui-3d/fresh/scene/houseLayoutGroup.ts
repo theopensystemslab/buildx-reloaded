@@ -4,7 +4,9 @@ import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
+import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
+import { renderOBB } from "../dimensions"
 import {
   findAllGuardDown,
   getLayoutGroupColumnGroups,
@@ -21,7 +23,6 @@ import {
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   isModuleGroup,
-  isXStretchHandleGroup,
   isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
@@ -45,11 +46,13 @@ export const createHouseLayoutGroup = ({
   houseId,
   dnas,
   houseLayout,
+  creator,
 }: {
   systemId: string
   houseId: string
   dnas: string[]
   houseLayout: ColumnLayout
+  creator: string
 }): T.Task<HouseLayoutGroup> =>
   pipe(
     createColumnGroups({
@@ -85,10 +88,11 @@ export const createHouseLayoutGroup = ({
               houseLayoutGroup,
               getLayoutGroupColumnGroups,
               A.partition((columnGroup) => columnGroup.visible),
-              ({ left: hiddenColumnGroups, right: activeColumnGroups }) => {
-                hiddenColumnGroups.forEach((columnGroup) => {
-                  columnGroup.removeFromParent()
-                })
+              ({ right: activeColumnGroups }) => {
+                // WARNING: bug potential
+                // hiddenColumnGroups.forEach((columnGroup) => {
+                //   columnGroup.removeFromParent()
+                // })
 
                 return activeColumnGroups.reduce(
                   (acc, v) => acc + v.userData.length,
@@ -113,24 +117,7 @@ export const createHouseLayoutGroup = ({
               )
             )
 
-            const houseTransformsGroup = houseLayoutGroup.parent!
-
-            const { x, y, z } = houseTransformsGroup.position
-
-            const center = new Vector3(x, y + height / 2, z)
-            const halfSize = new Vector3(width / 2, height / 2, nextLength / 2)
-            const rotation = new Matrix3().setFromMatrix4(
-              houseTransformsGroup.matrix
-            )
-
-            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
-
-            // if (DEBUG && houseTransformsGroup.parent) {
-            //   renderOBB(
-            //     layoutGroup.userData.obb,
-            //     houseTransformsGroup.parent
-            //   )
-            // }
+            houseLayoutGroup.userData.updateOBB()
           }
 
           const updateDnas = () => {
@@ -163,8 +150,6 @@ export const createHouseLayoutGroup = ({
 
             const houseTransformsGroup =
               houseLayoutGroup.parent as HouseTransformsGroup
-
-            houseTransformsGroup.userData.refreshAltLayouts()
 
             if (
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
@@ -201,12 +186,30 @@ export const createHouseLayoutGroup = ({
             setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
-          const setLengthHandlesVisible = (bool: boolean = true) => {
-            pipe(
-              houseLayoutGroup,
-              findAllGuardDown(isZStretchHandleGroup),
-              A.map((x) => void setVisible(x, bool))
+          const updateOBB = () => {
+            // const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
+
+            const { width, height, length } = houseLayoutGroup.userData
+
+            const houseTransformsGroup =
+              houseLayoutGroup.parent as HouseTransformsGroup
+
+            const { x, y, z } = houseTransformsGroup.position
+
+            const center = new Vector3(x, y + height / 2, z)
+            const halfSize = new Vector3(width / 2, height / 2, length / 2)
+            const rotation = new Matrix3().setFromMatrix4(
+              houseTransformsGroup.matrix
             )
+
+            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
+
+            if (DEBUG && houseTransformsGroup.parent) {
+              renderOBB(
+                houseLayoutGroup.userData.obb,
+                houseTransformsGroup.parent
+              )
+            }
           }
 
           const userData: HouseLayoutGroupUserData = {
@@ -222,10 +225,11 @@ export const createHouseLayoutGroup = ({
             obb,
             modifiedMaterials: {},
             vanillaColumn,
+            creator,
             initStretchZHandles,
             updateLength,
             updateDnas,
-            setLengthHandlesVisible,
+            updateOBB,
           }
 
           houseLayoutGroup.userData = userData

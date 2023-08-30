@@ -54,13 +54,15 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
-  dbSync: () => void
-  updateActiveLayoutDnas: (x: string[]) => void
   initRotateAndStretchXHandles: () => void
-  syncLength: () => void
+  updateActiveLayoutDnas: (x: string[]) => void
+  updateXStretchHandleLengths: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
-  setWidthHandlesVisible: (bool?: boolean) => void
-  refreshAltLayouts: () => void
+  setXStretchHandlesVisible: (bool?: boolean) => void
+  setZStretchHandlesVisible: (bool?: boolean) => void
+  setRotateHandlesVisible: (bool?: boolean) => void
+  updateTransforms: () => void
+  dbSync: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {
@@ -80,10 +82,11 @@ export type HouseLayoutGroupUserData = {
   columnCount: number
   sectionType: string
   modifiedMaterials: Record<string, string>
+  creator: string
   initStretchZHandles: () => void
-  setLengthHandlesVisible: (bool?: boolean) => void
   updateLength: () => void
   updateDnas: () => void
+  updateOBB: () => void
 }
 
 export type ColumnGroupUserData = {

@@ -166,9 +166,10 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                   x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
               ),
               ({ left: otherLayoutGroups, right: activeLayoutGroups }) => {
-                otherLayoutGroups.forEach((x) => {
-                  x.removeFromParent()
-                })
+                // test comment
+                // otherLayoutGroups.forEach((x) => {
+                //   x.removeFromParent()
+                // })
                 return pipe(activeLayoutGroups, A.head)
               }
             )
@@ -192,6 +193,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                         dnas,
                         houseId,
                         houseLayout: layout,
+                        creator: `altSectionTypeLayouts database subscriber`,
                       })().then((layoutGroup) => {
                         setInvisibleNoRaycast(layoutGroup)
                         houseTransformsGroup.add(layoutGroup)

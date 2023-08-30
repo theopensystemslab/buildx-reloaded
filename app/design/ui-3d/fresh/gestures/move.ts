@@ -7,9 +7,8 @@ import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
-import { updateIndexedHouseTransforms } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
-import { objectToHouseObjects, findFirstGuardUp } from "../helpers/sceneQueries"
+import { findFirstGuardUp, objectToHouseObjects } from "../helpers/sceneQueries"
 import {
   elementMeshToScopeItem,
   HouseTransformsGroup,
@@ -64,7 +63,7 @@ const useOnDragMove = () => {
       }
       case last: {
         const { houseTransformsGroup } = moveData.current!
-        houseTransformsGroup.userData.dbSync()
+        houseTransformsGroup.userData.updateTransforms()
         moveData.current = null
         return
       }

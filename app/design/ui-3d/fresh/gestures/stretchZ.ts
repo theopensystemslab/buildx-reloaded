@@ -8,7 +8,6 @@ import {
   yAxis,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
-import { updateLayoutGroupLength } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import {
   getActiveHouseUserData,
@@ -106,7 +105,7 @@ const useOnDragStretchZ = () => {
 
     const handleColumnGroup = handleColumnGroupParentQuery(handleGroup)
     const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
-    houseTransformsGroup.userData.setWidthHandlesVisible(false)
+    houseTransformsGroup.userData.setXStretchHandlesVisible(false)
 
     const { side } = handleGroup.userData
     const { systemId, houseId, vanillaColumn } =
@@ -371,8 +370,8 @@ const useOnDragStretchZ = () => {
     }
 
     layoutGroup.userData.updateLength()
-    houseTransformsGroup.userData.syncLength()
-    houseTransformsGroup.userData.setWidthHandlesVisible(true)
+    houseTransformsGroup.userData.updateXStretchHandleLengths()
+    houseTransformsGroup.userData.setXStretchHandlesVisible(true)
     layoutGroup.userData.updateDnas()
 
     stretchZInitialDataRef.current = null

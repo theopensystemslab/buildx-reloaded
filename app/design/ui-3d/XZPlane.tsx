@@ -10,7 +10,7 @@ import {
   usePointerUpListener,
 } from "./fresh/gestures/events"
 
-const DEBUG = false
+const DEBUG_XZ_PLANE = false
 
 type Props = {
   size?: number
@@ -28,7 +28,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     pointer.xz = [x, z]
     localRef.current.position.setY(y)
     localRef.current.layers.set(RaycasterLayer.ENABLED)
-    if (DEBUG) {
+    if (DEBUG_XZ_PLANE) {
       console.debug(`DEBUG XZPlane: POINTER_DOWN CameraLayer.VISIBLE`)
       localRef.current.layers.enable(CameraLayer.VISIBLE)
     }
@@ -37,7 +37,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
   usePointerUpListener(() => {
     if (!localRef.current) return
     localRef.current.layers.set(RaycasterLayer.DISABLED)
-    if (DEBUG)
+    if (DEBUG_XZ_PLANE)
       console.debug(`DEBUG XZPlane: POINTER_UP RaycasterLayer.DISABLED`)
   })
 
@@ -54,7 +54,7 @@ const XZPlane = forwardRef<Mesh, Props>((props, ref) => {
     <mesh
       ref={mergeRefs([localRef, ref])}
       rotation-x={Math.PI / 2}
-      layers={DEBUG ? CameraLayer.VISIBLE : RaycasterLayer.DISABLED}
+      layers={DEBUG_XZ_PLANE ? CameraLayer.VISIBLE : RaycasterLayer.DISABLED}
       {...bind()}
     >
       <planeGeometry args={[size, size, 1, 1]} />

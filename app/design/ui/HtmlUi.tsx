@@ -31,6 +31,7 @@ import { useScope } from "../state/scope"
 import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
+import { DEBUG } from "../state/constants"
 
 type Props = {
   controlsEnabled: boolean
@@ -87,7 +88,6 @@ const HtmlUi = (props: Props) => {
   }, [menu, selected, mode])
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
-  const DEBUG = false
 
   return (
     <Fragment>
@@ -216,12 +216,6 @@ const HtmlUi = (props: Props) => {
       <HeaderStartPortal>{/* <Breadcrumbs /> */}</HeaderStartPortal>
 
       <ContextMenu />
-
-      {DEBUG && (
-        <div className="absolute bottom-0 right-0 pointer-events-none">
-          <pre>{JSON.stringify({ mode, hovered, selected }, null, 2)}</pre>
-        </div>
-      )}
 
       <ExitMode />
     </Fragment>
