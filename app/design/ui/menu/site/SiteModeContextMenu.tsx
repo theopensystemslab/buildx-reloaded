@@ -61,7 +61,10 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             icon={<Pencil />}
             text="Edit building"
             unpaddedSvg
-            onClick={() => void downMode(scopeElement)}
+            onClick={() => {
+              downMode(scopeElement)
+              close()
+            }}
           />
         )}
         <ContextMenuButton

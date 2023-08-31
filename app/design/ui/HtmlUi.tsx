@@ -32,6 +32,7 @@ import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import { DEBUG } from "../state/constants"
+import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 
 type Props = {
   controlsEnabled: boolean
@@ -78,10 +79,10 @@ const HtmlUi = (props: Props) => {
     switch (mode) {
       case SiteCtxModeEnum.Enum.SITE:
         return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
+      case SiteCtxModeEnum.Enum.BUILDING:
+        return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
       default:
         return () => null
-      // case SiteCtxModeEnum.Enum.BUILDING:
-      //   return <BuildingModeContextMenu {...{x, y,  scopeElement}}/>
       // case SiteCtxModeEnum.Enum.LEVEL:
       //   return <LevelModeContextMenu {...{x, y,  scopeElement}}/>
     }
