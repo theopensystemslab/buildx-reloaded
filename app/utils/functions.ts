@@ -8,6 +8,8 @@ import * as RA from "fp-ts/ReadonlyArray"
 import * as R from "fp-ts/Record"
 import * as S from "fp-ts/string"
 import * as T from "fp-ts/Task"
+import * as E from "fp-ts/Either"
+import * as TE from "fp-ts/TaskEither"
 
 export * as M from "fp-ts/Map"
 export * as NEA from "fp-ts/NonEmptyArray"
@@ -16,11 +18,10 @@ export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
 export * as TO from "fp-ts/TaskOption"
-export * as TE from "fp-ts/TaskEither"
 
 const clamp = Ord.clamp(Num.Ord)
 
-export { A, Num, O, Ord, R, RA, S, T, clamp }
+export { A, Num, O, Ord, R, RA, S, T, TE, E, clamp }
 
 export const any = (...args: boolean[]) =>
   args.reduce((acc, v) => acc || v, false)

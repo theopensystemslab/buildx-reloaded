@@ -4,6 +4,7 @@ import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
+import { getLayoutsWorker } from "../../../../workers"
 import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import { renderOBB } from "../dimensions"
@@ -88,11 +89,12 @@ export const createHouseLayoutGroup = ({
               houseLayoutGroup,
               getLayoutGroupColumnGroups,
               A.partition((columnGroup) => columnGroup.visible),
-              ({ right: activeColumnGroups }) => {
-                // WARNING: bug potential
-                // hiddenColumnGroups.forEach((columnGroup) => {
-                //   columnGroup.removeFromParent()
-                // })
+              ({ left: hiddenColumnGroups, right: activeColumnGroups }) => {
+                if (houseLayoutGroup.visible) {
+                  hiddenColumnGroups.forEach((columnGroup) => {
+                    columnGroup.removeFromParent()
+                  })
+                }
 
                 return activeColumnGroups.reduce(
                   (acc, v) => acc + v.userData.length,
@@ -146,6 +148,9 @@ export const createHouseLayoutGroup = ({
               })
             )
             const nextDnas = result.flat()
+
+            // getLayoutsWorker().postLayout({ systemId, dnas: nextDnas })
+
             houseLayoutGroup.userData.dnas = nextDnas
 
             const houseTransformsGroup =

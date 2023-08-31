@@ -55,9 +55,9 @@ const getHouseLayout = ({
     R.lookup(getHouseLayoutsKey({ systemId, dnas })),
     O.match(
       (): T.Task<ColumnLayout> => async () => {
-        const layoutsWorker = getLayoutsWorker()
-        if (!layoutsWorker) throw new Error(`no layouts worker`)
-        return await layoutsWorker.getLayout({
+        const { getLayout } = getLayoutsWorker()
+
+        return getLayout({
           systemId,
           dnas,
         })
@@ -160,12 +160,15 @@ export const createHouseTransformsGroup = ({
         const rotation = houseTransformsGroup.rotation.y
         const position = houseTransformsGroup.position
         const dnas = houseTransformsGroup.userData.activeLayoutDnas
-        userDB.houses.update(houseId, { dnas, position, rotation })
+        return Promise.all([
+          userDB.houses.update(houseId, { dnas, position, rotation }),
+          getLayoutsWorker().postLayout({ systemId, dnas }),
+        ])
       }
 
       const updateActiveLayoutDnas = (nextDnas: string[]) => {
         houseTransformsGroup.userData.activeLayoutDnas = nextDnas
-        dbSync()
+        return dbSync()
       }
 
       const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
@@ -177,9 +180,8 @@ export const createHouseTransformsGroup = ({
               x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
           ),
           O.map((lastLayoutGroup) => {
-            console.log(`nextLayoutGroup`, nextLayoutGroup.userData.creator)
+            if (lastLayoutGroup === nextLayoutGroup) return
             setVisible(nextLayoutGroup, true)
-            console.log(`lastLayoutGroup`, lastLayoutGroup.userData.creator)
             setVisible(lastLayoutGroup, false)
             houseTransformsGroup.userData.activeLayoutGroupUuid =
               nextLayoutGroup.uuid

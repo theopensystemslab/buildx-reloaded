@@ -22,7 +22,6 @@ import layoutsDB, {
   VanillaColumnsKey,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import userDB from "../../db/user"
 import { A, O, reduceToOption, T, TO, unwrapSome } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
@@ -472,6 +471,8 @@ const changeLayoutSectionType = async ({
 
   const allModules = await getModules()
 
+  let dnas: string[] = []
+
   return pipe(
     layout,
     A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
@@ -609,74 +610,132 @@ const changeLayoutSectionType = async ({
   )()
 }
 
-if (!isSSR()) {
-  liveQuery(async () => {
-    const houses = await userDB.houses.toArray()
-    const sectionTypes = await systemsDB.sectionTypes.toArray()
+const getAltSectionTypeLayouts = async ({
+  systemId,
+  dnas,
+  currentSectionType,
+}: {
+  systemId: string
+  dnas: string[]
+  currentSectionType: string
+}) => {
+  const currentIndexedLayout = await layoutsDB.houseLayouts.get(
+    getHouseLayoutsKey({ systemId, dnas })
+  )
 
-    return { houses, sectionTypes }
-  }).subscribe(async ({ houses, sectionTypes }) => {
-    // for each house, for each section type
-    for (const house of houses) {
-      const { systemId, dnas, houseId: houseId } = house
+  if (!currentIndexedLayout)
+    throw new Error(`no currentLayout for ${systemId} ${dnas}`)
 
-      const layout = await getLayout({ systemId, dnas })
+  const sectionTypes = await systemsDB.sectionTypes.toArray()
 
-      const otherSectionTypes = sectionTypes.filter(
-        (x) =>
-          x.code !==
-          layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
-      )
+  const otherSectionTypes = sectionTypes.filter(
+    (x) => x.code !== currentSectionType
+  )
 
-      const otherLayouts = await pipe(
-        otherSectionTypes,
-        A.map(
-          (
-              sectionType
-            ): TO.TaskOption<{
-              layout: ColumnLayout
-              sectionType: SectionType
-            }> =>
-            () =>
-              changeLayoutSectionType({ systemId, layout, sectionType }).then(
-                O.map((layout) => ({ layout, sectionType }))
-              )
-        ),
-        A.sequence(T.ApplicativeSeq),
-        unwrapSome,
-        (x) => x
-      )()
-
-      const altSectionTypeLayouts = pipe(
-        otherLayouts,
-        A.reduce(
-          {},
-          (
-            acc: Record<
-              string,
-              { layout: ColumnLayout; sectionType: SectionType; dnas: string[] }
-            >,
-            { layout, sectionType }
-          ) => {
-            const { startColumn } = splitColumns(layout)
-            postVanillaColumn(startColumn)
-
-            return {
-              ...acc,
-              [sectionType.code]: {
+  const foo = await pipe(
+    otherSectionTypes,
+    A.map(
+      (
+          sectionType
+        ): TO.TaskOption<{
+          layout: ColumnLayout
+          sectionType: SectionType
+          dnas: string[]
+        }> =>
+        () =>
+          changeLayoutSectionType({
+            systemId,
+            layout: currentIndexedLayout.layout,
+            sectionType,
+          }).then(
+            O.map((layout) => {
+              layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+              return {
                 layout,
                 sectionType,
                 dnas: columnLayoutToDnas(layout),
-              },
-            }
-          }
-        )
-      )
+              }
+            })
+          )
+    ),
+    A.sequence(T.ApplicativeSeq),
+    unwrapSome,
+    (x) => x
+  )()
 
-      layoutsDB.altSectionTypeLayouts.put({ houseId, altSectionTypeLayouts })
-    }
-  })
+  console.log({ foo })
+
+  return foo
 }
+
+// if (!isSSR()) {
+//   liveQuery(async () => {
+//     const houses = await userDB.houses.toArray()
+//     const sectionTypes = await systemsDB.sectionTypes.toArray()
+
+//     return { houses, sectionTypes }
+//   }).subscribe(async ({ houses, sectionTypes }) => {
+//     // for each house, for each section type
+//     for (const house of houses) {
+//       const { systemId, dnas, houseId: houseId } = house
+
+//       const layout = await getLayout({ systemId, dnas })
+
+//       const otherSectionTypes = sectionTypes.filter(
+//         (x) =>
+//           x.code !==
+//           layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+//       )
+
+//       const otherLayouts = await pipe(
+//         otherSectionTypes,
+//         A.map(
+//           (
+//               sectionType
+//             ): TO.TaskOption<{
+//               layout: ColumnLayout
+//               sectionType: SectionType
+//             }> =>
+//             () =>
+//               changeLayoutSectionType({ systemId, layout, sectionType }).then(
+//                 O.map((layout) => ({ layout, sectionType }))
+//               )
+//         ),
+//         A.sequence(T.ApplicativeSeq),
+//         unwrapSome,
+//         (x) => x
+//       )()
+
+//       const altSectionTypeLayouts = pipe(
+//         otherLayouts,
+//         A.reduce(
+//           {},
+//           (
+//             acc: Record<
+//               string,
+//               { layout: ColumnLayout; sectionType: SectionType; dnas: string[] }
+//             >,
+//             { layout, sectionType }
+//           ) => {
+//             const { startColumn } = splitColumns(layout)
+//             postVanillaColumn(startColumn)
+
+//             return {
+//               ...acc,
+//               [sectionType.code]: {
+//                 layout,
+//                 sectionType,
+//                 dnas: columnLayoutToDnas(layout),
+//               },
+//             }
+//           }
+//         )
+//       )
+
+//       layoutsDB.altSectionTypeLayouts.put({ houseId, altSectionTypeLayouts })
+//     }
+//   })
+// }
 
 const getVanillaColumn = async (key: VanillaColumnsKey) => {
   const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(
@@ -695,7 +754,7 @@ const api = {
   postLayouts,
   getLayout,
   getVanillaColumn,
-  // updateAltSectionTypeLayouts,
+  getAltSectionTypeLayouts,
 }
 
 export type LayoutsAPI = typeof api
