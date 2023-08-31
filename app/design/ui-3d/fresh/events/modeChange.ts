@@ -142,77 +142,77 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   }
 
   // set up a separate listener for when houses dnas changes in the db
-  useEffect(() => {
-    const { unsubscribe } = liveQuery(() =>
-      layoutsDB.altSectionTypeLayouts.toArray()
-    ).subscribe((dbAltSectionTypeLayouts) => {
-      if (!rootRef.current) return
+  // useEffect(() => {
+  //   const { unsubscribe } = liveQuery(() =>
+  //     layoutsDB.altSectionTypeLayouts.toArray()
+  //   ).subscribe((dbAltSectionTypeLayouts) => {
+  //     if (!rootRef.current) return
 
-      for (let { houseId, altSectionTypeLayouts } of dbAltSectionTypeLayouts) {
-        pipe(
-          rootRef.current,
-          findFirstGuardAcross(
-            (x): x is HouseTransformsGroup =>
-              isHouseTransformsGroup(x) && x.userData.houseId === houseId
-          ),
-          O.map((houseTransformsGroup) => {
-            // delete non-active layout groups
-            // return active layout group
-            const maybeActiveLayoutGroup = pipe(
-              houseTransformsGroup.children,
-              A.filter(isHouseLayoutGroup),
-              A.partition(
-                (x) =>
-                  x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-              ),
-              ({ left: otherLayoutGroups, right: activeLayoutGroups }) => {
-                // test comment
-                // otherLayoutGroups.forEach((x) => {
-                //   x.removeFromParent()
-                // })
-                return pipe(activeLayoutGroups, A.head)
-              }
-            )
+  //     for (let { houseId, altSectionTypeLayouts } of dbAltSectionTypeLayouts) {
+  //       pipe(
+  //         rootRef.current,
+  //         findFirstGuardAcross(
+  //           (x): x is HouseTransformsGroup =>
+  //             isHouseTransformsGroup(x) && x.userData.houseId === houseId
+  //         ),
+  //         O.map((houseTransformsGroup) => {
+  //           // delete non-active layout groups
+  //           // return active layout group
+  //           const maybeActiveLayoutGroup = pipe(
+  //             houseTransformsGroup.children,
+  //             A.filter(isHouseLayoutGroup),
+  //             A.partition(
+  //               (x) =>
+  //                 x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+  //             ),
+  //             ({ left: otherLayoutGroups, right: activeLayoutGroups }) => {
+  //               // test comment
+  //               // otherLayoutGroups.forEach((x) => {
+  //               //   x.removeFromParent()
+  //               // })
+  //               return pipe(activeLayoutGroups, A.head)
+  //             }
+  //           )
 
-            if (houseId === siteCtx.houseId) {
-              pipe(
-                maybeActiveLayoutGroup,
-                O.map((activeLayoutGroup) => {
-                  pipe(
-                    altSectionTypeLayouts,
-                    R.filterMap(({ sectionType, layout, dnas }) => {
-                      // maybe add the active section type to the house transforms group?
-                      if (
-                        sectionType.code ===
-                        activeLayoutGroup.userData.sectionType
-                      )
-                        return O.none
+  //           if (houseId === siteCtx.houseId) {
+  //             pipe(
+  //               maybeActiveLayoutGroup,
+  //               O.map((activeLayoutGroup) => {
+  //                 pipe(
+  //                   altSectionTypeLayouts,
+  //                   R.filterMap(({ sectionType, layout, dnas }) => {
+  //                     // maybe add the active section type to the house transforms group?
+  //                     if (
+  //                       sectionType.code ===
+  //                       activeLayoutGroup.userData.sectionType
+  //                     )
+  //                       return O.none
 
-                      createHouseLayoutGroup({
-                        systemId: houseTransformsGroup.userData.systemId,
-                        dnas,
-                        houseId,
-                        houseLayout: layout,
-                        creator: `altSectionTypeLayouts database subscriber`,
-                      })().then((layoutGroup) => {
-                        setInvisibleNoRaycast(layoutGroup)
-                        houseTransformsGroup.add(layoutGroup)
-                      })
+  //                     createHouseLayoutGroup({
+  //                       systemId: houseTransformsGroup.userData.systemId,
+  //                       dnas,
+  //                       houseId,
+  //                       houseLayout: layout,
+  //                       creator: `altSectionTypeLayouts database subscriber`,
+  //                     })().then((layoutGroup) => {
+  //                       setInvisibleNoRaycast(layoutGroup)
+  //                       houseTransformsGroup.add(layoutGroup)
+  //                     })
 
-                      return O.none
-                    })
-                  )
-                })
-              )
-            }
-          })
-        )
-      }
-    })
+  //                     return O.none
+  //                   })
+  //                 )
+  //               })
+  //             )
+  //           }
+  //         })
+  //       )
+  //     }
+  //   })
 
-    return unsubscribe
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  //   return unsubscribe
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [])
 
   useSubscribeKey(scope, "selected", processHandles)
 

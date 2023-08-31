@@ -70,8 +70,17 @@ export type HouseTransformsHandlesGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseTransformsHandlesGroup
 }
 
+export const HouseLayoutGroupUse = z.enum([
+  "INITIAL",
+  "RESET",
+  "ALT_SECTION_TYPE",
+  "ALT_LEVEL_TYPE",
+])
+export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>
+
 export type HouseLayoutGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseLayoutGroup
+  use: HouseLayoutGroupUse
   dnas: string[]
   houseLayout: ColumnLayout
   vanillaColumn: VanillaColumn
@@ -83,7 +92,6 @@ export type HouseLayoutGroupUserData = {
   columnCount: number
   sectionType: string
   modifiedMaterials: Record<string, string>
-  creator: string
   initStretchZHandles: () => void
   updateLength: () => void
   updateDnas: () => Promise<void>

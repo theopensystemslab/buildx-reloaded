@@ -8,6 +8,7 @@ import { getLayoutsWorker } from "../../../../workers"
 import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
@@ -19,8 +20,6 @@ type Props = {
 }
 
 const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
-  const RESET_TARGET_NAME = "RESET_TARGET_NAME"
-
   const resetLayoutGroupRef = useRef<HouseLayoutGroup | null>(null)
 
   useEffect(() => {
@@ -40,18 +39,14 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
               () => () => Promise.reject(),
               ({ dnas }) =>
                 pipe(
-                  () =>
-                    getLayout({ systemId, dnas }).then((x) => {
-                      console.log(`houseLayoutGroupTask caller`)
-                      return x
-                    }),
+                  () => getLayout({ systemId, dnas }),
                   T.chain((houseLayout) =>
                     createHouseLayoutGroup({
                       systemId,
                       houseId,
                       dnas,
                       houseLayout,
-                      creator: `ResetContextMenuButton`,
+                      use: HouseLayoutGroupUse.Enum.RESET,
                     })
                   )
                 )
@@ -65,14 +60,13 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
           houseTransformsGroup.children,
           A.findFirst(
             (child) =>
-              isHouseLayoutGroup(child) && child.name === RESET_TARGET_NAME
+              isHouseLayoutGroup(child) &&
+              child.userData.use === HouseLayoutGroupUse.Enum.RESET
           ),
           O.map((node) => void node.removeFromParent())
         )
 
         setInvisibleNoRaycast(houseLayoutGroup)
-        houseLayoutGroup.name = RESET_TARGET_NAME
-
         houseTransformsGroup.add(houseLayoutGroup)
 
         resetLayoutGroupRef.current = houseLayoutGroup

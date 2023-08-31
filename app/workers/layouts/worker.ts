@@ -636,6 +636,7 @@ const getAltSectionTypeLayouts = async ({
             sectionType,
           }).then(
             O.map((layout) => {
+              postVanillaColumn(layout[0])
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
               return {

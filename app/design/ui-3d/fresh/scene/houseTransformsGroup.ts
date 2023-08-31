@@ -2,7 +2,7 @@ import { pipe } from "fp-ts/lib/function"
 import { Group, Matrix3, Plane, Vector3 } from "three"
 import userDB from "../../../../db/user"
 import { A, O, T } from "../../../../utils/functions"
-import { setVisible } from "../../../../utils/three"
+import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
@@ -14,6 +14,7 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
@@ -90,7 +91,7 @@ export const createHouseTransformsGroup = ({
         dnas,
         systemId,
         houseId,
-        creator: `createHouseTransformsGroup`,
+        use: HouseLayoutGroupUse.Enum.INITIAL,
       })
     ),
     T.map((layoutGroup) => {
@@ -241,16 +242,46 @@ export const createHouseTransformsGroup = ({
       }
 
       const refreshAltSectionTypeLayouts = async () => {
-        const { dnas, sectionType } =
-          getActiveHouseUserData(houseTransformsGroup)
+        const oldLayouts = pipe(
+          houseTransformsGroup.children,
+          A.filter(
+            (x) =>
+              isHouseLayoutGroup(x) &&
+              x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE &&
+              x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+          )
+        )
 
-        const bar = await getLayoutsWorker().getAltSectionTypeLayouts({
-          systemId,
-          dnas,
-          currentSectionType: sectionType,
+        oldLayouts.forEach((x) => {
+          x.removeFromParent()
         })
 
-        console.log({ bar })
+        const { dnas, sectionType: currentSectionType } =
+          getActiveHouseUserData(houseTransformsGroup)
+
+        const altSectionTypeLayouts =
+          await getLayoutsWorker().getAltSectionTypeLayouts({
+            systemId,
+            dnas,
+            currentSectionType,
+          })
+
+        for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
+          // post em or refresh em if not exist
+
+          if (sectionType.code === currentSectionType) continue
+
+          createHouseLayoutGroup({
+            systemId: houseTransformsGroup.userData.systemId,
+            dnas,
+            houseId,
+            houseLayout: layout,
+            use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
+          })().then((layoutGroup) => {
+            setInvisibleNoRaycast(layoutGroup)
+            houseTransformsGroup.add(layoutGroup)
+          })
+        }
       }
 
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {

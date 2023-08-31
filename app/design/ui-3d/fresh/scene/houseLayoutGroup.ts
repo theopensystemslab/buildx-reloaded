@@ -4,12 +4,10 @@ import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
 import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import { renderOBB } from "../dimensions"
 import {
-  findAllGuardDown,
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
 } from "../helpers/sceneQueries"
@@ -21,10 +19,10 @@ import {
 } from "./columnGroup"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   isModuleGroup,
-  isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -47,13 +45,13 @@ export const createHouseLayoutGroup = ({
   houseId,
   dnas,
   houseLayout,
-  creator,
+  use,
 }: {
   systemId: string
   houseId: string
   dnas: string[]
   houseLayout: ColumnLayout
-  creator: string
+  use: HouseLayoutGroupUse
 }): T.Task<HouseLayoutGroup> =>
   pipe(
     createColumnGroups({
@@ -80,12 +78,6 @@ export const createHouseLayoutGroup = ({
       )
       const obb = new OBB()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
-
-      console.log(
-        `creating houseLayoutGroup by ${creator} for ${JSON.stringify(dnas)}`
-      )
-
-      console.log({ sectionType })
 
       return pipe(
         getVanillaColumn({ systemId, sectionType, levelTypes }),
@@ -235,7 +227,7 @@ export const createHouseLayoutGroup = ({
             obb,
             modifiedMaterials: {},
             vanillaColumn,
-            creator,
+            use,
             initStretchZHandles,
             updateLength,
             updateDnas,
