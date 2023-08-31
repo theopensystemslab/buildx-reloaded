@@ -55,14 +55,15 @@ export type HouseTransformsGroupUserData = {
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
   initRotateAndStretchXHandles: () => void
-  updateActiveLayoutDnas: (x: string[]) => void
+  updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
   setRotateHandlesVisible: (bool?: boolean) => void
   updateTransforms: () => void
-  dbSync: () => void
+  refreshAltSectionTypeLayouts: () => void
+  dbSync: () => Promise<void>
 }
 
 export type HouseTransformsHandlesGroupUserData = {
@@ -85,7 +86,7 @@ export type HouseLayoutGroupUserData = {
   creator: string
   initStretchZHandles: () => void
   updateLength: () => void
-  updateDnas: () => void
+  updateDnas: () => Promise<void>
   updateOBB: () => void
 }
 

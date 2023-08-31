@@ -81,6 +81,12 @@ export const createHouseLayoutGroup = ({
       const obb = new OBB()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
+      console.log(
+        `creating houseLayoutGroup by ${creator} for ${JSON.stringify(dnas)}`
+      )
+
+      console.log({ sectionType })
+
       return pipe(
         getVanillaColumn({ systemId, sectionType, levelTypes }),
         T.map((vanillaColumn) => {
@@ -127,7 +133,6 @@ export const createHouseLayoutGroup = ({
             pipe(
               houseLayoutGroup,
               getSortedVisibleColumnGroups,
-              // -> findAllGuardDown
               A.map((v) => {
                 v.traverse((node) => {
                   if (isModuleGroup(node)) {
@@ -149,8 +154,6 @@ export const createHouseLayoutGroup = ({
             )
             const nextDnas = result.flat()
 
-            // getLayoutsWorker().postLayout({ systemId, dnas: nextDnas })
-
             houseLayoutGroup.userData.dnas = nextDnas
 
             const houseTransformsGroup =
@@ -160,7 +163,11 @@ export const createHouseLayoutGroup = ({
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
               houseLayoutGroup.uuid
             ) {
-              houseTransformsGroup.userData.updateActiveLayoutDnas(nextDnas)
+              return houseTransformsGroup.userData.updateActiveLayoutDnas(
+                nextDnas
+              )
+            } else {
+              return Promise.resolve()
             }
           }
 
@@ -192,8 +199,6 @@ export const createHouseLayoutGroup = ({
           }
 
           const updateOBB = () => {
-            // const activeLayoutGroup = getActiveLayoutGroup(houseTransformsGroup)
-
             const { width, height, length } = houseLayoutGroup.userData
 
             const houseTransformsGroup =

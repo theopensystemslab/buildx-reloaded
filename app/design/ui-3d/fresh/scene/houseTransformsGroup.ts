@@ -34,6 +34,7 @@ import { DEBUG } from "../../../state/constants"
 import { renderOBB } from "../dimensions"
 export const BIG_CLIP_NUMBER = 999
 
+// getHouseLayoutsKey is ONLY for this, not for Dexie.js `get` calls
 let houseLayouts: Record<string, ColumnLayout> = {}
 liveQuery(() => layoutsDB.houseLayouts.toArray()).subscribe(
   (dbHouseLayouts) => {
@@ -56,6 +57,8 @@ const getHouseLayout = ({
     O.match(
       (): T.Task<ColumnLayout> => async () => {
         const { getLayout } = getLayoutsWorker()
+
+        console.log(`getHouseLayout caller`)
 
         return getLayout({
           systemId,
@@ -156,14 +159,15 @@ export const createHouseTransformsGroup = ({
         })
       }
 
-      const dbSync = () => {
+      const dbSync = async () => {
         const rotation = houseTransformsGroup.rotation.y
         const position = houseTransformsGroup.position
         const dnas = houseTransformsGroup.userData.activeLayoutDnas
+        console.log(`dbSync caller`)
         return Promise.all([
           userDB.houses.update(houseId, { dnas, position, rotation }),
-          getLayoutsWorker().postLayout({ systemId, dnas }),
-        ])
+          getLayoutsWorker().getLayout({ systemId, dnas }),
+        ]).then(() => {})
       }
 
       const updateActiveLayoutDnas = (nextDnas: string[]) => {
@@ -236,6 +240,19 @@ export const createHouseTransformsGroup = ({
         )
       }
 
+      const refreshAltSectionTypeLayouts = async () => {
+        const { dnas, sectionType } =
+          getActiveHouseUserData(houseTransformsGroup)
+
+        const bar = await getLayoutsWorker().getAltSectionTypeLayouts({
+          systemId,
+          dnas,
+          currentSectionType: sectionType,
+        })
+
+        console.log({ bar })
+      }
+
       const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
         type: UserDataTypeEnum.Enum.HouseTransformsGroup,
         systemId,
@@ -254,6 +271,7 @@ export const createHouseTransformsGroup = ({
         setZStretchHandlesVisible,
         setRotateHandlesVisible,
         updateTransforms,
+        refreshAltSectionTypeLayouts,
       }
       houseTransformsGroup.userData = houseTransformsGroupUserData
 

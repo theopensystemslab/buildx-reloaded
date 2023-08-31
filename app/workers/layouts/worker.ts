@@ -12,7 +12,6 @@ import {
 } from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
-  getHouseLayoutsKey,
   getVanillaColumnsKey,
   GridGroup,
   HouseLayoutsKey,
@@ -376,12 +375,15 @@ const getLayout = async ({
   systemId,
   dnas,
 }: HouseLayoutsKey): Promise<ColumnLayout> => {
+  console.log(`getLayout`, { systemId, dnas })
+
   const allModules = await getModules()
   const maybeLayout = await layoutsDB.houseLayouts
-    .get(getHouseLayoutsKey({ systemId, dnas }))
+    .get({ systemId, dnas })
     .then((x) => x?.layout)
 
   if (maybeLayout) {
+    console.log(`ZOMG MAYBELAYOUT A THING`)
     return maybeLayout
   } else {
     const modules = pipe(
@@ -412,28 +414,12 @@ const getLayout = async ({
   }
 }
 
-const processLayoutsQueue = async () => {
-  // Process queue one item at a time
-  while (layoutsQueue.length > 0) {
-    const layoutsKey = layoutsQueue.shift()
-    if (layoutsKey) {
-      await getLayout(layoutsKey)
-    }
-  }
-}
-
-const postLayout = (key: HouseLayoutsKey) => {
-  layoutsQueue.push(key)
-}
-
-const postLayouts = (keys: HouseLayoutsKey[]) => {
-  keys.map(postLayout)
-}
-
 if (!isSSR()) {
   liveQuery(() => systemsDB.houseTypes.toArray()).subscribe((houseTypes) => {
-    postLayouts(houseTypes)
-    processLayoutsQueue()
+    for (let houseType of houseTypes) {
+      console.log(`house types caller`)
+      getLayout(houseType)
+    }
   })
 }
 
@@ -619,9 +605,10 @@ const getAltSectionTypeLayouts = async ({
   dnas: string[]
   currentSectionType: string
 }) => {
-  const currentIndexedLayout = await layoutsDB.houseLayouts.get(
-    getHouseLayoutsKey({ systemId, dnas })
-  )
+  const currentIndexedLayout = await layoutsDB.houseLayouts.get({
+    systemId,
+    dnas,
+  })
 
   if (!currentIndexedLayout)
     throw new Error(`no currentLayout for ${systemId} ${dnas}`)
@@ -649,11 +636,12 @@ const getAltSectionTypeLayouts = async ({
             sectionType,
           }).then(
             O.map((layout) => {
+              const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
               return {
                 layout,
                 sectionType,
-                dnas: columnLayoutToDnas(layout),
+                dnas,
               }
             })
           )
@@ -738,20 +726,16 @@ const getAltSectionTypeLayouts = async ({
 // }
 
 const getVanillaColumn = async (key: VanillaColumnsKey) => {
-  const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(
-    getVanillaColumnsKey(key)
-  )
+  const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(key)
 
   if (maybeVanillaColumn) {
     return maybeVanillaColumn.vanillaColumn
   } else {
-    throw new Error(`No vanilla module found for ${key}`)
+    throw new Error(`No vanilla column found for ${JSON.stringify(key)}`)
   }
 }
 
 const api = {
-  postLayout,
-  postLayouts,
   getLayout,
   getVanillaColumn,
   getAltSectionTypeLayouts,

@@ -40,7 +40,11 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
               () => () => Promise.reject(),
               ({ dnas }) =>
                 pipe(
-                  () => getLayout({ systemId, dnas }),
+                  () =>
+                    getLayout({ systemId, dnas }).then((x) => {
+                      console.log(`houseLayoutGroupTask caller`)
+                      return x
+                    }),
                   T.chain((houseLayout) =>
                     createHouseLayoutGroup({
                       systemId,
@@ -78,7 +82,11 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
     initReset()
 
     return () => {
-      if (resetLayoutGroupRef.current) {
+      if (
+        resetLayoutGroupRef.current &&
+        resetLayoutGroupRef.current.uuid !==
+          houseTransformsGroup.userData.activeLayoutGroupUuid
+      ) {
         houseTransformsGroup.remove(resetLayoutGroupRef.current)
       }
     }
@@ -86,7 +94,6 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
 
   const resetHouse = async () => {
     if (resetLayoutGroupRef.current) {
-      console.log(houseTransformsGroup)
       houseTransformsGroup.userData.setActiveLayoutGroup(
         resetLayoutGroupRef.current
       )
