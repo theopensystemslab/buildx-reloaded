@@ -12,6 +12,7 @@ import {
 } from "../helpers/sceneQueries"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isXStretchHandleGroup,
   StretchHandleGroup,
@@ -71,8 +72,12 @@ const useOnDragStretchX = () => {
 
     let fenceIndex = 0
 
+    const otherSTLayoutGroups = otherLayoutGroups.filter(
+      (x) => x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE
+    )
+
     const fences = pipe(
-      [activeLayoutGroup, ...otherLayoutGroups],
+      [activeLayoutGroup, ...otherSTLayoutGroups],
       sortLayoutGroupsByWidth,
       A.mapWithIndex((i, layoutGroup): FenceX => {
         if (layoutGroup.uuid === activeLayoutGroup.uuid) fenceIndex = i
@@ -177,6 +182,10 @@ const useOnDragStretchX = () => {
       activeLayoutGroup.parent as HouseTransformsGroup
     houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
     houseTransformsGroup.userData.setZStretchHandlesVisible(true)
+    houseTransformsGroup.userData.dbSync().then(() => {
+      console.log(`refreshing from x-stretch`)
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    })
 
     stretchXData.current = null
   }

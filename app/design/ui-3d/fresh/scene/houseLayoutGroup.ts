@@ -104,16 +104,19 @@ export const createHouseLayoutGroup = ({
           const updateLength = (maybeLength?: number) => {
             const { length: oldLength } = houseLayoutGroup.userData
 
+            const houseTransformsGroup =
+              houseLayoutGroup.parent as HouseTransformsGroup
+
             const nextLength = maybeLength ?? computeLength()
 
             houseLayoutGroup.userData.length = nextLength
 
             houseLayoutGroup.position.setZ(-nextLength / 2)
 
-            houseLayoutGroup.parent?.position.add(
+            houseTransformsGroup.position.add(
               new Vector3(0, 0, (nextLength - oldLength) / 2).applyAxisAngle(
                 yAxis,
-                houseLayoutGroup.parent.rotation.y
+                houseTransformsGroup.rotation.y
               )
             )
 

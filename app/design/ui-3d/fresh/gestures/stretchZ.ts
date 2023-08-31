@@ -373,6 +373,7 @@ const useOnDragStretchZ = () => {
     houseTransformsGroup.userData.updateXStretchHandleLengths()
     houseTransformsGroup.userData.setXStretchHandlesVisible(true)
     layoutGroup.userData.updateDnas().then(() => {
+      console.log(`refreshing from z-stretch`)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
 
