@@ -59,8 +59,6 @@ const getHouseLayout = ({
       (): T.Task<ColumnLayout> => async () => {
         const { getLayout } = getLayoutsWorker()
 
-        console.log(`getHouseLayout caller`)
-
         return getLayout({
           systemId,
           dnas,
@@ -164,7 +162,6 @@ export const createHouseTransformsGroup = ({
         const rotation = houseTransformsGroup.rotation.y
         const position = houseTransformsGroup.position
         const dnas = houseTransformsGroup.userData.activeLayoutDnas
-        console.log(`dbSync caller`)
         return Promise.all([
           userDB.houses.update(houseId, { dnas, position, rotation }),
           getLayoutsWorker().getLayout({ systemId, dnas }),

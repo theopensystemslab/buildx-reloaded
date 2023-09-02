@@ -232,13 +232,6 @@ const useOnDragStretchZ = () => {
     )
     const distance = distanceVector.z
 
-    console.log(`setting handleColumnGroup position`, handleGroupZ0 + distance)
-    console.log(`visible`, handleColumnGroup.visible)
-    console.log(
-      `children`,
-      handleColumnGroup.children.map((x) => [x.userData.type, x.visible])
-    )
-
     handleColumnGroup.position.setZ(handleGroupZ0 + distance)
 
     // back side
@@ -390,7 +383,6 @@ const useOnDragStretchZ = () => {
     houseTransformsGroup.userData.updateXStretchHandleLengths()
     houseTransformsGroup.userData.setXStretchHandlesVisible(true)
     layoutGroup.userData.updateDnas().then(() => {
-      console.log(`refreshing from z-stretch`)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
 

@@ -183,7 +183,6 @@ const useOnDragStretchX = () => {
     houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
     houseTransformsGroup.userData.setZStretchHandlesVisible(true)
     houseTransformsGroup.userData.dbSync().then(() => {
-      console.log(`refreshing from x-stretch`)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
 

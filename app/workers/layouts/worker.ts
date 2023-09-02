@@ -375,15 +375,12 @@ const getLayout = async ({
   systemId,
   dnas,
 }: HouseLayoutsKey): Promise<ColumnLayout> => {
-  console.log(`getLayout`, { systemId, dnas })
-
   const allModules = await getModules()
   const maybeLayout = await layoutsDB.houseLayouts
     .get({ systemId, dnas })
     .then((x) => x?.layout)
 
   if (maybeLayout) {
-    console.log(`ZOMG MAYBELAYOUT A THING`)
     return maybeLayout
   } else {
     const modules = pipe(
@@ -417,7 +414,6 @@ const getLayout = async ({
 if (!isSSR()) {
   liveQuery(() => systemsDB.houseTypes.toArray()).subscribe((houseTypes) => {
     for (let houseType of houseTypes) {
-      console.log(`house types caller`)
       getLayout(houseType)
     }
   })
