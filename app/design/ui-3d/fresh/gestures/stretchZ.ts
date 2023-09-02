@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, someOrError, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -10,18 +10,20 @@ import {
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
+  findFirstGuardUp,
   getActiveHouseUserData,
   getActiveLayoutGroup,
   getHouseTransformsGroupUp,
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
-  handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
 import { createColumnGroup, splitColumnGroups } from "../scene/columnGroup"
 import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
+  isActiveLayoutGroup,
+  isColumnGroup,
   StretchHandleGroup,
 } from "../scene/userData"
 
@@ -103,7 +105,15 @@ const useOnDragStretchZ = () => {
       selectedObjects: [],
     })
 
-    const handleColumnGroup = handleColumnGroupParentQuery(handleGroup)
+    const handleColumnGroup = pipe(
+      handleGroup,
+      findFirstGuardUp(
+        (x): x is ColumnGroup =>
+          isColumnGroup(x) && isActiveLayoutGroup(x.parent!)
+      ),
+      someOrError(`no handle column group`)
+    )
+
     const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
     houseTransformsGroup.userData.setXStretchHandlesVisible(false)
 
@@ -132,7 +142,7 @@ const useOnDragStretchZ = () => {
 
             stretchZInitialDataRef.current = {
               direction: side,
-              handleColumnGroup: handleColumnGroup,
+              handleColumnGroup,
               layoutGroup,
               houseTransformsGroup,
               point0: point,
@@ -221,6 +231,13 @@ const useOnDragStretchZ = () => {
       -houseTransformsGroup.rotation.y
     )
     const distance = distanceVector.z
+
+    console.log(`setting handleColumnGroup position`, handleGroupZ0 + distance)
+    console.log(`visible`, handleColumnGroup.visible)
+    console.log(
+      `children`,
+      handleColumnGroup.children.map((x) => [x.userData.type, x.visible])
+    )
 
     handleColumnGroup.position.setZ(handleGroupZ0 + distance)
 

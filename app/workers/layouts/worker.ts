@@ -619,7 +619,7 @@ const getAltSectionTypeLayouts = async ({
     (x) => x.code !== currentSectionType
   )
 
-  const foo = await pipe(
+  return pipe(
     otherSectionTypes,
     A.map(
       (
@@ -651,10 +651,6 @@ const getAltSectionTypeLayouts = async ({
     unwrapSome,
     (x) => x
   )()
-
-  console.log({ foo })
-
-  return foo
 }
 
 // if (!isSSR()) {

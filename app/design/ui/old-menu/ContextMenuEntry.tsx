@@ -148,7 +148,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
               onComplete: props.onClose,
             }}
           />
-          <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+          {/* <ChangeLevelType houseId={houseId} onChange={props.onClose} /> */}
           <AddRemoveLevels
             {...{
               houseId,

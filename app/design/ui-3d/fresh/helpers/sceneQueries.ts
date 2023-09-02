@@ -140,19 +140,6 @@ export const getHouseTransformsGroupUp = (
   )
 }
 
-export const handleColumnGroupParentQuery = (object: Object3D) => {
-  let x = object
-  while (x.parent) {
-    if (x.userData.type === UserDataTypeEnum.Enum.ColumnGroup) {
-      return x as Group
-    }
-    x = x.parent
-  }
-  throw new Error(
-    `No ${UserDataTypeEnum.Enum.ColumnGroup} parent found for ${object}`
-  )
-}
-
 export const getHouseGroupColumns = (houseGroup: Group) =>
   pipe(
     houseGroup.children,
