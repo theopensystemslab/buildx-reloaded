@@ -1,13 +1,19 @@
-import { pipe } from "fp-ts/lib/function"
-import { Group, Matrix3, Plane, Vector3 } from "three"
+import { liveQuery } from "dexie"
+import { flow, pipe } from "fp-ts/lib/function"
+import { Group, Plane, Vector3 } from "three"
+import layoutsDB, {
+  ColumnLayout,
+  getHouseLayoutsKey,
+} from "../../../../db/layouts"
 import userDB from "../../../../db/user"
-import { A, O, T } from "../../../../utils/functions"
+import { A, O, R, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
+import { getLayoutsWorker } from "../../../../workers"
 import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
+  findFirstGuardAcross,
   getActiveHouseUserData,
-  getActiveLayoutGroup,
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
@@ -18,21 +24,13 @@ import {
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
+  isActiveLayoutGroup,
   isHouseLayoutGroup,
   isRotateHandlesGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
   UserDataTypeEnum,
 } from "./userData"
-import layoutsDB, {
-  ColumnLayout,
-  getHouseLayoutsKey,
-} from "../../../../db/layouts"
-import { R } from "../../../../utils/functions"
-import { getLayoutsWorker } from "../../../../workers"
-import { liveQuery } from "dexie"
-import { DEBUG } from "../../../state/constants"
-import { renderOBB } from "../dimensions"
 export const BIG_CLIP_NUMBER = 999
 
 // getHouseLayoutsKey is ONLY for this, not for Dexie.js `get` calls
@@ -80,7 +78,7 @@ export const createHouseTransformsGroup = ({
   dnas: string[]
   friendlyName: string
   houseTypeId: string
-}): T.Task<Group> =>
+}): T.Task<HouseTransformsGroup> =>
   pipe(
     getHouseLayout({ systemId, dnas }),
     T.chain((houseLayout) =>
@@ -196,16 +194,26 @@ export const createHouseTransformsGroup = ({
       const setXStretchHandlesVisible = (bool: boolean = true) => {
         pipe(
           houseTransformsGroup,
-          findAllGuardDown(isXStretchHandleGroup),
-          A.map((x) => void setVisible(x, bool))
+          findFirstGuardAcross(isActiveLayoutGroup),
+          O.map(
+            flow(
+              findAllGuardDown(isXStretchHandleGroup),
+              A.map((x) => void setVisible(x, bool))
+            )
+          )
         )
       }
 
       const setZStretchHandlesVisible = (bool: boolean = true) => {
         pipe(
           houseTransformsGroup,
-          findAllGuardDown(isZStretchHandleGroup),
-          A.map((x) => void setVisible(x, bool))
+          findFirstGuardAcross(isActiveLayoutGroup),
+          O.map(
+            flow(
+              findAllGuardDown(isZStretchHandleGroup),
+              A.map((x) => void setVisible(x, bool))
+            )
+          )
         )
       }
 

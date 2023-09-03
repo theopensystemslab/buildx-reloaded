@@ -7,7 +7,7 @@ import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
-import scope, { ScopeElement } from "../../../state/scope"
+import scope from "../../../state/scope"
 import siteCtx, {
   downMode,
   getModeBools,
@@ -15,21 +15,17 @@ import siteCtx, {
 } from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
 import {
-  getActiveHouseUserData,
-  getHouseTransformsGroupUp,
   mapNearestCutIntersection,
   objectToHouseObjects,
   objectToIfcTagObjects,
 } from "../helpers/sceneQueries"
 import {
-  ColumnGroupUserData,
   elementMeshToScopeItem,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   isElementMesh,
   isRotateHandleMesh,
   isStretchHandleMesh,
-  ModuleGroupUserData,
   StretchHandleGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
@@ -77,6 +73,7 @@ const useGestures = () => {
         const handleGroup = object.parent as StretchHandleGroup
         const {
           userData: { axis },
+          visible,
         } = handleGroup
 
         if (axis === "z" && isStretchHandleMesh(object)) {
