@@ -24,8 +24,10 @@ import {
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
+  HouseTransformsHandlesGroupUserData,
   isActiveLayoutGroup,
   isHouseLayoutGroup,
+  isHouseTransformsHandlesGroup,
   isRotateHandlesGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
@@ -140,6 +142,12 @@ export const createHouseTransformsGroup = ({
           setVisible(handle, !siteMode)
         })
 
+        const handlesGroupUserData: HouseTransformsHandlesGroupUserData = {
+          type: UserDataTypeEnum.Enum.HouseTransformsHandlesGroup,
+        }
+
+        handlesGroup.userData = handlesGroupUserData
+
         houseTransformsGroup.add(handlesGroup)
       }
 
@@ -199,7 +207,7 @@ export const createHouseTransformsGroup = ({
       const setXStretchHandlesVisible = (bool: boolean = true) => {
         pipe(
           houseTransformsGroup,
-          findFirstGuardAcross(isActiveLayoutGroup),
+          findFirstGuardAcross(isHouseTransformsHandlesGroup),
           O.map(
             flow(
               findAllGuardDown(isXStretchHandleGroup),

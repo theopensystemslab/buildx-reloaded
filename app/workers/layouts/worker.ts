@@ -13,7 +13,6 @@ import {
 } from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
-  getVanillaColumnsKey,
   GridGroup,
   HouseLayoutsKey,
   PositionedColumn,
@@ -831,7 +830,7 @@ const getAltLevelTypeLayouts = async ({
 
   const levelTypes = await systemsDB.levelTypes.toArray()
 
-  const { currentLevelType, otherLevelTypes } = pipe(
+  const otherLevelTypes = pipe(
     levelTypes,
     A.partition((x) => x.code !== currentLevelTypeCode),
     ({ left: currentLevelTypes, right: otherLevelTypes }) =>
@@ -839,7 +838,8 @@ const getAltLevelTypeLayouts = async ({
         currentLevelTypes,
         A.head,
         someOrError(`couldn't head currentLevelTypes`),
-        (currentLevelType) => ({ currentLevelType, otherLevelTypes })
+        (currentLevelType) =>
+          otherLevelTypes.filter((x) => x.code[0] === currentLevelType.code[0])
       )
   )
 

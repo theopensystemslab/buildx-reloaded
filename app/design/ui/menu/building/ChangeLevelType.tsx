@@ -29,7 +29,11 @@ type Props = {
   close: () => void
 }
 
-const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
+const ChangeLevelType = ({
+  houseTransformsGroup,
+  scopeElement,
+  close,
+}: Props) => {
   const { levelIndex, dna } = scopeElement
   const { systemId, houseId, dnas } =
     getActiveHouseUserData(houseTransformsGroup)
@@ -39,7 +43,7 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
     value: { levelType: LevelType; houseLayoutGroup: HouseLayoutGroup }
   }
 
-  const { levelTypeOptions, selectedLevelTypeOption, levelString } =
+  const { levelTypeOptions, originalLevelTypeOption, levelString } =
     suspend(async () => {
       const { levelType: currentLevelTypeCode } = parseDna(dna)
 
@@ -65,7 +69,7 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
         levelString = "roof"
       }
 
-      const selectedLevelTypeOption: LevelTypeOption = {
+      const originalLevelTypeOption: LevelTypeOption = {
         label: currentLevelType.description,
         value: {
           houseLayoutGroup: activeLayoutGroup,
@@ -103,7 +107,7 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
         })
       }
 
-      levelTypeOptions.push(selectedLevelTypeOption)
+      levelTypeOptions.push(originalLevelTypeOption)
 
       levelTypeOptions.sort((a, b) => {
         if (a.value.levelType.code > b.value.levelType.code) return 1
@@ -111,7 +115,7 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
         return 0
       })
 
-      return { levelTypeOptions, selectedLevelTypeOption, levelString }
+      return { levelTypeOptions, originalLevelTypeOption, levelString }
     }, [])
 
   const cleanup = () =>
@@ -128,19 +132,28 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
       })
     )
 
+  const closing = useRef(false)
+
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
+    if (closing.current) return
+
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(
         incoming.houseLayoutGroup
       )
-      console.log(
-        `changing to ${incoming.houseLayoutGroup.uuid} ${incoming.houseLayoutGroup.userData.use}`
+    } else {
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalLevelTypeOption.value.houseLayoutGroup
       )
-      invalidate()
     }
+    invalidate()
   }
 
   const changeLevelType = ({ houseLayoutGroup }: LevelTypeOption["value"]) => {
+    closing.current = true
+    houseTransformsGroup.userData.dbSync().then(() => {
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    })
     close()
   }
 
@@ -153,7 +166,7 @@ const ChangeLevelType = ({ houseTransformsGroup, scopeElement }: Props) => {
     >
       <Radio
         options={levelTypeOptions}
-        selected={selectedLevelTypeOption.value}
+        selected={originalLevelTypeOption.value}
         onChange={changeLevelType}
         onHoverChange={previewLevelType}
       />
