@@ -660,10 +660,12 @@ const changeLayoutLevelType = async ({
   systemId,
   layout,
   levelType: lt,
+  levelIndex,
 }: {
   systemId: string
   layout: ColumnLayout
   levelType: LevelType
+  levelIndex: number
 }) => {
   const { code: levelType } = lt
 
@@ -675,6 +677,8 @@ const changeLayoutLevelType = async ({
       pipe(
         positionedColumn.gridGroups,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
+          if (gridGroup.levelIndex !== levelIndex) return TO.of(gridGroup)
+
           const {
             modules,
             modules: [
@@ -854,6 +858,7 @@ const getAltLevelTypeLayouts = async ({
             systemId,
             layout: currentIndexedLayout.layout,
             levelType,
+            levelIndex,
           }).then(
             O.map((layout) => {
               postVanillaColumn(layout[0])

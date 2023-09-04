@@ -182,23 +182,18 @@ export const createHouseTransformsGroup = ({
         )
 
       const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
-        pipe(
-          houseTransformsGroup.children,
-          A.findFirst(
-            (x): x is HouseLayoutGroup =>
-              isHouseLayoutGroup(x) &&
-              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-          ),
-          O.map((lastLayoutGroup) => {
-            if (lastLayoutGroup === nextLayoutGroup) return
-            setVisible(nextLayoutGroup, true)
-            setVisible(lastLayoutGroup, false)
-            houseTransformsGroup.userData.activeLayoutGroupUuid =
-              nextLayoutGroup.uuid
-            houseTransformsGroup.userData.activeLayoutDnas =
-              nextLayoutGroup.userData.dnas
-          })
-        )
+        const lastLayoutGroup =
+          houseTransformsGroup.userData.getActiveLayoutGroup()
+
+        if (lastLayoutGroup === nextLayoutGroup) return
+
+        setVisible(nextLayoutGroup, true)
+        setVisible(lastLayoutGroup, false)
+
+        houseTransformsGroup.userData.activeLayoutGroupUuid =
+          nextLayoutGroup.uuid
+        houseTransformsGroup.userData.activeLayoutDnas =
+          nextLayoutGroup.userData.dnas
       }
 
       const setXStretchHandlesVisible = (bool: boolean = true) => {

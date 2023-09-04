@@ -10,6 +10,7 @@ import { pipe } from "fp-ts/lib/function"
 import { someOrError } from "../../../../utils/functions"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
+import { Suspense } from "react"
 
 const BuildingModeContextMenu = ({
   x,
@@ -65,11 +66,13 @@ const BuildingModeContextMenu = ({
           onComplete: props.onClose,
         }}
       /> */}
-      <ChangeLevelType
-        close={close}
-        houseTransformsGroup={houseTransformsGroup}
-        scopeElement={scopeElement}
-      />
+      <Suspense fallback={null}>
+        <ChangeLevelType
+          close={close}
+          houseTransformsGroup={houseTransformsGroup}
+          scopeElement={scopeElement}
+        />
+      </Suspense>
       {/* <AddRemoveLevels
         {...{
           houseId,
