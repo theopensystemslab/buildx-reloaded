@@ -169,18 +169,6 @@ export const getLayoutGroups = (
 ): HouseLayoutGroup[] =>
   houseTransformsGroup.children.filter(isHouseLayoutGroup)
 
-export const getActiveLayoutGroup = (
-  houseTransformsGroup: HouseTransformsGroup
-): HouseLayoutGroup =>
-  pipe(
-    houseTransformsGroup.children,
-    A.findFirst(
-      (x): x is HouseLayoutGroup =>
-        x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-    ),
-    someOrError(`getActiveLayoutGroup failure`)
-  )
-
 export const getPartitionedLayoutGroups = (
   houseTransformsGroup: HouseTransformsGroup
 ) =>

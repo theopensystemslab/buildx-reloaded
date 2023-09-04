@@ -1,9 +1,7 @@
-import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import {
   BoxGeometry,
   Group,
-  Matrix3,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
@@ -11,22 +9,12 @@ import {
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
-import userDB from "../../../db/user"
 import { A, O } from "../../../utils/functions"
-import { yAxis } from "../../../utils/three"
-import { DEBUG } from "../../state/constants"
 import {
-  sortColumnsByIndex,
-  findAllGuardDown,
   findFirstGuardDown,
-  getActiveHouseUserData,
-  getActiveLayoutGroup,
-  getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
-  getVisibleColumnGroups,
 } from "./helpers/sceneQueries"
 import {
-  HouseLayoutGroup,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   isHouseLayoutGroup,

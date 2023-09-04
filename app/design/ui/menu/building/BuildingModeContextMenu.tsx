@@ -1,11 +1,15 @@
+import { invalidate } from "@react-three/fiber"
 import { Pencil } from "../../../../ui/icons"
-import ChangeLevelType from "./ChangeLevelType"
+import { closeMenu } from "../../../state/menu"
+import { downMode } from "../../../state/siteCtx"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
-import { downMode } from "../../../state/siteCtx"
-import { closeMenu } from "../../../state/menu"
-import { invalidate } from "@react-three/fiber"
+import ChangeLevelType from "./ChangeLevelType"
+import { pipe } from "fp-ts/lib/function"
+import { someOrError } from "../../../../utils/functions"
+import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 
 const BuildingModeContextMenu = ({
   x,
@@ -16,6 +20,18 @@ const BuildingModeContextMenu = ({
     closeMenu()
     invalidate()
   }
+
+  const houseTransformsGroup = pipe(
+    scopeElement.object,
+    findFirstGuardUp(isHouseTransformsGroup),
+    someOrError(
+      `no HouseTransformsGroup found upwards of: ${JSON.stringify(
+        scopeElement,
+        null,
+        2
+      )}`
+    )
+  )
 
   return (
     <ContextMenu
@@ -49,7 +65,11 @@ const BuildingModeContextMenu = ({
           onComplete: props.onClose,
         }}
       /> */}
-      <ChangeLevelType {...{ scopeElement }} />
+      <ChangeLevelType
+        close={close}
+        houseTransformsGroup={houseTransformsGroup}
+        scopeElement={scopeElement}
+      />
       {/* <AddRemoveLevels
         {...{
           houseId,

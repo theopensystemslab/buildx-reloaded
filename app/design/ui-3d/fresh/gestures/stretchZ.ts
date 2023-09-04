@@ -12,7 +12,6 @@ import { dispatchOutline } from "../events/outlines"
 import {
   findFirstGuardUp,
   getActiveHouseUserData,
-  getActiveLayoutGroup,
   getHouseTransformsGroupUp,
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
@@ -121,7 +120,7 @@ const useOnDragStretchZ = () => {
     const { systemId, houseId, vanillaColumn } =
       getActiveHouseUserData(houseTransformsGroup)
 
-    const layoutGroup = getActiveLayoutGroup(houseTransformsGroup)
+    const layoutGroup = houseTransformsGroup.userData.getActiveLayoutGroup()
     const columnGroups = pipe(layoutGroup, getSortedVisibleColumnGroups)
 
     const task = pipe(

@@ -4,6 +4,7 @@ import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
 import { flow, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import produce from "immer"
+import { LevelType } from "../../../server/data/levelTypes"
 import { Module } from "../../../server/data/modules"
 import { SectionType } from "../../../server/data/sectionTypes"
 import {
@@ -21,7 +22,15 @@ import layoutsDB, {
   VanillaColumnsKey,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, O, reduceToOption, T, TO, unwrapSome } from "../../utils/functions"
+import {
+  A,
+  O,
+  reduceToOption,
+  someOrError,
+  T,
+  TO,
+  unwrapSome,
+} from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { createVanillaModuleGetter, getIndexedVanillaModule } from "./vanilla"
@@ -453,8 +462,6 @@ const changeLayoutSectionType = async ({
 
   const allModules = await getModules()
 
-  let dnas: string[] = []
-
   return pipe(
     layout,
     A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
@@ -612,7 +619,7 @@ const getAltSectionTypeLayouts = async ({
   const sectionTypes = await systemsDB.sectionTypes.toArray()
 
   const otherSectionTypes = sectionTypes.filter(
-    (x) => x.code !== currentSectionType
+    (x) => x.systemId === systemId && x.code !== currentSectionType
   )
 
   return pipe(
@@ -649,74 +656,222 @@ const getAltSectionTypeLayouts = async ({
   )()
 }
 
-// if (!isSSR()) {
-//   liveQuery(async () => {
-//     const houses = await userDB.houses.toArray()
-//     const sectionTypes = await systemsDB.sectionTypes.toArray()
+const changeLayoutLevelType = async ({
+  systemId,
+  layout,
+  levelType: lt,
+}: {
+  systemId: string
+  layout: ColumnLayout
+  levelType: LevelType
+}) => {
+  const { code: levelType } = lt
 
-//     return { houses, sectionTypes }
-//   }).subscribe(async ({ houses, sectionTypes }) => {
-//     // for each house, for each section type
-//     for (const house of houses) {
-//       const { systemId, dnas, houseId: houseId } = house
+  const allModules = await getModules()
 
-//       const layout = await getLayout({ systemId, dnas })
+  return pipe(
+    layout,
+    A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
+      pipe(
+        positionedColumn.gridGroups,
+        A.traverse(TO.ApplicativeSeq)((gridGroup) => {
+          const {
+            modules,
+            modules: [
+              {
+                module: {
+                  structuredDna: { sectionType, positionType, gridType },
+                },
+              },
+            ],
+          } = gridGroup
 
-//       const otherSectionTypes = sectionTypes.filter(
-//         (x) =>
-//           x.code !==
-//           layout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
-//       )
+          const vanillaModuleTask: TO.TaskOption<Module> = pipe(
+            TO.fromTask(() =>
+              getIndexedVanillaModule({
+                systemId,
+                sectionType,
+                positionType,
+                levelType,
+                gridType,
+              })
+            ),
+            TO.chainOptionK(
+              flow(
+                O.fromNullable,
+                O.chain((a) =>
+                  pipe(
+                    allModules,
+                    A.findFirst(
+                      (b) => a.systemId === b.systemId && a.moduleDna === b.dna
+                    )
+                  )
+                )
+              )
+            )
+          )
 
-//       const otherLayouts = await pipe(
-//         otherSectionTypes,
-//         A.map(
-//           (
-//               sectionType
-//             ): TO.TaskOption<{
-//               layout: ColumnLayout
-//               sectionType: SectionType
-//             }> =>
-//             () =>
-//               changeLayoutSectionType({ systemId, layout, sectionType }).then(
-//                 O.map((layout) => ({ layout, sectionType }))
-//               )
-//         ),
-//         A.sequence(T.ApplicativeSeq),
-//         unwrapSome,
-//         (x) => x
-//       )()
+          return pipe(
+            vanillaModuleTask,
+            TO.chain((vanillaModule) =>
+              pipe(
+                modules,
+                reduceToOption(
+                  O.some([]),
+                  (i, acc: O.Option<PositionedModule[]>, positionedModule) => {
+                    // target is existent module with target section type
+                    const target = {
+                      systemId,
+                      structuredDna: {
+                        ...positionedModule.module.structuredDna,
+                        levelType: lt.code,
+                      },
+                    } as Module
 
-//       const altSectionTypeLayouts = pipe(
-//         otherLayouts,
-//         A.reduce(
-//           {},
-//           (
-//             acc: Record<
-//               string,
-//               { layout: ColumnLayout; sectionType: SectionType; dnas: string[] }
-//             >,
-//             { layout, sectionType }
-//           ) => {
-//             const { startColumn } = splitColumns(layout)
-//             postVanillaColumn(startColumn)
+                    const compatModules = pipe(
+                      allModules,
+                      filterCompatibleModules()(target)
+                    )
 
-//             return {
-//               ...acc,
-//               [sectionType.code]: {
-//                 layout,
-//                 sectionType,
-//                 dnas: columnLayoutToDnas(layout),
-//               },
-//             }
-//           }
-//         )
-//       )
+                    if (compatModules.length === 0) return O.none
 
-//       layoutsDB.altSectionTypeLayouts.put({ houseId, altSectionTypeLayouts })
-//     }
-//   })
-// }
+                    return pipe(
+                      compatModules,
+                      topCandidateByHamming(target),
+                      O.map((bestModule) => {
+                        const distanceToTarget =
+                          target.structuredDna.gridUnits -
+                          bestModule.structuredDna.gridUnits
+                        switch (true) {
+                          case sign(distanceToTarget) > 0:
+                            // fill in some vanilla
+                            return [
+                              bestModule,
+                              ...A.replicate(
+                                distanceToTarget / vanillaModule.length,
+                                vanillaModule
+                              ),
+                            ]
+                          case sign(distanceToTarget) < 0:
+                            // abort and only vanilla
+                            return A.replicate(
+                              positionedModule.module.length /
+                                vanillaModule.length,
+                              vanillaModule
+                            )
+
+                          case sign(distanceToTarget) === 0:
+                          default:
+                            return [bestModule]
+                          // swap the module
+                        }
+                      }),
+                      O.map((nextModules) =>
+                        pipe(
+                          acc,
+                          O.map((positionedModules) => [
+                            ...positionedModules,
+                            ...nextModules.map(
+                              (module, i) =>
+                                ({
+                                  module,
+                                  z: positionedModule.z,
+                                  gridGroupIndex: i,
+                                } as PositionedModule)
+                            ),
+                          ])
+                        )
+                      ),
+                      O.flatten
+                    )
+                  }
+                ),
+                O.map(
+                  (modules): GridGroup => ({
+                    ...gridGroup,
+                    modules,
+                  })
+                ),
+                TO.fromOption
+              )
+            )
+          )
+        }),
+        TO.map((gridGroups) => ({
+          ...positionedColumn,
+          gridGroups,
+        }))
+      )
+    )
+  )()
+}
+
+const getAltLevelTypeLayouts = async ({
+  systemId,
+  dnas,
+  currentLevelTypeCode,
+  levelIndex,
+}: {
+  systemId: string
+  dnas: string[]
+  currentLevelTypeCode: string
+  levelIndex: number
+}) => {
+  const currentIndexedLayout = await layoutsDB.houseLayouts.get({
+    systemId,
+    dnas,
+  })
+
+  if (!currentIndexedLayout)
+    throw new Error(`no currentLayout for ${systemId} ${dnas}`)
+
+  const levelTypes = await systemsDB.levelTypes.toArray()
+
+  const { currentLevelType, otherLevelTypes } = pipe(
+    levelTypes,
+    A.partition((x) => x.code !== currentLevelTypeCode),
+    ({ left: currentLevelTypes, right: otherLevelTypes }) =>
+      pipe(
+        currentLevelTypes,
+        A.head,
+        someOrError(`couldn't head currentLevelTypes`),
+        (currentLevelType) => ({ currentLevelType, otherLevelTypes })
+      )
+  )
+
+  return pipe(
+    otherLevelTypes,
+    A.map(
+      (
+          levelType
+        ): TO.TaskOption<{
+          layout: ColumnLayout
+          levelType: LevelType
+          dnas: string[]
+        }> =>
+        () =>
+          changeLayoutLevelType({
+            systemId,
+            layout: currentIndexedLayout.layout,
+            levelType,
+          }).then(
+            O.map((layout) => {
+              postVanillaColumn(layout[0])
+              const dnas = columnLayoutToDnas(layout)
+              layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+              return {
+                layout,
+                levelType,
+                dnas,
+              }
+            })
+          )
+    ),
+    A.sequence(T.ApplicativeSeq),
+    unwrapSome,
+    (x) => x
+  )()
+}
 
 const getVanillaColumn = async (key: VanillaColumnsKey) => {
   const maybeVanillaColumn = await layoutsDB.vanillaColumns.get(key)
@@ -732,6 +887,7 @@ const api = {
   getLayout,
   getVanillaColumn,
   getAltSectionTypeLayouts,
+  getAltLevelTypeLayouts,
 }
 
 export type LayoutsAPI = typeof api

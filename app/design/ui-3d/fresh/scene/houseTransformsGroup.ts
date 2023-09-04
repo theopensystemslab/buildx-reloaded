@@ -6,7 +6,7 @@ import layoutsDB, {
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import userDB from "../../../../db/user"
-import { A, O, R, T } from "../../../../utils/functions"
+import { A, O, R, someOrError, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import { getModeBools } from "../../../state/siteCtx"
@@ -171,6 +171,16 @@ export const createHouseTransformsGroup = ({
         return dbSync()
       }
 
+      const getActiveLayoutGroup = (): HouseLayoutGroup =>
+        pipe(
+          houseTransformsGroup.children,
+          A.findFirst(
+            (x): x is HouseLayoutGroup =>
+              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+          ),
+          someOrError(`getActiveLayoutGroup failure`)
+        )
+
       const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
         pipe(
           houseTransformsGroup.children,
@@ -272,8 +282,6 @@ export const createHouseTransformsGroup = ({
           })
 
         for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
-          // post em or refresh em if not exist
-
           if (sectionType.code === currentSectionType) continue
 
           createHouseLayoutGroup({
@@ -302,6 +310,7 @@ export const createHouseTransformsGroup = ({
         updateActiveLayoutDnas,
         initRotateAndStretchXHandles,
         updateXStretchHandleLengths,
+        getActiveLayoutGroup,
         setActiveLayoutGroup,
         setXStretchHandlesVisible,
         setZStretchHandlesVisible,

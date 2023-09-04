@@ -57,6 +57,7 @@ export type HouseTransformsGroupUserData = {
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
+  getActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void

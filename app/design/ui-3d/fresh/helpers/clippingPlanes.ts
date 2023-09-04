@@ -10,7 +10,6 @@ import {
 } from "../scene/userData"
 import {
   getActiveHouseUserData,
-  getActiveLayoutGroup,
   getLayoutGroupColumnGroups,
 } from "./sceneQueries"
 
@@ -62,9 +61,9 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
       rootRef.current.children,
       A.filter(isHouseTransformsGroup),
       A.findFirst((x) => x.userData.houseId === houseId),
+      O.map((x) => x.userData.getActiveLayoutGroup()),
       O.chain(
         flow(
-          getActiveLayoutGroup,
           getLayoutGroupColumnGroups,
           A.head,
           O.chain((columnGroup) => {
