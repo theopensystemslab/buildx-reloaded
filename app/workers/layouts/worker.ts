@@ -24,6 +24,7 @@ import systemsDB, { LastFetchStamped } from "../../db/systems"
 import {
   A,
   O,
+  pipeLog,
   reduceToOption,
   someOrError,
   T,
@@ -292,11 +293,6 @@ const modulesToColumnLayout = (modules: Module[]) => {
 const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
   const modules = await getModules()
 
-  const getVanillaModule = createVanillaModuleGetter(modules)({
-    constrainGridType: false,
-    positionType: "MID",
-  })
-
   pipe(
     arbitraryColumn.gridGroups,
     A.traverse(O.Applicative)(
@@ -304,9 +300,22 @@ const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
         levelIndex,
         levelType,
         y,
-        modules: [{ module }],
-      }): O.Option<PositionedRow> =>
-        pipe(
+        modules: [
+          {
+            module,
+            module: {
+              structuredDna: { sectionType },
+            },
+          },
+        ],
+      }): O.Option<PositionedRow> => {
+        const getVanillaModule = createVanillaModuleGetter(modules)({
+          constrainGridType: false,
+          sectionType,
+          levelType,
+          positionType: "MID",
+        })
+        return pipe(
           module,
           getVanillaModule,
           O.map((vanillaModule) => ({
@@ -324,6 +333,7 @@ const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
             levelType,
           }))
         )
+      }
     ),
     O.map((gridGroups) => {
       const levelTypes = pipe(
@@ -702,14 +712,16 @@ const changeLayoutLevelType = async ({
             TO.chainOptionK(
               flow(
                 O.fromNullable,
-                O.chain((a) =>
-                  pipe(
+                O.chain((vanillaModule) => {
+                  return pipe(
                     allModules,
                     A.findFirst(
-                      (b) => a.systemId === b.systemId && a.moduleDna === b.dna
+                      (b) =>
+                        vanillaModule.systemId === b.systemId &&
+                        vanillaModule.moduleDna === b.dna
                     )
                   )
-                )
+                })
               )
             )
           )
@@ -722,12 +734,11 @@ const changeLayoutLevelType = async ({
                 reduceToOption(
                   O.some([]),
                   (i, acc: O.Option<PositionedModule[]>, positionedModule) => {
-                    // target is existent module with target section type
                     const target = {
                       systemId,
                       structuredDna: {
                         ...positionedModule.module.structuredDna,
-                        levelType: lt.code,
+                        levelType,
                       },
                     } as Module
 
@@ -792,6 +803,7 @@ const changeLayoutLevelType = async ({
                 O.map(
                   (modules): GridGroup => ({
                     ...gridGroup,
+                    levelType,
                     modules,
                   })
                 ),

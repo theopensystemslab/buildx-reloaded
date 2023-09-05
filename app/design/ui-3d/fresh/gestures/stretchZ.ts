@@ -10,6 +10,7 @@ import {
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
+  findAllGuardDown,
   findFirstGuardAcross,
   findFirstGuardUp,
   getActiveHouseUserData,
@@ -23,6 +24,7 @@ import {
   HouseLayoutGroup,
   HouseTransformsGroup,
   isColumnGroup,
+  isModuleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
 
@@ -121,22 +123,12 @@ const useOnDragStretchZ = () => {
       someOrError(`no column group`)
     )
 
-    // const handleColumnGroup = pipe(
-    //   handleGroup,
-    //   findFirstGuardUp(
-    //     (x): x is ColumnGroup =>
-    //       isColumnGroup(x) &&
-    //   ),
-    //   someOrError(`no handle column group`)
-    // )
-
     houseTransformsGroup.userData.setXStretchHandlesVisible(false)
 
     const { systemId, houseId, vanillaColumn } =
       getActiveHouseUserData(houseTransformsGroup)
 
-    const layoutGroup = houseTransformsGroup.userData.getActiveLayoutGroup()
-    const columnGroups = pipe(layoutGroup, getSortedVisibleColumnGroups)
+    const columnGroups = pipe(activeLayoutGroup, getSortedVisibleColumnGroups)
 
     const task = pipe(
       T.of(vanillaColumn),
@@ -157,7 +149,7 @@ const useOnDragStretchZ = () => {
             stretchZInitialDataRef.current = {
               direction: side,
               handleColumnGroup,
-              layoutGroup,
+              layoutGroup: activeLayoutGroup,
               houseTransformsGroup,
               point0: point,
               handleGroupZ0: handleColumnGroup.position.z,
