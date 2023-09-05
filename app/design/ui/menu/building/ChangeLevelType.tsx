@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense, useRef } from "react"
+import { Suspense, useCallback, useEffect, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
@@ -107,20 +107,6 @@ const ChangeLevelTypeOptions = (props: Props) => {
     return { levelTypeOptions, originalLevelTypeOption }
   }, [scopeElement])
 
-  const cleanup = () =>
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          !isActiveLayoutGroup(x)
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
-
   const closing = useRef(false)
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
@@ -159,6 +145,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
 const ChangeLevelType = (props: Props) => {
   const {
     scopeElement: { dna },
+    houseTransformsGroup,
   } = props
   const { levelType } = parseDna(dna)
 
@@ -171,6 +158,23 @@ const ChangeLevelType = (props: Props) => {
   if (levelType[0] === "R") {
     levelString = "roof"
   }
+
+  const cleanup = useCallback(() => {
+    pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
+          !isActiveLayoutGroup(x)
+      ),
+      A.map((x) => {
+        x.removeFromParent()
+      })
+    )
+  }, [houseTransformsGroup])
+
+  useEffect(() => cleanup, [cleanup])
 
   return (
     <ContextMenuNested
