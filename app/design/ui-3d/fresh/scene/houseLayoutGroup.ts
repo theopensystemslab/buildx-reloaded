@@ -62,7 +62,7 @@ export const createHouseLayoutGroup = ({
     T.chain((columnGroups) => {
       const houseLayoutGroup = new Group() as HouseLayoutGroup
 
-      const columnCount = columnGroups.length
+      const activeColumnGroupCount = columnGroups.length
 
       const sectionType =
         houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
@@ -121,6 +121,10 @@ export const createHouseLayoutGroup = ({
             )
 
             houseLayoutGroup.userData.updateOBB()
+          }
+
+          const updateActiveColumnGroupCount = (n: number) => {
+            houseLayoutGroup.userData.activeColumnGroupCount = n
           }
 
           const updateDnas = () => {
@@ -221,7 +225,7 @@ export const createHouseLayoutGroup = ({
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
             houseLayout,
-            columnCount,
+            activeColumnGroupCount,
             sectionType,
             levelTypes,
             width,
@@ -233,6 +237,7 @@ export const createHouseLayoutGroup = ({
             use,
             initStretchZHandles,
             updateLength,
+            updateActiveColumnGroupCount,
             updateDnas,
             updateOBB,
           }

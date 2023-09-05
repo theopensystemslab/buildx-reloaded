@@ -90,11 +90,12 @@ export type HouseLayoutGroupUserData = {
   height: number
   length: number
   width: number
-  columnCount: number
+  activeColumnGroupCount: number
   sectionType: string
   modifiedMaterials: Record<string, string>
   initStretchZHandles: () => void
   updateLength: () => void
+  updateActiveColumnGroupCount: (n: number) => void
   updateDnas: () => Promise<void>
   updateOBB: () => void
 }
@@ -266,20 +267,6 @@ export const isZStretchHandleGroup = (
   node: Object3D
 ): node is StretchHandleGroup =>
   isStretchHandleGroup(node) && node.userData.axis === "z"
-
-export const incrementColumnCount = (layoutGroup: Object3D) => {
-  const userData = layoutGroup.userData as HouseLayoutGroupUserData
-  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
-    throw new Error(`incrementColumnCount called on ${userData.type}`)
-  userData.columnCount++
-}
-
-export const decrementColumnCount = (layoutGroup: Object3D) => {
-  const userData = layoutGroup.userData as HouseLayoutGroupUserData
-  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
-    throw new Error(`incrementColumnCount called on ${userData.type}`)
-  userData.columnCount--
-}
 
 export const elementMeshToScopeItem = (object: Object3D): ScopeElement => {
   if (!isElementMesh(object))

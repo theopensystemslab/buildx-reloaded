@@ -10,6 +10,7 @@ import {
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
+  findFirstGuardAcross,
   findFirstGuardUp,
   getActiveHouseUserData,
   getHouseTransformsGroupUp,
@@ -21,7 +22,6 @@ import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
-  isActiveLayoutGroup,
   isColumnGroup,
   StretchHandleGroup,
 } from "../scene/userData"
@@ -104,19 +104,34 @@ const useOnDragStretchZ = () => {
       selectedObjects: [],
     })
 
-    const handleColumnGroup = pipe(
-      handleGroup,
-      findFirstGuardUp(
-        (x): x is ColumnGroup =>
-          isColumnGroup(x) && isActiveLayoutGroup(x.parent!)
-      ),
-      someOrError(`no handle column group`)
-    )
-
-    const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
-    houseTransformsGroup.userData.setXStretchHandlesVisible(false)
+    const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
     const { side } = handleGroup.userData
+    const targetColumnIndex =
+      side === -1 ? 0 : activeLayoutGroup.userData.activeColumnGroupCount - 1
+
+    const handleColumnGroup = pipe(
+      activeLayoutGroup,
+      findFirstGuardAcross(
+        (x): x is ColumnGroup =>
+          isColumnGroup(x) && x.userData.columnIndex === targetColumnIndex
+      ),
+      someOrError(`no column group`)
+    )
+
+    // const handleColumnGroup = pipe(
+    //   handleGroup,
+    //   findFirstGuardUp(
+    //     (x): x is ColumnGroup =>
+    //       isColumnGroup(x) &&
+    //   ),
+    //   someOrError(`no handle column group`)
+    // )
+
+    houseTransformsGroup.userData.setXStretchHandlesVisible(false)
+
     const { systemId, houseId, vanillaColumn } =
       getActiveHouseUserData(houseTransformsGroup)
 
@@ -340,6 +355,8 @@ const useOnDragStretchZ = () => {
       getSortedVisibleColumnGroups
     )
 
+    const columnGroupCount = sortedVisibleColumnGroups.length
+
     if (direction === 1) {
       pipe(
         sortedVisibleColumnGroups,
@@ -379,6 +396,7 @@ const useOnDragStretchZ = () => {
     }
 
     layoutGroup.userData.updateLength()
+    layoutGroup.userData.updateActiveColumnGroupCount(columnGroupCount)
     houseTransformsGroup.userData.updateXStretchHandleLengths()
     houseTransformsGroup.userData.setXStretchHandlesVisible(true)
     layoutGroup.userData.updateDnas().then(() => {

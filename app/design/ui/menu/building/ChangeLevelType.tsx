@@ -1,8 +1,7 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import { suspend } from "suspend-react"
-import { useDebouncedCallback } from "use-debounce"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
 import { A } from "~/utils/functions"
@@ -34,10 +33,6 @@ const ChangeLevelType = ({
   scopeElement,
   close,
 }: Props) => {
-  const { levelIndex, dna } = scopeElement
-  const { systemId, houseId, dnas } =
-    getActiveHouseUserData(houseTransformsGroup)
-
   type LevelTypeOption = {
     label: string
     value: { levelType: LevelType; houseLayoutGroup: HouseLayoutGroup }
@@ -45,6 +40,11 @@ const ChangeLevelType = ({
 
   const { levelTypeOptions, originalLevelTypeOption, levelString } =
     suspend(async () => {
+      const { systemId, houseId, dnas } =
+        getActiveHouseUserData(houseTransformsGroup)
+
+      const { levelIndex, dna } = scopeElement
+
       const { levelType: currentLevelTypeCode } = parseDna(dna)
 
       const currentLevelType = await systemsDB.levelTypes.get({
@@ -116,7 +116,7 @@ const ChangeLevelType = ({
       })
 
       return { levelTypeOptions, originalLevelTypeOption, levelString }
-    }, [])
+    }, [scopeElement])
 
   const cleanup = () =>
     pipe(
