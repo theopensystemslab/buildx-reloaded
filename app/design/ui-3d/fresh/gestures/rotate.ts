@@ -6,10 +6,9 @@ import { Vector3 } from "three"
 import { A, O } from "../../../../utils/functions"
 import { atan2 } from "../../../../utils/math"
 import pointer from "../../../state/pointer"
-import { updateIndexedHouseTransforms } from "../dimensions"
 import {
-  getActiveHouseUserData,
   findFirstGuardUp,
+  getActiveHouseUserData,
 } from "../helpers/sceneQueries"
 import {
   HouseTransformsGroup,
@@ -75,7 +74,7 @@ const useOnDragRotate = () => {
         break
       }
       case last: {
-        updateIndexedHouseTransforms(rotateData.current!.houseTransformsGroup)
+        rotateData.current?.houseTransformsGroup.userData.updateTransforms()
         rotateData.current = null
         break
       }

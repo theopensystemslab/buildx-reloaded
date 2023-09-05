@@ -2,11 +2,12 @@ import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
+import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
-import scope, { ScopeItem } from "../../../state/scope"
+import scope from "../../../state/scope"
 import siteCtx, {
   downMode,
   getModeBools,
@@ -14,21 +15,17 @@ import siteCtx, {
 } from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
 import {
-  getActiveHouseUserData,
-  getHouseTransformsGroupUp,
   mapNearestCutIntersection,
   objectToHouseObjects,
   objectToIfcTagObjects,
 } from "../helpers/sceneQueries"
 import {
-  ColumnGroupUserData,
   elementMeshToScopeItem,
   GridGroupUserData,
   HouseTransformsGroupUserData,
   isElementMesh,
   isRotateHandleMesh,
   isStretchHandleMesh,
-  ModuleGroupUserData,
   StretchHandleGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
@@ -76,6 +73,7 @@ const useGestures = () => {
         const handleGroup = object.parent as StretchHandleGroup
         const {
           userData: { axis },
+          visible,
         } = handleGroup
 
         if (axis === "z" && isStretchHandleMesh(object)) {
@@ -188,24 +186,9 @@ const useGestures = () => {
         O.map(({ object }) => {
           if (!isElementMesh(object)) return
 
-          const { ifcTag } = object.userData
-          const { gridGroupIndex, dna } = object.parent!
-            .userData as ModuleGroupUserData
-          const { levelIndex } = object.parent!.parent!
-            .userData as GridGroupUserData
-          const { columnIndex } = object.parent!.parent!.parent!
-            .userData as ColumnGroupUserData
-          const { houseId } = object.parent!.parent!.parent!.parent!.parent!
-            .userData as HouseTransformsGroupUserData
+          const scopeItem = elementMeshToScopeItem(object)
 
-          scope.selected = {
-            houseId,
-            columnIndex,
-            levelIndex,
-            gridGroupIndex,
-            dna,
-            ifcTag,
-          } as ScopeItem
+          scope.selected = ref(scopeItem)
 
           openMenu(pageX, pageY)
         })

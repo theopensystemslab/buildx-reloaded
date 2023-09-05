@@ -1,7 +1,7 @@
 import { ArrowDown } from "@carbon/icons-react"
 import { dispatchGetModelEvent } from "../../../../workers/exporters/events"
-import ContextMenuButton from "../ContextMenuButton"
-import ContextMenuNested from "../ContextMenuNested"
+import ContextMenuButton from "../../menu/common/ContextMenuButton"
+import ContextMenuNested from "../../menu/common/ContextMenuNested"
 
 const Exporters = ({ houseId }: { houseId: string }) => {
   return (

@@ -4,6 +4,8 @@ import { Fragment, useState } from "react"
 import { useHouseTypes } from "~/data/houseTypes"
 import scope, { useScope } from "~/design/state/scope"
 import { Pencil, TextCursor } from "~/ui/icons"
+import systemsDB from "../../../db/systems"
+import userDB, { House } from "../../../db/user"
 import houses, { useHouse } from "../../state/houses"
 import { closeMenu } from "../../state/menu"
 import {
@@ -14,11 +16,11 @@ import {
 } from "../../state/siteCtx"
 import { dispatchDeleteHouse } from "../../ui-3d/fresh/events/houses"
 import RenameForm from "../../ui/RenameForm"
-import ContextMenu, { ContextMenuProps } from "./ContextMenu"
-import ContextMenuButton from "./ContextMenuButton"
+import ContextMenu, { ContextMenuProps } from "../menu/common/ContextMenu"
+import ContextMenuButton from "../menu/common/ContextMenuButton"
 import AddRemoveLevels from "./interactions/AddRemoveLevels"
 import ChangeLayouts from "./interactions/ChangeLayouts"
-import ChangeLevelType from "./interactions/ChangeLevelType"
+import ChangeLevelType from "../menu/building/ChangeLevelType"
 import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
 import Exporters from "./interactions/Exporters"
@@ -38,36 +40,31 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     },
   }
 
-  const {
-    houseId,
-    columnIndex,
-    levelIndex,
-    gridGroupIndex,
-    ifcTag: elementName,
-  } = selected
+  const { houseId, columnIndex, levelIndex, gridGroupIndex, ifcTag } = selected
 
   const house = useHouse(houseId)
 
-  const editBuilding = () => {
+  const down = () => {
     downMode(selected)
     props.onClose?.()
   }
 
-  const editLevel = () => {
-    downMode(selected)
-    props.onClose?.()
-  }
+  const editBuilding = down
+  const editLevel = down
 
   const { siteMode, buildingMode, levelMode } = getModeBools(mode)
 
-  const houseTypes = useHouseTypes()
+  // const houseTypes = useHouseTypes()
 
-  const resetBuilding = () => {
+  const resetBuilding = async () => {
+    const houseTypes = await systemsDB.houseTypes.toArray()
     const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
     if (houseType) {
-      houses[houseId].dnas = houseType.dnas as string[]
-      houses[houseId].modifiedMaterials = {}
-      houses[houseId].rotation = 0
+      userDB.houses.update(houseId, {
+        dnas: houseType.dnas,
+        modifiedMaterials: {},
+        rotation: 0,
+      } as House)
     }
     props.onClose?.()
   }
@@ -76,12 +73,8 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     dispatchDeleteHouse({
       houseId,
     })
-    // delete houses[houseId]
     scope.selected = null
-
-    if (Object.keys(houses).length === 0) {
-      exitBuildingMode()
-    }
+    exitBuildingMode()
     props.onClose?.()
   }
 
@@ -142,7 +135,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
           />
           <ChangeMaterials
             houseId={houseId}
-            elementName={elementName}
+            elementName={ifcTag}
             onComplete={props.onClose}
           />
 
@@ -155,7 +148,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
               onComplete: props.onClose,
             }}
           />
-          <ChangeLevelType houseId={houseId} onChange={props.onClose} />
+          {/* <ChangeLevelType houseId={houseId} onChange={props.onClose} /> */}
           <AddRemoveLevels
             {...{
               houseId,
@@ -181,7 +174,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
           />
           <ChangeMaterials
             houseId={houseId}
-            elementName={elementName}
+            elementName={ifcTag}
             onComplete={props.onClose}
           />
           <ChangeWindows

@@ -9,7 +9,7 @@ import {
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
-import { ScopeItem } from "../../../state/scope"
+import { ScopeElement } from "../../../state/scope"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -54,20 +54,34 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
-  updateActiveLayoutDnas: (x: string[]) => void
   initRotateAndStretchXHandles: () => void
-  syncLength: () => void
+  updateActiveLayoutDnas: (x: string[]) => Promise<void>
+  updateXStretchHandleLengths: () => void
+  getActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
-  setWidthHandlesVisible: (bool?: boolean) => void
-  refreshAltLayouts: () => void
+  setXStretchHandlesVisible: (bool?: boolean) => void
+  setZStretchHandlesVisible: (bool?: boolean) => void
+  setRotateHandlesVisible: (bool?: boolean) => void
+  updateTransforms: () => void
+  refreshAltSectionTypeLayouts: () => void
+  dbSync: () => Promise<void>
 }
 
 export type HouseTransformsHandlesGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseTransformsHandlesGroup
 }
 
+export const HouseLayoutGroupUse = z.enum([
+  "INITIAL",
+  "RESET",
+  "ALT_SECTION_TYPE",
+  "ALT_LEVEL_TYPE",
+])
+export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>
+
 export type HouseLayoutGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseLayoutGroup
+  use: HouseLayoutGroupUse
   dnas: string[]
   houseLayout: ColumnLayout
   vanillaColumn: VanillaColumn
@@ -76,13 +90,14 @@ export type HouseLayoutGroupUserData = {
   height: number
   length: number
   width: number
-  columnCount: number
+  activeColumnGroupCount: number
   sectionType: string
   modifiedMaterials: Record<string, string>
   initStretchZHandles: () => void
-  setLengthHandlesVisible: (bool?: boolean) => void
   updateLength: () => void
-  updateDnas: () => void
+  updateActiveColumnGroupCount: (n: number) => void
+  updateDnas: () => Promise<void>
+  updateOBB: () => void
 }
 
 export type ColumnGroupUserData = {
@@ -253,29 +268,11 @@ export const isZStretchHandleGroup = (
 ): node is StretchHandleGroup =>
   isStretchHandleGroup(node) && node.userData.axis === "z"
 
-export const incrementColumnCount = (layoutGroup: Object3D) => {
-  const userData = layoutGroup.userData as HouseLayoutGroupUserData
-  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
-    throw new Error(`incrementColumnCount called on ${userData.type}`)
-  userData.columnCount++
-}
+export const elementMeshToScopeItem = (object: Object3D): ScopeElement => {
+  if (!isElementMesh(object))
+    throw new Error(`called elementMeshToScopeItem on non ElementMesh`)
 
-export const decrementColumnCount = (layoutGroup: Object3D) => {
-  const userData = layoutGroup.userData as HouseLayoutGroupUserData
-  if (userData.type !== UserDataTypeEnum.Enum.HouseLayoutGroup)
-    throw new Error(`incrementColumnCount called on ${userData.type}`)
-  userData.columnCount--
-}
-
-export const elementMeshToScopeItem = (object: Object3D): ScopeItem => {
-  const userData = object.userData as ElementMeshUserData
-
-  if (userData.type !== UserDataTypeEnum.Enum.ElementMesh)
-    throw new Error(
-      `userData.type is ${userData.type} in elementMeshToScopeItem`
-    )
-
-  const { ifcTag } = userData
+  const { ifcTag } = object.userData
   const { gridGroupIndex, dna } = object.parent!.userData as ModuleGroupUserData
   const { levelIndex } = object.parent!.parent!.userData as GridGroupUserData
   const { columnIndex } = object.parent!.parent!.parent!
@@ -290,5 +287,6 @@ export const elementMeshToScopeItem = (object: Object3D): ScopeItem => {
     columnIndex,
     houseId,
     dna,
+    object,
   }
 }

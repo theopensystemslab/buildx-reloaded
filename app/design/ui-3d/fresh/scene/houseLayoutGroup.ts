@@ -4,9 +4,10 @@ import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
+import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
+import { renderOBB } from "../dimensions"
 import {
-  findAllGuardDown,
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
 } from "../helpers/sceneQueries"
@@ -18,11 +19,10 @@ import {
 } from "./columnGroup"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   isModuleGroup,
-  isXStretchHandleGroup,
-  isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -45,11 +45,13 @@ export const createHouseLayoutGroup = ({
   houseId,
   dnas,
   houseLayout,
+  use,
 }: {
   systemId: string
   houseId: string
   dnas: string[]
   houseLayout: ColumnLayout
+  use: HouseLayoutGroupUse
 }): T.Task<HouseLayoutGroup> =>
   pipe(
     createColumnGroups({
@@ -60,7 +62,7 @@ export const createHouseLayoutGroup = ({
     T.chain((columnGroups) => {
       const houseLayoutGroup = new Group() as HouseLayoutGroup
 
-      const columnCount = columnGroups.length
+      const activeColumnGroupCount = columnGroups.length
 
       const sectionType =
         houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
@@ -86,9 +88,11 @@ export const createHouseLayoutGroup = ({
               getLayoutGroupColumnGroups,
               A.partition((columnGroup) => columnGroup.visible),
               ({ left: hiddenColumnGroups, right: activeColumnGroups }) => {
-                hiddenColumnGroups.forEach((columnGroup) => {
-                  columnGroup.removeFromParent()
-                })
+                if (houseLayoutGroup.visible) {
+                  hiddenColumnGroups.forEach((columnGroup) => {
+                    columnGroup.removeFromParent()
+                  })
+                }
 
                 return activeColumnGroups.reduce(
                   (acc, v) => acc + v.userData.length,
@@ -100,37 +104,27 @@ export const createHouseLayoutGroup = ({
           const updateLength = (maybeLength?: number) => {
             const { length: oldLength } = houseLayoutGroup.userData
 
+            const houseTransformsGroup =
+              houseLayoutGroup.parent as HouseTransformsGroup
+
             const nextLength = maybeLength ?? computeLength()
 
             houseLayoutGroup.userData.length = nextLength
 
             houseLayoutGroup.position.setZ(-nextLength / 2)
 
-            houseLayoutGroup.parent?.position.add(
+            houseTransformsGroup.position.add(
               new Vector3(0, 0, (nextLength - oldLength) / 2).applyAxisAngle(
                 yAxis,
-                houseLayoutGroup.parent.rotation.y
+                houseTransformsGroup.rotation.y
               )
             )
 
-            const houseTransformsGroup = houseLayoutGroup.parent!
+            houseLayoutGroup.userData.updateOBB()
+          }
 
-            const { x, y, z } = houseTransformsGroup.position
-
-            const center = new Vector3(x, y + height / 2, z)
-            const halfSize = new Vector3(width / 2, height / 2, nextLength / 2)
-            const rotation = new Matrix3().setFromMatrix4(
-              houseTransformsGroup.matrix
-            )
-
-            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
-
-            // if (DEBUG && houseTransformsGroup.parent) {
-            //   renderOBB(
-            //     layoutGroup.userData.obb,
-            //     houseTransformsGroup.parent
-            //   )
-            // }
+          const updateActiveColumnGroupCount = (n: number) => {
+            houseLayoutGroup.userData.activeColumnGroupCount = n
           }
 
           const updateDnas = () => {
@@ -138,7 +132,6 @@ export const createHouseLayoutGroup = ({
             pipe(
               houseLayoutGroup,
               getSortedVisibleColumnGroups,
-              // -> findAllGuardDown
               A.map((v) => {
                 v.traverse((node) => {
                   if (isModuleGroup(node)) {
@@ -159,18 +152,21 @@ export const createHouseLayoutGroup = ({
               })
             )
             const nextDnas = result.flat()
+
             houseLayoutGroup.userData.dnas = nextDnas
 
             const houseTransformsGroup =
               houseLayoutGroup.parent as HouseTransformsGroup
 
-            houseTransformsGroup.userData.refreshAltLayouts()
-
             if (
               houseTransformsGroup.userData.activeLayoutGroupUuid ===
               houseLayoutGroup.uuid
             ) {
-              houseTransformsGroup.userData.updateActiveLayoutDnas(nextDnas)
+              return houseTransformsGroup.userData.updateActiveLayoutDnas(
+                nextDnas
+              )
+            } else {
+              return Promise.resolve()
             }
           }
 
@@ -201,19 +197,35 @@ export const createHouseLayoutGroup = ({
             setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
-          const setLengthHandlesVisible = (bool: boolean = true) => {
-            pipe(
-              houseLayoutGroup,
-              findAllGuardDown(isZStretchHandleGroup),
-              A.map((x) => void setVisible(x, bool))
+          const updateOBB = () => {
+            const { width, height, length } = houseLayoutGroup.userData
+
+            const houseTransformsGroup =
+              houseLayoutGroup.parent as HouseTransformsGroup
+
+            const { x, y, z } = houseTransformsGroup.position
+
+            const center = new Vector3(x, y + height / 2, z)
+            const halfSize = new Vector3(width / 2, height / 2, length / 2)
+            const rotation = new Matrix3().setFromMatrix4(
+              houseTransformsGroup.matrix
             )
+
+            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
+
+            if (DEBUG && houseTransformsGroup.parent) {
+              renderOBB(
+                houseLayoutGroup.userData.obb,
+                houseTransformsGroup.parent
+              )
+            }
           }
 
           const userData: HouseLayoutGroupUserData = {
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
             houseLayout,
-            columnCount,
+            activeColumnGroupCount,
             sectionType,
             levelTypes,
             width,
@@ -222,10 +234,12 @@ export const createHouseLayoutGroup = ({
             obb,
             modifiedMaterials: {},
             vanillaColumn,
+            use,
             initStretchZHandles,
             updateLength,
+            updateActiveColumnGroupCount,
             updateDnas,
-            setLengthHandlesVisible,
+            updateOBB,
           }
 
           houseLayoutGroup.userData = userData

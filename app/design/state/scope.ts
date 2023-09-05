@@ -5,19 +5,21 @@ import { A, O } from "~/utils/functions"
 import { columnLayoutToMatrix, layouts } from "~/design/state/layouts"
 import { getHouseLayoutsKey } from "../../db/layouts"
 import houses from "./houses"
+import { ElementMesh } from "../ui-3d/fresh/scene/userData"
 
-export type ScopeItem = {
+export type ScopeElement = {
   ifcTag: string
   dna: string
   gridGroupIndex: number
   levelIndex: number
   columnIndex: number
   houseId: string
+  object: ElementMesh
 }
 
 export type Scope = {
-  selected: ScopeItem | null
-  hovered: ScopeItem | null
+  selected: ScopeElement | null
+  hovered: ScopeElement | null
 }
 
 const scope = proxy<Scope>({

@@ -1,10 +1,10 @@
 import { Fragment, useMemo, useState } from "react"
-import { ScopeItem } from "../../state/scope"
+import { ScopeElement } from "../../state/scope"
 import siteCtx, { downMode, getModeBools } from "../../state/siteCtx"
-import ContextMenu from "./ContextMenu"
+import ContextMenu from "../menu/common/ContextMenu"
 
 const FreshContextMenu = () => {
-  const [item, setItem] = useState<ScopeItem | null>(null)
+  const [item, setItem] = useState<ScopeElement | null>(null)
   const [{ pageX, pageY }, setPageXY] = useState({ pageX: 0, pageY: 0 })
 
   const { siteMode } = useMemo(() => {

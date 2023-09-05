@@ -140,19 +140,6 @@ export const getHouseTransformsGroupUp = (
   )
 }
 
-export const handleColumnGroupParentQuery = (object: Object3D) => {
-  let x = object
-  while (x.parent) {
-    if (x.userData.type === UserDataTypeEnum.Enum.ColumnGroup) {
-      return x as Group
-    }
-    x = x.parent
-  }
-  throw new Error(
-    `No ${UserDataTypeEnum.Enum.ColumnGroup} parent found for ${object}`
-  )
-}
-
 export const getHouseGroupColumns = (houseGroup: Group) =>
   pipe(
     houseGroup.children,
@@ -161,38 +148,21 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
     someOrError("no columns container in house group")
   )
 
-export const getActiveHouseUserData = (houseTransformsGroup: Object3D) =>
-  pipe(
-    houseTransformsGroup.children,
-    A.findFirstMap((x) =>
-      x.uuid ===
-      (houseTransformsGroup.userData as HouseTransformsGroupUserData)
-        .activeLayoutGroupUuid
-        ? O.some({
-            ...(houseTransformsGroup.userData as HouseTransformsGroupUserData),
-            ...(x.userData as HouseLayoutGroupUserData),
-          })
-        : O.none
-    ),
-    someOrError(`getActiveHouseUserData failure`)
-  )
+export const getActiveHouseUserData = (
+  houseTransformsGroup: HouseTransformsGroup
+) => {
+  const activeLayoutGroup = houseTransformsGroup.userData.getActiveLayoutGroup()
+
+  return {
+    ...houseTransformsGroup.userData,
+    ...activeLayoutGroup.userData,
+  }
+}
 
 export const getLayoutGroups = (
   houseTransformsGroup: HouseTransformsGroup
 ): HouseLayoutGroup[] =>
   houseTransformsGroup.children.filter(isHouseLayoutGroup)
-
-export const getActiveLayoutGroup = (
-  houseTransformsGroup: HouseTransformsGroup
-): HouseLayoutGroup =>
-  pipe(
-    houseTransformsGroup.children,
-    A.findFirst(
-      (x): x is HouseLayoutGroup =>
-        x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-    ),
-    someOrError(`getActiveLayoutGroup failure`)
-  )
 
 export const getPartitionedLayoutGroups = (
   houseTransformsGroup: HouseTransformsGroup

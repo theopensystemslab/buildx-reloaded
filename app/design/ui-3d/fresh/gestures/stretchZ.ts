@@ -1,28 +1,30 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
-import { A, T } from "../../../../utils/functions"
+import { A, someOrError, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
   yAxis,
 } from "../../../../utils/three"
 import pointer from "../../../state/pointer"
-import { updateLayoutGroupLength } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
 import {
+  findAllGuardDown,
+  findFirstGuardAcross,
+  findFirstGuardUp,
   getActiveHouseUserData,
-  getActiveLayoutGroup,
   getHouseTransformsGroupUp,
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
-  handleColumnGroupParentQuery,
 } from "../helpers/sceneQueries"
 import { createColumnGroup, splitColumnGroups } from "../scene/columnGroup"
 import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
+  isColumnGroup,
+  isModuleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
 
@@ -104,16 +106,29 @@ const useOnDragStretchZ = () => {
       selectedObjects: [],
     })
 
-    const handleColumnGroup = handleColumnGroupParentQuery(handleGroup)
-    const houseTransformsGroup = getHouseTransformsGroupUp(handleColumnGroup)
-    houseTransformsGroup.userData.setWidthHandlesVisible(false)
+    const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
     const { side } = handleGroup.userData
+    const targetColumnIndex =
+      side === -1 ? 0 : activeLayoutGroup.userData.activeColumnGroupCount - 1
+
+    const handleColumnGroup = pipe(
+      activeLayoutGroup,
+      findFirstGuardAcross(
+        (x): x is ColumnGroup =>
+          isColumnGroup(x) && x.userData.columnIndex === targetColumnIndex
+      ),
+      someOrError(`no column group`)
+    )
+
+    houseTransformsGroup.userData.setXStretchHandlesVisible(false)
+
     const { systemId, houseId, vanillaColumn } =
       getActiveHouseUserData(houseTransformsGroup)
 
-    const layoutGroup = getActiveLayoutGroup(houseTransformsGroup)
-    const columnGroups = pipe(layoutGroup, getSortedVisibleColumnGroups)
+    const columnGroups = pipe(activeLayoutGroup, getSortedVisibleColumnGroups)
 
     const task = pipe(
       T.of(vanillaColumn),
@@ -133,8 +148,8 @@ const useOnDragStretchZ = () => {
 
             stretchZInitialDataRef.current = {
               direction: side,
-              handleColumnGroup: handleColumnGroup,
-              layoutGroup,
+              handleColumnGroup,
+              layoutGroup: activeLayoutGroup,
               houseTransformsGroup,
               point0: point,
               handleGroupZ0: handleColumnGroup.position.z,
@@ -332,6 +347,8 @@ const useOnDragStretchZ = () => {
       getSortedVisibleColumnGroups
     )
 
+    const columnGroupCount = sortedVisibleColumnGroups.length
+
     if (direction === 1) {
       pipe(
         sortedVisibleColumnGroups,
@@ -371,9 +388,12 @@ const useOnDragStretchZ = () => {
     }
 
     layoutGroup.userData.updateLength()
-    houseTransformsGroup.userData.syncLength()
-    houseTransformsGroup.userData.setWidthHandlesVisible(true)
-    layoutGroup.userData.updateDnas()
+    layoutGroup.userData.updateActiveColumnGroupCount(columnGroupCount)
+    houseTransformsGroup.userData.updateXStretchHandleLengths()
+    houseTransformsGroup.userData.setXStretchHandlesVisible(true)
+    layoutGroup.userData.updateDnas().then(() => {
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    })
 
     stretchZInitialDataRef.current = null
     stretchZProgressDataRef.current = {

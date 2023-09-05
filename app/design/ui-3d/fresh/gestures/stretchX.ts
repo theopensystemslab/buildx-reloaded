@@ -12,6 +12,7 @@ import {
 } from "../helpers/sceneQueries"
 import {
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isXStretchHandleGroup,
   StretchHandleGroup,
@@ -57,7 +58,7 @@ const useOnDragStretchX = () => {
       getPartitionedLayoutGroups(houseTransformsGroup)
 
     ;[activeLayoutGroup, ...otherLayoutGroups].forEach((x) => {
-      x.userData.setLengthHandlesVisible(false)
+      houseTransformsGroup.userData.setZStretchHandlesVisible(false)
     })
 
     const otherSideHandleGroup = pipe(
@@ -71,8 +72,12 @@ const useOnDragStretchX = () => {
 
     let fenceIndex = 0
 
+    const otherSTLayoutGroups = otherLayoutGroups.filter(
+      (x) => x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE
+    )
+
     const fences = pipe(
-      [activeLayoutGroup, ...otherLayoutGroups],
+      [activeLayoutGroup, ...otherSTLayoutGroups],
       sortLayoutGroupsByWidth,
       A.mapWithIndex((i, layoutGroup): FenceX => {
         if (layoutGroup.uuid === activeLayoutGroup.uuid) fenceIndex = i
@@ -149,7 +154,7 @@ const useOnDragStretchX = () => {
           if (adjustedDistance >= x) {
             const layoutGroup = fences[fenceIndex + 1].layoutGroup
             houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
-            layoutGroup.userData.setLengthHandlesVisible(false)
+            houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex++
           }
         })
@@ -162,7 +167,7 @@ const useOnDragStretchX = () => {
           if (adjustedDistance <= x) {
             const layoutGroup = fences[fenceIndex - 1].layoutGroup
             houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
-            layoutGroup.userData.setLengthHandlesVisible(false)
+            houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex--
           }
         })
@@ -173,7 +178,13 @@ const useOnDragStretchX = () => {
   const last = () => {
     const { fences, fenceIndex } = stretchXData.current!
     const activeLayoutGroup = fences[fenceIndex].layoutGroup
-    activeLayoutGroup.userData.setLengthHandlesVisible(true)
+    const houseTransformsGroup =
+      activeLayoutGroup.parent as HouseTransformsGroup
+    houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
+    houseTransformsGroup.userData.setZStretchHandlesVisible(true)
+    houseTransformsGroup.userData.dbSync().then(() => {
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    })
 
     stretchXData.current = null
   }

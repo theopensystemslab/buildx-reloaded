@@ -1,47 +1,22 @@
 import { liveQuery } from "dexie"
-import { cartesian } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
-import {
-  BufferGeometry,
-  BufferGeometryLoader,
-  Group,
-  Matrix3,
-  Mesh,
-  Plane,
-  Vector3,
-} from "three"
-import { OBB } from "three-stdlib"
-import { Module } from "../../../../../server/data/modules"
+import { Group } from "three"
 import layoutsDB, {
   ColumnLayout,
-  getHouseLayoutsKey,
   getVanillaColumnsKey,
   GridGroup,
   VanillaColumn,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
-import { A, combineGuards, O, R, S, T } from "../../../../utils/functions"
-import { addDebugLineAtZ, setVisible, yAxis } from "../../../../utils/three"
+import { A, O, R, T } from "../../../../utils/functions"
 import { getLayoutsWorker } from "../../../../workers"
-import siteCtx, { getModeBools } from "../../../state/siteCtx"
-import { renderOBB } from "../dimensions"
-import createRotateHandles from "../shapes/rotateHandles"
-import createStretchHandle from "../shapes/stretchHandle"
-import { getMaterial } from "../systems"
+import { createModuleGroup } from "./moduleGroup"
 import {
   ColumnGroup,
   ColumnGroupUserData,
-  ElementMeshUserData,
   GridGroupUserData,
-  HouseLayoutGroupUserData,
-  HouseTransformsGroupUserData,
-  isRotateHandlesGroup,
-  isStretchHandleMesh,
-  ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
-import { findAllGuardDown } from "../helpers/sceneQueries"
-import { createModuleGroup } from "./moduleGroup"
 
 // serialized layout key : column
 export let vanillaColumns: Record<string, VanillaColumn> = {}

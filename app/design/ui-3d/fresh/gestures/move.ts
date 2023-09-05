@@ -3,12 +3,12 @@ import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Vector3 } from "three"
+import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
-import { updateIndexedHouseTransforms } from "../dimensions"
 import { dispatchOutline } from "../events/outlines"
-import { objectToHouseObjects, findFirstGuardUp } from "../helpers/sceneQueries"
+import { findFirstGuardUp, objectToHouseObjects } from "../helpers/sceneQueries"
 import {
   elementMeshToScopeItem,
   HouseTransformsGroup,
@@ -48,7 +48,7 @@ const useOnDragMove = () => {
                 }
 
                 const scopeItem = elementMeshToScopeItem(object)
-                scope.selected = scopeItem
+                scope.selected = ref(scopeItem)
 
                 dispatchOutline({
                   selectedObjects: objectToHouseObjects(object),
@@ -62,7 +62,8 @@ const useOnDragMove = () => {
         break
       }
       case last: {
-        updateIndexedHouseTransforms(moveData.current!.houseTransformsGroup)
+        const { houseTransformsGroup } = moveData.current!
+        houseTransformsGroup.userData.updateTransforms()
         moveData.current = null
         return
       }

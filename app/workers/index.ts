@@ -14,7 +14,7 @@ export const initSystemsWorker = () => {
   }
 }
 
-export const getSystemsWorker = () => {
+export const getSystemsWorker = (): Worker => {
   if (isSSR()) return undefined as any
   if (systemsWorker === null) throw new Error(`couldn't get systemsWorker`)
   return systemsWorker
@@ -28,7 +28,7 @@ export const initLayoutsWorker = () => {
   }
 }
 
-export const getLayoutsWorker = () => {
+export const getLayoutsWorker = (): Remote<LayoutsAPI> => {
   if (isSSR()) return undefined as any
   if (layoutsWorker === null) throw new Error(`couldn't get layoutsWorker`)
   return layoutsWorker
@@ -40,7 +40,7 @@ export const initModelsWorker = () => {
   }
 }
 
-export const getModelsWorker = () => {
+export const getModelsWorker = (): Remote<ModelsAPI> => {
   if (isSSR()) return undefined as any
   if (modelsWorker === null) throw new Error(`couldn't get modelsWorker`)
   return modelsWorker

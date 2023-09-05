@@ -100,13 +100,13 @@ export const upMode = () => {
   if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
     enterBuildingMode(houseId)
     dispatchModeChange({
-      previous: SiteCtxModeEnum.Enum.LEVEL,
+      prev: SiteCtxModeEnum.Enum.LEVEL,
       next: SiteCtxModeEnum.Enum.BUILDING,
     })
   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
     exitBuildingMode()
     dispatchModeChange({
-      previous: SiteCtxModeEnum.Enum.BUILDING,
+      prev: SiteCtxModeEnum.Enum.BUILDING,
       next: SiteCtxModeEnum.Enum.SITE,
     })
   }
@@ -117,13 +117,13 @@ export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
   if (mode === SiteCtxModeEnum.Enum.SITE) {
     enterBuildingMode(incoming.houseId)
     dispatchModeChange({
-      previous: SiteCtxModeEnum.Enum.SITE,
+      prev: SiteCtxModeEnum.Enum.SITE,
       next: SiteCtxModeEnum.Enum.BUILDING,
     })
   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
     enterLevelMode(incoming.levelIndex)
     dispatchModeChange({
-      previous: SiteCtxModeEnum.Enum.BUILDING,
+      prev: SiteCtxModeEnum.Enum.BUILDING,
       next: SiteCtxModeEnum.Enum.LEVEL,
     })
   }
@@ -132,7 +132,7 @@ export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
 const MODE_CHANGE_EVENT = "ModeChangeEvent"
 
 export type ModeChangeEventDetail = {
-  previous: SiteCtxMode
+  prev: SiteCtxMode
   next: SiteCtxMode
 }
 

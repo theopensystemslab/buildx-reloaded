@@ -23,13 +23,13 @@ class SystemsDatabase extends Dexie {
   constructor() {
     super("SystemsDatabase")
     this.version(1).stores({
-      blocks: "id,systemId,name",
-      modules: "id,systemId,dna",
-      houseTypes: "id,systemId",
-      elements: "id,systemId",
-      materials: "id,systemId",
-      sectionTypes: "id,systemId",
-      levelTypes: "id,systemId",
+      blocks: "[systemId+name]",
+      modules: "[systemId+dna]",
+      houseTypes: "id",
+      elements: "id",
+      materials: "id",
+      sectionTypes: "id",
+      levelTypes: "[systemId+code]",
     })
     this.modules = this.table("modules")
     this.houseTypes = this.table("houseTypes")
