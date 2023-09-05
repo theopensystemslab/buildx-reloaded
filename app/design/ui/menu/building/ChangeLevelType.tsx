@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useRef } from "react"
+import { Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
@@ -28,95 +28,84 @@ type Props = {
   close: () => void
 }
 
-const ChangeLevelType = ({
-  houseTransformsGroup,
-  scopeElement,
-  close,
-}: Props) => {
-  type LevelTypeOption = {
-    label: string
-    value: { levelType: LevelType; houseLayoutGroup: HouseLayoutGroup }
-  }
+type LevelTypeOption = {
+  label: string
+  value: { levelType: LevelType; houseLayoutGroup: HouseLayoutGroup }
+}
 
-  const { levelTypeOptions, originalLevelTypeOption, levelString } =
-    suspend(async () => {
-      const { systemId, houseId, dnas } =
-        getActiveHouseUserData(houseTransformsGroup)
+const ChangeLevelTypeOptions = (props: Props) => {
+  const { houseTransformsGroup, scopeElement, close } = props
 
-      const { levelIndex, dna } = scopeElement
+  const { levelTypeOptions, originalLevelTypeOption } = suspend(async () => {
+    const { systemId, houseId, dnas } =
+      getActiveHouseUserData(houseTransformsGroup)
 
-      const { levelType: currentLevelTypeCode } = parseDna(dna)
+    const { levelIndex, dna } = scopeElement
 
-      const currentLevelType = await systemsDB.levelTypes.get({
+    const { levelType: currentLevelTypeCode } = parseDna(dna)
+
+    const currentLevelType = await systemsDB.levelTypes.get({
+      systemId,
+      code: currentLevelTypeCode,
+    })
+
+    if (!currentLevelType)
+      throw new Error(
+        `no level type found for ${systemId} ${currentLevelTypeCode}`
+      )
+
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
+
+    const originalLevelTypeOption: LevelTypeOption = {
+      label: currentLevelType.description,
+      value: {
+        houseLayoutGroup: activeLayoutGroup,
+        levelType: currentLevelType,
+      },
+    }
+
+    const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
+      {
         systemId,
-        code: currentLevelTypeCode,
+        dnas,
+        currentLevelTypeCode,
+        levelIndex,
+      }
+    )
+
+    let levelTypeOptions: LevelTypeOption[] = []
+
+    for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
+      if (levelType.code === currentLevelTypeCode) continue
+
+      createHouseLayoutGroup({
+        systemId,
+        dnas,
+        houseId,
+        houseLayout: layout,
+        use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
+      })().then((houseLayoutGroup) => {
+        setInvisibleNoRaycast(houseLayoutGroup)
+        houseTransformsGroup.add(houseLayoutGroup)
+        const lto: LevelTypeOption = {
+          label: levelType.description,
+          value: { levelType, houseLayoutGroup },
+        }
+        levelTypeOptions.push(lto)
       })
+    }
 
-      if (!currentLevelType)
-        throw new Error(
-          `no level type found for ${systemId} ${currentLevelTypeCode}`
-        )
+    levelTypeOptions.push(originalLevelTypeOption)
 
-      const activeLayoutGroup =
-        houseTransformsGroup.userData.getActiveLayoutGroup()
+    levelTypeOptions.sort((a, b) => {
+      if (a.value.levelType.code > b.value.levelType.code) return 1
+      if (a.value.levelType.code < b.value.levelType.code) return -1
+      return 0
+    })
 
-      let levelString = "level"
-
-      if (currentLevelTypeCode?.[0] === "F") {
-        levelString = "foundations"
-      }
-      if (currentLevelTypeCode?.[0] === "R") {
-        levelString = "roof"
-      }
-
-      const originalLevelTypeOption: LevelTypeOption = {
-        label: currentLevelType.description,
-        value: {
-          houseLayoutGroup: activeLayoutGroup,
-          levelType: currentLevelType,
-        },
-      }
-
-      const altLevelTypeLayouts =
-        await getLayoutsWorker().getAltLevelTypeLayouts({
-          systemId,
-          dnas,
-          currentLevelTypeCode,
-          levelIndex,
-        })
-
-      let levelTypeOptions: LevelTypeOption[] = []
-
-      for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
-        if (levelType.code === currentLevelTypeCode) continue
-
-        createHouseLayoutGroup({
-          systemId,
-          dnas,
-          houseId,
-          houseLayout: layout,
-          use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
-        })().then((houseLayoutGroup) => {
-          setInvisibleNoRaycast(houseLayoutGroup)
-          houseTransformsGroup.add(houseLayoutGroup)
-          const lto: LevelTypeOption = {
-            label: levelType.description,
-            value: { levelType, houseLayoutGroup },
-          }
-          levelTypeOptions.push(lto)
-        })
-      }
-
-      levelTypeOptions.push(originalLevelTypeOption)
-
-      levelTypeOptions.sort((a, b) => {
-        if (a.value.levelType.code > b.value.levelType.code) return 1
-        if (a.value.levelType.code < b.value.levelType.code) return -1
-        return 0
-      })
-
-      return { levelTypeOptions, originalLevelTypeOption, levelString }
-    }, [scopeElement])
+    return { levelTypeOptions, originalLevelTypeOption }
+  }, [scopeElement])
 
   const cleanup = () =>
     pipe(
@@ -158,18 +147,41 @@ const ChangeLevelType = ({
   }
 
   return (
+    <Radio
+      options={levelTypeOptions}
+      selected={originalLevelTypeOption.value}
+      onChange={changeLevelType}
+      onHoverChange={previewLevelType}
+    />
+  )
+}
+
+const ChangeLevelType = (props: Props) => {
+  const {
+    scopeElement: { dna },
+  } = props
+  const { levelType } = parseDna(dna)
+
+  let levelString = "level"
+
+  if (levelType[0] === "F") {
+    levelString = "foundations"
+  }
+
+  if (levelType[0] === "R") {
+    levelString = "roof"
+  }
+
+  return (
     <ContextMenuNested
       long
       label={`Change ${levelString} type`}
       icon={<ChangeLevel />}
       unpaddedSvg
     >
-      <Radio
-        options={levelTypeOptions}
-        selected={originalLevelTypeOption.value}
-        onChange={changeLevelType}
-        onHoverChange={previewLevelType}
-      />
+      <Suspense fallback={null}>
+        <ChangeLevelTypeOptions {...props} />
+      </Suspense>
     </ContextMenuNested>
   )
 }

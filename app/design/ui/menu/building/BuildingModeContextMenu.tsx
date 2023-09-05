@@ -66,13 +66,13 @@ const BuildingModeContextMenu = ({
           onComplete: props.onClose,
         }}
       /> */}
-      <Suspense fallback={null}>
-        <ChangeLevelType
-          close={close}
-          houseTransformsGroup={houseTransformsGroup}
-          scopeElement={scopeElement}
-        />
-      </Suspense>
+
+      <ChangeLevelType
+        close={close}
+        houseTransformsGroup={houseTransformsGroup}
+        scopeElement={scopeElement}
+      />
+
       {/* <AddRemoveLevels
         {...{
           houseId,
