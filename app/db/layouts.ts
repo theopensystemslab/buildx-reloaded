@@ -1,6 +1,5 @@
 import Dexie from "dexie"
 import { Module } from "../../server/data/modules"
-import { SectionType } from "../../server/data/sectionTypes"
 import { LastFetchStamped } from "./systems"
 
 export type PositionedModule = {
@@ -115,20 +114,11 @@ export const invertVanillaColumnsKey = (key: string): VanillaColumnsKey => {
   return { systemId, sectionType, levelTypes }
 }
 
-type IndexedAltSectionTypeLayouts = {
-  houseId: string
-  altSectionTypeLayouts: Record<
-    string,
-    { layout: ColumnLayout; dnas: string[]; sectionType: SectionType }
-  >
-}
-
 class LayoutsDatabase extends Dexie {
   models: Dexie.Table<IndexedModel, string>
   houseLayouts: Dexie.Table<IndexedLayout, string>
   vanillaModules: Dexie.Table<IndexedVanillaModule, string>
   vanillaColumns: Dexie.Table<IndexedVanillaColumn, string>
-  altSectionTypeLayouts: Dexie.Table<IndexedAltSectionTypeLayouts, string>
 
   constructor() {
     super("LayoutsDatabase")
@@ -137,13 +127,11 @@ class LayoutsDatabase extends Dexie {
       houseLayouts: "[systemId+dnas]",
       vanillaModules: "[systemId+sectionType+positionType+levelType+gridType]",
       vanillaColumns: "[systemId+sectionType+levelTypes]",
-      altSectionTypeLayouts: "houseId",
     })
     this.houseLayouts = this.table("houseLayouts")
     this.models = this.table("models")
     this.vanillaModules = this.table("vanillaModules")
     this.vanillaColumns = this.table("vanillaColumns")
-    this.altSectionTypeLayouts = this.table("altSectionTypeLayouts")
   }
 }
 
