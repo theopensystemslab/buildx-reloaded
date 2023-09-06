@@ -229,13 +229,6 @@ const modulesToColumnLayout = (modules: Module[]) => {
             (levelIndex, positionedRows: PositionedRow[], modules) => {
               const levelType = modules[0].structuredDna.levelType
               const levelLetter = levelType[0]
-              if (levelLetter !== "F") {
-                const {
-                  structuredDna: { levelType },
-                  height,
-                } = positionedRows[levelIndex - 1].modules[0].module
-                console.log(`${levelType} ${height}`)
-              }
               const y =
                 levelLetter === "F"
                   ? 0
@@ -601,15 +594,11 @@ const changeLayoutLevelType = async ({
   prevLevelType: LevelType
   levelIndex: number
 }) => {
-  const { code: levelType } = nextLevelType
-
-  let dh = 0
-
-  if (levelIndex === 0) {
-    dh = nextLevelType.height - prevLevelType.height
-  }
+  const dh = nextLevelType.height - prevLevelType.height
 
   const allModules = await getModules()
+
+  console.log({ layout })
 
   return pipe(
     layout,
@@ -617,7 +606,14 @@ const changeLayoutLevelType = async ({
       pipe(
         positionedColumn.gridGroups,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
-          if (gridGroup.levelIndex !== levelIndex) return TO.of(gridGroup)
+          if (gridGroup.levelIndex !== levelIndex)
+            return TO.of({
+              ...gridGroup,
+              y:
+                gridGroup.levelIndex > levelIndex
+                  ? gridGroup.y + dh
+                  : gridGroup.y,
+            })
 
           const {
             modules,
@@ -636,7 +632,7 @@ const changeLayoutLevelType = async ({
                 systemId,
                 sectionType,
                 positionType,
-                levelType,
+                levelType: nextLevelType.code,
                 gridType,
               })
             ),
@@ -669,7 +665,7 @@ const changeLayoutLevelType = async ({
                       systemId,
                       structuredDna: {
                         ...positionedModule.module.structuredDna,
-                        levelType,
+                        levelType: nextLevelType.code,
                       },
                     } as Module
 
@@ -732,14 +728,13 @@ const changeLayoutLevelType = async ({
                     )
                   }
                 ),
-                O.map(
-                  (modules): GridGroup => ({
+                O.map((modules): GridGroup => {
+                  return {
                     ...gridGroup,
-                    y: gridGroup.y - dh,
-                    levelType,
+                    levelType: nextLevelType.code,
                     modules,
-                  })
-                ),
+                  }
+                }),
                 TO.fromOption
               )
             )
