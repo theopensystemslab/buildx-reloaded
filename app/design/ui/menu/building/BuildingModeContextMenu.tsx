@@ -11,6 +11,7 @@ import { someOrError } from "../../../../utils/functions"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import { Suspense } from "react"
+import ChangeWindows from "./ChangeWindows"
 
 const BuildingModeContextMenu = ({
   x,
@@ -57,15 +58,11 @@ const BuildingModeContextMenu = ({
         onComplete={props.onClose}
       /> */}
 
-      {/* <ChangeWindows
-        {...{
-          houseId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          onComplete: props.onClose,
-        }}
-      /> */}
+      <ChangeWindows
+        houseTransformsGroup={houseTransformsGroup}
+        scopeElement={scopeElement}
+        close={close}
+      />
 
       <ChangeLevelType
         close={close}
