@@ -2,6 +2,7 @@ import { flow, pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, Num, O, Ord, someOrError } from "../../../../utils/functions"
+import { isMesh } from "../../../../utils/three"
 import {
   ColumnGroup,
   HouseLayoutGroup,
@@ -268,11 +269,15 @@ export const mapNearestCutIntersection = (
       const { object, point } = ix
       switch (object.userData.type) {
         case UserDataTypeEnum.Enum.ElementMesh: {
-          return (
-            ((object as Mesh).material as Material).clippingPlanes as Plane[]
-          ).every((plane) => {
-            return plane.distanceToPoint(point) > 0
-          })
+          if (
+            isMesh(object) &&
+            !Array.isArray(object.material) &&
+            object.material.clippingPlanes !== null
+          ) {
+            return object.material.clippingPlanes.every((plane: Plane) => {
+              return plane.distanceToPoint(point) > 0
+            })
+          }
         }
         case UserDataTypeEnum.Enum.RotateHandleMesh:
         case UserDataTypeEnum.Enum.StretchHandleMesh:
