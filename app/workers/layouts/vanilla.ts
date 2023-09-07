@@ -4,7 +4,7 @@ import { Module } from "../../../server/data/modules"
 import layoutsDB, { PositionedColumn, PositionedRow } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import { A, all, O, Ord, S } from "../../utils/functions"
-import { getModules } from "./worker"
+import { getModules } from "./modules"
 
 export const createVanillaModuleGetter =
   (modules: LastFetchStamped<Module>[]) =>
