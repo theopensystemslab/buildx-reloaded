@@ -6,6 +6,7 @@ import { HouseType } from "../../server/data/houseTypes"
 import { LevelType } from "../../server/data/levelTypes"
 import { Material } from "../../server/data/materials"
 import { SectionType } from "../../server/data/sectionTypes"
+import { WindowType } from "../../server/data/windowTypes"
 
 export type LastFetchStamped<T> = T & {
   lastFetched: number
@@ -18,6 +19,7 @@ class SystemsDatabase extends Dexie {
   materials: Dexie.Table<LastFetchStamped<Material>, string>
   sectionTypes: Dexie.Table<LastFetchStamped<SectionType>, string>
   levelTypes: Dexie.Table<LastFetchStamped<LevelType>, string>
+  windowTypes: Dexie.Table<LastFetchStamped<WindowType>, string>
   blocks: Dexie.Table<Block, string>
 
   constructor() {
@@ -30,6 +32,7 @@ class SystemsDatabase extends Dexie {
       materials: "id",
       sectionTypes: "id",
       levelTypes: "[systemId+code]",
+      windowTypes: "id",
     })
     this.modules = this.table("modules")
     this.houseTypes = this.table("houseTypes")
@@ -38,6 +41,7 @@ class SystemsDatabase extends Dexie {
     this.materials = this.table("materials")
     this.sectionTypes = this.table("sectionTypes")
     this.levelTypes = this.table("levelTypes")
+    this.windowTypes = this.table("windowTypes")
   }
 }
 
