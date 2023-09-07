@@ -27,6 +27,7 @@ export const getWindowTypeAlternatives = async ({
     A.filter(
       (x) =>
         x.systemId === systemId &&
+        x.dna !== dna &&
         compareProps(x.structuredDna, parsedStructuredDna, [
           "sectionType",
           "positionType",

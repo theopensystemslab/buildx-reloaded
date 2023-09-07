@@ -5,6 +5,7 @@ import { LevelType } from "../../server/data/levelTypes"
 import { Material } from "../../server/data/materials"
 import { Module } from "../../server/data/modules"
 import { SectionType } from "../../server/data/sectionTypes"
+import { WindowType } from "../../server/data/windowTypes"
 import systemsDB, { LastFetchStamped } from "../db/systems"
 
 const initModules = async () => {
@@ -138,6 +139,28 @@ const initLevelTypes = async () => {
   await Promise.all(promises)
 }
 
+const initWindowTypes = async () => {
+  const remoteWindowTypes = await vanillaTrpc.windowTypes.query()
+
+  const promises = remoteWindowTypes.map(async (remoteWindowType) => {
+    const localWindowType = await systemsDB.windowTypes.get(remoteWindowType.id)
+
+    const indexedWindowType: LastFetchStamped<WindowType> = {
+      ...remoteWindowType,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localWindowType ||
+      remoteWindowType.lastModified > localWindowType.lastModified
+    ) {
+      await systemsDB.windowTypes.put(indexedWindowType)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
 const init = () => {
   initModules()
   initHouseTypes()
@@ -145,6 +168,7 @@ const init = () => {
   initMaterials()
   initSectionTypes()
   initLevelTypes()
+  initWindowTypes()
 }
 
 init()

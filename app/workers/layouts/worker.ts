@@ -596,7 +596,7 @@ const changeLayoutLevelType = async ({
       pipe(
         positionedColumn.gridGroups,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
-          if (gridGroup.levelIndex !== levelIndex)
+          if (gridGroup.levelIndex > levelIndex)
             return TO.of({
               ...gridGroup,
               y:
