@@ -32,16 +32,8 @@ import {
 } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
+import { getModules } from "./modules"
 import { getIndexedVanillaModule, postVanillaColumn } from "./vanilla"
-
-let modulesCache: LastFetchStamped<Module>[] = []
-export const getModules = async () => {
-  if (modulesCache.length > 0) return modulesCache
-  modulesCache = await systemsDB.modules.toArray()
-  return modulesCache
-}
-
-let layoutsQueue: HouseLayoutsKey[] = []
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -597,8 +589,6 @@ const changeLayoutLevelType = async ({
   const dh = nextLevelType.height - prevLevelType.height
 
   const allModules = await getModules()
-
-  console.log({ layout })
 
   return pipe(
     layout,
