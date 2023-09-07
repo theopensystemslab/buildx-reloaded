@@ -40,7 +40,7 @@ export const useWindowOptions = ({
 
   const { systemId } = m
 
-  const side: Side = siteCtx.houseId ? getSide(siteCtx.houseId) : "RIGHT"
+  const side: Side = siteCtx.houseId ? getSide(siteCtx.houseId as any) : "RIGHT"
 
   const systemModules = useSystemModules({ systemId })
   const windowTypes = useSystemWindowTypes({ systemId })

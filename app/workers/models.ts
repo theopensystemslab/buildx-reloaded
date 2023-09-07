@@ -72,9 +72,14 @@ const getModuleModel = async ({
 }
 
 if (!isSSR()) {
-  liveQuery(() => systemsDB.modules.toArray()).subscribe((modules) =>
-    pipe(modules, A.map(putModuleModel))
-  )
+  liveQuery(() => systemsDB.modules.toArray()).subscribe(async (modules) => {
+    for (const { systemId, speckleBranchUrl } of modules) {
+      getModuleModel({
+        systemId,
+        speckleBranchUrl,
+      })
+    }
+  })
 }
 
 export const syncModuleModels = (modules: LastFetchStamped<Module>[]) => {

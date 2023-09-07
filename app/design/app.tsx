@@ -16,12 +16,10 @@ const App = () => {
   initLayoutsWorker()
   return (
     <TrpcProvider>
-      <DataInit>
-        <AppInit controlsEnabled={true} mapEnabled={false}>
-          <Routing />
-          <FreshApp />
-        </AppInit>
-      </DataInit>
+      <AppInit controlsEnabled={true} mapEnabled={false}>
+        <Routing />
+        <FreshApp />
+      </AppInit>
     </TrpcProvider>
   )
 }
