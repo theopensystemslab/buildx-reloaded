@@ -1,11 +1,25 @@
-import React from "react"
+import { pipe } from "fp-ts/lib/function"
+import React, { Suspense } from "react"
 import { suspend } from "suspend-react"
+import systemsDB from "../../../../db/systems"
+import { Opening } from "../../../../ui/icons"
+import Radio from "../../../../ui/Radio"
+import { A, someOrError, T } from "../../../../utils/functions"
+import { getWindowTypeAlternatives } from "../../../../workers/layouts/modules"
+import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
-import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import {
+  findFirstGuardUp,
+  getActiveHouseUserData,
+} from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { createModuleGroup } from "../../../ui-3d/fresh/scene/moduleGroup"
 import {
   HouseLayoutGroup,
   HouseTransformsGroup,
+  isModuleGroup,
+  ModuleGroup,
 } from "../../../ui-3d/fresh/scene/userData"
+import ContextMenuNested from "../common/ContextMenuNested"
 
 type Props = {
   scopeElement: ScopeElement
@@ -13,98 +27,92 @@ type Props = {
   close: () => void
 }
 
-type WindowTypeOption = {
-  label: string
-  value: {
-    windowType: WindowTypeOption
-    changeForward: () => void
-    changeReverse: () => void
-    settle?: () => void
-  }
-}
-
 const ChangeWindowsOptions = (props: Props) => {
-  const { houseTransformsGroup, scopeElement, close } = props
+  const {
+    houseTransformsGroup,
+    scopeElement: { dna, houseId, gridGroupIndex, object },
+    close,
+  } = props
 
-  const {} = suspend(async () => {
-    // const { systemId, houseId, dnas } =
-    //   getActiveHouseUserData(houseTransformsGroup)
+  const side = getSide(houseTransformsGroup)
 
-    // const { levelIndex, dna } = scopeElement
+  const { systemId } = getActiveHouseUserData(houseTransformsGroup)
 
-    // const { levelType: currentLevelTypeCode } = parseDna(dna)
+  console.log(side)
 
-    // const currentLevelType = await systemsDB.levelTypes.get({
-    //   systemId,
-    //   code: currentLevelTypeCode,
-    // })
+  const { windowTypeOptions, originalWindowTypeOption } = suspend(
+    // I'm using fp-ts and dealing with some async code
+    async () => {
+      const originalModule = await systemsDB.modules.get({ systemId, dna })
+      if (!originalModule)
+        throw new Error(`no original module ${systemId} ${dna}`)
 
-    // if (!currentLevelType)
-    //   throw new Error(
-    //     `no level type found for ${systemId} ${currentLevelTypeCode}`
-    //   )
+      const candidates = await getWindowTypeAlternatives({ systemId, dna })
 
-    // const activeLayoutGroup =
-    //   houseTransformsGroup.userData.getActiveLayoutGroup()
+      const originalWindowTypeOption = {
+        value: {
+          moduleGroup: pipe(
+            object,
+            findFirstGuardUp(isModuleGroup),
+            someOrError(`no module group`)
+          ),
+          module: originalModule,
+        },
+        label: originalModule.description,
+      }
 
-    // const originalLevelTypeOption: LevelTypeOption = {
-    //   label: currentLevelType.description,
-    //   value: {
-    //     houseLayoutGroup: activeLayoutGroup,
-    //     levelType: currentLevelType,
-    //   },
-    // }
+      return pipe(
+        candidates,
+        A.map(
+          (module) => () =>
+            createModuleGroup({
+              systemId,
+              houseId,
+              gridGroupIndex,
+              module,
+            }).then((moduleGroup) => ({
+              value: { moduleGroup, module },
+              label: module.description,
+            }))
+        ),
+        A.sequence(T.ApplicativeSeq),
+        T.map((windowTypeOptions) => ({
+          windowTypeOptions,
+          originalWindowTypeOption,
+        }))
+      )()
+    },
+    [systemId, dna]
+  )
 
-    // const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
-    //   {
-    //     systemId,
-    //     dnas,
-    //     currentLevelTypeCode,
-    //     levelIndex,
-    //   }
-    // )
+  const changeWindowType = () => {}
+  const previewWindowType = () => {}
 
-    // let levelTypeOptions: LevelTypeOption[] = []
-
-    // for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
-    //   if (levelType.code === currentLevelTypeCode) continue
-
-    //   createHouseLayoutGroup({
-    //     systemId,
-    //     dnas,
-    //     houseId,
-    //     houseLayout: layout,
-    //     use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
-    //   })().then((houseLayoutGroup) => {
-    //     setInvisibleNoRaycast(houseLayoutGroup)
-    //     houseTransformsGroup.add(houseLayoutGroup)
-    //     const lto: LevelTypeOption = {
-    //       label: levelType.description,
-    //       value: { levelType, houseLayoutGroup },
-    //     }
-    //     levelTypeOptions.push(lto)
-    //   })
-    // }
-
-    // levelTypeOptions.push(originalLevelTypeOption)
-
-    // levelTypeOptions.sort((a, b) => {
-    //   if (a.value.levelType.code > b.value.levelType.code) return 1
-    //   if (a.value.levelType.code < b.value.levelType.code) return -1
-    //   return 0
-    // })
-
-    // return { levelTypeOptions, originalLevelTypeOption }
-    return {}
-  }, [scopeElement])
-
-  return null
+  return (
+    <Radio
+      options={windowTypeOptions}
+      selected={originalWindowTypeOption.value}
+      onChange={changeWindowType}
+      onHoverChange={previewWindowType}
+    />
+  )
 }
 
 const ChangeWindows = (props: Props) => {
   const { houseTransformsGroup, scopeElement, close } = props
 
-  return <div></div>
+  return (
+    <ContextMenuNested
+      long
+      label={`Change windows`}
+      icon={<Opening />}
+      unpaddedSvg
+    >
+      <Suspense fallback={null}>
+        <ChangeWindowsOptions {...props} />
+      </Suspense>
+    </ContextMenuNested>
+  )
 }
 
 export default ChangeWindows

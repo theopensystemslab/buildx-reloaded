@@ -42,10 +42,10 @@ export const parseDna = (dna: string): StructuredDna => {
   const windowTypeTop = chunks[10] ?? "TOP0"
 
   return {
-    positionType: typeLetter === "E" ? "END" : "MID",
-    level: ["F", "G", "M", "T", "R"].indexOf(levelLetter),
-    levelType,
     sectionType,
+    positionType: typeLetter === "E" ? "END" : "MID",
+    levelType,
+    level: ["F", "G", "M", "T", "R"].indexOf(levelLetter),
     gridType,
     gridUnits,
     stairsType,

@@ -9,6 +9,7 @@ import { getModelsWorker } from "../../../../workers"
 import { getMaterial } from "../systems"
 import {
   ElementMeshUserData,
+  ModuleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -143,7 +144,7 @@ export const createModuleGroup = async ({
   gridGroupIndex: number
   module: Module
 }) => {
-  const moduleGroup = new Group()
+  const moduleGroup = new Group() as ModuleGroup
 
   const modelGeometries = await getModelGeometriesTask({
     systemId,
