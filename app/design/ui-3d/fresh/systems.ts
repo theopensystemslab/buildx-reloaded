@@ -75,6 +75,7 @@ export const getMaterial = (
   const { systemId, houseId, ifcTag } = input
 
   if (ifcTag.toUpperCase() === "IFCPLATE") {
+    // TODO: tie glass material colour to airtable also
     return glassMaterial
   }
 

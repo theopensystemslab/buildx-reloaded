@@ -8,6 +8,8 @@ import {
   LineSegments,
 } from "three"
 
+const transparent = false
+
 interface Axis {
   cells: number
   size: number
@@ -19,13 +21,15 @@ interface ReactangularGridProps {
   z: Axis
   color?: number | string | Color
   dashed?: boolean
+  opacity?: number
 }
 
 const RectangularGrid: React.FC<ReactangularGridProps> = ({
   x,
   z,
-  color = "red",
+  color = 0x000000,
   dashed = false,
+  opacity = 1,
 }) => {
   const gridGeometry = useMemo(() => {
     const geometry = new BufferGeometry()
@@ -70,16 +74,20 @@ const RectangularGrid: React.FC<ReactangularGridProps> = ({
         scale: 10,
         dashSize: 1,
         gapSize: 1,
+        opacity,
+        transparent,
         // blending: AdditiveBlending,
         // depthTest: false,
       })
     }
     return new LineBasicMaterial({
       color,
+      opacity,
+      transparent,
       // blending: AdditiveBlending,
       // depthTest: false,
     })
-  }, [color, dashed])
+  }, [color, dashed, opacity])
 
   return (
     <lineSegments

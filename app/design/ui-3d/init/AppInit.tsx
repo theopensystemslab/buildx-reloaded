@@ -40,7 +40,8 @@ const Common = (props: Props) => {
       <RectangularGrid
         x={{ cells: 61, size: 1 }}
         z={{ cells: 61, size: 1 }}
-        color="#ababab"
+        color={0xffffff}
+        opacity={1}
       />
       <SiteBoundary />
       <Effects />

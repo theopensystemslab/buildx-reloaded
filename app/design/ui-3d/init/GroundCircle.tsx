@@ -7,7 +7,7 @@ const GroundCircle = () => {
   return (
     <mesh ref={ref} position={[0, -0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       <circleGeometry args={[500, 32]} />
-      <meshStandardMaterial side={DoubleSide} color="#DDDDD8" />
+      <meshStandardMaterial side={DoubleSide} color={0xd1d1c7} />
     </mesh>
   )
 }
