@@ -1,5 +1,5 @@
 import { Fragment, useRef } from "react"
-import { Group } from "three"
+import { DoubleSide, Group } from "three"
 import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
