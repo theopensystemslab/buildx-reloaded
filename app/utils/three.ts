@@ -15,6 +15,7 @@ import {
   MeshStandardMaterial,
   Object3D,
   Scene,
+  SRGBColorSpace,
   Vector3,
 } from "three"
 import { CameraLayer, RaycasterLayer } from "../design/state/constants"
@@ -36,6 +37,7 @@ export const isMesh = (x: Object3D): x is Mesh => x.type === "Mesh"
 export const onCreated = (state: RootState) => {
   state.gl.localClippingEnabled = true
   state.raycaster.layers.set(RaycasterLayer.ENABLED)
+  state.gl.outputColorSpace = SRGBColorSpace
 }
 
 export const glassMaterial = new MeshPhysicalMaterial({

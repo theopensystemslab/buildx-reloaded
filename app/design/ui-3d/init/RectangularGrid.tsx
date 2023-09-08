@@ -8,7 +8,7 @@ import {
   LineSegments,
 } from "three"
 
-const transparent = false
+const transparent = true
 
 interface Axis {
   cells: number
