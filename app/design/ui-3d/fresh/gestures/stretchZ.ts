@@ -2,6 +2,7 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Object3D, Vector3 } from "three"
 import { A, someOrError, T } from "../../../../utils/functions"
+import { abs, floor, round, sign } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -32,7 +33,7 @@ const TMP_MAX_LENGTH = 10
 
 const useOnDragStretchZ = () => {
   const stretchZInitialDataRef = useRef<{
-    direction: number
+    side: 1 | -1
     point0: Vector3
     handleColumnGroup: Object3D
     houseTransformsGroup: HouseTransformsGroup
@@ -147,7 +148,7 @@ const useOnDragStretchZ = () => {
             const vanillaLength = templateVanillaColumnGroup.userData.length
 
             stretchZInitialDataRef.current = {
-              direction: side,
+              side,
               handleColumnGroup,
               layoutGroup: activeLayoutGroup,
               houseTransformsGroup,
@@ -213,14 +214,12 @@ const useOnDragStretchZ = () => {
     if (!stretchZInitialDataRef.current) return
 
     const {
-      direction,
+      side,
       point0,
       houseTransformsGroup,
       handleColumnGroup,
       handleGroupZ0,
       vanillaLength,
-      templateVanillaColumnGroup,
-      columnGroups,
       layoutGroup,
       endColumnGroup,
       maxLength,
@@ -238,18 +237,19 @@ const useOnDragStretchZ = () => {
     )
     const distance = distanceVector.z
 
-    handleColumnGroup.position.setZ(handleGroupZ0 + distance)
+    const direction = sign(distance - lastDistance) as 1 | -1
 
     // back side
-    if (direction === 1) {
+    if (side === 1) {
       // const cl = clamp(lo, hi)
 
       // additive direction to back side
-      if (distance > lastDistance) {
+      if (direction === 1) {
         if (fenceIndex + 1 < fences.length) {
           const nextFence = fences[fenceIndex + 1]
           const realDistance = midEndZ + distance
           if (realDistance >= nextFence.z) {
+            handleColumnGroup.position.setZ(nextFence.z)
             setVisibleAndRaycast(nextFence.columnGroup)
             endColumnGroup.userData.columnIndex++
             nextFence.columnGroup.userData.columnIndex =
@@ -257,19 +257,22 @@ const useOnDragStretchZ = () => {
             stretchZProgressDataRef.current.fenceIndex++
 
             if (nextFence.z < maxLength) {
-              addVanilla(direction)
+              addVanilla(side)
             }
           }
         }
       }
 
       // subtractive direction to back side
-      if (distance < lastDistance) {
+      if (direction === -1) {
         if (fenceIndex > 0) {
           const realDistance = midEndZ + distance
           const lastVisibleFence = fences[fenceIndex]
 
           if (realDistance < lastVisibleFence.z) {
+            handleColumnGroup.position.setZ(
+              fences[fenceIndex - 1].z + vanillaLength / 2
+            )
             setInvisibleNoRaycast(lastVisibleFence.columnGroup)
             stretchZProgressDataRef.current.fenceIndex--
             lastVisibleFence.columnGroup.userData.columnIndex = -1
@@ -280,14 +283,18 @@ const useOnDragStretchZ = () => {
     }
 
     // front side
-    if (direction === -1) {
+    if (side === -1) {
       // const cl = clamp(lo, hi)
       // additive direction to front side
-      if (distance < lastDistance) {
+      if (direction === -1) {
         if (fenceIndex + 1 < fences.length) {
           const nextFence = fences[fenceIndex + 1]
+
           const realDistance = midStartZ + distance
           if (realDistance <= nextFence.z) {
+            handleColumnGroup.position.setZ(
+              nextFence.z - handleColumnGroup.userData.length
+            )
             setVisibleAndRaycast(nextFence.columnGroup)
 
             pipe(
@@ -304,19 +311,24 @@ const useOnDragStretchZ = () => {
 
             // naive
             if (nextFence.z < maxLength) {
-              addVanilla(direction)
+              addVanilla(side)
             }
           }
         }
       }
+
       // subtractive direction to front side
-      if (distance > lastDistance) {
+      if (direction === 1) {
         if (fenceIndex > 0) {
           const realDistance = midStartZ + distance
           const lastVisibleFence = fences[fenceIndex]
 
           if (realDistance > lastVisibleFence.z) {
             setInvisibleNoRaycast(lastVisibleFence.columnGroup)
+
+            handleColumnGroup.position.setZ(
+              lastVisibleFence.z + vanillaLength / 2
+            )
 
             lastVisibleFence.columnGroup.userData.columnIndex = -1
 
@@ -339,7 +351,7 @@ const useOnDragStretchZ = () => {
   const last = () => {
     if (!stretchZInitialDataRef.current) return
 
-    const { layoutGroup, direction, houseTransformsGroup } =
+    const { layoutGroup, side, houseTransformsGroup } =
       stretchZInitialDataRef.current
 
     const sortedVisibleColumnGroups = pipe(
@@ -349,7 +361,7 @@ const useOnDragStretchZ = () => {
 
     const columnGroupCount = sortedVisibleColumnGroups.length
 
-    if (direction === 1) {
+    if (side === 1) {
       pipe(
         sortedVisibleColumnGroups,
         A.takeRight(2),
@@ -362,7 +374,7 @@ const useOnDragStretchZ = () => {
       )
     }
 
-    if (direction === -1) {
+    if (side === -1) {
       pipe(
         sortedVisibleColumnGroups,
         A.takeLeft(2),

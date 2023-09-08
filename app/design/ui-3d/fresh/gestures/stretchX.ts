@@ -137,11 +137,13 @@ const useOnDragStretchX = () => {
 
     const clampedDistance = clamp(side * lo, side * hi)(distanceWithSide)
 
-    handleGroup.position.setX(handleGroupX0 + side * clampedDistance)
+    let stepHandle = () => {
+      handleGroup.position.setX(handleGroupX0 + side * clampedDistance)
 
-    otherSideHandleGroup.position.setX(
-      otherSideHandleGroupX0 - side * clampedDistance
-    )
+      otherSideHandleGroup.position.setX(
+        otherSideHandleGroupX0 - side * clampedDistance
+      )
+    }
 
     const adjustedDistance = side * distance
     const adjustedLastDistance = side * lastDistance
@@ -156,6 +158,7 @@ const useOnDragStretchX = () => {
             houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
             houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex++
+            stepHandle()
           }
         })
       )
@@ -169,6 +172,7 @@ const useOnDragStretchX = () => {
             houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
             houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex--
+            stepHandle()
           }
         })
       )
