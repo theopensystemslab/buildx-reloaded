@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { flow, pipe } from "fp-ts/lib/function"
-import { Suspense } from "react"
+import { Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import { Module } from "../../../../../server/data/modules"
 import { WindowType } from "../../../../../server/data/windowTypes"
@@ -22,8 +22,10 @@ import {
 import { createModuleGroup } from "../../../ui-3d/fresh/scene/moduleGroup"
 import {
   HouseTransformsGroup,
+  isColumnGroup,
   isModuleGroup,
   ModuleGroup,
+  ModuleGroupUse,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "../common/ContextMenuNested"
 
@@ -46,138 +48,156 @@ const ChangeWindowsOptions = (props: Props) => {
     close,
   } = props
 
+  const originalModuleGroup = pipe(
+    object,
+    findFirstGuardUp(isModuleGroup),
+    someOrError(`no module group`)
+  )
+
   const side = getSide(houseTransformsGroup)
 
   const { systemId } = getActiveHouseUserData(houseTransformsGroup)
 
-  const { windowTypeOptions, originalWindowTypeOption, previewWindowType } =
-    suspend(async () => {
-      const originalModule = await systemsDB.modules.get({ systemId, dna })
-      if (!originalModule)
-        throw new Error(`no original module ${systemId} ${dna}`)
+  const closing = useRef(false)
 
-      const candidates = await getWindowTypeAlternatives({ systemId, dna })
-      const windowTypes = await systemsDB.windowTypes.toArray()
+  const { windowTypeOptions, originalWindowTypeOption } = suspend(async () => {
+    const originalModule = await systemsDB.modules.get({ systemId, dna })
+    if (!originalModule)
+      throw new Error(`no original module ${systemId} ${dna}`)
 
-      const getWindowType = (candidate: Module) =>
+    const candidates = await getWindowTypeAlternatives({ systemId, dna })
+    const windowTypes = await systemsDB.windowTypes.toArray()
+
+    const getWindowType = (candidate: Module) =>
+      pipe(
+        windowTypes,
+        A.findFirstMap((windowType): O.Option<WindowType> => {
+          switch (true) {
+            // special case end modules
+            case candidate.structuredDna.positionType === "END":
+              return windowType.code === candidate.structuredDna.windowTypeEnd
+                ? O.some(windowType)
+                : O.none
+            // left = windowTypeSide2
+            case side === "LEFT":
+              return windowType.code === candidate.structuredDna.windowTypeSide1
+                ? O.some(windowType)
+                : O.none
+            // right = windowTypeSide1
+            case side === "RIGHT":
+              return windowType.code === candidate.structuredDna.windowTypeSide2
+                ? O.some(windowType)
+                : O.none
+            default:
+              return O.none
+          }
+        })
+      )
+
+    const originalColumnGroup = pipe(
+      originalModuleGroup,
+      findFirstGuardUp(isColumnGroup),
+
+      someOrError(`no column group`)
+    )
+
+    const originalWindowType = pipe(
+      originalModule,
+      getWindowType,
+      someOrError(`no window type`)
+    )
+
+    const originalWindowTypeOption: WindowTypeOption = {
+      value: {
+        moduleGroup: originalModuleGroup,
+        windowType: originalWindowType.code,
+      },
+      label: originalWindowType.description,
+    }
+
+    return pipe(
+      candidates,
+      A.filterMap((candidate) =>
         pipe(
-          windowTypes,
-          A.findFirstMap((windowType): O.Option<WindowType> => {
-            switch (true) {
-              // special case end modules
-              case candidate.structuredDna.positionType === "END":
-                return windowType.code === candidate.structuredDna.windowTypeEnd
-                  ? O.some(windowType)
-                  : O.none
-              // left = windowTypeSide2
-              case side === "LEFT":
-                return windowType.code ===
-                  candidate.structuredDna.windowTypeSide1
-                  ? O.some(windowType)
-                  : O.none
-              // right = windowTypeSide1
-              case side === "RIGHT":
-                return windowType.code ===
-                  candidate.structuredDna.windowTypeSide2
-                  ? O.some(windowType)
-                  : O.none
-              default:
-                return O.none
-            }
-          })
-        )
+          candidate,
+          getWindowType,
+          O.map(
+            (windowType): T.Task<WindowTypeOption> =>
+              () =>
+                createModuleGroup({
+                  systemId,
+                  houseId,
+                  gridGroupIndex,
+                  module: candidate,
+                  use: ModuleGroupUse.Enum.ALT_WINDOW_TYPE,
+                  flip: originalColumnGroup.userData.endColumn ?? false,
+                  visible: false,
+                  z: originalModuleGroup.userData.z,
+                }).then((moduleGroup) => {
+                  setInvisibleNoRaycast(moduleGroup)
+                  originalModuleGroup.parent!.add(moduleGroup)
 
-      const originalModuleGroup = pipe(
-        object,
-        findFirstGuardUp(isModuleGroup),
-        someOrError(`no module group`)
-      )
-
-      const originalWindowType = pipe(
-        originalModule,
-        getWindowType,
-        someOrError(`no window type`)
-      )
-
-      const originalWindowTypeOption: WindowTypeOption = {
-        value: {
-          moduleGroup: originalModuleGroup,
-          windowType: originalWindowType.code,
-        },
-        label: originalWindowType.description,
-      }
-
-      return pipe(
-        candidates,
-        A.filterMap((candidate) =>
-          pipe(
-            candidate,
-            getWindowType,
-            O.map(
-              (windowType): T.Task<WindowTypeOption> =>
-                () =>
-                  createModuleGroup({
-                    systemId,
-                    houseId,
-                    gridGroupIndex,
-                    module: candidate,
-                  }).then((moduleGroup) => {
-                    moduleGroup.position.copy(originalModuleGroup.position)
-                    moduleGroup.scale.copy(originalModuleGroup.scale)
-
-                    setInvisibleNoRaycast(moduleGroup)
-                    originalModuleGroup.parent!.add(moduleGroup)
-
-                    return {
-                      value: { moduleGroup, windowType: windowType.code },
-                      label: windowType.description,
-                      thumbnail: windowType.imageUrl,
-                    }
-                  })
-            )
-          )
-        ),
-        A.sequence(T.ApplicativeSeq),
-        T.map(
-          flow(
-            A.concat([originalWindowTypeOption]),
-            A.sort(
-              pipe(
-                S.Ord,
-                Ord.contramap((o: WindowTypeOption) => o.value.windowType)
-              )
-            ),
-            (windowTypeOptions) => {
-              const previewWindowType = (
-                incoming: WindowTypeOption["value"] | null
-              ) => {
-                if (incoming) {
-                  const { moduleGroup } = incoming
-                  setInvisibleNoRaycast(originalModuleGroup)
-                  setVisibleAndRaycast(moduleGroup)
-                } else {
-                  setVisibleAndRaycast(originalModuleGroup)
-                  for (let {
-                    value: { moduleGroup },
-                  } of windowTypeOptions) {
-                    if (moduleGroup !== originalModuleGroup)
-                      setInvisibleNoRaycast(moduleGroup)
+                  return {
+                    value: {
+                      moduleGroup,
+                      windowType: windowType.code,
+                    },
+                    label: windowType.description,
+                    thumbnail: windowType.imageUrl,
                   }
-                }
-                invalidate()
-              }
-              return {
-                windowTypeOptions,
-                originalWindowTypeOption,
-                previewWindowType,
-              }
-            }
+                })
           )
         )
-      )()
-    }, [systemId, dna])
+      ),
+      A.sequence(T.ApplicativeSeq),
+      T.map(
+        flow(
+          A.concat([originalWindowTypeOption]),
+          A.sort(
+            pipe(
+              S.Ord,
+              Ord.contramap((o: WindowTypeOption) => o.value.windowType)
+            )
+          ),
+          (windowTypeOptions) => {
+            return {
+              windowTypeOptions,
+              originalWindowTypeOption,
+            }
+          }
+        )
+      )
+    )()
+  }, [systemId, dna])
 
-  const changeWindowType = () => {}
+  const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
+    if (closing.current) return
+
+    if (incoming === null) {
+      originalModuleGroup.userData.setThisModuleGroupVisible()
+    } else {
+      incoming.moduleGroup.userData.setThisModuleGroupVisible()
+    }
+
+    invalidate()
+  }
+
+  const changeWindowType = ({ moduleGroup }: WindowTypeOption["value"]) => {
+    closing.current = true
+
+    moduleGroup.userData.setThisModuleGroupVisible()
+
+    houseTransformsGroup.userData
+      .getActiveLayoutGroup()
+      .userData.updateDnas()
+      .then(() => {
+        houseTransformsGroup.userData.dbSync().then(() => {
+          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+        })
+      })
+
+    close()
+  }
 
   return (
     <Radio

@@ -15,6 +15,7 @@ import {
   ColumnGroup,
   ColumnGroupUserData,
   GridGroupUserData,
+  ModuleGroupUse,
   UserDataTypeEnum,
 } from "./userData"
 
@@ -102,14 +103,11 @@ export const createColumnGroup =
           houseId,
           module,
           gridGroupIndex,
+          z,
+          flip: endColumn,
+          use: ModuleGroupUse.Enum.INITIAL,
+          visible: true,
         })
-
-        moduleGroup.scale.set(1, 1, endColumn ? 1 : -1)
-        moduleGroup.position.set(
-          0,
-          0,
-          endColumn ? z + module.length / 2 : z - module.length / 2
-        )
 
         gridGroup.position.setY(y)
         gridGroup.add(moduleGroup)
