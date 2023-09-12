@@ -30,7 +30,7 @@ export default function Radio<T>(props: Props<T>) {
       lastT.current = maybeT
       props.onHoverChange?.(maybeT)
     },
-    100,
+    30,
     { leading: true }
   )
 
@@ -72,7 +72,11 @@ export default function Radio<T>(props: Props<T>) {
             {anyThumbnails && (
               <div
                 className="h-16 w-16 flex-none bg-cover bg-center"
-                style={{ backgroundImage: `url(${option.thumbnail})` }}
+                style={
+                  option.thumbnail
+                    ? { backgroundImage: `url(${option.thumbnail})` }
+                    : undefined
+                }
               ></div>
             )}
             {typeof option.label === "string" ? (

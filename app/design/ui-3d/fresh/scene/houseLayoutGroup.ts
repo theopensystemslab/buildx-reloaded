@@ -134,7 +134,7 @@ export const createHouseLayoutGroup = ({
               getSortedVisibleColumnGroups,
               A.map((v) => {
                 v.traverse((node) => {
-                  if (isModuleGroup(node)) {
+                  if (isModuleGroup(node) && node.visible) {
                     const { dna } = node.userData as ModuleGroupUserData
                     if (
                       node.parent?.userData.type !==

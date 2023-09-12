@@ -13,6 +13,7 @@ export type WindowType = {
   glazingArea: number
   doorArea: number
   openingPerimeter: number
+  lastModified: number
 }
 
 export const windowTypeParser = z.object({
@@ -30,6 +31,17 @@ export const windowTypeParser = z.object({
     glazing_area: z.number().default(0),
     opening_perimeter: z.number().default(0),
     door_area: z.number().default(0),
+    last_modified: z.string().refine(
+      (value) => {
+        // Attempt to parse the value as a date and check that it's valid
+        const date = new Date(value)
+        return !isNaN(date.getTime())
+      },
+      {
+        // Custom error message
+        message: "Invalid date string",
+      }
+    ),
   }),
 })
 
@@ -56,6 +68,7 @@ export const windowTypesQuery: QueryFn<WindowType> =
                     glazing_area,
                     opening_perimeter: openingPerimeter,
                     door_area: doorArea,
+                    last_modified,
                   },
                 }): WindowType => ({
                   id,
@@ -66,6 +79,7 @@ export const windowTypesQuery: QueryFn<WindowType> =
                   glazingArea: glazing_area,
                   openingPerimeter,
                   doorArea,
+                  lastModified: new Date(last_modified).getTime(),
                 })
               )
             ).parse

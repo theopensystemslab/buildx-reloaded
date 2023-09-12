@@ -139,3 +139,9 @@ export const combineGuards =
   <A, B>(guard1: Guard<A>, guard2: Guard<B>): Guard<A | B> =>
   (obj: any): obj is A | B =>
     guard1(obj) || guard2(obj)
+
+export const compareProps = <T>(
+  obj1: T,
+  obj2: T,
+  props: (keyof T)[]
+): boolean => props.every((prop) => obj1[prop] === obj2[prop])

@@ -4,11 +4,18 @@ import { BufferGeometry, BufferGeometryLoader, Group, Mesh } from "three"
 import { Module } from "../../../../../server/data/modules"
 import layoutsDB from "../../../../db/layouts"
 import { LastFetchStamped } from "../../../../db/systems"
-import { O, R, S, someOrError, T } from "../../../../utils/functions"
+import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
+import {
+  setInvisibleNoRaycast,
+  setVisibleAndRaycast,
+} from "../../../../utils/three"
 import { getModelsWorker } from "../../../../workers"
 import { getMaterial } from "../systems"
 import {
   ElementMeshUserData,
+  isModuleGroup,
+  ModuleGroup,
+  ModuleGroupUse,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -137,13 +144,24 @@ export const createModuleGroup = async ({
   houseId,
   gridGroupIndex,
   module: { speckleBranchUrl, length, dna },
+  use,
+  visible,
+  flip,
+  z,
 }: {
   systemId: string
   houseId: string
   gridGroupIndex: number
   module: Module
+  use: ModuleGroupUse
+  visible: boolean
+  flip: boolean
+  z: number
 }) => {
-  const moduleGroup = new Group()
+  const moduleGroup = new Group() as ModuleGroup
+
+  moduleGroup.scale.set(1, 1, flip ? 1 : -1)
+  moduleGroup.position.set(0, 0, flip ? z + length / 2 : z - length / 2)
 
   const modelGeometries = await getModelGeometriesTask({
     systemId,
@@ -174,14 +192,37 @@ export const createModuleGroup = async ({
     moduleGroup.add(mesh)
   }
 
+  const setThisModuleGroupVisible = () => {
+    pipe(
+      moduleGroup.parent!.children,
+      A.filter(
+        (x): x is ModuleGroup =>
+          isModuleGroup(x) &&
+          x.userData.gridGroupIndex === moduleGroup.userData.gridGroupIndex &&
+          x.visible
+      ),
+      A.map((moduleGroup) => {
+        setInvisibleNoRaycast(moduleGroup)
+      })
+    )
+
+    setVisibleAndRaycast(moduleGroup)
+  }
+
   const moduleGroupUserData: ModuleGroupUserData = {
     type: UserDataTypeEnum.Enum.ModuleGroup,
     gridGroupIndex,
     dna,
     length,
+    use,
+    z,
+    setThisModuleGroupVisible,
   }
 
   moduleGroup.userData = moduleGroupUserData
+
+  if (visible) setVisibleAndRaycast(moduleGroup)
+  else setInvisibleNoRaycast(moduleGroup)
 
   return moduleGroup
 }

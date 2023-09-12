@@ -5,7 +5,7 @@ import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
 import { O, R } from "../../../utils/functions"
-import { createMaterial } from "../../../utils/three"
+import { createMaterial, glassMaterial } from "../../../utils/three"
 
 export let elements: Record<string, LastFetchStamped<Element>> = {}
 
@@ -73,6 +73,11 @@ export const getMaterial = (
   if (input === null) return basicMaterial
 
   const { systemId, houseId, ifcTag } = input
+
+  if (ifcTag.toUpperCase() === "IFCPLATE") {
+    // TODO: tie glass material colour to airtable also
+    return glassMaterial
+  }
 
   return pipe(
     elements,

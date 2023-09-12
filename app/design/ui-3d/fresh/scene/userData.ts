@@ -115,11 +115,18 @@ export type GridGroupUserData = {
   height: number
 }
 
+export const ModuleGroupUse = z.enum(["INITIAL", "ALT_WINDOW_TYPE"])
+
+export type ModuleGroupUse = z.infer<typeof ModuleGroupUse>
+
 export type ModuleGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.ModuleGroup
   gridGroupIndex: number
   dna: string
   length: number
+  z: number
+  use: ModuleGroupUse
+  setThisModuleGroupVisible: () => void
 }
 
 // M

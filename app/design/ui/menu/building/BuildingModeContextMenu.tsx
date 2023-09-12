@@ -1,16 +1,16 @@
 import { invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
 import { Pencil } from "../../../../ui/icons"
+import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
 import { downMode } from "../../../state/siteCtx"
+import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
 import ChangeLevelType from "./ChangeLevelType"
-import { pipe } from "fp-ts/lib/function"
-import { someOrError } from "../../../../utils/functions"
-import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
-import { Suspense } from "react"
+import ChangeWindows from "./ChangeWindows"
 
 const BuildingModeContextMenu = ({
   x,
@@ -57,15 +57,11 @@ const BuildingModeContextMenu = ({
         onComplete={props.onClose}
       /> */}
 
-      {/* <ChangeWindows
-        {...{
-          houseId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          onComplete: props.onClose,
-        }}
-      /> */}
+      <ChangeWindows
+        houseTransformsGroup={houseTransformsGroup}
+        scopeElement={scopeElement}
+        close={close}
+      />
 
       <ChangeLevelType
         close={close}

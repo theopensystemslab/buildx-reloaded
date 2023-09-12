@@ -10,6 +10,7 @@ export interface LevelType {
   code: string
   description: string
   lastModified: number
+  height: number
 }
 
 export const levelTypeParser = z.object({
@@ -28,6 +29,7 @@ export const levelTypeParser = z.object({
         message: "Invalid date string",
       }
     ),
+    level_height: z.number(),
   }),
 })
 
@@ -47,13 +49,19 @@ export const levelTypesQuery: QueryFn<LevelType> =
               levelTypeParser.transform(
                 ({
                   id,
-                  fields: { level_code, description, last_modified },
+                  fields: {
+                    level_code,
+                    description,
+                    last_modified,
+                    level_height,
+                  },
                 }): LevelType => ({
                   id,
                   systemId,
                   code: level_code,
                   description,
                   lastModified: new Date(last_modified).getTime(),
+                  height: level_height,
                 })
               )
             ).parse

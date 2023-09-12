@@ -40,7 +40,7 @@ export const useWindowOptions = ({
 
   const { systemId } = m
 
-  const side: Side = siteCtx.houseId ? getSide(siteCtx.houseId) : "RIGHT"
+  const side: Side = siteCtx.houseId ? getSide(siteCtx.houseId as any) : "RIGHT"
 
   const systemModules = useSystemModules({ systemId })
   const windowTypes = useSystemWindowTypes({ systemId })
@@ -54,6 +54,7 @@ export const useWindowOptions = ({
 
   const options = pipe(
     systemModules,
+    // all modules of these same properties
     A.filter(
       keysFilter(
         [
@@ -68,27 +69,29 @@ export const useWindowOptions = ({
         m
       )
     ),
+    // for each of these modules
     A.filterMap((m) =>
       pipe(
+        // new pipeline starting with window types
         windowTypes,
         A.filter((x) => x.systemId === m.systemId),
+        // match modules to window types
         A.findFirstMap((wt): Option<[Module, WindowType]> => {
           switch (true) {
+            // special case for end modules
             case m.structuredDna.positionType === "END":
               return wt.code === m.structuredDna.windowTypeEnd
                 ? O.some([m, wt])
                 : O.none
+            // left = windowTypeSide2
             case side === "LEFT":
-              return wt.code === m.structuredDna.windowTypeSide1 &&
-                m.structuredDna.windowTypeSide2 ===
-                  m.structuredDna.windowTypeSide2
+              return wt.code === m.structuredDna.windowTypeSide1
                 ? O.some([m, wt])
                 : O.none
 
+            // right = windowTypeSide1
             case side === "RIGHT":
-              return wt.code === m.structuredDna.windowTypeSide2 &&
-                m.structuredDna.windowTypeSide1 ===
-                  m.structuredDna.windowTypeSide1
+              return wt.code === m.structuredDna.windowTypeSide2
                 ? O.some([m, wt])
                 : O.none
             default:

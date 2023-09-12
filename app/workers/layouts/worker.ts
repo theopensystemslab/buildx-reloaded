@@ -24,7 +24,6 @@ import systemsDB, { LastFetchStamped } from "../../db/systems"
 import {
   A,
   O,
-  pipeLog,
   reduceToOption,
   someOrError,
   T,
@@ -33,16 +32,8 @@ import {
 } from "../../utils/functions"
 import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
-import { createVanillaModuleGetter, getIndexedVanillaModule } from "./vanilla"
-
-let modulesCache: LastFetchStamped<Module>[] = []
-const getModules = async () => {
-  if (modulesCache.length > 0) return modulesCache
-  modulesCache = await systemsDB.modules.toArray()
-  return modulesCache
-}
-
-let layoutsQueue: HouseLayoutsKey[] = []
+import { getModules } from "./modules"
+import { getIndexedVanillaModule, postVanillaColumn } from "./vanilla"
 
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
@@ -290,90 +281,6 @@ const modulesToColumnLayout = (modules: Module[]) => {
   )
 }
 
-const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
-  const modules = await getModules()
-
-  pipe(
-    arbitraryColumn.gridGroups,
-    A.traverse(O.Applicative)(
-      ({
-        levelIndex,
-        levelType,
-        y,
-        modules: [
-          {
-            module,
-            module: {
-              structuredDna: { sectionType },
-            },
-          },
-        ],
-      }): O.Option<PositionedRow> => {
-        const getVanillaModule = createVanillaModuleGetter(modules)({
-          constrainGridType: false,
-          sectionType,
-          levelType,
-          positionType: "MID",
-        })
-        return pipe(
-          module,
-          getVanillaModule,
-          O.map((vanillaModule) => ({
-            modules: [
-              {
-                module: vanillaModule,
-                gridGroupIndex: 0,
-                // TODO: document me (quirk)
-                z: vanillaModule.length / 2,
-              },
-            ],
-            length: vanillaModule.length,
-            y,
-            levelIndex,
-            levelType,
-          }))
-        )
-      }
-    ),
-    O.map((gridGroups) => {
-      const levelTypes = pipe(
-        gridGroups,
-        A.map((gridGroup) => gridGroup.levelType)
-      )
-
-      pipe(
-        gridGroups,
-        A.head,
-        O.chain((gridGroup) =>
-          pipe(
-            gridGroup.modules,
-            A.head,
-            O.map((firstModule) => {
-              const {
-                module: {
-                  systemId,
-                  structuredDna: { sectionType },
-                  length,
-                },
-              } = firstModule
-
-              layoutsDB.vanillaColumns.put({
-                systemId,
-                levelTypes,
-                sectionType,
-                vanillaColumn: {
-                  gridGroups,
-                  length,
-                },
-              })
-            })
-          )
-        )
-      )
-    })
-  )
-}
-
 export const splitColumns = (layout: ColumnLayout) =>
   pipe(
     layout,
@@ -482,6 +389,7 @@ const changeLayoutSectionType = async ({
             modules: [
               {
                 module: {
+                  // we just destructure the first module for this data
                   structuredDna: { levelType, positionType, gridType },
                 },
               },
@@ -668,15 +576,17 @@ const getAltSectionTypeLayouts = async ({
 const changeLayoutLevelType = async ({
   systemId,
   layout,
-  levelType: lt,
+  prevLevelType,
+  nextLevelType,
   levelIndex,
 }: {
   systemId: string
   layout: ColumnLayout
-  levelType: LevelType
+  nextLevelType: LevelType
+  prevLevelType: LevelType
   levelIndex: number
 }) => {
-  const { code: levelType } = lt
+  const dh = nextLevelType.height - prevLevelType.height
 
   const allModules = await getModules()
 
@@ -686,7 +596,14 @@ const changeLayoutLevelType = async ({
       pipe(
         positionedColumn.gridGroups,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
-          if (gridGroup.levelIndex !== levelIndex) return TO.of(gridGroup)
+          if (gridGroup.levelIndex > levelIndex)
+            return TO.of({
+              ...gridGroup,
+              y:
+                gridGroup.levelIndex > levelIndex
+                  ? gridGroup.y + dh
+                  : gridGroup.y,
+            })
 
           const {
             modules,
@@ -705,7 +622,7 @@ const changeLayoutLevelType = async ({
                 systemId,
                 sectionType,
                 positionType,
-                levelType,
+                levelType: nextLevelType.code,
                 gridType,
               })
             ),
@@ -738,7 +655,7 @@ const changeLayoutLevelType = async ({
                       systemId,
                       structuredDna: {
                         ...positionedModule.module.structuredDna,
-                        levelType,
+                        levelType: nextLevelType.code,
                       },
                     } as Module
 
@@ -756,6 +673,7 @@ const changeLayoutLevelType = async ({
                         const distanceToTarget =
                           target.structuredDna.gridUnits -
                           bestModule.structuredDna.gridUnits
+
                         switch (true) {
                           case sign(distanceToTarget) > 0:
                             // fill in some vanilla
@@ -800,13 +718,13 @@ const changeLayoutLevelType = async ({
                     )
                   }
                 ),
-                O.map(
-                  (modules): GridGroup => ({
+                O.map((modules): GridGroup => {
+                  return {
                     ...gridGroup,
-                    levelType,
+                    levelType: nextLevelType.code,
                     modules,
-                  })
-                ),
+                  }
+                }),
                 TO.fromOption
               )
             )
@@ -842,7 +760,7 @@ const getAltLevelTypeLayouts = async ({
 
   const levelTypes = await systemsDB.levelTypes.toArray()
 
-  const otherLevelTypes = pipe(
+  const { otherLevelTypes, currentLevelType } = pipe(
     levelTypes,
     A.partition((x) => x.code !== currentLevelTypeCode),
     ({ left: currentLevelTypes, right: otherLevelTypes }) =>
@@ -850,8 +768,12 @@ const getAltLevelTypeLayouts = async ({
         currentLevelTypes,
         A.head,
         someOrError(`couldn't head currentLevelTypes`),
-        (currentLevelType) =>
-          otherLevelTypes.filter((x) => x.code[0] === currentLevelType.code[0])
+        (currentLevelType) => ({
+          otherLevelTypes: otherLevelTypes.filter(
+            (x) => x.code[0] === currentLevelType.code[0]
+          ),
+          currentLevelType,
+        })
       )
   )
 
@@ -869,7 +791,8 @@ const getAltLevelTypeLayouts = async ({
           changeLayoutLevelType({
             systemId,
             layout: currentIndexedLayout.layout,
-            levelType,
+            nextLevelType: levelType,
+            prevLevelType: currentLevelType,
             levelIndex,
           }).then(
             O.map((layout) => {
