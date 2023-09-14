@@ -1,11 +1,11 @@
 import { liveQuery } from "dexie"
-import { identity, pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/lib/function"
 import { DoubleSide, MeshStandardMaterial } from "three"
 import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
 import { O, R } from "../../../utils/functions"
-import { createMaterial, glassMaterial } from "../../../utils/three"
+import { createThreeMaterial } from "../../../utils/three"
 
 export let elements: Record<string, LastFetchStamped<Element>> = {}
 
@@ -38,6 +38,7 @@ const getMaterialHash = ({
   specification,
 }: {
   systemId: string
+  // include houseId to clip plane houses individually
   houseId: string
   specification: string
 }) => `${systemId}:${houseId}:${specification}`
@@ -56,10 +57,10 @@ const getThreeMaterial = ({
   return pipe(
     threeMaterials,
     R.lookup(materialHash),
-    O.match(() => {
-      threeMaterials[materialHash] = createMaterial(material)
+    O.getOrElse(() => {
+      threeMaterials[materialHash] = createThreeMaterial(material)
       return threeMaterials[materialHash]
-    }, identity)
+    })
   )
 }
 
@@ -74,10 +75,10 @@ export const getMaterial = (
 
   const { systemId, houseId, ifcTag } = input
 
-  if (ifcTag.toUpperCase() === "IFCPLATE") {
-    // TODO: tie glass material colour to airtable also
-    return glassMaterial
-  }
+  // if (ifcTag.toUpperCase() === "IFCPLATE") {
+  //   // TODO: tie glass material colour to airtable also
+  //   return glassMaterial
+  // }
 
   return pipe(
     elements,
