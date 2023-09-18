@@ -5,7 +5,7 @@ import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
-import userDB from "../../../../db/user"
+import userDB, { House } from "../../../../db/user"
 import { A, O, R, someOrError, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
@@ -74,13 +74,8 @@ export const createHouseTransformsGroup = ({
   dnas,
   friendlyName,
   houseTypeId,
-}: {
-  systemId: string
-  houseId: string
-  dnas: string[]
-  friendlyName: string
-  houseTypeId: string
-}): T.Task<HouseTransformsGroup> =>
+  modifiedMaterials,
+}: House): T.Task<HouseTransformsGroup> =>
   pipe(
     getHouseLayout({ systemId, dnas }),
     T.chain((houseLayout) =>

@@ -1,15 +1,25 @@
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
-import { pipe } from "fp-ts/lib/function"
-import { Eq } from "fp-ts/lib/string"
+import { invalidate } from "@react-three/fiber"
+import { flow, pipe } from "fp-ts/lib/function"
+import { useRef } from "react"
 import { suspend } from "suspend-react"
+import { MeshStandardMaterial } from "three"
 import { Material } from "../../../../../server/data/materials"
 import systemsDB from "../../../../db/systems"
+import userDB from "../../../../db/user"
 import Radio from "../../../../ui/Radio"
-import { A, EQ, O, Ord, R, S, someOrError } from "../../../../utils/functions"
+import { A, EQ, O, Ord, R, S } from "../../../../utils/functions"
 import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
-import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { HouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
+import {
+  findAllGuardDown,
+  getActiveHouseUserData,
+} from "../../../ui-3d/fresh/helpers/sceneQueries"
+import {
+  ElementMesh,
+  HouseTransformsGroup,
+  isElementMesh,
+} from "../../../ui-3d/fresh/scene/userData"
 import { getSystemMaterial } from "../../../ui-3d/fresh/systems"
 import ContextMenuHeading from "../common/ContextMenuHeading"
 import ContextMenuNested from "../common/ContextMenuNested"
@@ -22,7 +32,7 @@ type Props = {
 
 type MaterialOpt = {
   material: Material
-  threeMaterial: ThreeMaterial
+  threeMaterial: MeshStandardMaterial
 }
 
 const ChangeMaterial = (props: Props) => {
@@ -73,14 +83,17 @@ const ChangeMaterial = (props: Props) => {
       )
     )
 
-    // selected
-
-    // alts
-
-    // all = selected + alts (sorted by?)
-
     return { element, options: allOpts, selected: initialOpt }
   }, [])
+
+  const thisIfcTagMeshes = pipe(
+    houseTransformsGroup,
+    findAllGuardDown(
+      (x): x is ElementMesh => isElementMesh(x) && x.userData.ifcTag === ifcTag
+    )
+  )
+
+  const closing = useRef(false)
 
   return (
     <ContextMenuNested
@@ -92,30 +105,40 @@ const ChangeMaterial = (props: Props) => {
         options={options.map((x) => ({
           label: x.material.specification,
           value: x,
+          thumbnail: x.material.imageUrl,
         }))}
-        selected={
-          selected
-          // house.modifiedMaterials?.[element.name] ?? element.defaultMaterial
-        }
+        selected={selected}
         onChange={(newMaterial) => {
-          // houses[houseId].modifiedMaterials = {
-          //   ...(house.modifiedMaterials ?? {}),
-          //   [element.name]: newMaterial,
-          // }
-          // onComplete?.()
+          thisIfcTagMeshes.forEach((x) => {
+            x.material = newMaterial.threeMaterial
+          })
+
+          closing.current = true
+
+          userDB.houses.update(houseId, {
+            modifiedMaterials: {
+              ...modifiedMaterials,
+              [ifcTag]: newMaterial.material.specification,
+            },
+          })
+
+          close()
+
+          invalidate()
         }}
         onHoverChange={(hoveredMaterial) => {
-          // if (
-          //   hoveredMaterial &&
-          //   !(hoveredMaterial in previews[houseId].materials)
-          // ) {
-          //   previews[houseId].materials[element.name] = hoveredMaterial
-          // } else if (
-          //   hoveredMaterial === null &&
-          //   Object.keys(previews[houseId].materials).length !== 0
-          // ) {
-          //   previews[houseId].materials = {}
-          // }
+          if (closing.current) return
+
+          if (hoveredMaterial) {
+            thisIfcTagMeshes.forEach((x) => {
+              x.material = hoveredMaterial.threeMaterial
+            })
+          } else {
+            thisIfcTagMeshes.forEach((x) => {
+              x.material = selected.threeMaterial
+            })
+          }
+          invalidate()
         }}
       />
     </ContextMenuNested>
