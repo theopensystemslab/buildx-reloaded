@@ -163,10 +163,18 @@ export const createHouseTransformsGroup = ({
         const rotation = houseTransformsGroup.rotation.y
         const position = houseTransformsGroup.position
         const dnas = houseTransformsGroup.userData.activeLayoutDnas
-        return Promise.all([
-          userDB.houses.update(houseId, { dnas, position, rotation }),
+        const modifiedMaterials =
+          houseTransformsGroup.userData.modifiedMaterials
+
+        await Promise.all([
+          userDB.houses.update(houseId, {
+            dnas,
+            position,
+            rotation,
+            modifiedMaterials,
+          }),
           getLayoutsWorker().getLayout({ systemId, dnas }),
-        ]).then(() => {})
+        ])
       }
 
       const updateActiveLayoutDnas = (nextDnas: string[]) => {
@@ -304,7 +312,7 @@ export const createHouseTransformsGroup = ({
         activeLayoutDnas: layoutGroup.userData.dnas,
         clippingPlanes,
         friendlyName,
-        modifiedMaterials: {},
+        modifiedMaterials,
         dbSync,
         updateActiveLayoutDnas,
         initRotateAndStretchXHandles,

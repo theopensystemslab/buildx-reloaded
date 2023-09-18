@@ -84,7 +84,7 @@ const ChangeMaterial = (props: Props) => {
     )
 
     return { element, options: allOpts, selected: initialOpt }
-  }, [])
+  }, [ifcTag])
 
   const thisIfcTagMeshes = pipe(
     houseTransformsGroup,
@@ -115,12 +115,12 @@ const ChangeMaterial = (props: Props) => {
 
           closing.current = true
 
-          userDB.houses.update(houseId, {
-            modifiedMaterials: {
-              ...modifiedMaterials,
-              [ifcTag]: newMaterial.material.specification,
-            },
-          })
+          houseTransformsGroup.userData.modifiedMaterials = {
+            ...modifiedMaterials,
+            [ifcTag]: newMaterial.material.specification,
+          }
+
+          houseTransformsGroup.userData.dbSync()
 
           close()
 
