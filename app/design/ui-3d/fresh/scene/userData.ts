@@ -54,6 +54,8 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
+  // ifcTag : material specification
+  modifiedMaterials: Record<string, string>
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
@@ -92,7 +94,6 @@ export type HouseLayoutGroupUserData = {
   width: number
   activeColumnGroupCount: number
   sectionType: string
-  modifiedMaterials: Record<string, string>
   initStretchZHandles: () => void
   updateLength: () => void
   updateActiveColumnGroupCount: (n: number) => void

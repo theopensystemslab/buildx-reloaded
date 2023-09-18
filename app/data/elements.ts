@@ -34,9 +34,7 @@ export const ifcTagToElement = ({
   const result = pipe(
     elements,
     RA.findFirst((el) => {
-      return (
-        el.ifc4Variable.toUpperCase() === ifcTag && el.systemId === systemId
-      )
+      return el.ifcTag.toUpperCase() === ifcTag && el.systemId === systemId
     }),
     O.toUndefined
   )
@@ -57,7 +55,7 @@ export const useIfcTagToElement = (systemId: string) => {
     const result = pipe(
       elements,
       RA.findFirst((el) => {
-        return el.ifc4Variable.toUpperCase() === ifcTag
+        return el.ifcTag.toUpperCase() === ifcTag
       }),
       O.toUndefined
     )

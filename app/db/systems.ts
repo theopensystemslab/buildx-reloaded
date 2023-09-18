@@ -28,7 +28,7 @@ class SystemsDatabase extends Dexie {
       blocks: "[systemId+name]",
       modules: "[systemId+dna]",
       houseTypes: "id",
-      elements: "id",
+      elements: "[systemId+ifcTag]",
       materials: "id",
       sectionTypes: "id",
       levelTypes: "[systemId+code]",

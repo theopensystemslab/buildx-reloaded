@@ -37,7 +37,7 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
     pipe(
       elements,
       A.findFirstMap((el) => {
-        return el.ifc4Variable.toUpperCase() === ifcTag
+        return el.ifcTag.toUpperCase() === ifcTag
           ? O.some(el.defaultMaterial)
           : O.none
       }),

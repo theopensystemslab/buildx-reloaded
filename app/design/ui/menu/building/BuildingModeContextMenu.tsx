@@ -1,5 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
+import { Suspense } from "react"
 import { Pencil } from "../../../../ui/icons"
 import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
@@ -10,6 +11,7 @@ import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
 import ChangeLevelType from "./ChangeLevelType"
+import ChangeMaterial from "./ChangeMaterial"
 import ChangeWindows from "./ChangeWindows"
 
 const BuildingModeContextMenu = ({
@@ -51,11 +53,20 @@ const BuildingModeContextMenu = ({
           close()
         }}
       />
+
       {/* <ChangeMaterials
         houseId={houseId}
         elementName={ifcTag}
         onComplete={props.onClose}
       /> */}
+
+      <Suspense fallback={null}>
+        <ChangeMaterial
+          houseTransformsGroup={houseTransformsGroup}
+          scopeElement={scopeElement}
+          close={close}
+        />
+      </Suspense>
 
       <ChangeWindows
         houseTransformsGroup={houseTransformsGroup}

@@ -232,7 +232,6 @@ export const createHouseLayoutGroup = ({
             height,
             length,
             obb,
-            modifiedMaterials: {},
             vanillaColumn,
             use,
             initStretchZHandles,

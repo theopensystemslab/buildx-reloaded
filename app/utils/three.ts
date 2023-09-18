@@ -319,3 +319,5 @@ export const addDebugLineAtX = (
   const line = new Line(lineGeometry, lineMaterial)
   parent.add(line)
 }
+
+export { Material as ThreeMaterial } from "three"

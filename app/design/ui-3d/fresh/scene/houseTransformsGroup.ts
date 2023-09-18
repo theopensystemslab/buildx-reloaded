@@ -309,6 +309,7 @@ export const createHouseTransformsGroup = ({
         activeLayoutDnas: layoutGroup.userData.dnas,
         clippingPlanes,
         friendlyName,
+        modifiedMaterials: {},
         dbSync,
         updateActiveLayoutDnas,
         initRotateAndStretchXHandles,

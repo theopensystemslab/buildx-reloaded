@@ -18,6 +18,7 @@ export * as RNEA from "fp-ts/ReadonlyNonEmptyArray"
 export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
 export * as TO from "fp-ts/TaskOption"
+export * as EQ from "fp-ts/Eq"
 
 const clamp = Ord.clamp(Num.Ord)
 

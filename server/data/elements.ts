@@ -9,7 +9,7 @@ export type Element = {
   id: string
   systemId: string
   name: string
-  ifc4Variable: string
+  ifcTag: string
   defaultMaterial: string
   materialOptions: Array<string>
   category: string
@@ -87,7 +87,7 @@ export const elementsQuery: QueryFn<Element> =
                       id,
                       systemId,
                       name: element_code,
-                      ifc4Variable: ifc4_variable.toUpperCase(),
+                      ifcTag: ifc4_variable.toUpperCase(),
                       defaultMaterial,
                       materialOptions,
                       category: element_category,
