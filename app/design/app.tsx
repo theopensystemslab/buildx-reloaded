@@ -1,6 +1,4 @@
 "use client"
-import DataInit from "~/data/DataInit"
-import { TrpcProvider } from "../ui/TrpcProvider"
 import {
   initLayoutsWorker,
   initModelsWorker,
@@ -15,12 +13,10 @@ const App = () => {
   initModelsWorker()
   initLayoutsWorker()
   return (
-    <TrpcProvider>
-      <AppInit controlsEnabled={true} mapEnabled={false}>
-        <Routing />
-        <FreshApp />
-      </AppInit>
-    </TrpcProvider>
+    <AppInit controlsEnabled={true} mapEnabled={false}>
+      <Routing />
+      <FreshApp />
+    </AppInit>
   )
 }
 
