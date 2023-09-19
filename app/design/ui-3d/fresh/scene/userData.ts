@@ -17,15 +17,15 @@ import { ScopeElement } from "../../../state/scope"
 //     -> Stretch X Handle meshes
 //   -> Rotate Handles group
 //     -> Rotate Handles meshes
-// -> HouseLayoutGroup's as children
+//   -> HouseLayoutGroup's as children
 //      (alternative layouts;
 //         visibility/raycasting disabled
 //           except 1)
-//   -> ColumnsGroup's as children have
-//     -> GridGroup's as children have
-//     -> Z-Stretch handles (special case)
-//       -> ModuleGroup's as children have
-//         -> ElementMesh's as children
+//     -> ColumnsGroup's as children have
+//       -> GridGroup's as children have
+//       -> Z-Stretch handles (special case)
+//         -> ModuleGroup's as children have
+//           -> ElementMesh's as children
 
 export const UserDataTypeEnum = z.enum([
   "HouseTransformsGroup",
@@ -54,6 +54,8 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
+  // ifcTag : material specification
+  modifiedMaterials: Record<string, string>
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
@@ -92,7 +94,6 @@ export type HouseLayoutGroupUserData = {
   width: number
   activeColumnGroupCount: number
   sectionType: string
-  modifiedMaterials: Record<string, string>
   initStretchZHandles: () => void
   updateLength: () => void
   updateActiveColumnGroupCount: (n: number) => void
@@ -129,14 +130,10 @@ export type ModuleGroupUserData = {
   setThisModuleGroupVisible: () => void
 }
 
-// M
-
 export type ElementMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.ElementMesh
   ifcTag: string
 }
-
-// --- HANDLES ---
 
 export type StretchHandleGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleGroup
@@ -156,8 +153,6 @@ export type RotateHandlesGroupUserData = {
 export type RotateHandleMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.RotateHandleMesh
 }
-
-// ---
 
 export type UserData =
   | ElementMeshUserData

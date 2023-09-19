@@ -1,6 +1,6 @@
 import { A, O, R, RA, someOrError } from "~/utils/functions"
 import { useSubscribe, useSubscribeKey } from "~/utils/hooks"
-import { createMaterial, isMesh } from "~/utils/three"
+import { createThreeMaterial, isMesh } from "~/utils/three"
 import { invalidate } from "@react-three/fiber"
 import { identity, pipe } from "fp-ts/lib/function"
 import { MutableRefObject, RefObject, useEffect, useMemo, useRef } from "react"
@@ -37,7 +37,7 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
     pipe(
       elements,
       A.findFirstMap((el) => {
-        return el.ifc4Variable.toUpperCase() === ifcTag
+        return el.ifcTag.toUpperCase() === ifcTag
           ? O.some(el.defaultMaterial)
           : O.none
       }),
@@ -46,7 +46,7 @@ export const useGetDefaultElementMaterial = (systemId: string) => {
           materials,
           A.findFirstMap((x) =>
             x.specification === materialName
-              ? O.some({ ...x, threeMaterial: createMaterial(x) })
+              ? O.some({ ...x, threeMaterial: createThreeMaterial(x) })
               : O.none
           )
         )
@@ -201,7 +201,7 @@ export const useMaterial = ({
     const maybeMaterial = hashedMaterials?.[materialHash]
     if (maybeMaterial) return maybeMaterial
 
-    const newMaterial = createMaterial(materialData)
+    const newMaterial = createThreeMaterial(materialData)
 
     hashedMaterials[materialHash] = ref(newMaterial)
 

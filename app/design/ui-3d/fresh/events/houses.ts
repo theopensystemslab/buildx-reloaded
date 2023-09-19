@@ -56,23 +56,9 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
   const addHouse = async (house: House) => {
     if (!rootRef.current) return
 
-    const {
-      houseId: houseId,
-      systemId,
-      dnas,
-      friendlyName,
-      position,
-      rotation,
-      houseTypeId,
-    } = house
+    const { houseId, position, rotation } = house
 
-    const houseTransformsGroup = await createHouseTransformsGroup({
-      systemId,
-      houseId,
-      dnas,
-      friendlyName,
-      houseTypeId,
-    })()
+    const houseTransformsGroup = await createHouseTransformsGroup(house)()
 
     houseTransformsGroup.position.set(position.x, position.y, position.z)
     houseTransformsGroup.rotation.set(0, rotation, 0)
@@ -80,7 +66,6 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
     setRaycasting(houseTransformsGroup, true)
 
     rootRef.current.add(houseTransformsGroup)
-    // liveHouses[houseId] = houseGroup
 
     invalidate()
 

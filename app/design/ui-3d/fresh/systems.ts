@@ -1,94 +1,112 @@
 import { liveQuery } from "dexie"
-import { identity, pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { DoubleSide, MeshStandardMaterial } from "three"
 import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
-import { O, R } from "../../../utils/functions"
-import { createMaterial, glassMaterial } from "../../../utils/three"
+import userDB, { House } from "../../../db/user"
+import { O, R, someOrError, T } from "../../../utils/functions"
+import { createThreeMaterial, ThreeMaterial } from "../../../utils/three"
 
-export let elements: Record<string, LastFetchStamped<Element>> = {}
+// hash(systemId, ifcTag) : airtable element
+export let systemElements: Record<string, LastFetchStamped<Element>> = {}
+
+const getSystemElementHash = ({
+  systemId,
+  ifcTag,
+}: {
+  systemId: string
+  ifcTag: string
+}) => [systemId, ifcTag].join(":")
 
 liveQuery(() => systemsDB.elements.toArray()).subscribe((dbElements) => {
   for (let dbElement of dbElements) {
-    elements[dbElement.ifc4Variable] = dbElement
+    systemElements[getSystemElementHash(dbElement)] = dbElement
   }
 })
 
-// specification : airtable material
-export let materials: Record<string, LastFetchStamped<Material>> = {}
-
-liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
-  for (let dbMaterial of dbMaterials) {
-    materials[dbMaterial.specification] = dbMaterial
-  }
-})
-
-const basicMaterial = new MeshStandardMaterial({
-  color: "tomato",
-  side: DoubleSide,
-})
-
-// hash(systemId, houseId, material specification) : ThreeMaterial
-const threeMaterials: Record<string, MeshStandardMaterial> = {}
-
-const getMaterialHash = ({
+export const getSystemElement = ({
   systemId,
-  houseId,
+  ifcTag,
+}: {
+  systemId: string
+  ifcTag: string
+}) =>
+  pipe(
+    systemElements,
+    R.lookup(getSystemElementHash({ systemId, ifcTag })),
+    someOrError(`no element in ${systemId} for ${ifcTag}`)
+  )
+
+type EnrichedMaterial = {
+  material: LastFetchStamped<Material>
+  threeMaterial: MeshStandardMaterial
+}
+
+// hash(systemId, material specification) : airtable material
+export let systemMaterials: Record<string, EnrichedMaterial> = {}
+
+const getSystemMaterialHash = ({
+  systemId,
   specification,
 }: {
   systemId: string
-  houseId: string
   specification: string
-}) => `${systemId}:${houseId}:${specification}`
+}) => [systemId, specification].join(":")
 
-const getThreeMaterial = ({
+liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
+  for (let dbMaterial of dbMaterials) {
+    systemMaterials[getSystemMaterialHash(dbMaterial)] = {
+      material: dbMaterial,
+      threeMaterial: createThreeMaterial(dbMaterial),
+    }
+  }
+})
+
+export const getSystemMaterial = ({
   systemId,
-  houseId,
-  material,
-  material: { specification },
+  specification,
 }: {
   systemId: string
-  houseId: string
-  material: Material
-}): MeshStandardMaterial => {
-  const materialHash = getMaterialHash({ systemId, houseId, specification })
+  specification: string
+}) => {
+  const materialHash = getSystemMaterialHash({ systemId, specification })
   return pipe(
-    threeMaterials,
+    systemMaterials,
     R.lookup(materialHash),
-    O.match(() => {
-      threeMaterials[materialHash] = createMaterial(material)
-      return threeMaterials[materialHash]
-    }, identity)
+    someOrError(`no material in ${systemId} for ${specification}`)
   )
 }
 
-export const getMaterial = (
-  input: {
-    systemId: string
-    houseId: string
-    ifcTag: string
-  } | null = null
-): MeshStandardMaterial => {
-  if (input === null) return basicMaterial
+export const getInitialMaterial = ({
+  systemId,
+  houseId,
+  ifcTag,
+}: {
+  systemId: string
+  houseId: string
+  ifcTag: string
+}): T.Task<EnrichedMaterial> => {
+  const getHouseTask: T.Task<House | undefined> = () =>
+    userDB.houses.get(houseId)
 
-  const { systemId, houseId, ifcTag } = input
-
-  if (ifcTag.toUpperCase() === "IFCPLATE") {
-    // TODO: tie glass material colour to airtable also
-    return glassMaterial
-  }
+  const getDefaultMaterialSpec = () =>
+    getSystemElement({ systemId, ifcTag }).defaultMaterial
 
   return pipe(
-    elements,
-    R.lookup(ifcTag),
-    O.chain(({ defaultMaterial }) =>
-      pipe(
-        materials,
-        R.lookup(defaultMaterial),
-        O.map((material) => getThreeMaterial({ systemId, houseId, material }))
+    getHouseTask,
+    T.map(
+      flow(
+        O.fromNullable,
+        O.map(({ modifiedMaterials }) => {
+          if (ifcTag in modifiedMaterials) {
+            return modifiedMaterials[ifcTag]
+          }
+          return getDefaultMaterialSpec()
+        }),
+        O.getOrElse(getDefaultMaterialSpec),
+        (specification) => getSystemMaterial({ systemId, specification })
       )
-    ),
-    O.getOrElse(() => basicMaterial)
+    )
   )
 }

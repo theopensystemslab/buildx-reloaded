@@ -3,14 +3,13 @@ import { flow, pipe } from "fp-ts/lib/function"
 import { BufferGeometry, BufferGeometryLoader, Group, Mesh } from "three"
 import { Module } from "../../../../../server/data/modules"
 import layoutsDB from "../../../../db/layouts"
-import { LastFetchStamped } from "../../../../db/systems"
 import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
 import { getModelsWorker } from "../../../../workers"
-import { getMaterial } from "../systems"
+import { getInitialMaterial } from "../systems"
 import {
   ElementMeshUserData,
   isModuleGroup,
@@ -172,16 +171,17 @@ export const createModuleGroup = async ({
     const geometry = getGeometry({
       speckleBranchUrl,
       ifcTag,
-      // systemId,
-      // lastFetched,
     })
-    const material = getMaterial({
+
+    const { threeMaterial } = await getInitialMaterial({
       systemId,
-      ifcTag,
       houseId,
-    })
-    material.wireframe = false
-    const mesh = new Mesh(geometry, material)
+      ifcTag,
+    })()
+
+    threeMaterial.wireframe = false
+
+    const mesh = new Mesh(geometry, threeMaterial)
     mesh.castShadow = true
 
     const elementMeshUserData: ElementMeshUserData = {
