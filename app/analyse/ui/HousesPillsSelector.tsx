@@ -1,12 +1,13 @@
 "use client"
+import { useLiveQuery } from "dexie-react-hooks"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
 import { Close } from "~/ui/icons"
 import { useClickAway } from "~/ui/utils"
-import { R } from "~/utils/functions"
-import houses, { useHouses } from "../../design/state/houses"
+import { A, R } from "~/utils/functions"
+import userDB, { House, housesToRecord, useHouses } from "../../db/user"
 
 const store = proxy<{
   selectedHouses: string[]
@@ -25,15 +26,15 @@ export const useSelectedHouseIds = () => {
 
 export const useSelectedHouses = () => {
   const selectedHouseIds = useSelectedHouseIds()
+  const houses = useHouses()
 
   return useMemo(
     () =>
       pipe(
         houses,
-        R.filterWithIndex((k) => selectedHouseIds.includes(k)),
-        values
+        A.filter((k) => selectedHouseIds.includes(k.houseId))
       ),
-    [selectedHouseIds]
+    [houses, selectedHouseIds]
   )
 }
 
@@ -83,17 +84,17 @@ const HousesPillsSelector = () => {
   const houses = useHouses()
 
   useEffect(() => {
-    store.selectedHouses = Object.keys(houses)
+    store.selectedHouses = Object.keys(housesToRecord(houses))
   }, [houses])
 
-  const selectedHouses = useSelectedHouseIds()
+  const selectedHouseIds = useSelectedHouseIds()
 
   const getColorClass = useGetColorClass()
 
   const houseSelectOptions: { houseId: string; houseName: string }[] =
     Object.entries(houses)
       .map(([houseId, house]) =>
-        selectedHouses.includes(houseId)
+        selectedHouseIds.includes(houseId)
           ? null
           : {
               houseId,
@@ -116,13 +117,20 @@ const HousesPillsSelector = () => {
     return <p className="px-4 py-2 text-white">No houses available.</p>
   }
 
+  const selectedHouses: House[] = pipe(
+    selectedHouseIds,
+    A.filterMap((houseId) =>
+      pipe(
+        houses,
+        A.findFirst((house) => house.houseId === houseId)
+      )
+    )
+  )
+
   return (
     <div className="flex flex-wrap items-center space-x-2 px-4 py-1.5 border-b">
-      {selectedHouses.map((houseId, index) => {
-        const house = houses[houseId]
-        if (!house) {
-          return null
-        }
+      {selectedHouses.map((house) => {
+        const { houseId } = house
 
         const colorClass = getColorClass(houseId)
 
@@ -162,7 +170,7 @@ const HousesPillsSelector = () => {
           {expanded && (
             <div
               className={`absolute -bottom-1 z-40 w-40 translate-y-full transform overflow-hidden rounded bg-white shadow-lg ${
-                selectedHouses.length > 0 ? "right-0" : "left-0"
+                selectedHouseIds.length > 0 ? "right-0" : "left-0"
               }`}
             >
               {houseSelectOptions.map((houseSelectOption) => (

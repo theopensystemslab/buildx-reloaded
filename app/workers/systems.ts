@@ -1,10 +1,14 @@
 import { vanillaTrpc } from "../../client/trpc"
+import { BlockModulesEntry } from "../../server/data/blockModulesEntries"
+import { Block } from "../../server/data/blocks"
 import { Element } from "../../server/data/elements"
+import { EnergyInfo } from "../../server/data/energyInfos"
 import { HouseType } from "../../server/data/houseTypes"
 import { LevelType } from "../../server/data/levelTypes"
 import { Material } from "../../server/data/materials"
 import { Module } from "../../server/data/modules"
 import { SectionType } from "../../server/data/sectionTypes"
+import { SpaceType } from "../../server/data/spaceTypes"
 import { WindowType } from "../../server/data/windowTypes"
 import systemsDB, { LastFetchStamped } from "../db/systems"
 
@@ -161,6 +165,96 @@ const initWindowTypes = async () => {
   await Promise.all(promises)
 }
 
+const initBlocks = async () => {
+  const remoteBlocks = await vanillaTrpc.blocks.query()
+
+  const promises = remoteBlocks.map(async (remoteBlock) => {
+    const localBlock = await systemsDB.blocks.get(remoteBlock.id)
+
+    const indexedBlock: LastFetchStamped<Block> = {
+      ...remoteBlock,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (!localBlock || remoteBlock.lastModified > localBlock.lastModified) {
+      await systemsDB.blocks.put(indexedBlock)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
+const initBlockModulesEntries = async () => {
+  const remoteBlockModulesEntries =
+    await vanillaTrpc.blockModulesEntries.query()
+
+  const promises = remoteBlockModulesEntries.map(
+    async (remoteBlockModulesEntry) => {
+      const localBlockModulesEntry = await systemsDB.blockModuleEntries.get(
+        remoteBlockModulesEntry.id
+      )
+
+      const indexedBlockModulesEntry: LastFetchStamped<BlockModulesEntry> = {
+        ...remoteBlockModulesEntry,
+        lastFetched: new Date().getTime(),
+      }
+
+      if (
+        !localBlockModulesEntry ||
+        remoteBlockModulesEntry.lastModified >
+          localBlockModulesEntry.lastModified
+      ) {
+        await systemsDB.blockModuleEntries.put(indexedBlockModulesEntry)
+      }
+    }
+  )
+
+  await Promise.all(promises)
+}
+
+const initSpaceTypes = async () => {
+  const remoteSpaceTypes = await vanillaTrpc.spaceTypes.query()
+
+  const promises = remoteSpaceTypes.map(async (remoteSpaceType) => {
+    const localSpaceType = await systemsDB.spaceTypes.get(remoteSpaceType.id)
+
+    const indexedSpaceType: LastFetchStamped<SpaceType> = {
+      ...remoteSpaceType,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localSpaceType ||
+      remoteSpaceType.lastModified > localSpaceType.lastModified
+    ) {
+      await systemsDB.spaceTypes.put(indexedSpaceType)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
+const initEnergyInfos = async () => {
+  const remoteEnergyInfos = await vanillaTrpc.energyInfos.query()
+
+  const promises = remoteEnergyInfos.map(async (remoteEnergyInfo) => {
+    const localEnergyInfo = await systemsDB.energyInfos.get(remoteEnergyInfo.id)
+
+    const indexedEnergyInfo: LastFetchStamped<EnergyInfo> = {
+      ...remoteEnergyInfo,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localEnergyInfo ||
+      remoteEnergyInfo.lastModified > localEnergyInfo.lastModified
+    ) {
+      await systemsDB.energyInfos.put(indexedEnergyInfo)
+    }
+  })
+
+  await Promise.all(promises)
+}
 const init = () => {
   initModules()
   initHouseTypes()
@@ -169,6 +263,10 @@ const init = () => {
   initSectionTypes()
   initLevelTypes()
   initWindowTypes()
+  initBlocks()
+  initBlockModulesEntries()
+  initSpaceTypes()
+  initEnergyInfos()
 }
 
 init()

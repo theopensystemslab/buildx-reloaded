@@ -1,5 +1,3 @@
-import { A, O, R } from "~/utils/functions"
-import { pipe } from "fp-ts/lib/function"
 import { type Element } from "@/server/data/elements"
 import { type EnergyInfo } from "@/server/data/energyInfos"
 import { type HouseType } from "@/server/data/houseTypes"
@@ -12,14 +10,22 @@ import { SystemSettings } from "@/server/data/settings"
 import { type SpaceType } from "@/server/data/spaceTypes"
 import { type StairType } from "@/server/data/stairTypes"
 import { type WindowType } from "@/server/data/windowTypes"
+import { pipe } from "fp-ts/lib/function"
+import { A, O, R } from "~/utils/functions"
+import {
+  useAllElements,
+  useAllEnergyInfos,
+  useAllMaterials,
+  useAllSpaceTypes,
+  useAllWindowTypes,
+} from "../../db/systems"
+import {
+  housesToRecord,
+  useGetHouseModules,
+  useHouses,
+  type House,
+} from "../../db/user"
 import { useSelectedHouseIds } from "../ui/HousesPillsSelector"
-import { useElements } from "../../data/elements"
-import { useEnergyInfos } from "../../data/energyInfos"
-import { useMaterials } from "../../data/materials"
-import { useSpaceTypes } from "../../data/spaceTypes"
-import { useWindowTypes } from "../../data/windowTypes"
-import { useGetHouseModules, useHouses } from "../../design/state/houses"
-import { type House } from "../../db/user"
 
 export type SystemsData = {
   houseTypes: Array<HouseType>
@@ -589,38 +595,24 @@ const calculateHouseInfo = (
   }
 }
 
-export const useHouseFloorAreas = () => {
-  const houses = useHouses()
-  const getHouseModules = useGetHouseModules()
-  return pipe(
-    houses,
-    R.map((house) =>
-      pipe(
-        house,
-        getHouseModules,
-        A.reduce(0, (b, a) => b + a.floorArea)
-      )
-    )
-  )
-}
-
 export const useAnalyseData = () => {
   const houses = useHouses()
 
   const getHouseModules = useGetHouseModules()
 
-  const spaceTypes = useSpaceTypes()
-  const windowTypes = useWindowTypes()
-  const materials = useMaterials()
-  const elements = useElements()
-  const energyInfos = useEnergyInfos()
+  const spaceTypes = useAllSpaceTypes()
+  const windowTypes = useAllWindowTypes()
+  const materials = useAllMaterials()
+  const elements = useAllElements()
+  const energyInfos = useAllEnergyInfos()
 
   const selectedHouseIds = useSelectedHouseIds()
 
   const byHouse = pipe(
     houses,
+    housesToRecord,
     R.filterMap((house) => {
-      const { systemId, dnas } = house
+      const { systemId, houseId } = house
 
       const energyInfo = energyInfos.find((x) => x.systemId === systemId)
 
@@ -628,19 +620,21 @@ export const useAnalyseData = () => {
         return O.none
       }
 
-      const modules = getHouseModules({ systemId, dnas })
-
-      const houseInfo = calculateHouseInfo(house, modules, {
-        energyInfo,
-        spaceTypes,
-        windowTypes,
-        materials,
-        elements,
-      })
-
-      return O.some(houseInfo)
+      return pipe(
+        getHouseModules(houseId),
+        O.map((houseModules) =>
+          calculateHouseInfo(house, houseModules, {
+            energyInfo,
+            spaceTypes,
+            windowTypes,
+            materials,
+            elements,
+          })
+        )
+      )
     })
   )
+
   return {
     byHouse,
     areas: accumulateAreas(
@@ -661,6 +655,8 @@ export const useAnalyseData = () => {
     unitsCount: selectedHouseIds.length,
   }
 }
+
+export type AnalyseData = ReturnType<typeof useAnalyseData>
 
 // Helpers
 

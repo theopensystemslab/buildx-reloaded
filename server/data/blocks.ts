@@ -13,6 +13,7 @@ export type Block = {
   manufacturingCost: number // -> manufacturer cost
   totalCost: number
   cuttingFileUrl: string
+  lastModified: number
 }
 
 export const blockTypeParser = z.object({
@@ -24,6 +25,20 @@ export const blockTypeParser = z.object({
     Manufacturing_cost: z.number().default(0),
     Total_cost: z.number().default(0),
     Github_cutting_file: z.string().min(1),
+    "Last Modified": z
+      .string()
+      .refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      )
+      .transform((x) => new Date(x).getTime()),
   }),
 })
 
@@ -51,8 +66,9 @@ export const blocksQuery: QueryFn<Block> =
                       Manufacturing_cost: manufacturingCost,
                       Total_cost: totalCost,
                       Github_cutting_file,
+                      "Last Modified": lastModified,
                     },
-                  }) => ({
+                  }): Block => ({
                     id,
                     systemId,
                     name,
@@ -61,6 +77,7 @@ export const blocksQuery: QueryFn<Block> =
                     manufacturingCost,
                     totalCost,
                     cuttingFileUrl: Github_cutting_file,
+                    lastModified,
                   })
                 )
               ).parse

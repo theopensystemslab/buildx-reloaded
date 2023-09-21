@@ -14,6 +14,7 @@ export type BlockModulesEntry = {
   systemId: string
   blockId: string
   moduleIds: string[]
+  lastModified: number
 }
 
 export const blockModulesEntryParser = z.object({
@@ -21,6 +22,20 @@ export const blockModulesEntryParser = z.object({
   fields: z.object({
     block: z.array(z.string().min(1)).length(1),
     modules: z.array(z.string().min(1)),
+    last_modified: z
+      .string()
+      .refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      )
+      .transform((x) => new Date(x).getTime()),
   }),
 })
 
@@ -39,11 +54,15 @@ export const blockModulesEntriesQuery: QueryFn<BlockModulesEntry> =
             .then(
               z.array(
                 blockModulesEntryParser.transform(
-                  ({ id, fields: { block, modules } }): BlockModulesEntry => ({
+                  ({
+                    id,
+                    fields: { block, modules, last_modified: lastModified },
+                  }): BlockModulesEntry => ({
                     id,
                     systemId,
                     blockId: block[0],
                     moduleIds: modules,
+                    lastModified,
                   })
                 )
               ).parse

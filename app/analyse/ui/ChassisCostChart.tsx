@@ -17,9 +17,11 @@ import {
   WhatIsThis,
 } from "./chartComponents"
 
-const ChassisCostChart = () => {
-  const { orderListRows } = useOrderListData()
-
+const ChassisCostChart = ({
+  orderListRows,
+}: {
+  orderListRows: OrderListRow[]
+}) => {
   const orderListByBuilding = pipe(
     orderListRows,
     A.reduce({}, (acc: Record<string, OrderListRow>, x) =>
