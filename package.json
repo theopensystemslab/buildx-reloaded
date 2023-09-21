@@ -35,7 +35,7 @@
     "encoding": "^0.1.13",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "graphql-request": "^6.0.0",
     "immer": "^9.0.15",
     "js-yaml-loader": "^1.2.2",
