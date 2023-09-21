@@ -3,11 +3,15 @@ import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { useMemo } from "react"
 import { A, O, R, S } from "~/utils/functions"
-import { trpc } from "../../../client/trpc"
 import {
   useGetColorClass,
   useSelectedHouses,
 } from "../../analyse/ui/HousesPillsSelector"
+import {
+  useAllBlockModulesEntries,
+  useAllBlocks,
+  useAllModules,
+} from "../../db/systems"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 
 export type OrderListRow = {
@@ -27,28 +31,14 @@ export type OrderListRow = {
 
 export const useOrderListData = () => {
   const selectedHouses = useSelectedHouses()
+
   const getColorClass = useGetColorClass()
 
-  const { data: modules = [], status: modulesQueryStatus } =
-    trpc.modules.useQuery()
-  const { data: blocks = [], status: blocksQueryStatus } =
-    trpc.blocks.useQuery()
-  const {
-    data: blockModulesEntries = [],
-    status: blockModulesEntriesQueryStatus,
-  } = trpc.blockModulesEntries.useQuery()
+  const modules = useAllModules()
 
-  const allStatuses = [
-    modulesQueryStatus,
-    blocksQueryStatus,
-    blockModulesEntriesQueryStatus,
-  ]
+  const blocks = useAllBlocks()
 
-  const status: typeof modulesQueryStatus = allStatuses.includes("error")
-    ? "error"
-    : allStatuses.includes("loading")
-    ? "loading"
-    : "success"
+  const blockModulesEntries = useAllBlockModulesEntries()
 
   const orderListRows = useMemo(() => {
     const accum: Record<string, number> = {}
@@ -205,7 +195,6 @@ export const useOrderListData = () => {
     totalTotalCost,
     orderListRows,
     blockCountsByHouse,
-    status,
     fmt,
   }
 }

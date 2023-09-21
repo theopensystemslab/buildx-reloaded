@@ -1,5 +1,9 @@
 import Dexie from "dexie"
+import { useLiveQuery } from "dexie-react-hooks"
+import { pipe } from "fp-ts/lib/function"
 import { z } from "zod"
+import { A, O, R } from "../utils/functions"
+import { useAllModules } from "./systems"
 
 export const houseParser = z.object({
   houseId: z.string().min(1),
@@ -17,6 +21,52 @@ export const houseParser = z.object({
 })
 
 export type House = z.infer<typeof houseParser>
+
+export const housesToRecord = (housesArray: House[]): Record<string, House> => {
+  return pipe(
+    housesArray,
+    A.reduce({} as Record<string, House>, (acc, house) => ({
+      ...acc,
+      [house.houseId]: house,
+    }))
+  )
+}
+
+export const housesToArray = (housesRecord: Record<string, House>): House[] => {
+  return pipe(
+    housesRecord,
+    R.toArray,
+    A.map(([, house]) => house) // We only care about the House value, not the houseId key.
+  )
+}
+
+export const useHouses = () => {
+  const houses: House[] = useLiveQuery(() => userDB.houses.toArray(), [], [])
+
+  return houses
+}
+
+export const useGetHouseModules = () => {
+  const houses = useHouses()
+  const allSystemsModules = useAllModules()
+
+  return (houseId: string) =>
+    pipe(
+      houses,
+      A.findFirst((x) => x.houseId === houseId),
+      O.chain((house) =>
+        pipe(
+          house.dnas,
+          A.traverse(O.Applicative)((dna) =>
+            pipe(
+              allSystemsModules,
+              A.findFirst((x) => x.systemId === house.systemId && x.dna === dna)
+            )
+          )
+        )
+      )
+    )
+}
 
 class UserDatabase extends Dexie {
   houses: Dexie.Table<House, string>

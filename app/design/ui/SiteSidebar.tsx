@@ -1,15 +1,14 @@
 import { System, systems } from "@/server/data/system"
+import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
-import { nanoid } from "nanoid"
 import { Fragment, useMemo, useState } from "react"
-import { Vector3 } from "three"
-import { ref } from "valtio"
+import { suspend } from "suspend-react"
 import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
+import systemsDB from "../../db/systems"
 import { useCameraGroundRaycast } from "../state/camera"
 import { dispatchAddHouseIntent } from "../ui-3d/fresh/events/houses"
-import houses from "../state/houses"
 import HouseThumbnail from "./HouseThumbnail"
 
 type Props = {
@@ -18,7 +17,7 @@ type Props = {
 }
 
 const SiteSidebar = ({ open, close }: Props) => {
-  const houseTypes = useHouseTypes()
+  const houseTypes = useLiveQuery(() => systemsDB.houseTypes.toArray())
 
   const manySystems = systems.length > 1
   const singleSystem = systems.length === 1

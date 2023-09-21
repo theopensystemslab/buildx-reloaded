@@ -5,6 +5,7 @@ import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 
 export type EnergyInfo = {
+  id: string
   systemId: string
   dhwDemand: number // kWh/m2/yr
   spaceHeatingDemand: number // kWh/m2/yr
@@ -18,6 +19,7 @@ export type EnergyInfo = {
   wallUValue: number
   floorUValue: number
   roofUValue: number
+  lastModified: number
 }
 
 const getEnergyEntry = (fieldName: string, records: Array<any>): number => {
@@ -32,21 +34,6 @@ const getEnergyEntry = (fieldName: string, records: Array<any>): number => {
   )
 }
 
-export const energyInfoParser = z.object({
-  id: z.string().min(1),
-  fields: z.object({
-    space_code: z.string().min(1),
-    description: z.string().min(1),
-    image: z
-      .array(
-        z.object({
-          url: z.string().min(1),
-        })
-      )
-      .default([]),
-  }),
-})
-
 export const energyInfosQuery: QueryFn<EnergyInfo> =
   (airtable) =>
   async ({ input: { systemIds } }) =>
@@ -59,7 +46,11 @@ export const energyInfosQuery: QueryFn<EnergyInfo> =
           .select()
           .all()
           .then((records: any) => {
-            return {
+            // TODO: FIXME: PLEASE :-)
+            const id: string = records.map((x: any) => x.id).join("")
+
+            const energyInfo: EnergyInfo = {
+              id,
               systemId,
               dhwDemand: getEnergyEntry("DHW demand", records),
               spaceHeatingDemand: getEnergyEntry(
@@ -85,7 +76,10 @@ export const energyInfosQuery: QueryFn<EnergyInfo> =
               wallUValue: getEnergyEntry("Wall u-value", records),
               floorUValue: getEnergyEntry("Floor u-value", records),
               roofUValue: getEnergyEntry("Roof u-value", records),
+              lastModified: Date.now(),
             }
+
+            return energyInfo
           })
       ),
       (ps) => Promise.all(ps)

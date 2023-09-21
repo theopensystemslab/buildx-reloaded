@@ -120,24 +120,6 @@ export const useDnasModules = (systemId: string, dnas: string[]) => {
   )
 }
 
-export const useGetHouseModules = () => {
-  const allSystemModules = useModules()
-
-  return ({ systemId, dnas }: { systemId: string; dnas: string[] }) => {
-    let modules: Module[] = []
-
-    for (let dna of dnas) {
-      const foundModule = allSystemModules.find(
-        (module) => module.systemId === systemId && module.dna === dna
-      )
-      if (!foundModule) continue
-
-      modules.push(foundModule)
-    }
-    return modules
-  }
-}
-
 export const useHousesSystems = () => {
   const snap = useSnapshot(houses) as typeof houses
   return pipe(

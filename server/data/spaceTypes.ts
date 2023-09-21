@@ -9,6 +9,7 @@ export type SpaceType = {
   systemId: string
   code: string
   description: string
+  lastModified: number
 }
 
 export const spaceTypeParser = z.object({
@@ -23,6 +24,20 @@ export const spaceTypeParser = z.object({
         })
       )
       .default([]),
+    last_modified: z
+      .string()
+      .refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      )
+      .transform((x) => new Date(x).getTime()),
   }),
 })
 
@@ -40,11 +55,15 @@ export const spaceTypesQuery: QueryFn<SpaceType> =
           .then(
             z.array(
               spaceTypeParser.transform(
-                ({ id, fields: { space_code, description, image } }) => ({
+                ({
+                  id,
+                  fields: { space_code, description, image, last_modified },
+                }): SpaceType => ({
                   id,
                   systemId,
                   code: space_code,
                   description,
+                  lastModified: new Date(last_modified).getTime(),
                 })
               )
             ).parse

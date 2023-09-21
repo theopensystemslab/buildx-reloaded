@@ -2,12 +2,10 @@
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R, S } from "~/utils/functions"
 import { floor } from "~/utils/math"
+import { Module } from "../../../server/data/modules"
+import { housesToRecord } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
-import {
-  formatWithUnit,
-  useAnalyseData,
-  useHouseFloorAreas,
-} from "../state/data"
+import { formatWithUnit, useAnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -19,23 +17,36 @@ import {
 } from "./chartComponents"
 import { useGetColorClass, useSelectedHouses } from "./HousesPillsSelector"
 
-const FloorAreaChart = () => {
+const FloorAreaChart = ({ modules }: { modules: Module[] }) => {
   const selectedHouses = useSelectedHouses()
 
   const getColorClass = useGetColorClass()
 
-  const houseFloorAreas = useHouseFloorAreas()
-
-  const {
-    areas: { firstFloor },
-  } = useAnalyseData()
+  const houseFloorAreas = pipe(
+    selectedHouses,
+    housesToRecord,
+    R.map((house) =>
+      pipe(
+        house.dnas,
+        A.map((dna) =>
+          pipe(
+            modules,
+            A.findFirst((x) => x.dna === dna)
+          )
+        ),
+        A.sequence(O.Applicative),
+        O.map(A.reduce(0, (b, a) => b + a.floorArea)),
+        O.getOrElse(() => 0)
+      )
+    )
+  )
 
   const totalFloorArea = pipe(
     houseFloorAreas,
     R.reduce(S.Ord)(0, (b, a) => b + a)
   )
 
-  const { formatWithSymbol, ...currency } = useSiteCurrency()
+  const { formatWithSymbol } = useSiteCurrency()
 
   return (
     <ChartColumn>

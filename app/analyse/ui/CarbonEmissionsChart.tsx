@@ -3,7 +3,7 @@ import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
 import houses from "../../design/state/houses"
-import { formatWithUnit, useAnalyseData } from "../state/data"
+import { AnalyseData, formatWithUnit, useAnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -15,10 +15,12 @@ import {
 } from "./chartComponents"
 import { useGetColorClass } from "./HousesPillsSelector"
 
-const CarbonEmissionsChart = () => {
+const CarbonEmissionsChart = ({
+  analyseData,
+}: {
+  analyseData: AnalyseData
+}) => {
   const getColorClass = useGetColorClass()
-
-  const analyseData = useAnalyseData()
 
   const totalValue = analyseData.operationalCo2.annualTotal
 
