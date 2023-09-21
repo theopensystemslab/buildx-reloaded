@@ -12,6 +12,7 @@ const App = () => {
   initSystemsWorker()
   initModelsWorker()
   initLayoutsWorker()
+
   return (
     <AppInit controlsEnabled={true} mapEnabled={false}>
       <Routing />
