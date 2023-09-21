@@ -19,6 +19,8 @@ export * as RR from "fp-ts/ReadonlyRecord"
 export * as SG from "fp-ts/Semigroup"
 export * as TO from "fp-ts/TaskOption"
 export * as EQ from "fp-ts/Eq"
+export * as TU from "fp-ts/Tuple"
+export * as RTU from "fp-ts/ReadonlyTuple"
 
 const clamp = Ord.clamp(Num.Ord)
 

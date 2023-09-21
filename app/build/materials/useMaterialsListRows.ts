@@ -12,8 +12,9 @@ import {
   MaterialNotFoundError,
   useGetElementMaterial,
 } from "~/design/state/hashedMaterials"
-import houses, { useGetHouseModules } from "~/design/state/houses"
-import { A, O } from "~/utils/functions"
+import { A, O, R, TU } from "~/utils/functions"
+import { LastFetchStamped } from "../../db/systems"
+import { House, useGetHouseModules, useHouses } from "../../db/user"
 import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
 
@@ -23,6 +24,26 @@ export const useMaterialsListRows = () => {
   const getModuleWindowTypes = useGetModuleWindowTypes()
   const elements = useElements()
   const getElementMaterial = useGetElementMaterial()
+
+  const houses = useHouses()
+
+  const selectedHouses = useMemo(
+    () =>
+      pipe(
+        houses,
+        A.filter((x) => selectedHouseIds.includes(x.houseId))
+      ),
+    [houses, selectedHouseIds]
+  )
+
+  const getHouse = useCallback(
+    (houseId: string) =>
+      pipe(
+        selectedHouses,
+        A.findFirst((x) => x.houseId === houseId)
+      ),
+    [selectedHouses]
+  )
 
   const getHouseModules = useGetHouseModules()
 
@@ -116,8 +137,11 @@ export const useMaterialsListRows = () => {
 
   const houseMaterialCalculator = useCallback(
     (houseId: string): MaterialsListRow[] => {
-      const house = houses[houseId]
-      const houseModules = getHouseModules(house)
+      const house = getHouse(houseId)
+
+      if (O.isNone(house)) return []
+
+      const houseModules = getHouseModules(houseId)
 
       const elementRows: MaterialsListRow[] = pipe(
         elements,
@@ -136,16 +160,20 @@ export const useMaterialsListRows = () => {
               embodiedCarbonPerUnit,
               linkUrl,
               unit,
-            } = getElementMaterial(house.houseId, item)
+            } = getElementMaterial(houseId, item)
 
-            const quantity = pipe(houseModules, A.reduce(0, reducer))
+            const quantity = pipe(
+              houseModules,
+              O.map(A.reduce(0, reducer)),
+              O.getOrElse(() => 0)
+            )
 
             const cost = costPerUnit * quantity
 
             const embodiedCarbonCost = embodiedCarbonPerUnit * quantity
 
             return O.some<MaterialsListRow>({
-              buildingName: house.friendlyName,
+              buildingName: house.value.friendlyName,
               item,
               category,
               unit,
@@ -175,7 +203,7 @@ export const useMaterialsListRows = () => {
 
       const augmentedRows: MaterialsListRow[] = [
         {
-          buildingName: house.friendlyName,
+          buildingName: house.value.friendlyName,
           item: "WikiHouse blocks",
           category: "Structure",
           unit: null,
@@ -197,11 +225,11 @@ export const useMaterialsListRows = () => {
     },
     [
       blockCountsByHouse,
-      categories,
       elements,
       getCategoryColorClass,
       getColorClass,
       getElementMaterial,
+      getHouse,
       getHouseModules,
       getQuantityReducer,
     ]
