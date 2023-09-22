@@ -1,11 +1,9 @@
 "use client"
 import { pipe } from "fp-ts/lib/function"
-import { A, capitalizeFirstLetters, O, R, S } from "~/utils/functions"
+import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import { floor } from "~/utils/math"
-import { Module } from "../../../server/data/modules"
-import { housesToRecord } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
-import { formatWithUnit, useAnalyseData } from "../state/data"
+import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -17,36 +15,20 @@ import {
 } from "./chartComponents"
 import { useGetColorClass, useSelectedHouses } from "./HousesPillsSelector"
 
-const FloorAreaChart = ({ modules }: { modules: Module[] }) => {
+const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
   const selectedHouses = useSelectedHouses()
 
   const getColorClass = useGetColorClass()
 
-  const houseFloorAreas = pipe(
-    selectedHouses,
-    housesToRecord,
-    R.map((house) =>
-      pipe(
-        house.dnas,
-        A.map((dna) =>
-          pipe(
-            modules,
-            A.findFirst((x) => x.dna === dna)
-          )
-        ),
-        A.sequence(O.Applicative),
-        O.map(A.reduce(0, (b, a) => b + a.floorArea)),
-        O.getOrElse(() => 0)
-      )
-    )
-  )
-
-  const totalFloorArea = pipe(
-    houseFloorAreas,
-    R.reduce(S.Ord)(0, (b, a) => b + a)
-  )
-
   const { formatWithSymbol } = useSiteCurrency()
+
+  const { areas, costs } = analyseData
+
+  const houseFloorAreas = pipe(
+    analyseData.byHouse,
+
+    R.map((x) => pipe(x.areas.totalFloor))
+  )
 
   return (
     <ChartColumn>
@@ -92,12 +74,14 @@ const FloorAreaChart = ({ modules }: { modules: Module[] }) => {
       <ChartMetrics>
         <div className="flex">
           <div className="text-5xl font-normal">
-            {formatWithUnit(floor(totalFloorArea), "m²")}
+            {formatWithUnit(floor(areas.totalFloor), "m²")}
           </div>
         </div>
         <div>
           <div>
-            <span className="text-3xl">{`${formatWithSymbol(0)}/m²`}</span>
+            <span className="text-3xl">{`${formatWithSymbol(
+              costs.total / areas.totalFloor
+            )}/m²`}</span>
           </div>
           <div className="mt-4">
             <span>Estimated per floor area</span>
