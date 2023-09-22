@@ -7,23 +7,6 @@ type Metric = {
   displayFn?: (unit: string, value: number) => string
 }
 
-const CarouselSlide = ({ metric }: { metric: Metric }) => {
-  const { label, value, unit = "", displayFn } = metric
-
-  const defaultDisplayFn = (unit: string | undefined, value: number) => {
-    return unit ? `${value} ${unit}` : `${value}`
-  }
-
-  const displayValue = (displayFn || defaultDisplayFn)(unit, value)
-
-  return (
-    <div className="p-4">
-      <div className="text-xs">{label}</div>
-      <div className="mt-1 font-bold text-lg">{displayValue}</div>
-    </div>
-  )
-}
-
 const MetricsCarousel = ({ metrics }: { metrics: Metric[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -37,15 +20,26 @@ const MetricsCarousel = ({ metrics }: { metrics: Metric[] }) => {
     )
   }
 
+  const { label, value, unit = "", displayFn } = metrics[currentIndex]
+
+  const defaultDisplayFn = (unit: string | undefined, value: number) => {
+    return unit ? `${value} ${unit}` : `${value}`
+  }
+
+  const displayValue = (displayFn || defaultDisplayFn)(unit, value)
+
   return (
-    <div className="flex items-center">
-      <button onClick={prevMetric} className="p-2 pointer-events-auto">
-        {`<`}
-      </button>
-      <CarouselSlide metric={metrics[currentIndex]} />
-      <button onClick={nextMetric} className="p-2 pointer-events-auto">
-        {`>`}
-      </button>
+    <div className="flex flex-col items-center">
+      <div className="flex items-center">
+        <button onClick={prevMetric} className="p-2 pointer-events-auto">
+          {`<`}
+        </button>
+        <div className="text-xs">{label}</div>
+        <button onClick={nextMetric} className="p-2 pointer-events-auto">
+          {`>`}
+        </button>
+      </div>
+      <div className="mt-1 font-bold text-lg">{displayValue}</div>
     </div>
   )
 }
