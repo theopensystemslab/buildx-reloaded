@@ -31,8 +31,8 @@ import { useScope } from "../state/scope"
 import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
-import { DEBUG } from "../state/constants"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
+import MetricsWidget from "./metrics/MetricsWidget"
 
 type Props = {
   controlsEnabled: boolean
@@ -206,6 +206,8 @@ const HtmlUi = (props: Props) => {
           />
         </IconMenu>
       </div>
+
+      <MetricsWidget />
 
       <SiteSidebar open={sidebar} close={() => void setSidebar(false)} />
 

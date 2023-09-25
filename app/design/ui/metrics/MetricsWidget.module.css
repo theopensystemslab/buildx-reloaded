@@ -1,0 +1,7 @@
+.root {
+  @apply absolute top-[40%] right-0;
+  /* @apply top-1/2 right-0 bottom-0; */
+  /* @apply transform -translate-y-1/2; */
+  /* @apply select-none pointer-events-none; */
+  @apply bg-white  opacity-60;
+}
