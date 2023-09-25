@@ -31,15 +31,15 @@ const MetricsCarousel = ({ metrics }: { metrics: Metric[] }) => {
   return (
     <div className="flex flex-col items-center">
       <div className="flex items-center">
-        <button onClick={prevMetric} className="p-2 pointer-events-auto">
+        <button onClick={prevMetric} className="px-2 pointer-events-auto">
           {`<`}
         </button>
-        <div className="text-xs">{label}</div>
-        <button onClick={nextMetric} className="p-2 pointer-events-auto">
+        <div className="text-xs mt-1">{label}</div>
+        <button onClick={nextMetric} className="px-2 pointer-events-auto">
           {`>`}
         </button>
       </div>
-      <div className="mt-1 font-bold text-lg">{displayValue}</div>
+      <div className="font-bold text-lg">{displayValue}</div>
     </div>
   )
 }

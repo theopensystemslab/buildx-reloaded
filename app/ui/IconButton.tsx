@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useRouter } from "next/router"
-import { PropsWithChildren } from "react"
+import { HTMLProps, PropsWithChildren } from "react"
 // import { Link, useLocation } from "react-router-dom";
 
 export interface Props {
   onClick?: any
   href?: string
+  className?: HTMLProps<HTMLAnchorElement>["className"]
 }
 
 export const iconButtonStyles =
