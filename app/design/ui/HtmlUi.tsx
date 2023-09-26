@@ -91,14 +91,6 @@ const HtmlUi = (props: Props) => {
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 
-  const houses = useHouses()
-
-  useEffect(() => {
-    if (houses.length === 0) {
-      setSidebar(true)
-    }
-  }, [houses.length])
-
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">

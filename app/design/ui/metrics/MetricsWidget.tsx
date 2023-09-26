@@ -1,13 +1,12 @@
-import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
-import React, { Fragment, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useAnalyseData } from "../../../analyse/state/data"
 import {
   OrderListRow,
   useOrderListData,
 } from "../../../build/order/useOrderListData"
 import { House, housesToRecord, useHouses } from "../../../db/user"
-import IconButton, { iconButtonStyles } from "../../../ui/IconButton"
+import IconButton from "../../../ui/IconButton"
 import { Analyse, Close } from "../../../ui/icons"
 import { A, NEA, R, S } from "../../../utils/functions"
 import { getModeBools, useSiteCtx, useSiteCurrency } from "../../state/siteCtx"
@@ -74,8 +73,8 @@ const MetricsWidget = () => {
             value.toLocaleString("en-GB", {
               style: "currency",
               currency: currency.code,
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
             }),
         },
         {
@@ -85,8 +84,8 @@ const MetricsWidget = () => {
             value.toLocaleString("en-GB", {
               style: "currency",
               currency: currency.code,
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
             }),
         },
       ]
@@ -98,8 +97,8 @@ const MetricsWidget = () => {
             value.toLocaleString("en-GB", {
               style: "currency",
               currency: currency.code,
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
             }),
         },
         {
@@ -109,8 +108,8 @@ const MetricsWidget = () => {
             value.toLocaleString("en-GB", {
               style: "currency",
               currency: currency.code,
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
             }),
         },
       ]
