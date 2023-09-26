@@ -124,7 +124,7 @@ export const useMaterialsListRows = () => {
     [getModuleWindowTypes]
   )
 
-  const { blockCountsByHouse } = useOrderListData()
+  const { blockCountsByHouse } = useOrderListData(selectedHouses)
 
   let categories = useRef<string[]>([])
 

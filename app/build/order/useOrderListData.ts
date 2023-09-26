@@ -12,6 +12,7 @@ import {
   useAllBlocks,
   useAllModules,
 } from "../../db/systems"
+import { House } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 
 export type OrderListRow = {
@@ -29,9 +30,7 @@ export type OrderListRow = {
   totalCost: number
 }
 
-export const useOrderListData = () => {
-  const selectedHouses = useSelectedHouses()
-
+export const useOrderListData = (selectedHouses: House[]) => {
   const getColorClass = useGetColorClass()
 
   const modules = useAllModules()

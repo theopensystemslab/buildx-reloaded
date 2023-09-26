@@ -8,6 +8,7 @@ import { Close } from "~/ui/icons"
 import { useClickAway } from "~/ui/utils"
 import { A, R } from "~/utils/functions"
 import userDB, { House, housesToRecord, useHouses } from "../../db/user"
+import { useSiteCtx } from "../../design/state/siteCtx"
 
 const store = proxy<{
   selectedHouses: string[]

@@ -46,6 +46,8 @@ export const useHouses = () => {
   return houses
 }
 
+export const useHousesRecord = () => pipe(useHouses(), housesToRecord)
+
 export const useGetHouseModules = () => {
   const houses = useHouses()
   const allSystemsModules = useAllModules()

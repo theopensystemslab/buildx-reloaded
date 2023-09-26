@@ -2,6 +2,7 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
+import { useHouses, useHousesRecord } from "../../db/user"
 import houses from "../../design/state/houses"
 import { AnalyseData, formatWithUnit, useAnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
@@ -23,6 +24,8 @@ const CarbonEmissionsChart = ({
   const getColorClass = useGetColorClass()
 
   const totalValue = analyseData.operationalCo2.annualTotal
+
+  const houses = useHousesRecord()
 
   return (
     <ChartColumn>
