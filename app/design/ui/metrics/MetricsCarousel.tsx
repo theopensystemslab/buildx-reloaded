@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 
-type Metric = {
+export type Metric = {
   label: string
   value: number
   unit?: string
-  displayFn?: (unit: string, value: number) => string
+  displayFn?: (value: number, unit?: string) => string
 }
 
 const MetricsCarousel = ({ metrics }: { metrics: Metric[] }) => {
@@ -22,11 +22,11 @@ const MetricsCarousel = ({ metrics }: { metrics: Metric[] }) => {
 
   const { label, value, unit = "", displayFn } = metrics[currentIndex]
 
-  const defaultDisplayFn = (unit: string | undefined, value: number) => {
+  const defaultDisplayFn = (value: number, unit?: string) => {
     return unit ? `${value} ${unit}` : `${value}`
   }
 
-  const displayValue = (displayFn || defaultDisplayFn)(unit, value)
+  const displayValue = (displayFn || defaultDisplayFn)(value, unit)
 
   return (
     <div className="flex flex-col items-center">

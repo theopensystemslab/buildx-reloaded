@@ -6,9 +6,11 @@ import { useAnalyseData } from "./state/data"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
+import { useSelectedHouses } from "./ui/HousesPillsSelector"
 
 const AnalyseIndex = () => {
-  const { orderListRows } = useOrderListData()
+  const selectedHouses = useSelectedHouses()
+  const { orderListRows } = useOrderListData(selectedHouses)
   const analyseData = useAnalyseData()
 
   return (

@@ -3,6 +3,7 @@ import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { memo, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
+import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
 import PaginatedTable from "../PaginatedTable"
 import { OrderListRow, useOrderListData } from "./useOrderListData"
 
@@ -13,13 +14,15 @@ type Props = {
 const OrderListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
+  const selectedHouses = useSelectedHouses()
+
   const {
     orderListRows,
     totalMaterialCost,
     totalManufacturingCost,
     totalTotalCost,
     fmt,
-  } = useOrderListData()
+  } = useOrderListData(selectedHouses)
 
   const columnHelper = createColumnHelper<OrderListRow>()
 

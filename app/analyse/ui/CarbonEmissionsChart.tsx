@@ -2,6 +2,7 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
+import { useHouses, useHousesRecord } from "../../db/user"
 import houses from "../../design/state/houses"
 import { AnalyseData, formatWithUnit, useAnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
@@ -22,7 +23,7 @@ const CarbonEmissionsChart = ({
 }) => {
   const getColorClass = useGetColorClass()
 
-  const totalValue = analyseData.operationalCo2.annualTotal
+  const houses = useHousesRecord()
 
   return (
     <ChartColumn>
@@ -31,9 +32,9 @@ const CarbonEmissionsChart = ({
         <div
           className={clsx(
             "grid grid-cols-3 border-black h-full",
-            totalValue === 0
+            analyseData.operationalCo2.annualTotal === 0
               ? "hidden"
-              : totalValue > 0
+              : analyseData.operationalCo2.annualTotal > 0
               ? "border-b"
               : "border-t"
           )}
@@ -72,7 +73,9 @@ const CarbonEmissionsChart = ({
         </div>
       </ChartContainer>
       <ChartMetrics>
-        <div className="text-5xl font-normal">{formatWithUnit(-85, "T")}</div>
+        <div className="text-5xl font-normal">
+          {formatWithUnit(analyseData.operationalCo2.annualTotal, "T")}
+        </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics>
       <WhatIsThis>

@@ -1,5 +1,5 @@
 import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import IconButton from "~/ui/IconButton"
 import IconMenu from "~/ui/IconMenu"
 import { Menu, SectionCuts } from "~/ui/icons"
@@ -33,6 +33,7 @@ import ExitMode from "./ExitMode"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
+import { useHouses } from "../../db/user"
 
 type Props = {
   controlsEnabled: boolean
