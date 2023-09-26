@@ -38,7 +38,7 @@ type MaterialOpt = {
 const ChangeMaterial = (props: Props) => {
   const {
     houseTransformsGroup,
-    scopeElement: { dna, houseId, gridGroupIndex, object, ifcTag },
+    scopeElement: { ifcTag },
     close,
   } = props
 
