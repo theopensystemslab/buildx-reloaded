@@ -2,7 +2,7 @@ import { Reset } from "@carbon/icons-react"
 import { flow, pipe } from "fp-ts/lib/function"
 import { useEffect, useRef } from "react"
 import systemsDB from "../../../../db/systems"
-import { A, O, pipeLog, T } from "../../../../utils/functions"
+import { A, O, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import { findAllGuardDown } from "../../../ui-3d/fresh/helpers/sceneQueries"
@@ -15,11 +15,7 @@ import {
   isElementMesh,
   isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
-import {
-  getDefaultSystemMaterial,
-  getSystemMaterial,
-  systemMaterials,
-} from "../../../ui-3d/fresh/systems"
+import { getDefaultSystemMaterial } from "../../../ui-3d/fresh/systems"
 import ContextMenuButton from "../common/ContextMenuButton"
 
 type Props = {
