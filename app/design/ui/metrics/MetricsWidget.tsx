@@ -1,6 +1,6 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
-import React, { Fragment, useMemo, useState } from "react"
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import { useAnalyseData } from "../../../analyse/state/data"
 import {
   OrderListRow,
@@ -50,15 +50,20 @@ const MetricsWidget = () => {
     R.reduce(S.Ord)(0, (b, a) => b + a)
   )
 
-  console.log({
-    totalChassisCost,
-    houseChassisCosts,
-    orderListRowsByHouse,
-    orderListRows,
-  })
+  const hasHouseBeenAdded = useRef(false)
 
   const [isOpen, setOpen] = useState(false)
   const toggleOpen = () => setOpen(!isOpen)
+
+  useEffect(() => {
+    if (houses.length === 1 && !hasHouseBeenAdded.current) {
+      setOpen(true)
+      hasHouseBeenAdded.current = true
+    }
+    if (houses.length === 0 && hasHouseBeenAdded.current) {
+      hasHouseBeenAdded.current = false
+    }
+  }, [houses])
 
   const topMetrics: Metric[] = buildingMode
     ? [
