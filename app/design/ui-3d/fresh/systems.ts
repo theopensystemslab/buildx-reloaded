@@ -1,12 +1,14 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
-import { DoubleSide, MeshStandardMaterial } from "three"
+import { MeshStandardMaterial } from "three"
 import { Element } from "../../../../server/data/elements"
 import { Material } from "../../../../server/data/materials"
 import systemsDB, { LastFetchStamped } from "../../../db/systems"
 import userDB, { House } from "../../../db/user"
 import { O, R, someOrError, T } from "../../../utils/functions"
-import { createThreeMaterial, ThreeMaterial } from "../../../utils/three"
+import { createThreeMaterial } from "../../../utils/three"
+
+// SYSTEM ELEMENTS
 
 // hash(systemId, ifcTag) : airtable element
 export let systemElements: Record<string, LastFetchStamped<Element>> = {}
@@ -18,12 +20,6 @@ const getSystemElementHash = ({
   systemId: string
   ifcTag: string
 }) => [systemId, ifcTag].join(":")
-
-liveQuery(() => systemsDB.elements.toArray()).subscribe((dbElements) => {
-  for (let dbElement of dbElements) {
-    systemElements[getSystemElementHash(dbElement)] = dbElement
-  }
-})
 
 export const getSystemElement = ({
   systemId,
@@ -37,6 +33,8 @@ export const getSystemElement = ({
     R.lookup(getSystemElementHash({ systemId, ifcTag })),
     someOrError(`no element in ${systemId} for ${ifcTag}`)
   )
+
+// SYSTEM MATERIALS
 
 type EnrichedMaterial = {
   material: LastFetchStamped<Material>
@@ -54,22 +52,13 @@ const getSystemMaterialHash = ({
   specification: string
 }) => [systemId, specification].join(":")
 
-liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
-  for (let dbMaterial of dbMaterials) {
-    systemMaterials[getSystemMaterialHash(dbMaterial)] = {
-      material: dbMaterial,
-      threeMaterial: createThreeMaterial(dbMaterial),
-    }
-  }
-})
-
 export const getSystemMaterial = ({
   systemId,
   specification,
 }: {
   systemId: string
   specification: string
-}) => {
+}): EnrichedMaterial => {
   const materialHash = getSystemMaterialHash({ systemId, specification })
   return pipe(
     systemMaterials,
@@ -77,6 +66,31 @@ export const getSystemMaterial = ({
     someOrError(`no material in ${systemId} for ${specification}`)
   )
 }
+
+// DEFAULT MATERIALS
+
+export const defaultSystemMaterials: Record<string, EnrichedMaterial> = {}
+
+export const getDefaultSystemMaterialHash = ({
+  systemId,
+  ifcTag,
+}: {
+  systemId: string
+  ifcTag: string
+}) => [systemId, ifcTag].join(":")
+
+export const getDefaultSystemMaterial = ({
+  systemId,
+  ifcTag,
+}: {
+  systemId: string
+  ifcTag: string
+}) => {
+  const hash = getDefaultSystemMaterialHash({ systemId, ifcTag })
+  return pipe(defaultSystemMaterials, R.lookup(hash))
+}
+
+// OTHER
 
 export const getInitialMaterial = ({
   systemId,
@@ -110,3 +124,44 @@ export const getInitialMaterial = ({
     )
   )
 }
+
+// LIVE QUERIES
+
+const updateDefaultMaterials = () => {
+  pipe(
+    systemElements,
+    R.map(({ defaultMaterial, systemId, ifcTag }) => {
+      const systemMaterialHash = getSystemMaterialHash({
+        systemId,
+        specification: defaultMaterial,
+      })
+
+      pipe(
+        systemMaterials,
+        R.lookup(systemMaterialHash),
+        O.map((defaultMaterial) => {
+          defaultSystemMaterials[
+            getDefaultSystemMaterialHash({ systemId, ifcTag })
+          ] = defaultMaterial
+        })
+      )
+    })
+  )
+}
+
+liveQuery(() => systemsDB.elements.toArray()).subscribe((dbElements) => {
+  for (let dbElement of dbElements) {
+    systemElements[getSystemElementHash(dbElement)] = dbElement
+  }
+  updateDefaultMaterials()
+})
+
+liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
+  for (let dbMaterial of dbMaterials) {
+    systemMaterials[getSystemMaterialHash(dbMaterial)] = {
+      material: dbMaterial,
+      threeMaterial: createThreeMaterial(dbMaterial),
+    }
+  }
+  updateDefaultMaterials()
+})
