@@ -1,7 +1,7 @@
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { flow, pipe } from "fp-ts/lib/function"
-import { useRef } from "react"
+import { Fragment, Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import { MeshStandardMaterial } from "three"
 import { Material } from "../../../../../server/data/materials"
@@ -35,7 +35,7 @@ type MaterialOpt = {
   threeMaterial: MeshStandardMaterial
 }
 
-const ChangeMaterial = (props: Props) => {
+const ChangeMaterialOptions = (props: Props) => {
   const {
     houseTransformsGroup,
     scopeElement: { ifcTag },
@@ -96,10 +96,7 @@ const ChangeMaterial = (props: Props) => {
   const closing = useRef(false)
 
   return (
-    <ContextMenuNested
-      icon={<WatsonHealthSubVolume size={20} />}
-      label={`Change material`}
-    >
+    <Fragment>
       <ContextMenuHeading>{element?.name}</ContextMenuHeading>
       <Radio
         options={options.map((x) => ({
@@ -141,8 +138,21 @@ const ChangeMaterial = (props: Props) => {
           invalidate()
         }}
       />
-    </ContextMenuNested>
+    </Fragment>
   )
 }
 
+const ChangeMaterial = (props: Props) => {
+  return (
+    <ContextMenuNested
+      long
+      label={`Change material`}
+      icon={<WatsonHealthSubVolume size={20} />}
+    >
+      <Suspense fallback={null}>
+        <ChangeMaterialOptions {...props} />
+      </Suspense>
+    </ContextMenuNested>
+  )
+}
 export default ChangeMaterial
