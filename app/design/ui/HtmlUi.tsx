@@ -34,6 +34,7 @@ import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
 import { useHouses } from "../../db/user"
+import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 
 type Props = {
   controlsEnabled: boolean
@@ -83,7 +84,7 @@ const HtmlUi = (props: Props) => {
       case SiteCtxModeEnum.Enum.BUILDING:
         return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
       default:
-        return () => null
+        return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
       // case SiteCtxModeEnum.Enum.LEVEL:
       //   return <LevelModeContextMenu {...{x, y,  scopeElement}}/>
     }
