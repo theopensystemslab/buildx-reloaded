@@ -12,6 +12,7 @@ import {
   getSortedVisibleColumnGroups,
 } from "../helpers/sceneQueries"
 import createStretchHandle from "../shapes/stretchHandle"
+import { EnrichedMaterial } from "../systems"
 import {
   createColumnGroups,
   getVanillaColumn,

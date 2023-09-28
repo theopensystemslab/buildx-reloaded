@@ -9,7 +9,9 @@ import {
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
+import { O } from "../../../../utils/functions"
 import { ScopeElement } from "../../../state/scope"
+import { EnrichedMaterial } from "../systems"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -54,12 +56,13 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
-  // ifcTag : material specification
-  modifiedMaterials: Record<string, string>
+  materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
+  elementMaterialOpts: Record<string, string[]> // ifcTag : specification[]
+  activeElementMaterials: Record<string, string> // ifcTag : specification
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
-  getActiveLayoutGroup: () => HouseLayoutGroup
+  getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void

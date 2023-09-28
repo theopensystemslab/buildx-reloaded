@@ -36,7 +36,7 @@ export const getSystemElement = ({
 
 // SYSTEM MATERIALS
 
-type EnrichedMaterial = {
+export type EnrichedMaterial = {
   material: LastFetchStamped<Material>
   threeMaterial: MeshStandardMaterial
 }
@@ -119,7 +119,17 @@ export const getInitialMaterial = ({
           return getDefaultMaterialSpec()
         }),
         O.getOrElse(getDefaultMaterialSpec),
-        (specification) => getSystemMaterial({ systemId, specification })
+        (specification) => {
+          const { material, threeMaterial } = getSystemMaterial({
+            systemId,
+            specification,
+          })
+
+          return {
+            material,
+            threeMaterial: threeMaterial.clone(),
+          }
+        }
       )
     )
   )
