@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import { A } from "~/utils/functions"
+import { A, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
 import systemsDB from "../../../../db/systems"
@@ -54,8 +54,10 @@ const ChangeLevelTypeOptions = (props: Props) => {
         `no level type found for ${systemId} ${currentLevelTypeCode}`
       )
 
-    const activeLayoutGroup =
-      houseTransformsGroup.userData.getActiveLayoutGroup()
+    const activeLayoutGroup = pipe(
+      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      someOrError(`no active layout group in change level type`)
+    )
 
     const originalLevelTypeOption: LevelTypeOption = {
       label: currentLevelType.description,

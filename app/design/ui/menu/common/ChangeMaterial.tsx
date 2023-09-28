@@ -42,7 +42,7 @@ const ChangeMaterialOptions = (props: Props) => {
     close,
   } = props
 
-  const { systemId, modifiedMaterials } =
+  const { systemId, activeElementMaterials } =
     getActiveHouseUserData(houseTransformsGroup)
 
   const { element, options, selected } = suspend(async () => {
@@ -52,7 +52,7 @@ const ChangeMaterialOptions = (props: Props) => {
 
     const initialOpt: MaterialOpt = pipe(
       // if we've changed the material
-      modifiedMaterials,
+      activeElementMaterials,
       R.lookup(element.name),
       // this material data
       O.map((specification) => getSystemMaterial({ systemId, specification })),
@@ -112,8 +112,8 @@ const ChangeMaterialOptions = (props: Props) => {
 
           closing.current = true
 
-          houseTransformsGroup.userData.modifiedMaterials = {
-            ...modifiedMaterials,
+          houseTransformsGroup.userData.activeElementMaterials = {
+            ...activeElementMaterials,
             [ifcTag]: newMaterial.material.specification,
           }
 

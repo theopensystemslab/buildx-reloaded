@@ -184,14 +184,16 @@ const ChangeWindowsOptions = (props: Props) => {
 
     moduleGroup.userData.setThisModuleGroupVisible()
 
-    houseTransformsGroup.userData
-      .getActiveLayoutGroup()
-      .userData.updateDnas()
-      .then(() => {
-        houseTransformsGroup.userData.dbSync().then(() => {
-          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    pipe(
+      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      O.map((activeLayoutGroup) => {
+        activeLayoutGroup.userData.updateDnas().then(() => {
+          houseTransformsGroup.userData.dbSync().then(() => {
+            houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+          })
         })
       })
+    )
 
     close()
   }
