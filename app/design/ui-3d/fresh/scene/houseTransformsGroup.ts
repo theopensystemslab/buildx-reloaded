@@ -82,6 +82,7 @@ export const createHouseTransformsGroup = ({
   dnas,
   friendlyName,
   houseTypeId,
+  activeElementMaterials,
 }: House): T.Task<HouseTransformsGroup> => {
   const houseTransformsGroup = new Group() as HouseTransformsGroup
 
@@ -299,7 +300,6 @@ export const createHouseTransformsGroup = ({
 
   const elements: Record<string, Element> = {}
   const materials: Record<string, EnrichedMaterial> = {}
-  const activeElementMaterials: Record<string, string> = {}
 
   const pushMaterial = (specification: string) => {
     if (!(specification in materials)) {
@@ -326,18 +326,14 @@ export const createHouseTransformsGroup = ({
       elements[ifcTag] = element
     }
 
-    if (ifcTag in activeElementMaterials) {
-      const specification = activeElementMaterials[ifcTag]
-
+    pipe(
+      [element.defaultMaterial, ...element.materialOptions],
+      A.uniq(S.Eq)
+    ).forEach((specification) => {
       pushMaterial(specification)
-    } else {
-      pipe(
-        [element.defaultMaterial, ...element.materialOptions],
-        A.uniq(S.Eq)
-      ).forEach((specification) => {
-        pushMaterial(specification)
-      })
+    })
 
+    if (!(ifcTag in activeElementMaterials)) {
       activeElementMaterials[ifcTag] = element.defaultMaterial
     }
 
@@ -374,6 +370,8 @@ export const createHouseTransformsGroup = ({
     })
 
     activeElementMaterials[ifcTag] = specification
+
+    dbSync()
   }
 
   const houseTransformsGroupUserData: Omit<

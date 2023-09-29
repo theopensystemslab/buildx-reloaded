@@ -11,7 +11,7 @@ import { type SpaceType } from "@/server/data/spaceTypes"
 import { type StairType } from "@/server/data/stairTypes"
 import { type WindowType } from "@/server/data/windowTypes"
 import { pipe } from "fp-ts/lib/function"
-import { O, R } from "~/utils/functions"
+import { A, O, R } from "~/utils/functions"
 import {
   useAllElements,
   useAllEnergyInfos,
@@ -597,6 +597,13 @@ const calculateHouseInfo = (
 
 export const useAnalyseData = () => {
   const houses = useHouses()
+
+  // console.log(
+  //   pipe(
+  //     houses,
+  //     A.map((x) => x.activeElementMaterials)
+  //   )
+  // )
 
   const getHouseModules = useGetHouseModules()
 
