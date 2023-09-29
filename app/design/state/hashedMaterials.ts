@@ -76,8 +76,8 @@ export const useGetElementMaterial = () => {
     const house = houses[houseId]
 
     const materialName =
-      elementName in house.modifiedMaterials
-        ? house.modifiedMaterials[elementName]
+      elementName in house.activeElementMaterials
+        ? house.activeElementMaterials[elementName]
         : pipe(
             elements,
             A.findFirstMap((el) =>
@@ -105,8 +105,8 @@ export const useGetElementMaterialName = () => {
     const house = houses[houseId]
 
     const materialName =
-      elementName in house.modifiedMaterials
-        ? house.modifiedMaterials[elementName]
+      elementName in house.activeElementMaterials
+        ? house.activeElementMaterials[elementName]
         : pipe(
             elements,
             A.findFirstMap((el) =>
@@ -122,7 +122,8 @@ export const useGetElementMaterialName = () => {
 }
 
 export const useMaterialName = (houseId: string, elementName: string) => {
-  const { modifiedMaterials, systemId } = useHouse(houseId)
+  const { activeElementMaterials: modifiedMaterials, systemId } =
+    useHouse(houseId)
 
   const { materials: materialsPreviews } = useHousePreviews(houseId)
 

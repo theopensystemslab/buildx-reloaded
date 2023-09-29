@@ -10,15 +10,10 @@ import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
-import ChangeLevelType from "./ChangeLevelType"
-import ChangeWindows from "../common/ChangeWindows"
 import ChangeMaterial from "../common/ChangeMaterial"
+import ChangeWindows from "../common/ChangeWindows"
 
-const BuildingModeContextMenu = ({
-  x,
-  y,
-  scopeElement,
-}: ModeContextMenuProps) => {
+const LevelModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const close = () => {
     closeMenu()
     invalidate()
@@ -44,22 +39,6 @@ const BuildingModeContextMenu = ({
         onClose: close,
       }}
     >
-      <ContextMenuButton
-        icon={<Pencil />}
-        text="Edit level"
-        unpaddedSvg
-        onClick={() => {
-          downMode(scopeElement)
-          close()
-        }}
-      />
-
-      {/* <ChangeMaterials
-        houseId={houseId}
-        elementName={ifcTag}
-        onComplete={props.onClose}
-      /> */}
-
       <ChangeMaterial
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
@@ -71,24 +50,8 @@ const BuildingModeContextMenu = ({
         scopeElement={scopeElement}
         close={close}
       />
-
-      <ChangeLevelType
-        close={close}
-        houseTransformsGroup={houseTransformsGroup}
-        scopeElement={scopeElement}
-      />
-
-      {/* <AddRemoveLevels
-        {...{
-          houseId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          onComplete: props.onClose,
-        }}
-      /> */}
     </ContextMenu>
   )
 }
 
-export default BuildingModeContextMenu
+export default LevelModeContextMenu

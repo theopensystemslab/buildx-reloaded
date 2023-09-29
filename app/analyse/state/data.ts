@@ -317,7 +317,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[claddingElementName] ||
+          (house.activeElementMaterials[claddingElementName] ||
             claddingElement.defaultMaterial)
     )
 
@@ -327,7 +327,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[internalLiningElementName] ||
+          (house.activeElementMaterials[internalLiningElementName] ||
             internalLiningElement.defaultMaterial)
     )
 
@@ -337,7 +337,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[roofingElementName] ||
+          (house.activeElementMaterials[roofingElementName] ||
             roofingElement.defaultMaterial)
     )
 
@@ -597,6 +597,13 @@ const calculateHouseInfo = (
 
 export const useAnalyseData = () => {
   const houses = useHouses()
+
+  // console.log(
+  //   pipe(
+  //     houses,
+  //     A.map((x) => x.activeElementMaterials)
+  //   )
+  // )
 
   const getHouseModules = useGetHouseModules()
 

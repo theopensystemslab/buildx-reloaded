@@ -108,8 +108,10 @@ const useOnDragStretchZ = () => {
     })
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
-    const activeLayoutGroup =
-      houseTransformsGroup.userData.getActiveLayoutGroup()
+    const activeLayoutGroup = pipe(
+      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      someOrError(`no active layout group in stretchZ`)
+    )
 
     const { side } = handleGroup.userData
     const targetColumnIndex =
@@ -140,6 +142,7 @@ const useOnDragStretchZ = () => {
             houseId,
             gridGroups,
             columnIndex: -1,
+            houseTransformsGroup,
           }),
           T.map((templateVanillaColumnGroup) => {
             const { startColumnGroup, midColumnGroups, endColumnGroup } =

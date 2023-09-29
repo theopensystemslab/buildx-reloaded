@@ -41,12 +41,14 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   )
 
 export const createHouseLayoutGroup = ({
+  houseTransformsGroup,
   systemId,
   houseId,
   dnas,
   houseLayout,
   use,
 }: {
+  houseTransformsGroup: HouseTransformsGroup
   systemId: string
   houseId: string
   dnas: string[]
@@ -58,6 +60,7 @@ export const createHouseLayoutGroup = ({
       systemId,
       houseId,
       houseLayout,
+      houseTransformsGroup,
     }),
     T.chain((columnGroups) => {
       const houseLayoutGroup = new Group() as HouseLayoutGroup

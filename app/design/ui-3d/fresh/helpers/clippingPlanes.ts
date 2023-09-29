@@ -61,7 +61,7 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
       rootRef.current.children,
       A.filter(isHouseTransformsGroup),
       A.findFirst((x) => x.userData.houseId === houseId),
-      O.map((x) => x.userData.getActiveLayoutGroup()),
+      O.chain((x) => x.userData.getActiveLayoutGroup()),
       O.chain(
         flow(
           getLayoutGroupColumnGroups,

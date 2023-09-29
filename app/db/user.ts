@@ -10,7 +10,7 @@ export const houseParser = z.object({
   houseTypeId: z.string().min(1),
   systemId: z.string().min(1),
   dnas: z.array(z.string().min(1)),
-  modifiedMaterials: z.record(z.string().min(1)),
+  activeElementMaterials: z.record(z.string().min(1)),
   friendlyName: z.string().min(1),
   position: z.object({
     x: z.number(),

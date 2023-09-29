@@ -8,10 +8,7 @@ import systemsDB from "../../../../db/systems"
 import { Opening } from "../../../../ui/icons"
 import Radio from "../../../../ui/Radio"
 import { A, O, Ord, S, someOrError, T } from "../../../../utils/functions"
-import {
-  setInvisibleNoRaycast,
-  setVisibleAndRaycast,
-} from "../../../../utils/three"
+import { setInvisibleNoRaycast } from "../../../../utils/three"
 import { getWindowTypeAlternatives } from "../../../../workers/layouts/modules"
 import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
@@ -27,7 +24,7 @@ import {
   ModuleGroup,
   ModuleGroupUse,
 } from "../../../ui-3d/fresh/scene/userData"
-import ContextMenuNested from "../common/ContextMenuNested"
+import ContextMenuNested from "./ContextMenuNested"
 
 type WindowTypeOption = {
   label: string
@@ -133,6 +130,7 @@ const ChangeWindowsOptions = (props: Props) => {
                   flip: originalColumnGroup.userData.endColumn ?? false,
                   visible: false,
                   z: originalModuleGroup.userData.z,
+                  houseTransformsGroup,
                 }).then((moduleGroup) => {
                   setInvisibleNoRaycast(moduleGroup)
                   originalModuleGroup.parent!.add(moduleGroup)
@@ -187,14 +185,16 @@ const ChangeWindowsOptions = (props: Props) => {
 
     moduleGroup.userData.setThisModuleGroupVisible()
 
-    houseTransformsGroup.userData
-      .getActiveLayoutGroup()
-      .userData.updateDnas()
-      .then(() => {
-        houseTransformsGroup.userData.dbSync().then(() => {
-          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    pipe(
+      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      O.map((activeLayoutGroup) => {
+        activeLayoutGroup.userData.updateDnas().then(() => {
+          houseTransformsGroup.userData.dbSync().then(() => {
+            houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+          })
         })
       })
+    )
 
     close()
   }
@@ -210,8 +210,6 @@ const ChangeWindowsOptions = (props: Props) => {
 }
 
 const ChangeWindows = (props: Props) => {
-  const { houseTransformsGroup, scopeElement, close } = props
-
   return (
     <ContextMenuNested
       long

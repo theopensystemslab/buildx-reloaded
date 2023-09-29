@@ -8,8 +8,12 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
+import { Element } from "../../../../../server/data/elements"
 import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
+import { O } from "../../../../utils/functions"
+import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
+import { EnrichedMaterial } from "../systems"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -54,12 +58,15 @@ export type HouseTransformsGroupUserData = {
   clippingPlanes: Plane[]
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
-  // ifcTag : material specification
-  modifiedMaterials: Record<string, string>
+  materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
+  elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
+  activeElementMaterials: Record<string, string> // ifcTag : specification
+  pushElement: (element: Element) => ThreeMaterial
+  changeMaterial: (ifcTag: string, specification: string) => void
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
-  getActiveLayoutGroup: () => HouseLayoutGroup
+  getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
@@ -67,6 +74,7 @@ export type HouseTransformsGroupUserData = {
   updateTransforms: () => void
   refreshAltSectionTypeLayouts: () => void
   dbSync: () => Promise<void>
+  resetMaterials: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {
@@ -133,6 +141,7 @@ export type ModuleGroupUserData = {
 export type ElementMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.ElementMesh
   ifcTag: string
+  category: string
 }
 
 export type StretchHandleGroupUserData = {

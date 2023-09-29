@@ -152,7 +152,10 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
 export const getActiveHouseUserData = (
   houseTransformsGroup: HouseTransformsGroup
 ) => {
-  const activeLayoutGroup = houseTransformsGroup.userData.getActiveLayoutGroup()
+  const activeLayoutGroup = pipe(
+    houseTransformsGroup.userData.getActiveLayoutGroup(),
+    someOrError(`no active layout group in getActiveHouseUserData`)
+  )
 
   return {
     ...houseTransformsGroup.userData,

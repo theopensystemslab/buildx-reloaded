@@ -1,14 +1,16 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
+import { Element } from "../../../../../server/data/elements"
 import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
-import { A, O, R, someOrError, T } from "../../../../utils/functions"
+import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
+import elementCategories from "../../../state/elementCategories"
 import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
@@ -17,8 +19,14 @@ import {
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
+import {
+  EnrichedMaterial,
+  getSystemElement,
+  getSystemMaterial,
+} from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
+  ElementMesh,
   HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
@@ -26,6 +34,7 @@ import {
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
   isActiveLayoutGroup,
+  isElementMesh,
   isHouseLayoutGroup,
   isHouseTransformsHandlesGroup,
   isRotateHandlesGroup,
@@ -74,13 +83,339 @@ export const createHouseTransformsGroup = ({
   dnas,
   friendlyName,
   houseTypeId,
-  modifiedMaterials,
-}: House): T.Task<HouseTransformsGroup> =>
-  pipe(
+  activeElementMaterials,
+}: House): T.Task<HouseTransformsGroup> => {
+  const houseTransformsGroup = new Group() as HouseTransformsGroup
+
+  const NORMAL_DIRECTION = -1
+
+  const clippingPlanes: Plane[] = [
+    new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
+  ]
+
+  const dbSync = async () => {
+    const rotation = houseTransformsGroup.rotation.y
+    const position = houseTransformsGroup.position
+    const dnas = houseTransformsGroup.userData.activeLayoutDnas
+    const activeElementMaterials =
+      houseTransformsGroup.userData.activeElementMaterials
+
+    await Promise.all([
+      userDB.houses.update(houseId, {
+        dnas,
+        position,
+        rotation,
+        activeElementMaterials,
+      }),
+      getLayoutsWorker().getLayout({ systemId, dnas }),
+    ])
+  }
+
+  const handlesGroup = new Group() as HouseTransformsHandlesGroup
+  // handlesGroup.position.setZ(-layoutGroup.userData.length / 2)
+
+  const initRotateAndStretchXHandles = () => {
+    const { width: houseWidth, length: houseLength } =
+      getActiveHouseUserData(houseTransformsGroup)
+
+    const { siteMode } = getModeBools()
+
+    const rotateHandles = createRotateHandles({
+      houseWidth,
+      houseLength,
+    })
+
+    setVisible(rotateHandles, siteMode)
+
+    handlesGroup.add(rotateHandles)
+
+    const stretchXUpHandleGroup = createStretchHandle({
+      axis: "x",
+      side: 1,
+      houseLength,
+      houseWidth,
+    })
+
+    const stretchXDownHandleGroup = createStretchHandle({
+      axis: "x",
+      side: -1,
+      houseLength,
+      houseWidth,
+    })
+
+    ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
+      handle.position.setZ(houseLength / 2)
+
+      handlesGroup.add(handle)
+      setVisible(handle, !siteMode)
+    })
+
+    const handlesGroupUserData: HouseTransformsHandlesGroupUserData = {
+      type: UserDataTypeEnum.Enum.HouseTransformsHandlesGroup,
+    }
+
+    handlesGroup.userData = handlesGroupUserData
+
+    houseTransformsGroup.add(handlesGroup)
+  }
+
+  const updateXStretchHandleLengths = () => {
+    const { length: houseLength } = getActiveHouseUserData(houseTransformsGroup)
+
+    const xStretchHandles = pipe(
+      handlesGroup,
+      findAllGuardDown(isXStretchHandleGroup)
+    )
+
+    xStretchHandles.forEach((handle) => {
+      handle.userData.updateXHandleLength(houseLength)
+    })
+  }
+
+  const updateActiveLayoutDnas = (nextDnas: string[]) => {
+    houseTransformsGroup.userData.activeLayoutDnas = nextDnas
+    return dbSync()
+  }
+
+  const getActiveLayoutGroup = (): O.Option<HouseLayoutGroup> =>
+    pipe(
+      houseTransformsGroup.children,
+      A.findFirst(
+        (x): x is HouseLayoutGroup =>
+          x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+      )
+    )
+
+  const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
+    pipe(
+      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      O.map((lastLayoutGroup) => {
+        if (lastLayoutGroup === nextLayoutGroup) return
+        setVisible(nextLayoutGroup, true)
+        setVisible(lastLayoutGroup, false)
+      })
+    )
+
+    houseTransformsGroup.userData.activeLayoutGroupUuid = nextLayoutGroup.uuid
+    houseTransformsGroup.userData.activeLayoutDnas =
+      nextLayoutGroup.userData.dnas
+  }
+
+  const setXStretchHandlesVisible = (bool: boolean = true) => {
+    pipe(
+      houseTransformsGroup,
+      findFirstGuardAcross(isHouseTransformsHandlesGroup),
+      O.map(
+        flow(
+          findAllGuardDown(isXStretchHandleGroup),
+          A.map((x) => void setVisible(x, bool))
+        )
+      )
+    )
+  }
+
+  const setZStretchHandlesVisible = (bool: boolean = true) => {
+    pipe(
+      houseTransformsGroup,
+      findFirstGuardAcross(isActiveLayoutGroup),
+      O.map(
+        flow(
+          findAllGuardDown(isZStretchHandleGroup),
+          A.map((x) => void setVisible(x, bool))
+        )
+      )
+    )
+  }
+
+  const setRotateHandlesVisible = (bool: boolean = true) => {
+    pipe(
+      houseTransformsGroup,
+      findAllGuardDown(isRotateHandlesGroup),
+      A.map((x) => void setVisible(x, bool))
+    )
+  }
+
+  const updateTransforms = () => {
+    const rotation = houseTransformsGroup.rotation.y
+    const position = houseTransformsGroup.position
+
+    userDB.houses.update(houseId, {
+      position,
+      rotation,
+    })
+
+    pipe(
+      houseTransformsGroup.children,
+      A.findFirst(
+        (x) => x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
+      ),
+      O.map((activeLayoutGroup) => {
+        activeLayoutGroup.userData.updateOBB()
+      })
+    )
+  }
+
+  const refreshAltSectionTypeLayouts = async () => {
+    const oldLayouts = pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE &&
+          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+      )
+    )
+
+    oldLayouts.forEach((x) => {
+      x.removeFromParent()
+    })
+
+    const { dnas, sectionType: currentSectionType } =
+      getActiveHouseUserData(houseTransformsGroup)
+
+    const altSectionTypeLayouts =
+      await getLayoutsWorker().getAltSectionTypeLayouts({
+        systemId,
+        dnas,
+        currentSectionType,
+      })
+
+    for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
+      if (sectionType.code === currentSectionType) continue
+
+      createHouseLayoutGroup({
+        systemId: houseTransformsGroup.userData.systemId,
+        dnas,
+        houseId,
+        houseLayout: layout,
+        use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
+        houseTransformsGroup,
+      })().then((layoutGroup) => {
+        setInvisibleNoRaycast(layoutGroup)
+        houseTransformsGroup.add(layoutGroup)
+      })
+    }
+  }
+
+  const elements: Record<string, Element> = {}
+  const materials: Record<string, EnrichedMaterial> = {}
+
+  const pushMaterial = (specification: string) => {
+    if (!(specification in materials)) {
+      const { material, threeMaterial: systemThreeMaterial } =
+        getSystemMaterial({
+          systemId,
+          specification,
+        })
+
+      const threeMaterial = systemThreeMaterial.clone()
+      threeMaterial.clippingPlanes = clippingPlanes
+
+      materials[specification] = {
+        material,
+        threeMaterial,
+      }
+    }
+  }
+
+  const pushElement = (element: Element) => {
+    const { ifcTag } = element
+
+    if (!(element.category in elementCategories)) {
+      elementCategories[element.category] = true
+    }
+
+    if (!(ifcTag in elements)) {
+      elements[ifcTag] = element
+    }
+
+    pipe(
+      [element.defaultMaterial, ...element.materialOptions],
+      A.uniq(S.Eq)
+    ).forEach((specification) => {
+      pushMaterial(specification)
+    })
+
+    if (!(ifcTag in activeElementMaterials)) {
+      activeElementMaterials[ifcTag] = element.defaultMaterial
+    }
+
+    const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
+
+    return threeMaterial
+  }
+
+  const resetMaterials = () => {
+    // for each
+    pipe(houseTransformsGroup, findAllGuardDown(isElementMesh)).forEach(
+      (elementMesh) => {
+        const { ifcTag } = elementMesh.userData
+        const specification = elements[ifcTag].defaultMaterial
+
+        activeElementMaterials[ifcTag] = specification
+        // pushMaterial here just in case?
+        // seems unnecessary
+
+        elementMesh.material = materials[specification].threeMaterial
+      }
+    )
+  }
+
+  const changeMaterial = (ifcTag: string, specification: string) => {
+    pipe(
+      houseTransformsGroup,
+      findAllGuardDown(
+        (x): x is ElementMesh =>
+          isElementMesh(x) && x.userData.ifcTag === ifcTag
+      )
+    ).forEach((elementMesh) => {
+      const { threeMaterial } = materials[specification]
+      elementMesh.material = threeMaterial
+    })
+
+    activeElementMaterials[ifcTag] = specification
+  }
+
+  const houseTransformsGroupUserData: Omit<
+    HouseTransformsGroupUserData,
+    "activeLayoutGroupUuid" | "activeLayoutDnas"
+  > = {
+    type: UserDataTypeEnum.Enum.HouseTransformsGroup,
+    systemId,
+    houseTypeId,
+    houseId,
+    clippingPlanes,
+    friendlyName,
+    elements,
+    materials,
+    activeElementMaterials,
+    pushElement,
+    dbSync,
+    updateActiveLayoutDnas,
+    initRotateAndStretchXHandles,
+    updateXStretchHandleLengths,
+    getActiveLayoutGroup,
+    setActiveLayoutGroup,
+    setXStretchHandlesVisible,
+    setZStretchHandlesVisible,
+    setRotateHandlesVisible,
+    updateTransforms,
+    refreshAltSectionTypeLayouts,
+    resetMaterials,
+    changeMaterial,
+  }
+
+  houseTransformsGroup.userData =
+    houseTransformsGroupUserData as HouseTransformsGroupUserData
+
+  return pipe(
     getHouseLayout({ systemId, dnas }),
     T.chain((houseLayout) =>
       createHouseLayoutGroup({
         houseLayout,
+        houseTransformsGroup,
         dnas,
         systemId,
         houseId,
@@ -88,249 +423,12 @@ export const createHouseTransformsGroup = ({
       })
     ),
     T.map((layoutGroup) => {
-      const houseTransformsGroup = new Group() as HouseTransformsGroup
-
-      const NORMAL_DIRECTION = -1
-
-      const clippingPlanes: Plane[] = [
-        new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_CLIP_NUMBER),
-        new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
-        new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
-      ]
-
-      const handlesGroup = new Group() as HouseTransformsHandlesGroup
-      handlesGroup.position.setZ(-layoutGroup.userData.length / 2)
-
-      const initRotateAndStretchXHandles = () => {
-        const { width: houseWidth, length: houseLength } =
-          getActiveHouseUserData(houseTransformsGroup)
-
-        const { siteMode } = getModeBools()
-
-        const rotateHandles = createRotateHandles({
-          houseWidth,
-          houseLength,
-        })
-
-        setVisible(rotateHandles, siteMode)
-
-        handlesGroup.add(rotateHandles)
-
-        const stretchXUpHandleGroup = createStretchHandle({
-          axis: "x",
-          side: 1,
-          houseLength,
-          houseWidth,
-        })
-
-        const stretchXDownHandleGroup = createStretchHandle({
-          axis: "x",
-          side: -1,
-          houseLength,
-          houseWidth,
-        })
-
-        ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
-          handle.position.setZ(houseLength / 2)
-
-          handlesGroup.add(handle)
-          setVisible(handle, !siteMode)
-        })
-
-        const handlesGroupUserData: HouseTransformsHandlesGroupUserData = {
-          type: UserDataTypeEnum.Enum.HouseTransformsHandlesGroup,
-        }
-
-        handlesGroup.userData = handlesGroupUserData
-
-        houseTransformsGroup.add(handlesGroup)
-      }
-
-      const updateXStretchHandleLengths = () => {
-        const { length: houseLength } =
-          getActiveHouseUserData(houseTransformsGroup)
-        const xStretchHandles = pipe(
-          handlesGroup,
-          findAllGuardDown(isXStretchHandleGroup)
-        )
-
-        xStretchHandles.forEach((handle) => {
-          handle.userData.updateXHandleLength(houseLength)
-        })
-      }
-
-      const dbSync = async () => {
-        const rotation = houseTransformsGroup.rotation.y
-        const position = houseTransformsGroup.position
-        const dnas = houseTransformsGroup.userData.activeLayoutDnas
-        const modifiedMaterials =
-          houseTransformsGroup.userData.modifiedMaterials
-
-        await Promise.all([
-          userDB.houses.update(houseId, {
-            dnas,
-            position,
-            rotation,
-            modifiedMaterials,
-          }),
-          getLayoutsWorker().getLayout({ systemId, dnas }),
-        ])
-      }
-
-      const updateActiveLayoutDnas = (nextDnas: string[]) => {
-        houseTransformsGroup.userData.activeLayoutDnas = nextDnas
-        return dbSync()
-      }
-
-      const getActiveLayoutGroup = (): HouseLayoutGroup =>
-        pipe(
-          houseTransformsGroup.children,
-          A.findFirst(
-            (x): x is HouseLayoutGroup =>
-              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-          ),
-          someOrError(`getActiveLayoutGroup failure`)
-        )
-
-      const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
-        const lastLayoutGroup =
-          houseTransformsGroup.userData.getActiveLayoutGroup()
-
-        if (lastLayoutGroup === nextLayoutGroup) return
-
-        setVisible(nextLayoutGroup, true)
-        setVisible(lastLayoutGroup, false)
-
-        houseTransformsGroup.userData.activeLayoutGroupUuid =
-          nextLayoutGroup.uuid
-        houseTransformsGroup.userData.activeLayoutDnas =
-          nextLayoutGroup.userData.dnas
-      }
-
-      const setXStretchHandlesVisible = (bool: boolean = true) => {
-        pipe(
-          houseTransformsGroup,
-          findFirstGuardAcross(isHouseTransformsHandlesGroup),
-          O.map(
-            flow(
-              findAllGuardDown(isXStretchHandleGroup),
-              A.map((x) => void setVisible(x, bool))
-            )
-          )
-        )
-      }
-
-      const setZStretchHandlesVisible = (bool: boolean = true) => {
-        pipe(
-          houseTransformsGroup,
-          findFirstGuardAcross(isActiveLayoutGroup),
-          O.map(
-            flow(
-              findAllGuardDown(isZStretchHandleGroup),
-              A.map((x) => void setVisible(x, bool))
-            )
-          )
-        )
-      }
-
-      const setRotateHandlesVisible = (bool: boolean = true) => {
-        pipe(
-          houseTransformsGroup,
-          findAllGuardDown(isRotateHandlesGroup),
-          A.map((x) => void setVisible(x, bool))
-        )
-      }
-
-      const updateTransforms = () => {
-        const rotation = houseTransformsGroup.rotation.y
-        const position = houseTransformsGroup.position
-
-        userDB.houses.update(houseId, {
-          position,
-          rotation,
-        })
-
-        pipe(
-          houseTransformsGroup.children,
-          A.findFirst(
-            (x) =>
-              x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-          ),
-          O.map((activeLayoutGroup) => {
-            activeLayoutGroup.userData.updateOBB()
-          })
-        )
-      }
-
-      const refreshAltSectionTypeLayouts = async () => {
-        const oldLayouts = pipe(
-          houseTransformsGroup.children,
-          A.filter(
-            (x) =>
-              isHouseLayoutGroup(x) &&
-              x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE &&
-              x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
-          )
-        )
-
-        oldLayouts.forEach((x) => {
-          x.removeFromParent()
-        })
-
-        const { dnas, sectionType: currentSectionType } =
-          getActiveHouseUserData(houseTransformsGroup)
-
-        const altSectionTypeLayouts =
-          await getLayoutsWorker().getAltSectionTypeLayouts({
-            systemId,
-            dnas,
-            currentSectionType,
-          })
-
-        for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
-          if (sectionType.code === currentSectionType) continue
-
-          createHouseLayoutGroup({
-            systemId: houseTransformsGroup.userData.systemId,
-            dnas,
-            houseId,
-            houseLayout: layout,
-            use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
-          })().then((layoutGroup) => {
-            setInvisibleNoRaycast(layoutGroup)
-            houseTransformsGroup.add(layoutGroup)
-          })
-        }
-      }
-
-      const houseTransformsGroupUserData: HouseTransformsGroupUserData = {
-        type: UserDataTypeEnum.Enum.HouseTransformsGroup,
-        systemId,
-        houseTypeId,
-        houseId,
-        activeLayoutGroupUuid: layoutGroup.uuid,
-        activeLayoutDnas: layoutGroup.userData.dnas,
-        clippingPlanes,
-        friendlyName,
-        modifiedMaterials,
-        dbSync,
-        updateActiveLayoutDnas,
-        initRotateAndStretchXHandles,
-        updateXStretchHandleLengths,
-        getActiveLayoutGroup,
-        setActiveLayoutGroup,
-        setXStretchHandlesVisible,
-        setZStretchHandlesVisible,
-        setRotateHandlesVisible,
-        updateTransforms,
-        refreshAltSectionTypeLayouts,
-      }
-      houseTransformsGroup.userData = houseTransformsGroupUserData
-
       houseTransformsGroup.add(layoutGroup)
+      houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
       initRotateAndStretchXHandles()
 
       return houseTransformsGroup
     })
   )
+}
