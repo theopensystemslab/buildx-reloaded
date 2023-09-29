@@ -30,7 +30,6 @@ type Props = {
 
 type MaterialOpt = {
   material: Material
-  threeMaterial: MeshStandardMaterial
 }
 
 const ChangeMaterialOptions = (props: Props) => {
@@ -104,16 +103,22 @@ const ChangeMaterialOptions = (props: Props) => {
         }))}
         selected={selected}
         onChange={(newMaterial) => {
-          thisIfcTagMeshes.forEach((x) => {
-            x.material = newMaterial.threeMaterial
-          })
+          houseTransformsGroup.userData.changeMaterial(
+            ifcTag,
+            newMaterial.material.specification
+          )
+
+          // thisIfcTagMeshes.forEach((x) => {
+
+          //   x.material = newMaterial.threeMaterial
+          // })
 
           closing.current = true
 
-          houseTransformsGroup.userData.activeElementMaterials = {
-            ...activeElementMaterials,
-            [ifcTag]: newMaterial.material.specification,
-          }
+          // houseTransformsGroup.userData.activeElementMaterials = {
+          //   ...activeElementMaterials,
+          //   [ifcTag]: newMaterial.material.specification,
+          // }
 
           houseTransformsGroup.userData.dbSync()
 
@@ -125,13 +130,22 @@ const ChangeMaterialOptions = (props: Props) => {
           if (closing.current) return
 
           if (hoveredMaterial) {
-            thisIfcTagMeshes.forEach((x) => {
-              x.material = hoveredMaterial.threeMaterial
-            })
+            // thisIfcTagMeshes.forEach((x) => {
+            //   x.material = hoveredMaterial.threeMaterial
+            // })
+
+            houseTransformsGroup.userData.changeMaterial(
+              ifcTag,
+              hoveredMaterial.material.specification
+            )
           } else {
-            thisIfcTagMeshes.forEach((x) => {
-              x.material = selected.threeMaterial
-            })
+            // thisIfcTagMeshes.forEach((x) => {
+            //   x.material = selected.threeMaterial
+            // })
+            houseTransformsGroup.userData.changeMaterial(
+              ifcTag,
+              selected.material.specification
+            )
           }
           invalidate()
         }}

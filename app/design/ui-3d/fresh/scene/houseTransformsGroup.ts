@@ -25,6 +25,7 @@ import {
 } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
+  ElementMesh,
   HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
@@ -360,6 +361,21 @@ export const createHouseTransformsGroup = ({
     )
   }
 
+  const changeMaterial = (ifcTag: string, specification: string) => {
+    pipe(
+      houseTransformsGroup,
+      findAllGuardDown(
+        (x): x is ElementMesh =>
+          isElementMesh(x) && x.userData.ifcTag === ifcTag
+      )
+    ).forEach((elementMesh) => {
+      const { threeMaterial } = materials[specification]
+      elementMesh.material = threeMaterial
+    })
+
+    activeElementMaterials[ifcTag] = specification
+  }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -386,6 +402,7 @@ export const createHouseTransformsGroup = ({
     updateTransforms,
     refreshAltSectionTypeLayouts,
     resetMaterials,
+    changeMaterial,
   }
 
   houseTransformsGroup.userData =

@@ -62,6 +62,7 @@ export type HouseTransformsGroupUserData = {
   elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
   pushElement: (ifcTag: string) => ThreeMaterial
+  changeMaterial: (ifcTag: string, specification: string) => void
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
