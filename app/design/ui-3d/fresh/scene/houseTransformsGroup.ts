@@ -10,6 +10,7 @@ import userDB, { House } from "../../../../db/user"
 import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
+import elementCategories from "../../../state/elementCategories"
 import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
@@ -319,8 +320,12 @@ export const createHouseTransformsGroup = ({
     }
   }
 
-  const pushElement = (ifcTag: string) => {
-    const element = getSystemElement({ systemId, ifcTag })
+  const pushElement = (element: Element) => {
+    const { ifcTag } = element
+
+    if (!(element.category in elementCategories)) {
+      elementCategories[element.category] = true
+    }
 
     if (!(ifcTag in elements)) {
       elements[ifcTag] = element
@@ -349,6 +354,7 @@ export const createHouseTransformsGroup = ({
         const { ifcTag } = elementMesh.userData
         const specification = elements[ifcTag].defaultMaterial
 
+        activeElementMaterials[ifcTag] = specification
         // pushMaterial here just in case?
         // seems unnecessary
 
@@ -370,8 +376,6 @@ export const createHouseTransformsGroup = ({
     })
 
     activeElementMaterials[ifcTag] = specification
-
-    dbSync()
   }
 
   const houseTransformsGroupUserData: Omit<

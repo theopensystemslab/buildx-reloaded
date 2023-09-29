@@ -85,8 +85,6 @@ const HtmlUi = (props: Props) => {
         return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
       default:
         return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
-      // case SiteCtxModeEnum.Enum.LEVEL:
-      //   return <LevelModeContextMenu {...{x, y,  scopeElement}}/>
     }
   }, [menu, selected, mode])
 

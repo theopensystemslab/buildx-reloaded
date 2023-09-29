@@ -61,7 +61,7 @@ export type HouseTransformsGroupUserData = {
   materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
   elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
-  pushElement: (ifcTag: string) => ThreeMaterial
+  pushElement: (element: Element) => ThreeMaterial
   changeMaterial: (ifcTag: string, specification: string) => void
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
@@ -141,6 +141,7 @@ export type ModuleGroupUserData = {
 export type ElementMeshUserData = {
   type: typeof UserDataTypeEnum.Enum.ElementMesh
   ifcTag: string
+  category: string
 }
 
 export type StretchHandleGroupUserData = {

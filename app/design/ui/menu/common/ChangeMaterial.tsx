@@ -56,6 +56,8 @@ const ChangeMaterialOptions = (props: Props) => {
             newMaterial.specification
           )
 
+          houseTransformsGroup.userData.dbSync()
+
           close()
         }}
         onHoverChange={(hoveredMaterial) => {
