@@ -5,17 +5,13 @@ import systemsDB from "../../../../db/systems"
 import { A, O, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
-import { findAllGuardDown } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
 import {
-  ElementMesh,
   HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
-  isElementMesh,
   isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
-import { getDefaultSystemMaterial } from "../../../ui-3d/fresh/systems"
 import ContextMenuButton from "../common/ContextMenuButton"
 
 type Props = {
@@ -51,6 +47,7 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
                       dnas,
                       houseLayout,
                       use: HouseLayoutGroupUse.Enum.RESET,
+                      houseTransformsGroup,
                     })
                   )
                 )
@@ -92,30 +89,10 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
 
   const resetHouse = async () => {
     if (resetLayoutGroupRef.current) {
-      houseTransformsGroup.userData.modifiedMaterials = {}
+      houseTransformsGroup.userData.resetMaterials()
 
       houseTransformsGroup.userData.setActiveLayoutGroup(
         resetLayoutGroupRef.current
-      )
-
-      // reset materials
-      pipe(
-        houseTransformsGroup,
-        findAllGuardDown((x): x is ElementMesh => {
-          if (isElementMesh(x)) {
-            const { ifcTag } = x.userData
-
-            pipe(
-              getDefaultSystemMaterial({ systemId, ifcTag }),
-              O.map(({ threeMaterial }) => {
-                x.material = threeMaterial
-              })
-            )
-            return true
-          } else {
-            return false
-          }
-        })
       )
 
       houseTransformsGroup.userData.dbSync()

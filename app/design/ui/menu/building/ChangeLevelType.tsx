@@ -87,6 +87,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
         houseId,
         houseLayout: layout,
         use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
+        houseTransformsGroup,
       })().then((houseLayoutGroup) => {
         setInvisibleNoRaycast(houseLayoutGroup)
         houseTransformsGroup.add(houseLayoutGroup)

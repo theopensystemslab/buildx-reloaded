@@ -15,6 +15,7 @@ import {
   ColumnGroup,
   ColumnGroupUserData,
   GridGroupUserData,
+  HouseTransformsGroup,
   ModuleGroupUse,
   UserDataTypeEnum,
 } from "./userData"
@@ -82,6 +83,7 @@ export const createColumnGroup =
     columnIndex,
     startColumn = false,
     endColumn = false,
+    houseTransformsGroup,
   }: {
     systemId: string
     houseId: string
@@ -89,6 +91,7 @@ export const createColumnGroup =
     columnIndex: number
     startColumn?: boolean
     endColumn?: boolean
+    houseTransformsGroup: HouseTransformsGroup
   }): T.Task<ColumnGroup> =>
   async () => {
     const columnGroup = new Group()
@@ -107,6 +110,7 @@ export const createColumnGroup =
           flip: endColumn,
           use: ModuleGroupUse.Enum.INITIAL,
           visible: true,
+          houseTransformsGroup,
         })
 
         gridGroup.position.setY(y)
@@ -143,9 +147,11 @@ export const createColumnGroups = ({
   systemId,
   houseId,
   houseLayout,
+  houseTransformsGroup,
 }: {
   systemId: string
   houseId: string
+  houseTransformsGroup: HouseTransformsGroup
   houseLayout: ColumnLayout
 }): T.Task<ColumnGroup[]> =>
   pipe(
@@ -162,6 +168,7 @@ export const createColumnGroups = ({
           startColumn,
           endColumn,
           columnIndex,
+          houseTransformsGroup,
         })
 
         return pipe(

@@ -130,6 +130,7 @@ const ChangeWindowsOptions = (props: Props) => {
                   flip: originalColumnGroup.userData.endColumn ?? false,
                   visible: false,
                   z: originalModuleGroup.userData.z,
+                  houseTransformsGroup,
                 }).then((moduleGroup) => {
                   setInvisibleNoRaycast(moduleGroup)
                   originalModuleGroup.parent!.add(moduleGroup)

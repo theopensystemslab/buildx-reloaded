@@ -8,8 +8,10 @@ import {
 } from "three"
 import { OBB } from "three-stdlib"
 import { z } from "zod"
+import { Element } from "../../../../../server/data/elements"
 import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
 import { O } from "../../../../utils/functions"
+import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import { EnrichedMaterial } from "../systems"
 
@@ -57,8 +59,9 @@ export type HouseTransformsGroupUserData = {
   activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
   materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
-  elementMaterialOpts: Record<string, string[]> // ifcTag : specification[]
+  elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
+  pushElement: (ifcTag: string) => ThreeMaterial
   initRotateAndStretchXHandles: () => void
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
@@ -70,6 +73,7 @@ export type HouseTransformsGroupUserData = {
   updateTransforms: () => void
   refreshAltSectionTypeLayouts: () => void
   dbSync: () => Promise<void>
+  resetMaterials: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {

@@ -60,6 +60,7 @@ export const getSystemMaterial = ({
   specification: string
 }): EnrichedMaterial => {
   const materialHash = getSystemMaterialHash({ systemId, specification })
+
   return pipe(
     systemMaterials,
     R.lookup(materialHash),
@@ -67,103 +68,12 @@ export const getSystemMaterial = ({
   )
 }
 
-// DEFAULT MATERIALS
-
-export const defaultSystemMaterials: Record<string, EnrichedMaterial> = {}
-
-export const getDefaultSystemMaterialHash = ({
-  systemId,
-  ifcTag,
-}: {
-  systemId: string
-  ifcTag: string
-}) => [systemId, ifcTag].join(":")
-
-export const getDefaultSystemMaterial = ({
-  systemId,
-  ifcTag,
-}: {
-  systemId: string
-  ifcTag: string
-}) => {
-  const hash = getDefaultSystemMaterialHash({ systemId, ifcTag })
-  return pipe(defaultSystemMaterials, R.lookup(hash))
-}
-
-// OTHER
-
-export const getInitialMaterial = ({
-  systemId,
-  houseId,
-  ifcTag,
-}: {
-  systemId: string
-  houseId: string
-  ifcTag: string
-}): T.Task<EnrichedMaterial> => {
-  const getHouseTask: T.Task<House | undefined> = () =>
-    userDB.houses.get(houseId)
-
-  const getDefaultMaterialSpec = () =>
-    getSystemElement({ systemId, ifcTag }).defaultMaterial
-
-  return pipe(
-    getHouseTask,
-    T.map(
-      flow(
-        O.fromNullable,
-        O.map(({ modifiedMaterials }) => {
-          if (ifcTag in modifiedMaterials) {
-            return modifiedMaterials[ifcTag]
-          }
-          return getDefaultMaterialSpec()
-        }),
-        O.getOrElse(getDefaultMaterialSpec),
-        (specification) => {
-          const { material, threeMaterial } = getSystemMaterial({
-            systemId,
-            specification,
-          })
-
-          return {
-            material,
-            threeMaterial: threeMaterial.clone(),
-          }
-        }
-      )
-    )
-  )
-}
-
 // LIVE QUERIES
-
-const updateDefaultMaterials = () => {
-  pipe(
-    systemElements,
-    R.map(({ defaultMaterial, systemId, ifcTag }) => {
-      const systemMaterialHash = getSystemMaterialHash({
-        systemId,
-        specification: defaultMaterial,
-      })
-
-      pipe(
-        systemMaterials,
-        R.lookup(systemMaterialHash),
-        O.map((defaultMaterial) => {
-          defaultSystemMaterials[
-            getDefaultSystemMaterialHash({ systemId, ifcTag })
-          ] = defaultMaterial
-        })
-      )
-    })
-  )
-}
 
 liveQuery(() => systemsDB.elements.toArray()).subscribe((dbElements) => {
   for (let dbElement of dbElements) {
     systemElements[getSystemElementHash(dbElement)] = dbElement
   }
-  updateDefaultMaterials()
 })
 
 liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
@@ -173,5 +83,4 @@ liveQuery(() => systemsDB.materials.toArray()).subscribe((dbMaterials) => {
       threeMaterial: createThreeMaterial(dbMaterial),
     }
   }
-  updateDefaultMaterials()
 })

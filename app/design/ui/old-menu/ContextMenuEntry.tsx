@@ -62,7 +62,7 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
     if (houseType) {
       userDB.houses.update(houseId, {
         dnas: houseType.dnas,
-        modifiedMaterials: {},
+        activeElementMaterials: {},
         rotation: 0,
       } as House)
     }

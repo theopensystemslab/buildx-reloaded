@@ -142,6 +142,7 @@ const useOnDragStretchZ = () => {
             houseId,
             gridGroups,
             columnIndex: -1,
+            houseTransformsGroup,
           }),
           T.map((templateVanillaColumnGroup) => {
             const { startColumnGroup, midColumnGroups, endColumnGroup } =

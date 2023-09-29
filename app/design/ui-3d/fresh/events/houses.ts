@@ -111,7 +111,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
       dnas,
       position,
       friendlyName,
-      modifiedMaterials: {},
+      activeElementMaterials: {},
       rotation: 0,
     })
   })

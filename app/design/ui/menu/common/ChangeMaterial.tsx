@@ -1,15 +1,13 @@
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
-import { flow, pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import { MeshStandardMaterial } from "three"
 import { Material } from "../../../../../server/data/materials"
 import systemsDB from "../../../../db/systems"
-import userDB from "../../../../db/user"
 import Radio from "../../../../ui/Radio"
 import { A, EQ, O, Ord, R, S } from "../../../../utils/functions"
-import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import {
   findAllGuardDown,

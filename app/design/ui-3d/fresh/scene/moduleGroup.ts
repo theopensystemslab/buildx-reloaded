@@ -9,9 +9,9 @@ import {
   setVisibleAndRaycast,
 } from "../../../../utils/three"
 import { getModelsWorker } from "../../../../workers"
-import { getInitialMaterial } from "../systems"
 import {
   ElementMeshUserData,
+  HouseTransformsGroup,
   isModuleGroup,
   ModuleGroup,
   ModuleGroupUse,
@@ -147,6 +147,7 @@ export const createModuleGroup = async ({
   visible,
   flip,
   z,
+  houseTransformsGroup,
 }: {
   systemId: string
   houseId: string
@@ -156,6 +157,7 @@ export const createModuleGroup = async ({
   visible: boolean
   flip: boolean
   z: number
+  houseTransformsGroup: HouseTransformsGroup
 }) => {
   const moduleGroup = new Group() as ModuleGroup
 
@@ -173,13 +175,9 @@ export const createModuleGroup = async ({
       ifcTag,
     })
 
-    const { threeMaterial } = await getInitialMaterial({
-      systemId,
-      houseId,
-      ifcTag,
-    })()
+    const threeMaterial = houseTransformsGroup.userData.pushElement(ifcTag)
 
-    threeMaterial.wireframe = false
+    // threeMaterial.wireframe = false
 
     const mesh = new Mesh(geometry, threeMaterial)
     mesh.castShadow = true

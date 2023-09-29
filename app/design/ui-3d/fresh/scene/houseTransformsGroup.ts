@@ -1,12 +1,13 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Plane, Vector3 } from "three"
+import { Element } from "../../../../../server/data/elements"
 import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
-import { A, O, R, someOrError, T } from "../../../../utils/functions"
+import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import { getModeBools } from "../../../state/siteCtx"
@@ -17,7 +18,11 @@ import {
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
-import { EnrichedMaterial } from "../systems"
+import {
+  EnrichedMaterial,
+  getSystemElement,
+  getSystemMaterial,
+} from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
   HouseLayoutGroup,
@@ -91,14 +96,15 @@ export const createHouseTransformsGroup = ({
     const rotation = houseTransformsGroup.rotation.y
     const position = houseTransformsGroup.position
     const dnas = houseTransformsGroup.userData.activeLayoutDnas
-    const modifiedMaterials = houseTransformsGroup.userData.modifiedMaterials
+    const activeElementMaterials =
+      houseTransformsGroup.userData.activeElementMaterials
 
     await Promise.all([
       userDB.houses.update(houseId, {
         dnas,
         position,
         rotation,
-        modifiedMaterials,
+        activeElementMaterials,
       }),
       getLayoutsWorker().getLayout({ systemId, dnas }),
     ])
@@ -282,11 +288,76 @@ export const createHouseTransformsGroup = ({
         houseId,
         houseLayout: layout,
         use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
+        houseTransformsGroup,
       })().then((layoutGroup) => {
         setInvisibleNoRaycast(layoutGroup)
         houseTransformsGroup.add(layoutGroup)
       })
     }
+  }
+
+  const elements: Record<string, Element> = {}
+  const materials: Record<string, EnrichedMaterial> = {}
+  const activeElementMaterials: Record<string, string> = {}
+
+  const pushMaterial = (specification: string) => {
+    if (!(specification in materials)) {
+      const { material, threeMaterial: systemThreeMaterial } =
+        getSystemMaterial({
+          systemId,
+          specification,
+        })
+
+      const threeMaterial = systemThreeMaterial.clone()
+      threeMaterial.clippingPlanes = clippingPlanes
+
+      materials[specification] = {
+        material,
+        threeMaterial,
+      }
+    }
+  }
+
+  const pushElement = (ifcTag: string) => {
+    const element = getSystemElement({ systemId, ifcTag })
+
+    if (!(ifcTag in elements)) {
+      elements[ifcTag] = element
+    }
+
+    if (ifcTag in activeElementMaterials) {
+      const specification = activeElementMaterials[ifcTag]
+
+      pushMaterial(specification)
+    } else {
+      pipe(
+        [element.defaultMaterial, ...element.materialOptions],
+        A.uniq(S.Eq)
+      ).forEach((specification) => {
+        pushMaterial(specification)
+      })
+
+      activeElementMaterials[ifcTag] = element.defaultMaterial
+    }
+
+    const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
+
+    return threeMaterial
+  }
+
+  const resetMaterials = () => {
+    // for each
+    pipe(houseTransformsGroup, findAllGuardDown(isElementMesh)).forEach(
+      (elementMesh) => {
+        const { ifcTag } = elementMesh.userData
+        const specification = elements[ifcTag].defaultMaterial
+
+        // pushMaterial here just in case?
+        // seems unnecessary
+
+        elementMesh.material = materials[specification].threeMaterial
+      }
+    )
   }
 
   const houseTransformsGroupUserData: Omit<
@@ -299,9 +370,10 @@ export const createHouseTransformsGroup = ({
     houseId,
     clippingPlanes,
     friendlyName,
-    materials: {},
-    elementMaterialOpts: {},
-    activeElementMaterials: {},
+    elements,
+    materials,
+    activeElementMaterials,
+    pushElement,
     dbSync,
     updateActiveLayoutDnas,
     initRotateAndStretchXHandles,
@@ -313,6 +385,7 @@ export const createHouseTransformsGroup = ({
     setRotateHandlesVisible,
     updateTransforms,
     refreshAltSectionTypeLayouts,
+    resetMaterials,
   }
 
   houseTransformsGroup.userData =
@@ -323,6 +396,7 @@ export const createHouseTransformsGroup = ({
     T.chain((houseLayout) =>
       createHouseLayoutGroup({
         houseLayout,
+        houseTransformsGroup,
         dnas,
         systemId,
         houseId,

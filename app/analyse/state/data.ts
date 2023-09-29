@@ -11,7 +11,7 @@ import { type SpaceType } from "@/server/data/spaceTypes"
 import { type StairType } from "@/server/data/stairTypes"
 import { type WindowType } from "@/server/data/windowTypes"
 import { pipe } from "fp-ts/lib/function"
-import { A, O, R } from "~/utils/functions"
+import { O, R } from "~/utils/functions"
 import {
   useAllElements,
   useAllEnergyInfos,
@@ -317,7 +317,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[claddingElementName] ||
+          (house.activeElementMaterials[claddingElementName] ||
             claddingElement.defaultMaterial)
     )
 
@@ -327,7 +327,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[internalLiningElementName] ||
+          (house.activeElementMaterials[internalLiningElementName] ||
             internalLiningElement.defaultMaterial)
     )
 
@@ -337,7 +337,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.modifiedMaterials[roofingElementName] ||
+          (house.activeElementMaterials[roofingElementName] ||
             roofingElement.defaultMaterial)
     )
 

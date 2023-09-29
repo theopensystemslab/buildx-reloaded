@@ -178,7 +178,7 @@ export const useInsert1000Skylarks = () => {
             position: new Vector3(x, 0, z),
             rotation: 0,
             dnas: houseType.dnas as string[],
-            modifiedMaterials: {},
+            activeElementMaterials: {},
             friendlyName: `Building ${keys(houses).length + 1}`,
           })
         }
