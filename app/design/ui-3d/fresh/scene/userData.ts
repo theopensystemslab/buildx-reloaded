@@ -75,6 +75,7 @@ export type HouseTransformsGroupUserData = {
   refreshAltSectionTypeLayouts: () => void
   dbSync: () => Promise<void>
   resetMaterials: () => void
+  updateHandlesGroupZ: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {

@@ -114,7 +114,6 @@ export const createHouseTransformsGroup = ({
   }
 
   const handlesGroup = new Group() as HouseTransformsHandlesGroup
-  // handlesGroup.position.setZ(-layoutGroup.userData.length / 2)
 
   const initRotateAndStretchXHandles = () => {
     const { width: houseWidth, length: houseLength } =
@@ -234,6 +233,15 @@ export const createHouseTransformsGroup = ({
       houseTransformsGroup,
       findAllGuardDown(isRotateHandlesGroup),
       A.map((x) => void setVisible(x, bool))
+    )
+  }
+
+  const updateHandlesGroupZ = () => {
+    pipe(
+      getActiveLayoutGroup(),
+      O.map((activeLayoutGroup) => {
+        handlesGroup.position.setZ(-activeLayoutGroup.userData.length / 2)
+      })
     )
   }
 
@@ -391,6 +399,7 @@ export const createHouseTransformsGroup = ({
     elements,
     materials,
     activeElementMaterials,
+    updateHandlesGroupZ,
     pushElement,
     dbSync,
     updateActiveLayoutDnas,
@@ -427,6 +436,7 @@ export const createHouseTransformsGroup = ({
       houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
       initRotateAndStretchXHandles()
+      updateHandlesGroupZ()
 
       return houseTransformsGroup
     })
