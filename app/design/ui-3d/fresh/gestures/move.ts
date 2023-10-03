@@ -4,13 +4,25 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Vector3 } from "three"
 import { ref } from "valtio"
-import { A, O } from "../../../../utils/functions"
+import {
+  A,
+  O,
+  pipeLog,
+  pipeLogWith,
+  someOrError,
+} from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
 import { dispatchOutline } from "../events/outlines"
-import { findFirstGuardUp, objectToHouseObjects } from "../helpers/sceneQueries"
+import {
+  findFirstGuardUp,
+  getActiveHouseUserData,
+  objectToHouseObjects,
+} from "../helpers/sceneQueries"
+import { AABB_OFFSET } from "../scene/houseLayoutGroup"
 import {
   elementMeshToScopeItem,
+  HouseLayoutGroup,
   HouseTransformsGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
@@ -19,15 +31,59 @@ import {
 const useOnDragMove = () => {
   const moveData = useRef<{
     lastPoint: Vector3
+    point0: Vector3
     houseTransformsGroup: HouseTransformsGroup
+    layoutGroup: HouseLayoutGroup
+    nearHouseTransformGroups: HouseTransformsGroup[]
+    thresholdFactor: number
   } | null>(null)
 
   const onDragMove: Handler<"drag", ThreeEvent<PointerEvent>> = (state) => {
     const {
       first,
       last,
-      event: { intersections, stopPropagation },
+      event: { intersections },
     } = state
+
+    const computeNearHouseTransformsGroups = (
+      houseTransformsGroup: HouseTransformsGroup
+    ): HouseTransformsGroup[] =>
+      pipe(
+        houseTransformsGroup.parent,
+        O.fromNullable,
+        O.map((scene) =>
+          pipe(
+            scene.children,
+            A.filterMap((htg) => {
+              if (
+                !isHouseTransformsGroup(htg) ||
+                htg.uuid === houseTransformsGroup.uuid
+              ) {
+                return O.none
+              }
+
+              const { aabb } = getActiveHouseUserData(houseTransformsGroup)
+
+              return getActiveHouseUserData(htg).aabb.intersectsBox(aabb)
+                ? O.some(htg)
+                : O.none
+            }),
+            pipeLog
+          )
+        ),
+        O.getOrElse((): HouseTransformsGroup[] => [])
+        // (xs) => {
+        //   xs.forEach((x) => {
+        //     pipe(
+        //       x.userData.getActiveLayoutGroup(),
+        //       O.map((y) => {
+        //         y.userData.updateOBB()
+        //       })
+        //     )
+        //   })
+        //   return xs
+        // }
+      )
 
     switch (true) {
       case first: {
@@ -42,9 +98,22 @@ const useOnDragMove = () => {
               object,
               findFirstGuardUp(isHouseTransformsGroup),
               O.map((houseTransformsGroup) => {
+                const nearHouseTransformGroups =
+                  computeNearHouseTransformsGroups(houseTransformsGroup)
+
+                const layoutGroup = pipe(
+                  houseTransformsGroup.userData.getActiveLayoutGroup(),
+                  someOrError(`no active layout group in move`)
+                )
+
+                point.setY(0)
                 moveData.current = {
                   houseTransformsGroup,
-                  lastPoint: point.setY(0),
+                  lastPoint: point,
+                  point0: point,
+                  nearHouseTransformGroups,
+                  thresholdFactor: 1,
+                  layoutGroup,
                 }
 
                 const scopeItem = elementMeshToScopeItem(object)
@@ -73,13 +142,50 @@ const useOnDragMove = () => {
           return
         }
 
-        const { lastPoint, houseTransformsGroup: houseObject } =
-          moveData.current
+        const {
+          lastPoint,
+          houseTransformsGroup,
+          nearHouseTransformGroups,
+          point0,
+          thresholdFactor,
+          layoutGroup,
+        } = moveData.current
+
+        let collision = false
+
         const [px, pz] = pointer.xz
         const thisPoint = new Vector3(px, 0, pz)
         const delta = thisPoint.clone().sub(lastPoint)
+
+        // Potential OBB intersection check
+        const { obb: thisOBB } = getActiveHouseUserData(houseTransformsGroup)
+
+        layoutGroup.userData.updateOBB()
+
+        for (const nearHouse of nearHouseTransformGroups) {
+          const { obb: nearOBB } = getActiveHouseUserData(nearHouse)
+
+          if (thisOBB.intersectsOBB(nearOBB)) {
+            collision = true
+          }
+        }
+
+        if (collision) return
+
         moveData.current.lastPoint = thisPoint
-        houseObject.position.add(delta)
+
+        houseTransformsGroup.position.add(delta)
+
+        const dts = point0.distanceToSquared(thisPoint)
+        const threshold = (AABB_OFFSET - 1) ** 2
+
+        if (dts >= threshold * thresholdFactor) {
+          moveData.current.nearHouseTransformGroups =
+            computeNearHouseTransformsGroups(houseTransformsGroup)
+
+          moveData.current.thresholdFactor++
+        }
+
         return
       }
     }

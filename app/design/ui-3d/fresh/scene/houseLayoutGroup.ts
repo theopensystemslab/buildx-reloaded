@@ -1,12 +1,12 @@
 import { pipe } from "fp-ts/lib/function"
-import { Group, Matrix3, Vector3 } from "three"
+import { Box3, Group, Matrix3, Matrix4, Vector3 } from "three"
 import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
 import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
-import { renderOBB } from "../dimensions"
+import { renderAABB, renderOBB } from "../dimensions"
 import {
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
@@ -26,6 +26,8 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
+
+export const AABB_OFFSET = 5
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
@@ -80,6 +82,7 @@ export const createHouseLayoutGroup = ({
         0
       )
       const obb = new OBB()
+      const aabb = new Box3()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
       return pipe(
@@ -216,11 +219,77 @@ export const createHouseLayoutGroup = ({
 
             houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
 
+            // Get the rotation matrix as a Matrix4
+            const rotationMatrix4 = new Matrix4().setFromMatrix3(
+              houseLayoutGroup.userData.obb.rotation
+            )
+
+            // Initialize min and max vectors to extreme values
+            let min = new Vector3(Infinity, Infinity, Infinity)
+            let max = new Vector3(-Infinity, -Infinity, -Infinity)
+
+            // AABB corners, DELTA to make it bigger so we can pre-empt
+            // which houses to OBB-intersect-check
+            ;[
+              new Vector3(
+                halfSize.x + AABB_OFFSET,
+                halfSize.y + AABB_OFFSET,
+                halfSize.z + AABB_OFFSET
+              ),
+              new Vector3(
+                -(halfSize.x + AABB_OFFSET),
+                halfSize.y + AABB_OFFSET,
+                halfSize.z + AABB_OFFSET
+              ),
+              new Vector3(
+                halfSize.x + AABB_OFFSET,
+                -(halfSize.y + AABB_OFFSET),
+                halfSize.z + AABB_OFFSET
+              ),
+              new Vector3(
+                halfSize.x + AABB_OFFSET,
+                halfSize.y + AABB_OFFSET,
+                -(halfSize.z + AABB_OFFSET)
+              ),
+              new Vector3(
+                -(halfSize.x + AABB_OFFSET),
+                -(halfSize.y + AABB_OFFSET),
+                halfSize.z + AABB_OFFSET
+              ),
+              new Vector3(
+                -(halfSize.x + AABB_OFFSET),
+                halfSize.y + AABB_OFFSET,
+                -(halfSize.z + AABB_OFFSET)
+              ),
+              new Vector3(
+                halfSize.x + AABB_OFFSET,
+                -(halfSize.y + AABB_OFFSET),
+                -(halfSize.z + AABB_OFFSET)
+              ),
+              new Vector3(
+                -(halfSize.x + AABB_OFFSET),
+                -(halfSize.y + AABB_OFFSET),
+                -(halfSize.z + AABB_OFFSET)
+              ),
+            ].forEach((offset) => {
+              offset.applyMatrix4(rotationMatrix4)
+              offset.add(center)
+              min.min(offset)
+              max.max(offset)
+            })
+
+            // Set the AABB
+            houseLayoutGroup.userData.aabb.set(min, max)
+
             if (DEBUG && houseTransformsGroup.parent) {
               renderOBB(
                 houseLayoutGroup.userData.obb,
                 houseTransformsGroup.parent
               )
+              // renderAABB(
+              //   houseLayoutGroup.userData.aabb,
+              //   houseTransformsGroup.parent
+              // )
             }
           }
 
@@ -235,6 +304,7 @@ export const createHouseLayoutGroup = ({
             height,
             length,
             obb,
+            aabb,
             vanillaColumn,
             use,
             initStretchZHandles,

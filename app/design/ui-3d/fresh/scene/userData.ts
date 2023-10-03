@@ -1,4 +1,5 @@
 import {
+  Box3,
   BufferGeometry,
   Group,
   Mesh,
@@ -98,6 +99,7 @@ export type HouseLayoutGroupUserData = {
   vanillaColumn: VanillaColumn
   levelTypes: string[]
   obb: OBB
+  aabb: Box3
   height: number
   length: number
   width: number
