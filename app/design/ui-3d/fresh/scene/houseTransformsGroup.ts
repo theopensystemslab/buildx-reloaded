@@ -255,12 +255,10 @@ export const createHouseTransformsGroup = ({
     })
 
     pipe(
-      houseTransformsGroup.children,
-      A.findFirst(
-        (x) => x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-      ),
+      houseTransformsGroup,
+      getActiveLayoutGroup,
       O.map((activeLayoutGroup) => {
-        activeLayoutGroup.userData.updateOBB()
+        activeLayoutGroup.userData.updateBBs()
       })
     )
   }

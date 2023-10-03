@@ -26,39 +26,6 @@ import {
 let lastOBB: Mesh | null
 let lastAABB: Mesh | null
 
-export const renderOBB = (obb: OBB, scene: Object3D) => {
-  const size = obb.halfSize.clone().multiplyScalar(2)
-
-  if (lastOBB) scene.remove(lastOBB)
-
-  const geom = new BoxGeometry(size.x, size.y, size.z)
-  const material = new MeshBasicMaterial({ color: "tomato" })
-  const mesh = new Mesh(geom, material)
-  mesh.position.copy(obb.center)
-  mesh.setRotationFromMatrix(new Matrix4().setFromMatrix3(obb.rotation))
-  mesh.userData.type = "OBB"
-  scene.add(mesh)
-  lastOBB = mesh
-}
-
-export const renderAABB = (box3: Box3, scene: Object3D) => {
-  const size = new Vector3()
-  box3.getSize(size)
-
-  const center = new Vector3()
-  box3.getCenter(center)
-
-  if (lastAABB) scene.remove(lastAABB)
-
-  const geom = new BoxGeometry(size.x, size.y, size.z)
-  const material = new MeshBasicMaterial({ color: "tomato" })
-  const mesh = new Mesh(geom, material)
-  mesh.position.copy(center)
-  mesh.userData.type = "AABB"
-  scene.add(mesh)
-  lastAABB = mesh
-}
-
 export const updateHouseWidth = (houseGroup: Group) => {}
 
 export const updateHouseHeight = (houseGroup: Group) => {}

@@ -2,7 +2,7 @@ import { ThreeEvent } from "@react-three/fiber"
 import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
-import { Vector3 } from "three"
+import { Matrix4, Vector3 } from "three"
 import { ref } from "valtio"
 import {
   A,
@@ -67,22 +67,10 @@ const useOnDragMove = () => {
               return getActiveHouseUserData(htg).aabb.intersectsBox(aabb)
                 ? O.some(htg)
                 : O.none
-            }),
-            pipeLog
+            })
           )
         ),
         O.getOrElse((): HouseTransformsGroup[] => [])
-        // (xs) => {
-        //   xs.forEach((x) => {
-        //     pipe(
-        //       x.userData.getActiveLayoutGroup(),
-        //       O.map((y) => {
-        //         y.userData.updateOBB()
-        //       })
-        //     )
-        //   })
-        //   return xs
-        // }
       )
 
     switch (true) {
@@ -107,6 +95,7 @@ const useOnDragMove = () => {
                 )
 
                 point.setY(0)
+
                 moveData.current = {
                   houseTransformsGroup,
                   lastPoint: point,
@@ -155,22 +144,28 @@ const useOnDragMove = () => {
 
         const [px, pz] = pointer.xz
         const thisPoint = new Vector3(px, 0, pz)
-        const delta = thisPoint.clone().sub(lastPoint)
+        const delta: Vector3 = thisPoint.clone().sub(lastPoint)
 
-        // Potential OBB intersection check
         const { obb: thisOBB } = getActiveHouseUserData(houseTransformsGroup)
 
-        layoutGroup.userData.updateOBB()
+        thisOBB.center.add(delta)
 
         for (const nearHouse of nearHouseTransformGroups) {
           const { obb: nearOBB } = getActiveHouseUserData(nearHouse)
+
+          console.log(`obb check`)
 
           if (thisOBB.intersectsOBB(nearOBB)) {
             collision = true
           }
         }
 
-        if (collision) return
+        if (collision) {
+          thisOBB.center.sub(delta)
+          return
+        }
+
+        layoutGroup.userData.updateBBs()
 
         moveData.current.lastPoint = thisPoint
 

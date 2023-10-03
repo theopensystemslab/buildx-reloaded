@@ -109,7 +109,8 @@ export type HouseLayoutGroupUserData = {
   updateLength: () => void
   updateActiveColumnGroupCount: (n: number) => void
   updateDnas: () => Promise<void>
-  updateOBB: () => void
+  updateBBs: () => void
+  renderBBs: () => void
 }
 
 export type ColumnGroupUserData = {

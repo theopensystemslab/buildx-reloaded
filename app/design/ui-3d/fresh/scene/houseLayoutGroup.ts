@@ -1,12 +1,20 @@
 import { pipe } from "fp-ts/lib/function"
-import { Box3, Group, Matrix3, Matrix4, Vector3 } from "three"
+import {
+  Box3,
+  BoxGeometry,
+  Group,
+  Matrix3,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  Vector3,
+} from "three"
 import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
 import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
-import { renderAABB, renderOBB } from "../dimensions"
 import {
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
@@ -27,7 +35,19 @@ import {
   UserDataTypeEnum,
 } from "./userData"
 
-export const AABB_OFFSET = 5
+export const AABB_OFFSET = 1
+
+const obbMaterial = new MeshBasicMaterial({
+  color: "blue",
+  wireframe: true,
+  // transparent: true
+})
+
+const aabbMaterial = new MeshBasicMaterial({
+  color: "red",
+  wireframe: true,
+  // transparent: true
+})
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
@@ -126,7 +146,7 @@ export const createHouseLayoutGroup = ({
               )
             )
 
-            houseLayoutGroup.userData.updateOBB()
+            houseLayoutGroup.userData.updateBBs()
           }
 
           const updateActiveColumnGroupCount = (n: number) => {
@@ -203,7 +223,7 @@ export const createHouseLayoutGroup = ({
             setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
-          const updateOBB = () => {
+          const updateBBs = () => {
             const { width, height, length } = houseLayoutGroup.userData
 
             const houseTransformsGroup =
@@ -281,16 +301,51 @@ export const createHouseLayoutGroup = ({
             // Set the AABB
             houseLayoutGroup.userData.aabb.set(min, max)
 
-            if (DEBUG && houseTransformsGroup.parent) {
-              renderOBB(
-                houseLayoutGroup.userData.obb,
-                houseTransformsGroup.parent
-              )
-              // renderAABB(
-              //   houseLayoutGroup.userData.aabb,
-              //   houseTransformsGroup.parent
-              // )
+            if (DEBUG) {
+              renderBBs()
             }
+          }
+
+          const renderOBB = () => {
+            const scene = houseTransformsGroup.parent!
+            const size = obb.halfSize.clone().multiplyScalar(2)
+
+            if (houseLayoutGroup.userData.lastOBB)
+              scene.remove(houseLayoutGroup.userData.lastOBB)
+
+            const geom = new BoxGeometry(size.x, size.y, size.z)
+            const mesh = new Mesh(geom, obbMaterial)
+            mesh.position.copy(obb.center)
+            mesh.setRotationFromMatrix(
+              new Matrix4().setFromMatrix3(obb.rotation)
+            )
+            mesh.userData.type = "OBB"
+            scene.add(mesh)
+            houseLayoutGroup.userData.lastOBB = mesh
+          }
+
+          const renderAABB = () => {
+            const scene = houseTransformsGroup.parent!
+            const size = new Vector3()
+            aabb.getSize(size)
+
+            const center = new Vector3()
+            aabb.getCenter(center)
+
+            if (houseLayoutGroup.userData.lastAABB)
+              scene.remove(houseLayoutGroup.userData.lastAABB)
+
+            const geom = new BoxGeometry(size.x, size.y, size.z)
+            const mesh = new Mesh(geom, aabbMaterial)
+            mesh.position.copy(center)
+            mesh.userData.type = "AABB"
+            scene.add(mesh)
+            houseLayoutGroup.userData.lastAABB = mesh
+          }
+
+          const renderBBs = () => {
+            renderOBB()
+            renderAABB()
           }
 
           const userData: HouseLayoutGroupUserData = {
@@ -311,7 +366,8 @@ export const createHouseLayoutGroup = ({
             updateLength,
             updateActiveColumnGroupCount,
             updateDnas,
-            updateOBB,
+            updateBBs,
+            renderBBs,
           }
 
           houseLayoutGroup.userData = userData
