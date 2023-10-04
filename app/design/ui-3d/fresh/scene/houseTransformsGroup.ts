@@ -418,9 +418,10 @@ export const createHouseTransformsGroup = ({
     let collision = false
 
     for (const neighbour of neighbours) {
-      const { obb: nearOBB } = getActiveHouseUserData(neighbour)
+      const { obb: nearOBB } =
+        neighbour.userData.unsafeGetActiveLayoutGroup().userData
 
-      if (houseTransformsGroup.userData.obb.intersectsOBB(nearOBB)) {
+      if (unsafeGetActiveLayoutGroup().userData.obb.intersectsOBB(nearOBB)) {
         collision = true
         break
       }

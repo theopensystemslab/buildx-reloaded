@@ -52,10 +52,8 @@ const useOnDragMove = () => {
               object,
               findFirstGuardUp(isHouseTransformsGroup),
               O.map((houseTransformsGroup) => {
-                const layoutGroup = pipe(
-                  houseTransformsGroup.userData.getActiveLayoutGroup(),
-                  someOrError(`no active layout group in move`)
-                )
+                const layoutGroup =
+                  houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
 
                 point.setY(0)
 
