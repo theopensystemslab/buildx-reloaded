@@ -11,6 +11,7 @@ import {
   getActiveHouseUserData,
 } from "../helpers/sceneQueries"
 import {
+  HouseLayoutGroup,
   HouseTransformsGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
@@ -19,6 +20,8 @@ import {
 const useOnDragRotate = () => {
   const rotateData = useRef<{
     houseTransformsGroup: HouseTransformsGroup
+    nearNeighbours: HouseTransformsGroup[]
+    layoutGroup: HouseLayoutGroup
     center: Vector3
     rotation0: number
     angle0: number
@@ -47,12 +50,15 @@ const useOnDragRotate = () => {
               object,
               findFirstGuardUp(isHouseTransformsGroup),
               O.map((houseTransformsGroup) => {
+                const layoutGroup =
+                  houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
+
                 const {
                   obb: {
                     center,
                     center: { x: cx, z: cz },
                   },
-                } = getActiveHouseUserData(houseTransformsGroup)
+                } = layoutGroup.userData
 
                 const { x: x0, z: z0 } = point
 
@@ -60,6 +66,9 @@ const useOnDragRotate = () => {
 
                 rotateData.current = {
                   houseTransformsGroup,
+                  nearNeighbours:
+                    houseTransformsGroup.userData.computeNearNeighbours(),
+                  layoutGroup,
                   center,
                   rotation0: houseTransformsGroup.rotation.y,
                   angle0,
@@ -87,6 +96,8 @@ const useOnDragRotate = () => {
         const {
           center: { x: cx, z: cz },
           houseTransformsGroup,
+          layoutGroup,
+          nearNeighbours,
         } = rotateData.current
 
         rotateData.current.angle = atan2(cz - pz, cx - px)
@@ -94,9 +105,23 @@ const useOnDragRotate = () => {
         const angleDifference =
           rotateData.current.angle - rotateData.current.angle0
 
+        const { obb } = layoutGroup.userData
+
+        // obb.??? how do I rotate the OBB by (-angleDifference)?
+
         houseTransformsGroup.rotation.y =
           rotateData.current.rotation0 - angleDifference
 
+        obb.rotation.setFromMatrix4(houseTransformsGroup.matrix)
+
+        if (houseTransformsGroup.userData.checkCollisions(nearNeighbours)) {
+          houseTransformsGroup.rotation.y =
+            rotateData.current.rotation0 + angleDifference
+          obb.rotation.setFromMatrix4(houseTransformsGroup.matrix)
+          return
+        }
+
+        layoutGroup.userData.updateBBs()
         break
       }
     }

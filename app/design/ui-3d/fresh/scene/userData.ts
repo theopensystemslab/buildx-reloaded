@@ -68,6 +68,7 @@ export type HouseTransformsGroupUserData = {
   updateActiveLayoutDnas: (x: string[]) => Promise<void>
   updateXStretchHandleLengths: () => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
+  unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
@@ -77,6 +78,8 @@ export type HouseTransformsGroupUserData = {
   dbSync: () => Promise<void>
   resetMaterials: () => void
   updateHandlesGroupZ: () => void
+  computeNearNeighbours: () => HouseTransformsGroup[]
+  checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
 }
 
 export type HouseTransformsHandlesGroupUserData = {
