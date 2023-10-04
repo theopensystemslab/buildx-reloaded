@@ -36,6 +36,7 @@ import {
   isActiveLayoutGroup,
   isElementMesh,
   isHouseLayoutGroup,
+  isHouseTransformsGroup,
   isHouseTransformsHandlesGroup,
   isRotateHandlesGroup,
   isXStretchHandleGroup,
@@ -186,6 +187,9 @@ export const createHouseTransformsGroup = ({
           x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
       )
     )
+
+  const unsafeGetActiveLayoutGroup = (): HouseLayoutGroup =>
+    pipe(getActiveLayoutGroup(), someOrError(`no active layout group`))
 
   const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
     pipe(
@@ -384,6 +388,47 @@ export const createHouseTransformsGroup = ({
     activeElementMaterials[ifcTag] = specification
   }
 
+  const computeNearNeighbours = (): HouseTransformsGroup[] =>
+    pipe(
+      houseTransformsGroup.parent,
+      O.fromNullable,
+      O.map((scene) =>
+        pipe(
+          scene.children,
+          A.filterMap((htg) => {
+            if (
+              !isHouseTransformsGroup(htg) ||
+              htg.uuid === houseTransformsGroup.uuid
+            ) {
+              return O.none
+            }
+
+            const { aabb } = getActiveHouseUserData(houseTransformsGroup)
+
+            return getActiveHouseUserData(htg).aabb.intersectsBox(aabb)
+              ? O.some(htg)
+              : O.none
+          })
+        )
+      ),
+      O.getOrElse((): HouseTransformsGroup[] => [])
+    )
+
+  const checkCollisions = (neighbours: HouseTransformsGroup[]) => {
+    let collision = false
+
+    for (const neighbour of neighbours) {
+      const { obb: nearOBB } = getActiveHouseUserData(neighbour)
+
+      if (houseTransformsGroup.userData.obb.intersectsOBB(nearOBB)) {
+        collision = true
+        break
+      }
+    }
+
+    return collision
+  }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -404,6 +449,7 @@ export const createHouseTransformsGroup = ({
     initRotateAndStretchXHandles,
     updateXStretchHandleLengths,
     getActiveLayoutGroup,
+    unsafeGetActiveLayoutGroup,
     setActiveLayoutGroup,
     setXStretchHandlesVisible,
     setZStretchHandlesVisible,
@@ -412,6 +458,8 @@ export const createHouseTransformsGroup = ({
     refreshAltSectionTypeLayouts,
     resetMaterials,
     changeMaterial,
+    computeNearNeighbours,
+    checkCollisions,
   }
 
   houseTransformsGroup.userData =

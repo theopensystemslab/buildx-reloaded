@@ -2,15 +2,9 @@ import { ThreeEvent } from "@react-three/fiber"
 import { Handler } from "@use-gesture/react"
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
-import { Matrix4, Vector3 } from "three"
+import { Vector3 } from "three"
 import { ref } from "valtio"
-import {
-  A,
-  O,
-  pipeLog,
-  pipeLogWith,
-  someOrError,
-} from "../../../../utils/functions"
+import { A, O, someOrError } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
 import { dispatchOutline } from "../events/outlines"
@@ -34,7 +28,7 @@ const useOnDragMove = () => {
     point0: Vector3
     houseTransformsGroup: HouseTransformsGroup
     layoutGroup: HouseLayoutGroup
-    nearHouseTransformGroups: HouseTransformsGroup[]
+    nearNeighbours: HouseTransformsGroup[]
     thresholdFactor: number
   } | null>(null)
 
@@ -44,34 +38,6 @@ const useOnDragMove = () => {
       last,
       event: { intersections },
     } = state
-
-    const computeNearHouseTransformsGroups = (
-      houseTransformsGroup: HouseTransformsGroup
-    ): HouseTransformsGroup[] =>
-      pipe(
-        houseTransformsGroup.parent,
-        O.fromNullable,
-        O.map((scene) =>
-          pipe(
-            scene.children,
-            A.filterMap((htg) => {
-              if (
-                !isHouseTransformsGroup(htg) ||
-                htg.uuid === houseTransformsGroup.uuid
-              ) {
-                return O.none
-              }
-
-              const { aabb } = getActiveHouseUserData(houseTransformsGroup)
-
-              return getActiveHouseUserData(htg).aabb.intersectsBox(aabb)
-                ? O.some(htg)
-                : O.none
-            })
-          )
-        ),
-        O.getOrElse((): HouseTransformsGroup[] => [])
-      )
 
     switch (true) {
       case first: {
@@ -86,9 +52,6 @@ const useOnDragMove = () => {
               object,
               findFirstGuardUp(isHouseTransformsGroup),
               O.map((houseTransformsGroup) => {
-                const nearHouseTransformGroups =
-                  computeNearHouseTransformsGroups(houseTransformsGroup)
-
                 const layoutGroup = pipe(
                   houseTransformsGroup.userData.getActiveLayoutGroup(),
                   someOrError(`no active layout group in move`)
@@ -100,7 +63,8 @@ const useOnDragMove = () => {
                   houseTransformsGroup,
                   lastPoint: point,
                   point0: point,
-                  nearHouseTransformGroups,
+                  nearNeighbours:
+                    houseTransformsGroup.userData.computeNearNeighbours(),
                   thresholdFactor: 1,
                   layoutGroup,
                 }
@@ -134,34 +98,25 @@ const useOnDragMove = () => {
         const {
           lastPoint,
           houseTransformsGroup,
-          nearHouseTransformGroups,
+          nearNeighbours,
           point0,
           thresholdFactor,
           layoutGroup,
         } = moveData.current
 
-        let collision = false
-
         const [px, pz] = pointer.xz
         const thisPoint = new Vector3(px, 0, pz)
         const delta: Vector3 = thisPoint.clone().sub(lastPoint)
 
-        const { obb: thisOBB } = getActiveHouseUserData(houseTransformsGroup)
+        const { obb } = layoutGroup.userData
 
-        thisOBB.center.add(delta)
+        obb.center.add(delta)
 
-        for (const nearHouse of nearHouseTransformGroups) {
-          const { obb: nearOBB } = getActiveHouseUserData(nearHouse)
-
-          console.log(`obb check`)
-
-          if (thisOBB.intersectsOBB(nearOBB)) {
-            collision = true
-          }
-        }
+        const collision =
+          houseTransformsGroup.userData.checkCollisions(nearNeighbours)
 
         if (collision) {
-          thisOBB.center.sub(delta)
+          obb.center.sub(delta)
           return
         }
 
@@ -175,8 +130,8 @@ const useOnDragMove = () => {
         const threshold = (AABB_OFFSET - 1) ** 2
 
         if (dts >= threshold * thresholdFactor) {
-          moveData.current.nearHouseTransformGroups =
-            computeNearHouseTransformsGroups(houseTransformsGroup)
+          moveData.current.nearNeighbours =
+            houseTransformsGroup.userData.computeNearNeighbours()
 
           moveData.current.thresholdFactor++
         }
