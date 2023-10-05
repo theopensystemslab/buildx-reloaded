@@ -8,6 +8,7 @@ import {
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  Scene,
   Vector3,
 } from "three"
 import { OBB } from "three-stdlib"
@@ -39,7 +40,7 @@ import {
 
 export const AABB_OFFSET = 1
 
-const obbMaterial = new MeshBasicMaterial({
+export const obbMaterial = new MeshBasicMaterial({
   color: "blue",
   wireframe: true,
   // transparent: true
