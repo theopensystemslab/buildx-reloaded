@@ -1,3 +1,4 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import {
   Box3,
@@ -30,6 +31,7 @@ import {
   HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
+  isHouseTransformsGroup,
   isModuleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
@@ -226,122 +228,137 @@ export const createHouseLayoutGroup = ({
           const updateBBs = () => {
             const { width, height, length } = houseLayoutGroup.userData
 
-            const houseTransformsGroup =
-              houseLayoutGroup.parent as HouseTransformsGroup
+            pipe(
+              houseLayoutGroup.parent,
+              O.fromNullable,
+              O.map((houseTransformsGroup) => {
+                if (!isHouseTransformsGroup(houseTransformsGroup)) return
 
-            const { x, y, z } = houseTransformsGroup.position
+                const { x, y, z } = houseTransformsGroup.position
 
-            const center = new Vector3(x, y + height / 2, z)
-            const halfSize = new Vector3(width / 2, height / 2, length / 2)
-            const rotation = new Matrix3().setFromMatrix4(
-              houseTransformsGroup.matrix
+                const center = new Vector3(x, y + height / 2, z)
+                const halfSize = new Vector3(width / 2, height / 2, length / 2)
+                const rotation = new Matrix3().setFromMatrix4(
+                  new Matrix4().extractRotation(houseTransformsGroup.matrix)
+                )
+
+                houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
+
+                // Get the rotation matrix as a Matrix4
+                const rotationMatrix4 = new Matrix4().setFromMatrix3(
+                  houseLayoutGroup.userData.obb.rotation
+                )
+
+                // Initialize min and max vectors to extreme values
+                let min = new Vector3(Infinity, Infinity, Infinity)
+                let max = new Vector3(-Infinity, -Infinity, -Infinity)
+
+                // AABB corners, DELTA to make it bigger so we can pre-empt
+                // which houses to OBB-intersect-check
+                ;[
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    halfSize.y + AABB_OFFSET,
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    halfSize.y + AABB_OFFSET,
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    -(halfSize.y + AABB_OFFSET),
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    halfSize.y + AABB_OFFSET,
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    -(halfSize.y + AABB_OFFSET),
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    halfSize.y + AABB_OFFSET,
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    -(halfSize.y + AABB_OFFSET),
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    -(halfSize.y + AABB_OFFSET),
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                ].forEach((offset) => {
+                  offset.applyMatrix4(rotationMatrix4)
+                  offset.add(center)
+                  min.min(offset)
+                  max.max(offset)
+                })
+
+                // Set the AABB
+                houseLayoutGroup.userData.aabb.set(min, max)
+
+                if (DEBUG) {
+                  renderBBs()
+                }
+
+                invalidate()
+              })
             )
-
-            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
-
-            // Get the rotation matrix as a Matrix4
-            const rotationMatrix4 = new Matrix4().setFromMatrix3(
-              houseLayoutGroup.userData.obb.rotation
-            )
-
-            // Initialize min and max vectors to extreme values
-            let min = new Vector3(Infinity, Infinity, Infinity)
-            let max = new Vector3(-Infinity, -Infinity, -Infinity)
-
-            // AABB corners, DELTA to make it bigger so we can pre-empt
-            // which houses to OBB-intersect-check
-            ;[
-              new Vector3(
-                halfSize.x + AABB_OFFSET,
-                halfSize.y + AABB_OFFSET,
-                halfSize.z + AABB_OFFSET
-              ),
-              new Vector3(
-                -(halfSize.x + AABB_OFFSET),
-                halfSize.y + AABB_OFFSET,
-                halfSize.z + AABB_OFFSET
-              ),
-              new Vector3(
-                halfSize.x + AABB_OFFSET,
-                -(halfSize.y + AABB_OFFSET),
-                halfSize.z + AABB_OFFSET
-              ),
-              new Vector3(
-                halfSize.x + AABB_OFFSET,
-                halfSize.y + AABB_OFFSET,
-                -(halfSize.z + AABB_OFFSET)
-              ),
-              new Vector3(
-                -(halfSize.x + AABB_OFFSET),
-                -(halfSize.y + AABB_OFFSET),
-                halfSize.z + AABB_OFFSET
-              ),
-              new Vector3(
-                -(halfSize.x + AABB_OFFSET),
-                halfSize.y + AABB_OFFSET,
-                -(halfSize.z + AABB_OFFSET)
-              ),
-              new Vector3(
-                halfSize.x + AABB_OFFSET,
-                -(halfSize.y + AABB_OFFSET),
-                -(halfSize.z + AABB_OFFSET)
-              ),
-              new Vector3(
-                -(halfSize.x + AABB_OFFSET),
-                -(halfSize.y + AABB_OFFSET),
-                -(halfSize.z + AABB_OFFSET)
-              ),
-            ].forEach((offset) => {
-              offset.applyMatrix4(rotationMatrix4)
-              offset.add(center)
-              min.min(offset)
-              max.max(offset)
-            })
-
-            // Set the AABB
-            houseLayoutGroup.userData.aabb.set(min, max)
-
-            if (DEBUG) {
-              renderBBs()
-            }
           }
 
-          const renderOBB = () => {
-            const scene = houseTransformsGroup.parent!
-            const size = obb.halfSize.clone().multiplyScalar(2)
+          const renderOBB = () =>
+            pipe(
+              houseTransformsGroup.parent,
+              O.fromNullable,
+              O.map((scene) => {
+                const size = obb.halfSize.clone().multiplyScalar(2)
 
-            if (houseLayoutGroup.userData.lastOBB)
-              scene.remove(houseLayoutGroup.userData.lastOBB)
+                if (houseLayoutGroup.userData.lastOBB)
+                  scene.remove(houseLayoutGroup.userData.lastOBB)
 
-            const geom = new BoxGeometry(size.x, size.y, size.z)
-            const mesh = new Mesh(geom, obbMaterial)
-            mesh.position.copy(obb.center)
-            mesh.setRotationFromMatrix(
-              new Matrix4().setFromMatrix3(obb.rotation)
+                const geom = new BoxGeometry(size.x, size.y, size.z)
+                const mesh = new Mesh(geom, obbMaterial)
+                mesh.position.copy(obb.center)
+                mesh.setRotationFromMatrix(
+                  new Matrix4().setFromMatrix3(obb.rotation)
+                )
+                mesh.userData.type = "OBB"
+                scene.add(mesh)
+                houseLayoutGroup.userData.lastOBB = mesh
+              })
             )
-            mesh.userData.type = "OBB"
-            scene.add(mesh)
-            houseLayoutGroup.userData.lastOBB = mesh
-          }
 
-          const renderAABB = () => {
-            const scene = houseTransformsGroup.parent!
-            const size = new Vector3()
-            aabb.getSize(size)
+          const renderAABB = () =>
+            pipe(
+              houseTransformsGroup.parent,
+              O.fromNullable,
+              O.map((scene) => {
+                const size = new Vector3()
+                aabb.getSize(size)
 
-            const center = new Vector3()
-            aabb.getCenter(center)
+                const center = new Vector3()
+                aabb.getCenter(center)
 
-            if (houseLayoutGroup.userData.lastAABB)
-              scene.remove(houseLayoutGroup.userData.lastAABB)
+                if (houseLayoutGroup.userData.lastAABB)
+                  scene.remove(houseLayoutGroup.userData.lastAABB)
 
-            const geom = new BoxGeometry(size.x, size.y, size.z)
-            const mesh = new Mesh(geom, aabbMaterial)
-            mesh.position.copy(center)
-            mesh.userData.type = "AABB"
-            scene.add(mesh)
-            houseLayoutGroup.userData.lastAABB = mesh
-          }
+                const geom = new BoxGeometry(size.x, size.y, size.z)
+                const mesh = new Mesh(geom, aabbMaterial)
+                mesh.position.copy(center)
+                mesh.userData.type = "AABB"
+                scene.add(mesh)
+                houseLayoutGroup.userData.lastAABB = mesh
+              })
+            )
 
           const renderBBs = () => {
             renderOBB()
@@ -373,7 +390,8 @@ export const createHouseLayoutGroup = ({
           houseLayoutGroup.userData = userData
           houseLayoutGroup.add(...columnGroups)
           houseLayoutGroup.position.setZ(-length / 2)
-          houseLayoutGroup.userData.initStretchZHandles()
+
+          initStretchZHandles()
 
           return houseLayoutGroup as HouseLayoutGroup
         })

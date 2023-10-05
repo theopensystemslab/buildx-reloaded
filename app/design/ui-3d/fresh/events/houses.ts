@@ -67,6 +67,10 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     rootRef.current.add(houseTransformsGroup)
 
+    houseTransformsGroup.userData
+      .unsafeGetActiveLayoutGroup()
+      .userData.updateBBs()
+
     invalidate()
 
     userDB.houses.put(house)

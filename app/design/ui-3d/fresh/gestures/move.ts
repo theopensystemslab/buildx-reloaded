@@ -4,15 +4,11 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { Vector3 } from "three"
 import { ref } from "valtio"
-import { A, O, someOrError } from "../../../../utils/functions"
+import { A, O } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
 import scope from "../../../state/scope"
 import { dispatchOutline } from "../events/outlines"
-import {
-  findFirstGuardUp,
-  getActiveHouseUserData,
-  objectToHouseObjects,
-} from "../helpers/sceneQueries"
+import { findFirstGuardUp, objectToHouseObjects } from "../helpers/sceneQueries"
 import { AABB_OFFSET } from "../scene/houseLayoutGroup"
 import {
   elementMeshToScopeItem,

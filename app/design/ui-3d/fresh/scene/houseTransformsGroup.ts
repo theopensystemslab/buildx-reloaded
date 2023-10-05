@@ -19,11 +19,7 @@ import {
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
-import {
-  EnrichedMaterial,
-  getSystemElement,
-  getSystemMaterial,
-} from "../systems"
+import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
   ElementMesh,
@@ -43,6 +39,7 @@ import {
   isZStretchHandleGroup,
   UserDataTypeEnum,
 } from "./userData"
+
 export const BIG_CLIP_NUMBER = 999
 
 // getHouseLayoutsKey is ONLY for this, not for Dexie.js `get` calls
@@ -480,7 +477,8 @@ export const createHouseTransformsGroup = ({
     ),
     T.map((layoutGroup) => {
       houseTransformsGroup.add(layoutGroup)
-      houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+      setActiveLayoutGroup(layoutGroup)
+      layoutGroup.userData.updateBBs()
 
       initRotateAndStretchXHandles()
       updateHandlesGroupZ()
