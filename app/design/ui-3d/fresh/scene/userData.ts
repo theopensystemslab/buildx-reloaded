@@ -79,6 +79,7 @@ export type HouseTransformsGroupUserData = {
   resetMaterials: () => void
   updateHandlesGroupZ: () => void
   computeNearNeighbours: () => HouseTransformsGroup[]
+  computeLengthWiseNeighbours: () => HouseTransformsGroup[]
   checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
 }
 

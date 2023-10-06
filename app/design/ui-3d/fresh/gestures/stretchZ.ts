@@ -7,7 +7,7 @@ import {
   useGetSystemSettings,
 } from "../../../../db/systems"
 import { A, O, someOrError, T } from "../../../../utils/functions"
-import { sign } from "../../../../utils/math"
+import { floor, sign } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -59,7 +59,7 @@ const useOnDragStretchZ = () => {
     handleColumnGroup: Object3D
     houseTransformsGroup: HouseTransformsGroup
     layoutGroup: HouseLayoutGroup
-    nearNeighbours: HouseTransformsGroup[]
+    lengthWiseNeighbours: HouseTransformsGroup[]
     // columnGroups: Object3D[]
     // startColumnGroup: Object3D
     // midColumnGroups: Object3D[]
@@ -94,7 +94,7 @@ const useOnDragStretchZ = () => {
       templateVanillaColumnGroup,
       layoutGroup,
       houseTransformsGroup,
-      nearNeighbours,
+      lengthWiseNeighbours,
     } = stretchZInitialDataRef.current
 
     const { fences } = stretchZProgressDataRef.current
@@ -130,7 +130,7 @@ const useOnDragStretchZ = () => {
     const scene = houseTransformsGroup.parent! as Scene
     renderOBB(obb, scene)
 
-    for (let neighbour of nearNeighbours) {
+    for (let neighbour of lengthWiseNeighbours) {
       console.log(`neighbour`)
       if (
         neighbour.userData
@@ -221,8 +221,9 @@ const useOnDragStretchZ = () => {
               )
             )
 
-            const maxMoreCols =
-              (maxLen - activeLayoutGroup.userData.length) / vanillaLength
+            const maxMoreCols = floor(
+              (maxLen - activeLayoutGroup.userData.length) / vanillaLength - 1
+            )
 
             stretchZInitialDataRef.current = {
               side,
@@ -232,8 +233,8 @@ const useOnDragStretchZ = () => {
               point0: point,
               templateVanillaColumnGroup,
               vanillaLength,
-              nearNeighbours:
-                houseTransformsGroup.userData.computeNearNeighbours(),
+              lengthWiseNeighbours:
+                houseTransformsGroup.userData.computeLengthWiseNeighbours(),
               // columnGroups,
               // startColumnGroup,
               // midColumnGroups,

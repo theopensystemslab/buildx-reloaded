@@ -427,6 +427,40 @@ export const createHouseTransformsGroup = ({
     return collision
   }
 
+  const computeLengthWiseNeighbours = () =>
+    pipe(
+      houseTransformsGroup.parent,
+      O.fromNullable,
+      O.map((scene) =>
+        pipe(
+          scene.children,
+          A.filterMap((htg) => {
+            if (
+              !isHouseTransformsGroup(htg) ||
+              htg.uuid === houseTransformsGroup.uuid
+            ) {
+              return O.none
+            }
+
+            const activeLayoutGroup = unsafeGetActiveLayoutGroup()
+            const obb = activeLayoutGroup.userData.obb.clone()
+            obb.halfSize.setZ(999)
+
+            if (
+              obb.intersectsOBB(
+                htg.userData.unsafeGetActiveLayoutGroup().userData.obb
+              )
+            ) {
+              return O.some(htg)
+            }
+
+            return O.none
+          })
+        )
+      ),
+      O.getOrElse((): HouseTransformsGroup[] => [])
+    )
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -457,6 +491,7 @@ export const createHouseTransformsGroup = ({
     resetMaterials,
     changeMaterial,
     computeNearNeighbours,
+    computeLengthWiseNeighbours,
     checkCollisions,
   }
 
