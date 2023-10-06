@@ -8,6 +8,7 @@ import { LevelType } from "../../server/data/levelTypes"
 import { Material } from "../../server/data/materials"
 import { Module } from "../../server/data/modules"
 import { SectionType } from "../../server/data/sectionTypes"
+import { SystemSettings } from "../../server/data/settings"
 import { SpaceType } from "../../server/data/spaceTypes"
 import { WindowType } from "../../server/data/windowTypes"
 import systemsDB, { LastFetchStamped } from "../db/systems"
@@ -255,6 +256,29 @@ const initEnergyInfos = async () => {
 
   await Promise.all(promises)
 }
+
+const initSettings = async () => {
+  const remoteSystemsSettings = await vanillaTrpc.settings.query()
+
+  const promises = remoteSystemsSettings.map(async (remoteSettings) => {
+    const localSettings = await systemsDB.settings.get(remoteSettings.systemId)
+
+    const indexedSetting: LastFetchStamped<SystemSettings> = {
+      ...remoteSettings,
+      lastFetched: new Date().getTime(),
+    }
+
+    if (
+      !localSettings ||
+      remoteSettings.lastModified > remoteSettings.lastModified
+    ) {
+      await systemsDB.settings.put(indexedSetting)
+    }
+  })
+
+  await Promise.all(promises)
+}
+
 const init = () => {
   initModules()
   initHouseTypes()
@@ -267,6 +291,7 @@ const init = () => {
   initBlockModulesEntries()
   initSpaceTypes()
   initEnergyInfos()
+  initSettings()
 }
 
 init()

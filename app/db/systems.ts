@@ -2,6 +2,7 @@ import { Block } from "@/server/data/blocks"
 import { Module } from "@/server/data/modules"
 import Dexie from "dexie"
 import { useLiveQuery } from "dexie-react-hooks"
+import { pipe } from "fp-ts/lib/function"
 import { BlockModulesEntry } from "../../server/data/blockModulesEntries"
 import { Element } from "../../server/data/elements"
 import { EnergyInfo } from "../../server/data/energyInfos"
@@ -9,8 +10,10 @@ import { HouseType } from "../../server/data/houseTypes"
 import { LevelType } from "../../server/data/levelTypes"
 import { Material } from "../../server/data/materials"
 import { SectionType } from "../../server/data/sectionTypes"
+import { SystemSettings } from "../../server/data/settings"
 import { SpaceType } from "../../server/data/spaceTypes"
 import { WindowType } from "../../server/data/windowTypes"
+import { A } from "../utils/functions"
 
 export type LastFetchStamped<T> = T & {
   lastFetched: number
@@ -28,6 +31,7 @@ class SystemsDatabase extends Dexie {
   blockModuleEntries: Dexie.Table<BlockModulesEntry, string>
   spaceTypes: Dexie.Table<SpaceType, string>
   energyInfos: Dexie.Table<EnergyInfo, string>
+  settings: Dexie.Table<SystemSettings, string>
 
   constructor() {
     super("SystemsDatabase")
@@ -43,6 +47,7 @@ class SystemsDatabase extends Dexie {
       blockModuleEntries: "id",
       spaceTypes: "id",
       energyInfos: "id",
+      settings: "systemId",
     })
     this.modules = this.table("modules")
     this.houseTypes = this.table("houseTypes")
@@ -55,6 +60,7 @@ class SystemsDatabase extends Dexie {
     this.blockModuleEntries = this.table("blockModuleEntries")
     this.spaceTypes = this.table("spaceTypes")
     this.energyInfos = this.table("energyInfos")
+    this.settings = this.table("settings")
   }
 }
 
@@ -89,5 +95,20 @@ export const useAllElements = (): Element[] =>
 
 export const useAllEnergyInfos = (): EnergyInfo[] =>
   useLiveQuery(() => systemsDB.energyInfos.toArray(), [], [])
+
+export const useAllSystemSettings = (): SystemSettings[] =>
+  useLiveQuery(() => systemsDB.settings.toArray(), [], [])
+
+export const useGetSystemSettings = () => {
+  const allSystemSettings = useAllSystemSettings()
+
+  console.log({ allSystemSettings })
+
+  return (systemId: string) =>
+    pipe(
+      allSystemSettings,
+      A.findFirst((x) => x.systemId === systemId)
+    )
+}
 
 export default systemsDB

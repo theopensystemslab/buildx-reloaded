@@ -2,7 +2,11 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { BoxGeometry, Matrix4, Mesh, Object3D, Scene, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import { A, someOrError, T } from "../../../../utils/functions"
+import {
+  useAllSystemSettings,
+  useGetSystemSettings,
+} from "../../../../db/systems"
+import { A, O, someOrError, T } from "../../../../utils/functions"
 import { sign } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
@@ -44,9 +48,11 @@ const renderOBB = (obb: OBB, scene: Scene) => {
   lastOBBMesh = mesh
 }
 
-const TMP_MAX_LENGTH = 10
+const DEFAULT_MAX_LENGTH = 50
 
 const useOnDragStretchZ = () => {
+  const getSystemSettings = useGetSystemSettings()
+
   const stretchZInitialDataRef = useRef<{
     side: 1 | -1
     point0: Vector3
@@ -57,10 +63,10 @@ const useOnDragStretchZ = () => {
     // columnGroups: Object3D[]
     // startColumnGroup: Object3D
     // midColumnGroups: Object3D[]
+    // maxLength: number
     endColumnGroup: ColumnGroup
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
-    maxLength: number
     midStartZ: number
     midEndZ: number
   } | null>(null)
@@ -125,12 +131,15 @@ const useOnDragStretchZ = () => {
     renderOBB(obb, scene)
 
     for (let neighbour of nearNeighbours) {
+      console.log(`neighbour`)
       if (
         neighbour.userData
           .unsafeGetActiveLayoutGroup()
           .userData.obb.intersectsOBB(obb)
-      )
+      ) {
+        console.log(`collision`)
         return true
+      }
     }
 
     const columnGroup = templateVanillaColumnGroup.clone()
@@ -203,6 +212,18 @@ const useOnDragStretchZ = () => {
 
             const vanillaLength = templateVanillaColumnGroup.userData.length
 
+            const maxLen = pipe(
+              systemId,
+              getSystemSettings,
+              O.match(
+                () => DEFAULT_MAX_LENGTH,
+                (x) => x.length.max
+              )
+            )
+
+            const maxMoreCols =
+              (maxLen - activeLayoutGroup.userData.length) / vanillaLength
+
             stretchZInitialDataRef.current = {
               side,
               handleColumnGroup,
@@ -217,7 +238,7 @@ const useOnDragStretchZ = () => {
               // startColumnGroup,
               // midColumnGroups,
               endColumnGroup,
-              maxLength: TMP_MAX_LENGTH,
+              // maxLength: TMP_MAX_LENGTH,
               midStartZ: startColumnGroup.userData.length,
               midEndZ: endColumnGroup.position.z,
             }
@@ -235,7 +256,7 @@ const useOnDragStretchZ = () => {
               stretchZProgressDataRef.current.fenceIndex =
                 stretchZProgressDataRef.current.fences.length - 1
 
-              for (let i = 0; i < 3; i++) {
+              for (let i = 0; i < maxMoreCols; i++) {
                 if (addVanillaCheckCollision(side)) break
               }
             }
@@ -255,7 +276,7 @@ const useOnDragStretchZ = () => {
               stretchZProgressDataRef.current.fenceIndex =
                 stretchZProgressDataRef.current.fences.length - 1
 
-              for (let i = 0; i < 3; i++) {
+              for (let i = 0; i < maxMoreCols; i++) {
                 if (addVanillaCheckCollision(side)) break
               }
             }
@@ -278,7 +299,6 @@ const useOnDragStretchZ = () => {
       vanillaLength,
       layoutGroup,
       endColumnGroup,
-      maxLength,
       midEndZ,
       midStartZ,
     } = stretchZInitialDataRef.current
@@ -312,9 +332,9 @@ const useOnDragStretchZ = () => {
               endColumnGroup.userData.columnIndex - 1
             stretchZProgressDataRef.current.fenceIndex++
 
-            if (nextFence.z < maxLength) {
-              addVanillaCheckCollision(side)
-            }
+            // if (nextFence.z < maxLength) {
+            //   addVanillaCheckCollision(side)
+            // }
           }
         }
       }
@@ -365,10 +385,10 @@ const useOnDragStretchZ = () => {
 
             stretchZProgressDataRef.current.fenceIndex++
 
-            // naive
-            if (nextFence.z < maxLength) {
-              addVanillaCheckCollision(side)
-            }
+            // // naive
+            // if (nextFence.z < maxLength) {
+            //   addVanillaCheckCollision(side)
+            // }
           }
         }
       }
