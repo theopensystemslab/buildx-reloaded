@@ -1,13 +1,10 @@
 import { System, systems } from "@/server/data/system"
 import { useLiveQuery } from "dexie-react-hooks"
-import { pipe } from "fp-ts/lib/function"
 import { mapWithIndex } from "fp-ts/lib/ReadonlyArray"
+import { pipe } from "fp-ts/lib/function"
 import { Fragment, useMemo, useState } from "react"
-import { suspend } from "suspend-react"
-import { useHouseTypes } from "~/data/houseTypes"
 import Sidebar from "~/ui//Sidebar"
 import systemsDB from "../../db/systems"
-import { useCameraGroundRaycast } from "../state/camera"
 import { dispatchAddHouseIntent } from "../ui-3d/fresh/events/houses"
 import HouseThumbnail from "./HouseThumbnail"
 
@@ -29,8 +26,6 @@ const SiteSidebar = ({ open, close }: Props) => {
   const selectedSystem: System | undefined = useMemo(() => {
     return systems.find((system) => system.id === selectedSystemId)
   }, [selectedSystemId])
-
-  const cameraGroundRaycast = useCameraGroundRaycast()
 
   return (
     <Sidebar expanded={open} onClose={close}>

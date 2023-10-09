@@ -67,6 +67,9 @@ class SystemsDatabase extends Dexie {
 // Create Dexie database
 const systemsDB = new SystemsDatabase()
 
+export const useAllHouseTypes = (): LastFetchStamped<HouseType>[] =>
+  useLiveQuery(() => systemsDB.houseTypes.toArray(), [], [])
+
 export const useAllModules = (): LastFetchStamped<Module>[] =>
   useLiveQuery(() => systemsDB.modules.toArray(), [], [])
 
@@ -101,8 +104,6 @@ export const useAllSystemSettings = (): SystemSettings[] =>
 
 export const useGetSystemSettings = () => {
   const allSystemSettings = useAllSystemSettings()
-
-  console.log({ allSystemSettings })
 
   return (systemId: string) =>
     pipe(

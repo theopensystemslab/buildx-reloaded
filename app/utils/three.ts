@@ -42,7 +42,6 @@ export const onCreated = (state: RootState) => {
 
 export const createThreeMaterial = (material: Material) => {
   if (material.specification === "Glass") {
-    console.log(material.defaultColor)
     return new MeshPhysicalMaterial({
       // -- thickness of the clear coat layer, from 0.0 to 1.0
       clearcoat: 0.1,

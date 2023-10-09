@@ -8,15 +8,17 @@ import { Group, Vector3 } from "three"
 import { HouseType } from "../../../../../server/data/houseTypes"
 import layoutsDB from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
-import { A } from "../../../../utils/functions"
+import { A, O } from "../../../../utils/functions"
 import { floor } from "../../../../utils/math"
 import { setRaycasting } from "../../../../utils/three"
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
 import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
+import { setSidebar } from "../../../state/settings"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
 const DELETE_HOUSE_EVENT = "DeleteHouseEvent"
+const REQUEST_SCENE_EVENT = "RequestSceneEvent"
 
 export const dispatchAddHouseIntent = (detail: HouseType) =>
   dispatchEvent(
@@ -50,77 +52,18 @@ export const useDeleteHouseListener = (
   f: (eventDetail: DeleteHouseDetail) => void
 ) => useEvent(DELETE_HOUSE_EVENT, ({ detail }) => f(detail))
 
+export const useRequestSceneEventListener = (rootRef: RefObject<Group>) =>
+  useEvent(REQUEST_SCENE_EVENT, () => O.fromNullable(rootRef.current))
+
+export const dispatchRequestScene = () =>
+  void dispatchEvent(new CustomEvent(REQUEST_SCENE_EVENT))
+
 export const useHousesEvents = (rootRef: RefObject<Group>) => {
   const { initClippingPlanes } = useClippingPlaneHelpers(rootRef)
-
-  const addHouse = async (house: House) => {
-    if (!rootRef.current) return
-
-    const { houseId, position, rotation } = house
-
-    const houseTransformsGroup = await createHouseTransformsGroup(house)()
-
-    houseTransformsGroup.position.set(position.x, position.y, position.z)
-    houseTransformsGroup.rotation.set(0, rotation, 0)
-
-    setRaycasting(houseTransformsGroup, true)
-
-    rootRef.current.add(houseTransformsGroup)
-
-    houseTransformsGroup.userData
-      .unsafeGetActiveLayoutGroup()
-      .userData.updateBBs()
-
-    invalidate()
-
-    userDB.houses.put(house)
-
-    initClippingPlanes(houseId)
-  }
 
   const cleanup = () => {
     rootRef.current?.clear()
   }
-
-  const initHouses = () => {
-    userDB.houses.toArray().then((houses) => {
-      pipe(houses, A.map(addHouse))
-    })
-
-    invalidate()
-
-    return cleanup
-  }
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(initHouses, [])
-
-  useAddHouseIntentListener(({ dnas, id: houseTypeId, systemId }) => {
-    // maybe cameraGroundRaycast
-    // maybe collisions
-
-    const id = nanoid()
-    const position = new Vector3(0, 0, 0)
-
-    const getFriendlyName = () => {
-      return `yo+${floor(Math.random() * 99999)}` // Object.keys(houses).length + 1
-    }
-
-    const friendlyName = getFriendlyName()
-
-    dispatchAddHouse({
-      houseId: id,
-      systemId,
-      houseTypeId,
-      dnas,
-      position,
-      friendlyName,
-      activeElementMaterials: {},
-      rotation: 0,
-    })
-  })
-
-  useAddHouseListener(addHouse)
 
   useDeleteHouseListener(({ houseId }) => {
     if (!rootRef.current) return
@@ -136,4 +79,6 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     invalidate()
   })
+
+  useRequestSceneEventListener(rootRef)
 }

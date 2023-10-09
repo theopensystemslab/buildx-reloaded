@@ -131,13 +131,11 @@ const useOnDragStretchZ = () => {
     renderOBB(obb, scene)
 
     for (let neighbour of lengthWiseNeighbours) {
-      console.log(`neighbour`)
       if (
         neighbour.userData
           .unsafeGetActiveLayoutGroup()
           .userData.obb.intersectsOBB(obb)
       ) {
-        console.log(`collision`)
         return true
       }
     }

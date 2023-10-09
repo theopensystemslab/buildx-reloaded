@@ -70,6 +70,32 @@ export const useGetHouseModules = () => {
     )
 }
 
+export const useGetFriendlyName = () => {
+  const houses = useHouses()
+
+  const currentNames = pipe(
+    houses,
+    A.map((x) => x.friendlyName)
+  )
+  const findUniqueName = (name: string, existingNames: string[]): string => {
+    let uniqueName = name
+    let counter = 1
+
+    while (existingNames.includes(uniqueName)) {
+      uniqueName = `${name} ${counter}`
+      counter++
+    }
+
+    return uniqueName
+  }
+
+  return () => {
+    const baseName = "Building"
+    const newName = findUniqueName(baseName, currentNames)
+    return newName
+  }
+}
+
 class UserDatabase extends Dexie {
   houses: Dexie.Table<House, string>
 
