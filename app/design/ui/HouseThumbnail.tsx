@@ -57,14 +57,21 @@ const HouseThumbnail = ({ houseType }: Props) => {
         systemId,
       })()
 
-      const collisionsCheck = () => {
-        const nearNeighbours =
-          houseTransformsGroup.userData.computeNearNeighbours()
+      const collisionsCheck = () =>
+        pipe(
+          maybeWorldGroup,
+          O.match(
+            () => false,
+            (worldGroup) => {
+              const nearNeighbours =
+                houseTransformsGroup.userData.computeNearNeighbours(worldGroup)
 
-        console.log({ nearNeighbours })
-
-        return houseTransformsGroup.userData.checkCollisions(nearNeighbours)
-      }
+              return houseTransformsGroup.userData.checkCollisions(
+                nearNeighbours
+              )
+            }
+          )
+        )
 
       const MAX_T = 99
       let t = 0 // parameter for the spiral
@@ -77,6 +84,11 @@ const HouseThumbnail = ({ houseType }: Props) => {
 
         // Move the houseTransformsGroup to new position
         houseTransformsGroup.position.set(x, 0, z)
+        houseTransformsGroup.userData
+          .unsafeGetActiveLayoutGroup()
+          .userData.updateBBs()
+
+        t += 1 // Increment t by an amount to ensure the loop can exit
       } while (t < MAX_T && collisionsCheck())
 
       if (t >= MAX_T) throw new Error(`Infinite collision!`)

@@ -78,7 +78,7 @@ export type HouseTransformsGroupUserData = {
   dbSync: (input?: { init: boolean }) => Promise<void>
   resetMaterials: () => void
   updateHandlesGroupZ: () => void
-  computeNearNeighbours: () => HouseTransformsGroup[]
+  computeNearNeighbours: (worldGroup?: Group) => HouseTransformsGroup[]
   computeLengthWiseNeighbours: () => HouseTransformsGroup[]
   checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
 }
@@ -112,7 +112,7 @@ export type HouseLayoutGroupUserData = {
   initStretchZHandles: () => void
   updateLength: () => void
   updateActiveColumnGroupCount: (n: number) => void
-  updateDnas: () => Promise<void>
+  updateDnas: () => void
   updateBBs: () => void
   renderBBs: () => void
 }

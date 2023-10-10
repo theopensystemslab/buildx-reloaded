@@ -1,6 +1,6 @@
 import { liveQuery } from "dexie"
-import { flow, pipe } from "fp-ts/lib/function"
-import { Group, Plane, Vector3 } from "three"
+import { flow, identity, pipe } from "fp-ts/lib/function"
+import { Group, Object3D, Plane, Vector3 } from "three"
 import { Element } from "../../../../../server/data/elements"
 import layoutsDB, {
   ColumnLayout,
@@ -104,8 +104,6 @@ export const createHouseTransformsGroup = ({
 
     const { systemId, houseTypeId, houseId, friendlyName } =
       houseTransformsGroup.userData
-
-    console.log({ houseId, friendlyName })
 
     await Promise.all([
       init
@@ -403,10 +401,16 @@ export const createHouseTransformsGroup = ({
     activeElementMaterials[ifcTag] = specification
   }
 
-  const computeNearNeighbours = (): HouseTransformsGroup[] =>
+  const computeNearNeighbours = (
+    worldGroup?: Object3D
+  ): HouseTransformsGroup[] =>
     pipe(
       houseTransformsGroup.parent,
       O.fromNullable,
+      O.match(
+        () => O.fromNullable(worldGroup),
+        (x) => O.some(x)
+      ),
       O.map((scene) =>
         pipe(
           scene.children,
