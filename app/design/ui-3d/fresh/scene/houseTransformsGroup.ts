@@ -15,6 +15,7 @@ import { getModeBools } from "../../../state/siteCtx"
 import {
   findAllGuardDown,
   findFirstGuardAcross,
+  findFirstGuardUp,
   getActiveHouseUserData,
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
@@ -92,40 +93,6 @@ export const createHouseTransformsGroup = ({
     new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
     new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
   ]
-
-  const dbSync = async (input?: { init: boolean }) => {
-    const { init } = input ?? { init: false }
-
-    const rotation = houseTransformsGroup.rotation.y
-    const position = houseTransformsGroup.position
-    const dnas = houseTransformsGroup.userData.activeLayoutDnas
-    const activeElementMaterials =
-      houseTransformsGroup.userData.activeElementMaterials
-
-    const { systemId, houseTypeId, houseId, friendlyName } =
-      houseTransformsGroup.userData
-
-    await Promise.all([
-      init
-        ? userDB.houses.add({
-            systemId,
-            houseId,
-            houseTypeId,
-            activeElementMaterials,
-            dnas,
-            position,
-            rotation,
-            friendlyName,
-          })
-        : userDB.houses.update(houseId, {
-            dnas,
-            position,
-            rotation,
-            activeElementMaterials,
-          }),
-      getLayoutsWorker().getLayout({ systemId, dnas }),
-    ])
-  }
 
   const handlesGroup = new Group() as HouseTransformsHandlesGroup
 
@@ -263,21 +230,10 @@ export const createHouseTransformsGroup = ({
   }
 
   const updateTransforms = () => {
-    const rotation = houseTransformsGroup.rotation.y
-    const position = houseTransformsGroup.position
-
-    userDB.houses.update(houseId, {
-      position,
-      rotation,
-    })
-
-    pipe(
-      houseTransformsGroup,
-      getActiveLayoutGroup,
-      O.map((activeLayoutGroup) => {
-        activeLayoutGroup.userData.updateBBs()
-      })
-    )
+    houseTransformsGroup.userData.updateDB()
+    houseTransformsGroup.userData
+      .unsafeGetActiveLayoutGroup()
+      .userData.updateBBs()
   }
 
   const refreshAltSectionTypeLayouts = async () => {
@@ -483,6 +439,63 @@ export const createHouseTransformsGroup = ({
       O.getOrElse((): HouseTransformsGroup[] => [])
     )
 
+  const updateDB = async () => {
+    const rotation = houseTransformsGroup.rotation.y
+    const position = houseTransformsGroup.position
+    const dnas = houseTransformsGroup.userData.activeLayoutDnas
+    const activeElementMaterials =
+      houseTransformsGroup.userData.activeElementMaterials
+
+    const { systemId, houseTypeId, houseId, friendlyName } =
+      houseTransformsGroup.userData
+
+    await Promise.all([
+      userDB.houses.update(houseId, {
+        dnas,
+        position,
+        rotation,
+        activeElementMaterials,
+      }),
+      getLayoutsWorker().getLayout({ systemId, dnas }),
+    ])
+  }
+
+  const addToDB = async () => {
+    const rotation = houseTransformsGroup.rotation.y
+    const position = houseTransformsGroup.position
+    const dnas = houseTransformsGroup.userData.activeLayoutDnas
+    const activeElementMaterials =
+      houseTransformsGroup.userData.activeElementMaterials
+
+    const { systemId, houseTypeId, houseId, friendlyName } =
+      houseTransformsGroup.userData
+
+    await Promise.all([
+      userDB.houses.add({
+        systemId,
+        houseId,
+        houseTypeId,
+        activeElementMaterials,
+        dnas,
+        position,
+        rotation,
+        friendlyName,
+      }),
+      getLayoutsWorker().getLayout({ systemId, dnas }),
+    ])
+  }
+
+  const deleteHouse = () => {
+    pipe(
+      houseTransformsGroup.parent,
+      O.fromNullable,
+      O.map((worldGroup) => {
+        worldGroup.remove(houseTransformsGroup)
+        userDB.houses.delete(houseId)
+      })
+    )
+  }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -498,7 +511,7 @@ export const createHouseTransformsGroup = ({
     activeElementMaterials,
     updateHandlesGroupZ,
     pushElement,
-    dbSync,
+    updateDB,
     updateActiveLayoutDnas,
     initRotateAndStretchXHandles,
     updateXStretchHandleLengths,
@@ -515,6 +528,8 @@ export const createHouseTransformsGroup = ({
     computeNearNeighbours,
     computeLengthWiseNeighbours,
     checkCollisions,
+    addToDB: addToDB,
+    deleteHouse,
   }
 
   houseTransformsGroup.userData =

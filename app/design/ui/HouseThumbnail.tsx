@@ -112,7 +112,7 @@ const HouseThumbnail = ({ houseType }: Props) => {
           O.map((worldGroup) => {
             worldGroup.add(houseTransformsGroup)
             houseTransformsGroup.userData.friendlyName = getFriendlyName()
-            houseTransformsGroup.userData.dbSync({ init: true })
+            houseTransformsGroup.userData.addToDB()
 
             setSidebar(false)
             invalidate()

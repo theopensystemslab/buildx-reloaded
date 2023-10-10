@@ -51,6 +51,7 @@ export const UserDataTypeEnum = z.enum([
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
 export type HouseTransformsGroupUserData = {
+  // props
   type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
   systemId: string
   houseId: string
@@ -62,25 +63,32 @@ export type HouseTransformsGroupUserData = {
   materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
   elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
+  // materials
+  resetMaterials: () => void
   pushElement: (element: Element) => ThreeMaterial
   changeMaterial: (ifcTag: string, specification: string) => void
-  initRotateAndStretchXHandles: () => void
+  // layouts
   updateActiveLayoutDnas: (x: string[]) => void
-  updateXStretchHandleLengths: () => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
   unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
+  refreshAltSectionTypeLayouts: () => void
+  // handles
+  updateXStretchHandleLengths: () => void
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
   setRotateHandlesVisible: (bool?: boolean) => void
-  updateTransforms: () => void
-  refreshAltSectionTypeLayouts: () => void
-  dbSync: (input?: { init: boolean }) => Promise<void>
-  resetMaterials: () => void
+  initRotateAndStretchXHandles: () => void
   updateHandlesGroupZ: () => void
+  // collisions
   computeNearNeighbours: (worldGroup?: Group) => HouseTransformsGroup[]
   computeLengthWiseNeighbours: () => HouseTransformsGroup[]
   checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
+  updateTransforms: () => void
+  // database
+  updateDB: () => Promise<void>
+  addToDB: () => Promise<void>
+  deleteHouse: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {

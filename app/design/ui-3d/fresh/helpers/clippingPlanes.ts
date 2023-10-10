@@ -14,26 +14,6 @@ import {
 } from "./sceneQueries"
 
 const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
-  const initClippingPlanes = (houseId: string) => {
-    if (!rootRef.current) return
-
-    pipe(
-      rootRef.current.children,
-      A.filter(isHouseTransformsGroup),
-      A.findFirst((x) => x.userData.houseId === houseId),
-      O.map((houseTransformsGroup) => {
-        const { clippingPlanes } =
-          houseTransformsGroup.userData as HouseTransformsGroupUserData
-
-        houseTransformsGroup.traverse((x) => {
-          if (x.userData.type === UserDataTypeEnum.Enum.ElementMesh) {
-            ;((x as Mesh).material as Material).clippingPlanes = clippingPlanes
-          }
-        })
-      })
-    )
-  }
-
   const setYCut = (houseId: string, y: number) => {
     if (!rootRef.current) return
 
@@ -87,7 +67,7 @@ const useClippingPlaneHelpers = (rootRef: RefObject<Group>) => {
     )
   }
 
-  return { setYCut, initClippingPlanes, houseLevelIndexToCutHeight }
+  return { setYCut, houseLevelIndexToCutHeight }
 }
 
 export default useClippingPlaneHelpers

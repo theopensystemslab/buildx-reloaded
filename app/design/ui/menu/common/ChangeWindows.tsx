@@ -189,7 +189,7 @@ const ChangeWindowsOptions = (props: Props) => {
       .unsafeGetActiveLayoutGroup()
       .userData.updateDnas()
 
-    houseTransformsGroup.userData.dbSync().then(() => {
+    houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
 

@@ -6,14 +6,12 @@ import { Group } from "three"
 import { HouseType } from "../../../../../server/data/houseTypes"
 import userDB, { House } from "../../../../db/user"
 import { A, O } from "../../../../utils/functions"
-import { setSidebar } from "../../../state/settings"
-import useClippingPlaneHelpers from "../helpers/clippingPlanes"
-import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
 import { setRaycasting } from "../../../../utils/three"
+import { setSidebar } from "../../../state/settings"
+import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
-const DELETE_HOUSE_EVENT = "DeleteHouseEvent"
 const REQUEST_SCENE_EVENT = "RequestSceneEvent"
 
 export const dispatchAddHouseIntent = (detail: HouseType) =>
@@ -37,46 +35,18 @@ export const dispatchAddHouse = (detail: House) =>
 export const useAddHouseListener = (f: (eventDetail: House) => void) =>
   useEvent(ADD_HOUSE_EVENT, ({ detail }) => f(detail))
 
-type DeleteHouseDetail = {
-  houseId: string
-}
-
-export const dispatchDeleteHouse = (detail: DeleteHouseDetail) =>
-  dispatchEvent(new CustomEvent(DELETE_HOUSE_EVENT, { detail }))
-
-export const useDeleteHouseListener = (
-  f: (eventDetail: DeleteHouseDetail) => void
-) => useEvent(DELETE_HOUSE_EVENT, ({ detail }) => f(detail))
-
 export const useRequestSceneEventListener = (rootRef: RefObject<Group>) =>
   useEvent(REQUEST_SCENE_EVENT, () => O.fromNullable(rootRef.current))
 
 export const dispatchRequestScene = () =>
   void dispatchEvent(new CustomEvent(REQUEST_SCENE_EVENT))
 
-export const useDeleteHouses = () => {}
-
 export const useHousesEvents = (rootRef: RefObject<Group>) => {
-  const { initClippingPlanes } = useClippingPlaneHelpers(rootRef)
+  useRequestSceneEventListener(rootRef)
 
   const cleanup = () => {
     rootRef.current?.clear()
   }
-
-  useDeleteHouseListener(({ houseId }) => {
-    if (!rootRef.current) return
-
-    const target = rootRef.current.children.find((x) => {
-      return x.userData.houseId === houseId
-    })
-
-    if (target) {
-      rootRef.current.remove(target)
-      userDB.houses.delete(houseId)
-    }
-
-    invalidate()
-  })
 
   const addHouse = async (house: House) => {
     if (!rootRef.current) return
@@ -96,7 +66,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     userDB.houses.put(house)
 
-    initClippingPlanes(houseId)
+    // initClippingPlanes(houseId)
   }
 
   const initHouses = () => {
@@ -113,6 +83,4 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(initHouses, [])
-
-  useRequestSceneEventListener(rootRef)
 }

@@ -56,7 +56,7 @@ const ChangeMaterialOptions = (props: Props) => {
             newMaterial.specification
           )
 
-          houseTransformsGroup.userData.dbSync()
+          houseTransformsGroup.userData.updateDB()
 
           close()
         }}

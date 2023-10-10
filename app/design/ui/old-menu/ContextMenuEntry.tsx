@@ -1,7 +1,6 @@
 import { Reset, TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { Fragment, useState } from "react"
-import { useHouseTypes } from "~/data/houseTypes"
 import scope, { useScope } from "~/design/state/scope"
 import { Pencil, TextCursor } from "~/ui/icons"
 import systemsDB from "../../../db/systems"
@@ -14,13 +13,11 @@ import {
   getModeBools,
   useSiteCtx,
 } from "../../state/siteCtx"
-import { dispatchDeleteHouse } from "../../ui-3d/fresh/events/houses"
 import RenameForm from "../../ui/RenameForm"
 import ContextMenu, { ContextMenuProps } from "../menu/common/ContextMenu"
 import ContextMenuButton from "../menu/common/ContextMenuButton"
 import AddRemoveLevels from "./interactions/AddRemoveLevels"
 import ChangeLayouts from "./interactions/ChangeLayouts"
-import ChangeLevelType from "../menu/building/ChangeLevelType"
 import ChangeMaterials from "./interactions/ChangeMaterials"
 import ChangeWindows from "./interactions/ChangeWindows"
 import Exporters from "./interactions/Exporters"
@@ -70,9 +67,9 @@ const ContextMenuEntry = ({ x: pageX, y: pageY }: { x: number; y: number }) => {
   }
 
   const deleteBuilding = () => {
-    dispatchDeleteHouse({
-      houseId,
-    })
+    // dispatchDeleteHouse({
+    //   houseId,
+    // })
     scope.selected = null
     exitBuildingMode()
     props.onClose?.()
