@@ -1,23 +1,43 @@
 import type { HouseType } from "@/server/data/houseTypes"
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
-import { useState } from "react"
+import { useMemo } from "react"
 import { suspend } from "suspend-react"
+import { Group } from "three"
+import { useGetFriendlyName, useHouses } from "../../db/user"
 import { O } from "../../utils/functions"
+import { setSidebar } from "../state/settings"
 import { useScene } from "../ui-3d/fresh/FreshApp"
+import { findFirstGuardDown } from "../ui-3d/fresh/helpers/sceneQueries"
 import { createHouseTransformsGroup } from "../ui-3d/fresh/scene/houseTransformsGroup"
 import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
-import userDB, { useGetFriendlyName } from "../../db/user"
 
 type Props = {
   houseType: HouseType
 }
 
 const HouseThumbnail = ({ houseType }: Props) => {
-  const [count, setCount] = useState(0)
-
   const scene = useScene()
 
+  const maybeWorldGroup = useMemo(
+    () =>
+      pipe(
+        scene,
+        O.fromNullable,
+        O.chain((scene) =>
+          pipe(
+            scene,
+            findFirstGuardDown((x): x is Group => {
+              return x.name === "WORLD"
+            })
+          )
+        )
+      ),
+    [scene]
+  )
+
+  const houses = useHouses()
   const getFriendlyName = useGetFriendlyName()
 
   const maybeHouseTransformsGroup: O.Option<HouseTransformsGroup> =
@@ -27,7 +47,7 @@ const HouseThumbnail = ({ houseType }: Props) => {
       const { dnas, id: houseTypeId, systemId } = houseType
 
       const houseTransformsGroup = await createHouseTransformsGroup({
-        friendlyName: "",
+        friendlyName: "", // getFriendlyName(),
         activeElementMaterials: {},
         position: { x: 0, y: 0, z: 0 },
         dnas,
@@ -62,23 +82,27 @@ const HouseThumbnail = ({ houseType }: Props) => {
       if (t >= MAX_T) throw new Error(`Infinite collision!`)
 
       return O.some(houseTransformsGroup)
-    }, [houseType, count, scene])
+    }, [houseType, houses.length, scene])
 
   const addHouse = () => {
     if (!scene) return
 
     pipe(
       maybeHouseTransformsGroup,
-      O.map((houseTransformsGroup) => {
-        scene.add(houseTransformsGroup)
+      O.map((houseTransformsGroup) =>
+        pipe(
+          maybeWorldGroup,
+          O.map((worldGroup) => {
+            worldGroup.add(houseTransformsGroup)
+            houseTransformsGroup.userData.friendlyName = getFriendlyName()
+            houseTransformsGroup.userData.dbSync({ init: true })
 
-        houseTransformsGroup.userData.friendlyName = getFriendlyName()
-        userDB
-        // templateHouseTransformsGroup.position.set(0, 0, 0)
-      })
+            setSidebar(false)
+            invalidate()
+          })
+        )
+      )
     )
-
-    setCount((count) => count + 1)
   }
 
   return (

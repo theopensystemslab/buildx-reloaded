@@ -63,7 +63,7 @@ const FreshApp = () => {
 
   return (
     <Fragment>
-      <group ref={rootRef} {...bindAll()}></group>
+      <group ref={rootRef} name="WORLD" {...bindAll()}></group>
       <XZPlane />
     </Fragment>
   )

@@ -14,12 +14,12 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   Object3D,
-  Scene,
   SRGBColorSpace,
+  Scene,
   Vector3,
 } from "three"
-import { CameraLayer, RaycasterLayer } from "../design/state/constants"
 import { Material } from "../../server/data/materials"
+import { CameraLayer, RaycasterLayer } from "../design/state/constants"
 import dimensions, { getHouseCenter } from "../design/state/dimensions"
 import houses from "../design/state/houses"
 

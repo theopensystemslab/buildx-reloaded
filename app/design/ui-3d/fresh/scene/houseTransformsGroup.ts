@@ -7,7 +7,7 @@ import layoutsDB, {
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
-import { A, O, R, S, someOrError, T } from "../../../../utils/functions"
+import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
@@ -29,6 +29,7 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
+  UserDataTypeEnum,
   isActiveLayoutGroup,
   isElementMesh,
   isHouseLayoutGroup,
@@ -37,7 +38,6 @@ import {
   isRotateHandlesGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
-  UserDataTypeEnum,
 } from "./userData"
 
 export const BIG_CLIP_NUMBER = 999
@@ -93,20 +93,38 @@ export const createHouseTransformsGroup = ({
     new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
   ]
 
-  const dbSync = async () => {
+  const dbSync = async (input?: { init: boolean }) => {
+    const { init } = input ?? { init: false }
+
     const rotation = houseTransformsGroup.rotation.y
     const position = houseTransformsGroup.position
     const dnas = houseTransformsGroup.userData.activeLayoutDnas
     const activeElementMaterials =
       houseTransformsGroup.userData.activeElementMaterials
 
+    const { systemId, houseTypeId, houseId, friendlyName } =
+      houseTransformsGroup.userData
+
+    console.log({ houseId, friendlyName })
+
     await Promise.all([
-      userDB.houses.update(houseId, {
-        dnas,
-        position,
-        rotation,
-        activeElementMaterials,
-      }),
+      init
+        ? userDB.houses.add({
+            systemId,
+            houseId,
+            houseTypeId,
+            activeElementMaterials,
+            dnas,
+            position,
+            rotation,
+            friendlyName,
+          })
+        : userDB.houses.update(houseId, {
+            dnas,
+            position,
+            rotation,
+            activeElementMaterials,
+          }),
       getLayoutsWorker().getLayout({ systemId, dnas }),
     ])
   }
@@ -173,7 +191,7 @@ export const createHouseTransformsGroup = ({
 
   const updateActiveLayoutDnas = (nextDnas: string[]) => {
     houseTransformsGroup.userData.activeLayoutDnas = nextDnas
-    return dbSync()
+    // return dbSync()
   }
 
   const getActiveLayoutGroup = (): O.Option<HouseLayoutGroup> =>
