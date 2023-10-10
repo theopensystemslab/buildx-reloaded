@@ -12,6 +12,9 @@ import { useScene } from "../ui-3d/fresh/FreshApp"
 import { findFirstGuardDown } from "../ui-3d/fresh/helpers/sceneQueries"
 import { createHouseTransformsGroup } from "../ui-3d/fresh/scene/houseTransformsGroup"
 import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
+import { setRaycasting } from "../../utils/three"
+import Image from "next/image"
+import { getSystemsWorker } from "../../workers"
 
 type Props = {
   houseType: HouseType
@@ -56,6 +59,8 @@ const HouseThumbnail = ({ houseType }: Props) => {
         rotation: 0,
         systemId,
       })()
+
+      setRaycasting(houseTransformsGroup, true)
 
       const collisionsCheck = () =>
         pipe(

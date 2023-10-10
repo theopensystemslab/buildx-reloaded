@@ -1,19 +1,15 @@
 import { invalidate } from "@react-three/fiber"
-import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
-import { nanoid } from "nanoid"
 import { RefObject, useEffect } from "react"
 import { useEvent } from "react-use"
-import { Group, Vector3 } from "three"
+import { Group } from "three"
 import { HouseType } from "../../../../../server/data/houseTypes"
-import layoutsDB from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
 import { A, O } from "../../../../utils/functions"
-import { floor } from "../../../../utils/math"
-import { setRaycasting } from "../../../../utils/three"
+import { setSidebar } from "../../../state/settings"
 import useClippingPlaneHelpers from "../helpers/clippingPlanes"
 import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
-import { setSidebar } from "../../../state/settings"
+import { setRaycasting } from "../../../../utils/three"
 
 const ADD_HOUSE_INTENT_EVENT = "AddHouseIntentEvent"
 const ADD_HOUSE_EVENT = "AddHouseEvent"
@@ -58,6 +54,8 @@ export const useRequestSceneEventListener = (rootRef: RefObject<Group>) =>
 export const dispatchRequestScene = () =>
   void dispatchEvent(new CustomEvent(REQUEST_SCENE_EVENT))
 
+export const useDeleteHouses = () => {}
+
 export const useHousesEvents = (rootRef: RefObject<Group>) => {
   const { initClippingPlanes } = useClippingPlaneHelpers(rootRef)
 
@@ -79,6 +77,42 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     invalidate()
   })
+
+  const addHouse = async (house: House) => {
+    if (!rootRef.current) return
+
+    const { houseId, position, rotation } = house
+
+    const houseTransformsGroup = await createHouseTransformsGroup(house)()
+
+    houseTransformsGroup.position.set(position.x, position.y, position.z)
+    houseTransformsGroup.rotation.set(0, rotation, 0)
+
+    setRaycasting(houseTransformsGroup, true)
+
+    rootRef.current.add(houseTransformsGroup)
+
+    invalidate()
+
+    userDB.houses.put(house)
+
+    initClippingPlanes(houseId)
+  }
+
+  const initHouses = () => {
+    userDB.houses.toArray().then((houses) => {
+      // this is new
+      if (houses.length === 0) setSidebar(true)
+      pipe(houses, A.map(addHouse))
+    })
+
+    invalidate()
+
+    return cleanup
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(initHouses, [])
 
   useRequestSceneEventListener(rootRef)
 }
