@@ -83,6 +83,7 @@ const useOnDragMove = () => {
         moveData.current = null
         return
       }
+      // mid/progress handler
       default: {
         if (!moveData.current) {
           console.warn(`no moveData.current in onDragMove`)
@@ -104,17 +105,18 @@ const useOnDragMove = () => {
 
         const { obb } = layoutGroup.userData
 
+        // move OBB first
         obb.center.add(delta)
 
+        // collision detect
         const collision =
           houseTransformsGroup.userData.checkCollisions(nearNeighbours)
 
+        // if collision, reverse the OBB position delta addition and return
         if (collision) {
           obb.center.sub(delta)
           return
         }
-
-        layoutGroup.userData.updateBBs()
 
         moveData.current.lastPoint = thisPoint
 
@@ -122,6 +124,8 @@ const useOnDragMove = () => {
 
         const dts = point0.distanceToSquared(thisPoint)
         const threshold = (AABB_OFFSET - 1) ** 2
+
+        layoutGroup.userData.updateBBs()
 
         if (dts >= threshold * thresholdFactor) {
           moveData.current.nearNeighbours =

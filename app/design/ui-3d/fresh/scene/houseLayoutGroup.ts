@@ -38,7 +38,7 @@ import {
   UserDataTypeEnum,
 } from "./userData"
 
-export const AABB_OFFSET = 1
+export const AABB_OFFSET = 10
 
 export const obbMaterial = new MeshBasicMaterial({
   color: "blue",
@@ -233,7 +233,7 @@ export const createHouseLayoutGroup = ({
 
                 const { x, y, z } = houseTransformsGroup.position
 
-                const scaleFactor = 1.1
+                const scaleFactor = 1.08
 
                 const center = new Vector3(x, y + height / 2, z)
                 const halfSize = new Vector3(

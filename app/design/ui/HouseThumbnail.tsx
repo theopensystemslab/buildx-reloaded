@@ -93,10 +93,10 @@ const HouseThumbnail = ({ houseType }: Props) => {
 
         // Move the houseTransformsGroup to new position
         houseTransformsGroup.position.set(x, 0, z)
+
         houseTransformsGroup.userData
           .unsafeGetActiveLayoutGroup()
           .userData.updateBBs()
-
         t += 1 // Increment t by an amount to ensure the loop can exit
       } while (t < MAX_T && collisionsCheck())
 
@@ -115,6 +115,11 @@ const HouseThumbnail = ({ houseType }: Props) => {
           maybeWorldGroup,
           O.map((worldGroup) => {
             worldGroup.add(houseTransformsGroup)
+
+            houseTransformsGroup.userData
+              .unsafeGetActiveLayoutGroup()
+              .userData.updateBBs()
+
             houseTransformsGroup.userData.friendlyName = getFriendlyName()
             houseTransformsGroup.userData.addToDB()
 
@@ -124,6 +129,7 @@ const HouseThumbnail = ({ houseType }: Props) => {
             )
 
             setSidebar(false)
+
             invalidate()
           })
         )
