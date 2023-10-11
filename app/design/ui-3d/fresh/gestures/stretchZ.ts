@@ -333,10 +333,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex =
               endColumnGroup.userData.columnIndex - 1
             stretchZProgressDataRef.current.fenceIndex++
-
-            // if (nextFence.z < maxLength) {
-            //   addVanillaCheckCollision(side)
-            // }
           }
         }
       }
@@ -386,11 +382,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex = 1
 
             stretchZProgressDataRef.current.fenceIndex++
-
-            // // naive
-            // if (nextFence.z < maxLength) {
-            //   addVanillaCheckCollision(side)
-            // }
           }
         }
       }
