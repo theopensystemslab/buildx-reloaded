@@ -241,6 +241,9 @@ export const createHouseLayoutGroup = ({
                   height / 2,
                   length / 2
                 ).multiplyScalar(scaleFactor)
+
+                houseTransformsGroup.updateMatrix()
+
                 const rotation = new Matrix3().setFromMatrix4(
                   new Matrix4().extractRotation(houseTransformsGroup.matrix)
                 )
