@@ -185,6 +185,7 @@ const useOnDragStretchX = () => {
     const houseTransformsGroup =
       activeLayoutGroup.parent as HouseTransformsGroup
     houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
+    houseTransformsGroup.userData.updateHandles()
     houseTransformsGroup.userData.setZStretchHandlesVisible(true)
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()

@@ -15,6 +15,7 @@ import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
 import { setRaycasting } from "../../utils/three"
 import Image from "next/image"
 import { getSystemsWorker } from "../../workers"
+import siteCtx, { SiteCtxModeEnum } from "../state/siteCtx"
 
 type Props = {
   houseType: HouseType
