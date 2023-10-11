@@ -1,19 +1,18 @@
 import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
-import { Fragment, useEffect, useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import IconButton from "~/ui/IconButton"
 import IconMenu from "~/ui/IconMenu"
-import { Menu, SectionCuts } from "~/ui/icons"
 import UniversalMenu from "~/ui/UniversalMenu"
+import { Menu, SectionCuts } from "~/ui/icons"
 import {
   setGroundPlaneEnabled,
   setSidebar,
   useDesignSettings,
   useVerticalCuts,
 } from "../state/settings"
-import SiteSidebar from "./SiteSidebar"
 // import Checklist from "./Checklist"
-import { pipe } from "fp-ts/lib/function"
 import { keys } from "fp-ts/lib/Record"
+import { pipe } from "fp-ts/lib/function"
 import usePortal from "react-cool-portal"
 import Checklist from "~/ui/Checklist"
 import Radio from "~/ui/Radio"
@@ -30,18 +29,18 @@ import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
 import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import ExitMode from "./ExitMode"
-import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
+import ObjectsSidebar from "./ObjectsSidebar"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
-import MetricsWidget from "./metrics/MetricsWidget"
-import { useHouses } from "../../db/user"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
+import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
+import MetricsWidget from "./metrics/MetricsWidget"
 
 type Props = {
   controlsEnabled: boolean
 }
 
 const HtmlUi = (props: Props) => {
-  const { sidebar, groundPlaneEnabled: groundPlane } = useDesignSettings()
+  const { groundPlaneEnabled: groundPlane } = useDesignSettings()
   const orthographic = useOrthographic()
 
   // const { mapboxEnabled } = useMapboxStore()
@@ -93,9 +92,7 @@ const HtmlUi = (props: Props) => {
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
-        {/* <pre>{JSON.stringify(preTs, null, 2)}</pre>
-        <pre>{JSON.stringify(postTs, null, 2)}</pre> */}
-        {/* <pre>{JSON.stringify(ctx, null, 2)}</pre> */}
+        {/* <pre>{JSON.stringify(mode, null, 2)}</pre> */}
       </div>
       <HeaderEndPortal>
         <div className="flex items-center justify-end">
@@ -209,7 +206,7 @@ const HtmlUi = (props: Props) => {
 
       <MetricsWidget />
 
-      <SiteSidebar open={sidebar} close={() => void setSidebar(false)} />
+      <ObjectsSidebar />
 
       <UniversalMenu
         open={universalMenu}

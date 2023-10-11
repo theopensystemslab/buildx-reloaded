@@ -185,16 +185,13 @@ const ChangeWindowsOptions = (props: Props) => {
 
     moduleGroup.userData.setThisModuleGroupVisible()
 
-    pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
-      O.map((activeLayoutGroup) => {
-        activeLayoutGroup.userData.updateDnas().then(() => {
-          houseTransformsGroup.userData.dbSync().then(() => {
-            houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-          })
-        })
-      })
-    )
+    houseTransformsGroup.userData
+      .unsafeGetActiveLayoutGroup()
+      .userData.updateDnas()
+
+    houseTransformsGroup.userData.updateDB().then(() => {
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+    })
 
     close()
   }

@@ -1,4 +1,5 @@
 import {
+  Box3,
   BufferGeometry,
   Group,
   Mesh,
@@ -14,13 +15,14 @@ import { O } from "../../../../utils/functions"
 import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import { EnrichedMaterial } from "../systems"
+import { HandleTypeEnum } from "./houseTransformsGroup"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
-//   -> Stretch X Handle groups
+//   -> HouseTransformsHandlesGroup
 //     -> Stretch X Handle meshes
-//   -> Rotate Handles group
-//     -> Rotate Handles meshes
+//     -> Rotate Handles group
+//       -> Rotate Handles meshes
 //   -> HouseLayoutGroup's as children
 //      (alternative layouts;
 //         visibility/raycasting disabled
@@ -50,6 +52,7 @@ export const UserDataTypeEnum = z.enum([
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
 export type HouseTransformsGroupUserData = {
+  // props
   type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
   systemId: string
   houseId: string
@@ -61,21 +64,35 @@ export type HouseTransformsGroupUserData = {
   materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
   elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
+  // materials
+  resetMaterials: () => void
   pushElement: (element: Element) => ThreeMaterial
   changeMaterial: (ifcTag: string, specification: string) => void
-  initRotateAndStretchXHandles: () => void
-  updateActiveLayoutDnas: (x: string[]) => Promise<void>
-  updateXStretchHandleLengths: () => void
+  // layouts
+  updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
+  unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
+  refreshAltSectionTypeLayouts: () => void
+  // handle init
+  initRotateAndStretchXHandles: () => void
+  // handle visibility
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
   setRotateHandlesVisible: (bool?: boolean) => void
+  switchHandlesVisibility: (value?: HandleTypeEnum | null) => void
+  // handle dimension sync
+  // updateXStretchHandleLengths: () => void
+  updateHandles: () => void
+  // collisions
+  computeNearNeighbours: (worldGroup?: Group) => HouseTransformsGroup[]
+  computeLengthWiseNeighbours: () => HouseTransformsGroup[]
+  checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
   updateTransforms: () => void
-  refreshAltSectionTypeLayouts: () => void
-  dbSync: () => Promise<void>
-  resetMaterials: () => void
-  updateHandlesGroupZ: () => void
+  // database
+  updateDB: () => Promise<void>
+  addToDB: () => Promise<void>
+  deleteHouse: () => void
 }
 
 export type HouseTransformsHandlesGroupUserData = {
@@ -98,6 +115,7 @@ export type HouseLayoutGroupUserData = {
   vanillaColumn: VanillaColumn
   levelTypes: string[]
   obb: OBB
+  aabb: Box3
   height: number
   length: number
   width: number
@@ -106,8 +124,9 @@ export type HouseLayoutGroupUserData = {
   initStretchZHandles: () => void
   updateLength: () => void
   updateActiveColumnGroupCount: (n: number) => void
-  updateDnas: () => Promise<void>
-  updateOBB: () => void
+  updateDnas: () => void
+  updateBBs: () => void
+  renderBBs: () => void
 }
 
 export type ColumnGroupUserData = {
@@ -149,7 +168,8 @@ export type StretchHandleGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleGroup
   axis: "z" | "x"
   side: 1 | -1
-  updateXHandleLength: (length: number) => void
+  update: () => void
+  // updateXHandleLength: (length: number) => void
 }
 
 export type StretchHandleMeshUserData = {
@@ -158,6 +178,7 @@ export type StretchHandleMeshUserData = {
 
 export type RotateHandlesGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.RotateHandlesGroup
+  update: () => void
 }
 
 export type RotateHandleMeshUserData = {

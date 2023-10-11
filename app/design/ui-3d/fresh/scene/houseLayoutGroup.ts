@@ -1,12 +1,22 @@
+import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Group, Matrix3, Vector3 } from "three"
+import {
+  Box3,
+  BoxGeometry,
+  Group,
+  Matrix3,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  Scene,
+  Vector3,
+} from "three"
 import { OBB } from "three-stdlib"
 import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
 import { DEBUG } from "../../../state/constants"
 import siteCtx, { getModeBools } from "../../../state/siteCtx"
-import { renderOBB } from "../dimensions"
 import {
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
@@ -22,10 +32,25 @@ import {
   HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
+  isHouseTransformsGroup,
   isModuleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
+
+export const AABB_OFFSET = 10
+
+export const obbMaterial = new MeshBasicMaterial({
+  color: "blue",
+  wireframe: true,
+  // transparent: true
+})
+
+const aabbMaterial = new MeshBasicMaterial({
+  color: "red",
+  wireframe: true,
+  // transparent: true
+})
 
 export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
@@ -80,6 +105,7 @@ export const createHouseLayoutGroup = ({
         0
       )
       const obb = new OBB()
+      const aabb = new Box3()
       const levelTypes = houseLayoutToLevelTypes(houseLayout)
 
       return pipe(
@@ -123,7 +149,7 @@ export const createHouseLayoutGroup = ({
               )
             )
 
-            houseLayoutGroup.userData.updateOBB()
+            houseLayoutGroup.userData.updateBBs()
           }
 
           const updateActiveColumnGroupCount = (n: number) => {
@@ -179,13 +205,10 @@ export const createHouseLayoutGroup = ({
 
             const { siteMode } = getModeBools(siteCtx.mode)
 
-            const { length: houseLength, width: houseWidth } =
-              houseLayoutGroup.userData
             const backStretchZHandleGroup = createStretchHandle({
               axis: "z",
               side: 1,
-              houseLength,
-              houseWidth,
+              houseTransformsGroup,
             })
             endColumnGroup.add(backStretchZHandleGroup)
             setVisible(backStretchZHandleGroup, !siteMode)
@@ -193,35 +216,159 @@ export const createHouseLayoutGroup = ({
             const frontStretchZHandleGroup = createStretchHandle({
               axis: "z",
               side: -1,
-              houseLength,
-              houseWidth,
+              houseTransformsGroup,
             })
             startColumnGroup.add(frontStretchZHandleGroup)
             setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
-          const updateOBB = () => {
+          const updateBBs = () => {
             const { width, height, length } = houseLayoutGroup.userData
 
-            const houseTransformsGroup =
-              houseLayoutGroup.parent as HouseTransformsGroup
+            pipe(
+              houseLayoutGroup.parent,
+              O.fromNullable,
+              O.map((houseTransformsGroup) => {
+                if (!isHouseTransformsGroup(houseTransformsGroup)) return
 
-            const { x, y, z } = houseTransformsGroup.position
+                const { x, y, z } = houseTransformsGroup.position
 
-            const center = new Vector3(x, y + height / 2, z)
-            const halfSize = new Vector3(width / 2, height / 2, length / 2)
-            const rotation = new Matrix3().setFromMatrix4(
-              houseTransformsGroup.matrix
+                const scaleFactor = 1.08
+
+                const center = new Vector3(x, y + height / 2, z)
+                const halfSize = new Vector3(
+                  width / 2,
+                  height / 2,
+                  length / 2
+                ).multiplyScalar(scaleFactor)
+
+                houseTransformsGroup.updateMatrix()
+
+                const rotation = new Matrix3().setFromMatrix4(
+                  new Matrix4().extractRotation(houseTransformsGroup.matrix)
+                )
+
+                houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
+
+                // Get the rotation matrix as a Matrix4
+                const rotationMatrix4 = new Matrix4().setFromMatrix3(
+                  houseLayoutGroup.userData.obb.rotation
+                )
+
+                // Initialize min and max vectors to extreme values
+                let min = new Vector3(Infinity, Infinity, Infinity)
+                let max = new Vector3(-Infinity, -Infinity, -Infinity)
+
+                // AABB corners, DELTA to make it bigger so we can pre-empt
+                // which houses to OBB-intersect-check
+                ;[
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    halfSize.y + AABB_OFFSET,
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    halfSize.y + AABB_OFFSET,
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    -(halfSize.y + AABB_OFFSET),
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    halfSize.y + AABB_OFFSET,
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    -(halfSize.y + AABB_OFFSET),
+                    halfSize.z + AABB_OFFSET
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    halfSize.y + AABB_OFFSET,
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    halfSize.x + AABB_OFFSET,
+                    -(halfSize.y + AABB_OFFSET),
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                  new Vector3(
+                    -(halfSize.x + AABB_OFFSET),
+                    -(halfSize.y + AABB_OFFSET),
+                    -(halfSize.z + AABB_OFFSET)
+                  ),
+                ].forEach((offset) => {
+                  offset.applyMatrix4(rotationMatrix4)
+                  offset.add(center)
+                  min.min(offset)
+                  max.max(offset)
+                })
+
+                // Set the AABB
+                houseLayoutGroup.userData.aabb.set(min, max)
+
+                if (DEBUG) {
+                  renderBBs()
+                }
+
+                invalidate()
+              })
+            )
+          }
+
+          const renderOBB = () =>
+            pipe(
+              houseTransformsGroup.parent,
+              O.fromNullable,
+              O.map((scene) => {
+                const size = obb.halfSize.clone().multiplyScalar(2)
+
+                if (houseLayoutGroup.userData.lastOBB)
+                  scene.remove(houseLayoutGroup.userData.lastOBB)
+
+                const geom = new BoxGeometry(size.x, size.y, size.z)
+                const mesh = new Mesh(geom, obbMaterial)
+                mesh.position.copy(obb.center)
+                mesh.setRotationFromMatrix(
+                  new Matrix4().setFromMatrix3(obb.rotation)
+                )
+                mesh.userData.type = "OBB"
+                scene.add(mesh)
+                houseLayoutGroup.userData.lastOBB = mesh
+              })
             )
 
-            houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
+          const renderAABB = () =>
+            pipe(
+              houseTransformsGroup.parent,
+              O.fromNullable,
+              O.map((scene) => {
+                const size = new Vector3()
+                aabb.getSize(size)
 
-            if (DEBUG && houseTransformsGroup.parent) {
-              renderOBB(
-                houseLayoutGroup.userData.obb,
-                houseTransformsGroup.parent
-              )
-            }
+                const center = new Vector3()
+                aabb.getCenter(center)
+
+                if (houseLayoutGroup.userData.lastAABB)
+                  scene.remove(houseLayoutGroup.userData.lastAABB)
+
+                const geom = new BoxGeometry(size.x, size.y, size.z)
+                const mesh = new Mesh(geom, aabbMaterial)
+                mesh.position.copy(center)
+                mesh.userData.type = "AABB"
+                scene.add(mesh)
+                houseLayoutGroup.userData.lastAABB = mesh
+              })
+            )
+
+          const renderBBs = () => {
+            renderOBB()
+            renderAABB()
           }
 
           const userData: HouseLayoutGroupUserData = {
@@ -235,19 +382,22 @@ export const createHouseLayoutGroup = ({
             height,
             length,
             obb,
+            aabb,
             vanillaColumn,
             use,
             initStretchZHandles,
             updateLength,
             updateActiveColumnGroupCount,
             updateDnas,
-            updateOBB,
+            updateBBs,
+            renderBBs,
           }
 
           houseLayoutGroup.userData = userData
           houseLayoutGroup.add(...columnGroups)
           houseLayoutGroup.position.setZ(-length / 2)
-          houseLayoutGroup.userData.initStretchZHandles()
+
+          initStretchZHandles()
 
           return houseLayoutGroup as HouseLayoutGroup
         })

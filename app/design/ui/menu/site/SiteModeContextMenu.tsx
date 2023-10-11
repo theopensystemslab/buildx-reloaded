@@ -37,11 +37,7 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   )
 
   const deleteHouse = () => {
-    const { houseId } = scopeElement
-    houseTransformsGroup.removeFromParent()
-    userDB.houses.delete(houseId)
-    scope.selected = null
-    exitBuildingMode()
+    houseTransformsGroup.userData.deleteHouse()
     close()
   }
 

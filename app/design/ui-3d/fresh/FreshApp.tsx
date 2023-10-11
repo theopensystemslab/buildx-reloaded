@@ -1,7 +1,8 @@
-import { invalidate } from "@react-three/fiber"
+import { invalidate, useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Fragment, useRef } from "react"
-import { Group } from "three"
+import { Fragment, useEffect, useRef } from "react"
+import { Group, Scene } from "three"
+import { proxy, ref, useSnapshot } from "valtio"
 import { A } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import elementCategories from "../../state/elementCategories"
@@ -10,6 +11,15 @@ import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import { isElementMesh } from "./scene/userData"
+
+const sceneProxy = proxy<{ scene: Scene | null }>({
+  scene: null,
+})
+
+export const useScene = () => {
+  const { scene } = useSnapshot(sceneProxy) as typeof sceneProxy
+  return scene
+}
 
 const FreshApp = () => {
   const rootRef = useRef<Group>(null)
@@ -44,9 +54,16 @@ const FreshApp = () => {
     false
   )
 
+  const scene = useThree((t) => t.scene)
+
+  useEffect(() => {
+    if (scene) sceneProxy.scene = ref(scene)
+    else sceneProxy.scene = null
+  }, [scene])
+
   return (
     <Fragment>
-      <group ref={rootRef} {...bindAll()}></group>
+      <group ref={rootRef} name="WORLD" {...bindAll()}></group>
       <XZPlane />
     </Fragment>
   )

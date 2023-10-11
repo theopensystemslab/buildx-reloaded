@@ -1,8 +1,13 @@
 import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
-import { Object3D, Vector3 } from "three"
-import { A, someOrError, T } from "../../../../utils/functions"
-import { abs, floor, round, sign } from "../../../../utils/math"
+import { BoxGeometry, Matrix4, Mesh, Object3D, Scene, Vector3 } from "three"
+import { OBB } from "three-stdlib"
+import {
+  useAllSystemSettings,
+  useGetSystemSettings,
+} from "../../../../db/systems"
+import { A, O, someOrError, T } from "../../../../utils/functions"
+import { floor, sign } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
@@ -11,41 +16,58 @@ import {
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
-  findAllGuardDown,
   findFirstGuardAcross,
-  findFirstGuardUp,
   getActiveHouseUserData,
   getHouseTransformsGroupUp,
   getSortedVisibleColumnGroups,
   getVisibleColumnGroups,
 } from "../helpers/sceneQueries"
 import { createColumnGroup, splitColumnGroups } from "../scene/columnGroup"
+import { obbMaterial } from "../scene/houseLayoutGroup"
 import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
   isColumnGroup,
-  isModuleGroup,
   StretchHandleGroup,
 } from "../scene/userData"
+import { DEBUG } from "../../../state/constants"
 
-const TMP_MAX_LENGTH = 10
+let lastOBBMesh: Mesh | null = null
+
+const renderOBB = (obb: OBB, scene: Scene) => {
+  const size = obb.halfSize.clone().multiplyScalar(2)
+
+  if (lastOBBMesh) scene.remove(lastOBBMesh)
+
+  const geom = new BoxGeometry(size.x, size.y, size.z)
+  const mesh = new Mesh(geom, obbMaterial)
+  mesh.position.copy(obb.center)
+  mesh.setRotationFromMatrix(new Matrix4().setFromMatrix3(obb.rotation))
+  mesh.userData.type = "OBB"
+  scene.add(mesh)
+  lastOBBMesh = mesh
+}
+
+const DEFAULT_MAX_LENGTH = 50
 
 const useOnDragStretchZ = () => {
+  const getSystemSettings = useGetSystemSettings()
+
   const stretchZInitialDataRef = useRef<{
     side: 1 | -1
     point0: Vector3
     handleColumnGroup: Object3D
     houseTransformsGroup: HouseTransformsGroup
     layoutGroup: HouseLayoutGroup
-    handleGroupZ0: number
-    columnGroups: Object3D[]
-    startColumnGroup: Object3D
-    midColumnGroups: Object3D[]
+    lengthWiseNeighbours: HouseTransformsGroup[]
+    // columnGroups: Object3D[]
+    // startColumnGroup: Object3D
+    // midColumnGroups: Object3D[]
+    // maxLength: number
     endColumnGroup: ColumnGroup
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
-    maxLength: number
     midStartZ: number
     midEndZ: number
   } | null>(null)
@@ -65,24 +87,63 @@ const useOnDragStretchZ = () => {
     fenceIndex: 0,
   })
 
-  const addVanilla = (side: 1 | -1) => {
-    if (!stretchZInitialDataRef.current) return
+  // returns collision
+  const addVanillaCheckCollision = (side: 1 | -1): boolean => {
+    if (!stretchZInitialDataRef.current) return true
 
-    const { templateVanillaColumnGroup, layoutGroup } =
-      stretchZInitialDataRef.current
+    const {
+      templateVanillaColumnGroup,
+      layoutGroup,
+      houseTransformsGroup,
+      lengthWiseNeighbours,
+    } = stretchZInitialDataRef.current
 
     const { fences } = stretchZProgressDataRef.current
 
     const lastColumnGroup = fences[fences.length - 1].columnGroup
-    const columnGroup = templateVanillaColumnGroup.clone()
 
     let z = 0
     if (side === 1) {
       z = lastColumnGroup.position.z + lastColumnGroup.userData.length
     } else if (side === -1) {
-      z = lastColumnGroup.position.z - columnGroup.userData.length
+      z =
+        lastColumnGroup.position.z - templateVanillaColumnGroup.userData.length
     }
 
+    const center = new Vector3(0, 0, 0)
+    const halfSize = new Vector3(
+      layoutGroup.userData.width / 2,
+      layoutGroup.userData.height / 2,
+      templateVanillaColumnGroup.userData.length / 2
+    )
+    const obb = new OBB(center, halfSize)
+    const mat = houseTransformsGroup.matrix
+      .clone()
+      .multiply(
+        new Matrix4().makeTranslation(
+          0,
+          0,
+          -(layoutGroup.userData.length / 2) + z
+        )
+      )
+    obb.applyMatrix4(mat)
+
+    if (DEBUG) {
+      const scene = houseTransformsGroup.parent! as Scene
+      renderOBB(obb, scene)
+    }
+
+    for (let neighbour of lengthWiseNeighbours) {
+      if (
+        neighbour.userData
+          .unsafeGetActiveLayoutGroup()
+          .userData.obb.intersectsOBB(obb)
+      ) {
+        return true
+      }
+    }
+
+    const columnGroup = templateVanillaColumnGroup.clone()
     columnGroup.position.setZ(z)
 
     setInvisibleNoRaycast(columnGroup)
@@ -93,6 +154,8 @@ const useOnDragStretchZ = () => {
       columnGroup,
       z: z + columnGroup.userData.length / 2,
     })
+
+    return false
   }
 
   const first = ({
@@ -150,20 +213,34 @@ const useOnDragStretchZ = () => {
 
             const vanillaLength = templateVanillaColumnGroup.userData.length
 
+            const maxLen = pipe(
+              systemId,
+              getSystemSettings,
+              O.match(
+                () => DEFAULT_MAX_LENGTH,
+                (x) => x.length.max
+              )
+            )
+
+            const maxMoreCols = floor(
+              (maxLen - activeLayoutGroup.userData.length) / vanillaLength - 1
+            )
+
             stretchZInitialDataRef.current = {
               side,
               handleColumnGroup,
               layoutGroup: activeLayoutGroup,
               houseTransformsGroup,
               point0: point,
-              handleGroupZ0: handleColumnGroup.position.z,
               templateVanillaColumnGroup,
               vanillaLength,
-              columnGroups,
-              startColumnGroup,
-              midColumnGroups,
+              lengthWiseNeighbours:
+                houseTransformsGroup.userData.computeLengthWiseNeighbours(),
+              // columnGroups,
+              // startColumnGroup,
+              // midColumnGroups,
               endColumnGroup,
-              maxLength: TMP_MAX_LENGTH,
+              // maxLength: TMP_MAX_LENGTH,
               midStartZ: startColumnGroup.userData.length,
               midEndZ: endColumnGroup.position.z,
             }
@@ -181,8 +258,8 @@ const useOnDragStretchZ = () => {
               stretchZProgressDataRef.current.fenceIndex =
                 stretchZProgressDataRef.current.fences.length - 1
 
-              for (let i = 0; i < 3; i++) {
-                addVanilla(side)
+              for (let i = 0; i < maxMoreCols; i++) {
+                if (addVanillaCheckCollision(side)) break
               }
             }
 
@@ -201,8 +278,8 @@ const useOnDragStretchZ = () => {
               stretchZProgressDataRef.current.fenceIndex =
                 stretchZProgressDataRef.current.fences.length - 1
 
-              for (let i = 0; i < 3; i++) {
-                addVanilla(side)
+              for (let i = 0; i < maxMoreCols; i++) {
+                if (addVanillaCheckCollision(side)) break
               }
             }
           })
@@ -221,11 +298,9 @@ const useOnDragStretchZ = () => {
       point0,
       houseTransformsGroup,
       handleColumnGroup,
-      handleGroupZ0,
       vanillaLength,
       layoutGroup,
       endColumnGroup,
-      maxLength,
       midEndZ,
       midStartZ,
     } = stretchZInitialDataRef.current
@@ -258,10 +333,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex =
               endColumnGroup.userData.columnIndex - 1
             stretchZProgressDataRef.current.fenceIndex++
-
-            if (nextFence.z < maxLength) {
-              addVanilla(side)
-            }
           }
         }
       }
@@ -311,11 +382,6 @@ const useOnDragStretchZ = () => {
             nextFence.columnGroup.userData.columnIndex = 1
 
             stretchZProgressDataRef.current.fenceIndex++
-
-            // naive
-            if (nextFence.z < maxLength) {
-              addVanilla(side)
-            }
           }
         }
       }
@@ -404,9 +470,10 @@ const useOnDragStretchZ = () => {
 
     layoutGroup.userData.updateLength()
     layoutGroup.userData.updateActiveColumnGroupCount(columnGroupCount)
-    houseTransformsGroup.userData.updateXStretchHandleLengths()
+    houseTransformsGroup.userData.updateHandles()
     houseTransformsGroup.userData.setXStretchHandlesVisible(true)
-    layoutGroup.userData.updateDnas().then(() => {
+    layoutGroup.userData.updateDnas()
+    houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
 

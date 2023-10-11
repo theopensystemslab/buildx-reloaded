@@ -14,12 +14,12 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   Object3D,
-  Scene,
   SRGBColorSpace,
+  Scene,
   Vector3,
 } from "three"
-import { CameraLayer, RaycasterLayer } from "../design/state/constants"
 import { Material } from "../../server/data/materials"
+import { CameraLayer, RaycasterLayer } from "../design/state/constants"
 import dimensions, { getHouseCenter } from "../design/state/dimensions"
 import houses from "../design/state/houses"
 
@@ -42,7 +42,6 @@ export const onCreated = (state: RootState) => {
 
 export const createThreeMaterial = (material: Material) => {
   if (material.specification === "Glass") {
-    console.log(material.defaultColor)
     return new MeshPhysicalMaterial({
       // -- thickness of the clear coat layer, from 0.0 to 1.0
       clearcoat: 0.1,

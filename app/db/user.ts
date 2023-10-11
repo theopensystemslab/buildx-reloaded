@@ -4,6 +4,7 @@ import { pipe } from "fp-ts/lib/function"
 import { z } from "zod"
 import { A, O, R } from "../utils/functions"
 import { useAllModules } from "./systems"
+import { useCallback } from "react"
 
 export const houseParser = z.object({
   houseId: z.string().min(1),
@@ -68,6 +69,27 @@ export const useGetHouseModules = () => {
         )
       )
     )
+}
+
+export const useGetFriendlyName = () => {
+  const houses = useHouses()
+
+  const existingNames = pipe(
+    houses,
+    A.map((x) => x.friendlyName)
+  )
+
+  return useCallback(() => {
+    let count = houses.length + 1
+
+    let nextName = `Building ${count}`
+
+    while (existingNames.includes(nextName)) {
+      nextName = `Building ${++count}`
+    }
+
+    return nextName
+  }, [existingNames, houses.length])
 }
 
 class UserDatabase extends Dexie {

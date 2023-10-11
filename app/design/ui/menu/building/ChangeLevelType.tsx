@@ -129,7 +129,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
 
   const changeLevelType = ({ houseLayoutGroup }: LevelTypeOption["value"]) => {
     closing.current = true
-    houseTransformsGroup.userData.dbSync().then(() => {
+    houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
     close()

@@ -14,6 +14,7 @@ export interface SystemSettings {
   systemId: string
   length: ClampedDimension
   height: ClampedDimension
+  lastModified: number
 }
 
 export const systemSettingsParser = z.object({
@@ -23,6 +24,20 @@ export const systemSettingsParser = z.object({
     units: z.string().min(1),
     minimum: z.number(),
     maximum: z.number(),
+    last_modified: z
+      .string()
+      .refine(
+        (value) => {
+          // Attempt to parse the value as a date and check that it's valid
+          const date = new Date(value)
+          return !isNaN(date.getTime())
+        },
+        {
+          // Custom error message
+          message: "Invalid date string",
+        }
+      )
+      .transform((x) => new Date(x).getTime()),
   }),
 })
 
@@ -41,25 +56,30 @@ export const systemSettingsQuery: QueryFn<SystemSettings> =
             const parsley = z
               .array(
                 systemSettingsParser.transform(
-                  ({ id, fields: { Field, units, minimum, maximum } }) => ({
+                  ({
+                    id,
+                    fields: { Field, units, minimum, maximum, last_modified },
+                  }) => ({
                     id,
                     Field,
                     minimum,
                     maximum,
                     units,
+                    lastModified: last_modified,
                   })
                 )
               )
               .parse(res)
 
             const bar = parsley.reduce(
-              (acc, { Field, units, minimum, maximum }) => ({
+              (acc, { Field, units, minimum, maximum, lastModified }) => ({
                 ...acc,
                 systemId,
                 [Field]: {
                   units,
-                  minimum,
-                  maximum,
+                  min: minimum,
+                  max: maximum,
+                  lastModified,
                 },
               }),
               {} as SystemSettings

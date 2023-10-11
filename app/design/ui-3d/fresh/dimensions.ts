@@ -1,5 +1,6 @@
 import { pipe } from "fp-ts/lib/function"
 import {
+  Box3,
   BoxGeometry,
   Group,
   Matrix4,
@@ -22,22 +23,8 @@ import {
   UserDataTypeEnum,
 } from "./scene/userData"
 
-let lastMesh: Mesh | null
-
-export const renderOBB = (obb: OBB, scene: Object3D) => {
-  const size = obb.halfSize.clone().multiplyScalar(2)
-
-  if (lastMesh) scene.remove(lastMesh)
-
-  const geom = new BoxGeometry(size.x, size.y, size.z)
-  const material = new MeshBasicMaterial({ color: "tomato" })
-  const mesh = new Mesh(geom, material)
-  mesh.position.copy(obb.center)
-  mesh.setRotationFromMatrix(new Matrix4().setFromMatrix3(obb.rotation))
-  mesh.userData.type = "OBB"
-  scene.add(mesh)
-  lastMesh = mesh
-}
+let lastOBB: Mesh | null
+let lastAABB: Mesh | null
 
 export const updateHouseWidth = (houseGroup: Group) => {}
 
