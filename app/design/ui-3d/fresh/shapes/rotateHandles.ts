@@ -2,22 +2,21 @@ import { CircleGeometry, Group, Mesh, PlaneGeometry } from "three"
 import { PI } from "../../../../utils/math"
 import handleMaterial from "../handleMaterial"
 import {
+  HouseTransformsGroup,
   RotateHandleMeshUserData,
+  RotateHandlesGroup,
   RotateHandlesGroupUserData,
   UserDataTypeEnum,
 } from "../scene/userData"
+import { getActiveHouseUserData } from "../helpers/sceneQueries"
 
 const ROTATE_HANDLE_OFFSET = 5
 const ROTATE_HANDLE_SIZE = 0.3
 const rotateHandleCircleGeometry = new CircleGeometry(0.5, 16)
 
-const createRotateHandles = ({
-  houseWidth,
-  houseLength,
-}: {
-  houseWidth: number
-  houseLength: number
-}) => {
+const createRotateHandles = (
+  houseTransformsGroup: HouseTransformsGroup
+): RotateHandlesGroup => {
   const meshUserData: RotateHandleMeshUserData = {
     type: UserDataTypeEnum.Enum.RotateHandleMesh,
   }
@@ -37,11 +36,6 @@ const createRotateHandles = ({
 
   const circleMesh2 = new Mesh(rotateHandleCircleGeometry, handleMaterial)
   circleMesh2.rotation.x = -PI / 2
-  circleMesh2.position.set(
-    -ROTATE_HANDLE_OFFSET - houseWidth / 4,
-    0,
-    houseLength / 2
-  )
   circleMesh2.userData = meshUserData
 
   const planeMesh2 = new Mesh(
@@ -49,15 +43,21 @@ const createRotateHandles = ({
     handleMaterial
   )
   planeMesh2.rotation.x = -PI / 2
-  planeMesh2.position.set(-houseWidth / 1.05, 0, houseLength / 2)
   planeMesh2.userData = meshUserData
 
-  const handleGroup = new Group()
+  const handleGroup: RotateHandlesGroup = new Group() as RotateHandlesGroup
   handleGroup.add(circleMesh1, planeMesh1, circleMesh2, planeMesh2)
   handleGroup.position.setY(0.01)
 
   const groupUserData: RotateHandlesGroupUserData = {
     type: UserDataTypeEnum.Enum.RotateHandlesGroup,
+    update: () => {
+      const { width, length } =
+        houseTransformsGroup.userData.unsafeGetActiveLayoutGroup().userData
+
+      planeMesh2.position.set(-width / 1.05, 0, length / 2)
+      circleMesh2.position.set(-ROTATE_HANDLE_OFFSET - width / 4, 0, length / 2)
+    },
   }
 
   handleGroup.userData = groupUserData

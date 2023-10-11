@@ -205,13 +205,10 @@ export const createHouseLayoutGroup = ({
 
             const { siteMode } = getModeBools(siteCtx.mode)
 
-            const { length: houseLength, width: houseWidth } =
-              houseLayoutGroup.userData
             const backStretchZHandleGroup = createStretchHandle({
               axis: "z",
               side: 1,
-              houseLength,
-              houseWidth,
+              houseTransformsGroup,
             })
             endColumnGroup.add(backStretchZHandleGroup)
             setVisible(backStretchZHandleGroup, !siteMode)
@@ -219,8 +216,7 @@ export const createHouseLayoutGroup = ({
             const frontStretchZHandleGroup = createStretchHandle({
               axis: "z",
               side: -1,
-              houseLength,
-              houseWidth,
+              houseTransformsGroup,
             })
             startColumnGroup.add(frontStretchZHandleGroup)
             setVisible(frontStretchZHandleGroup, !siteMode)

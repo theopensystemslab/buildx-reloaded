@@ -17,7 +17,10 @@ import {
   findFirstGuardAcross,
   getActiveHouseUserData,
 } from "../helpers/sceneQueries"
-import { BIG_CLIP_NUMBER } from "../scene/houseTransformsGroup"
+import {
+  BIG_CLIP_NUMBER,
+  modeToHandleTypeEnum,
+} from "../scene/houseTransformsGroup"
 import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
@@ -26,84 +29,106 @@ import {
 } from "../scene/userData"
 
 const useModeChange = (rootRef: RefObject<Group>) => {
-  const showHouseStretchHandles = (houseId: string) => {
-    if (!rootRef.current) return
+  // const showHouseStretchHandles = (houseId: string) => {
+  //   if (!rootRef.current) return
 
-    const allHouseTransformGroups = pipe(
-      rootRef.current.children,
-      A.filter(isHouseTransformsGroup)
-    )
+  //   const allHouseTransformGroups = pipe(
+  //     rootRef.current.children,
+  //     A.filter(isHouseTransformsGroup)
+  //   )
 
-    pipe(
-      allHouseTransformGroups,
-      A.findFirst((x) => x.userData.houseId === houseId),
-      O.map((houseTransformsGroup) =>
-        pipe(
-          houseTransformsGroup,
-          findAllGuardDown(isStretchHandleGroup)
-        ).forEach((handleGroup) => {
-          setVisibleAndRaycast(handleGroup)
-        })
-      )
-    )
-  }
+  //   pipe(
+  //     allHouseTransformGroups,
+  //     A.findFirst((x) => x.userData.houseId === houseId),
+  //     O.map((houseTransformsGroup) =>
+  //       pipe(
+  //         houseTransformsGroup,
+  //         findAllGuardDown(isStretchHandleGroup)
+  //       ).forEach((handleGroup) => {
+  //         setVisibleAndRaycast(handleGroup)
+  //       })
+  //     )
+  //   )
+  // }
 
-  const hideAllHandles = () => {
-    rootRef.current?.traverse((node) => {
-      if (
-        node.userData.type === UserDataTypeEnum.Enum.StretchHandleGroup ||
-        node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup
-      ) {
-        setInvisibleNoRaycast(node)
-      }
-    })
-  }
+  // const hideAllHandles = () => {
+  //   rootRef.current?.traverse((node) => {
+  //     if (
+  //       node.userData.type === UserDataTypeEnum.Enum.StretchHandleGroup ||
+  //       node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup
+  //     ) {
+  //       setInvisibleNoRaycast(node)
+  //     }
+  //   })
+  // }
 
   const { houseLevelIndexToCutHeight, setYCut } =
     useClippingPlaneHelpers(rootRef)
 
-  const showHouseRotateHandles = (houseId: string) => {
-    if (!rootRef.current) return
+  // const showHouseRotateHandles = (houseId: string) => {
+  //   if (!rootRef.current) return
 
-    const allHouseTransformGroups = pipe(
-      rootRef.current.children,
-      A.filter(isHouseTransformsGroup)
-    )
+  //   const allHouseTransformGroups = pipe(
+  //     rootRef.current.children,
+  //     A.filter(isHouseTransformsGroup)
+  //   )
 
-    pipe(
-      allHouseTransformGroups,
-      A.findFirst((x) => x.userData.houseId === houseId),
-      O.map((houseTransformsGroup) =>
-        houseTransformsGroup.traverse((node) => {
-          if (node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
-            setVisibleAndRaycast(node)
-          }
-        })
-      )
-    )
-  }
+  //   pipe(
+  //     allHouseTransformGroups,
+  //     A.findFirst((x) => x.userData.houseId === houseId),
+  //     O.map((houseTransformsGroup) =>
+  //       houseTransformsGroup.traverse((node) => {
+  //         if (node.userData.type === UserDataTypeEnum.Enum.RotateHandlesGroup) {
+  //           setVisibleAndRaycast(node)
+  //         }
+  //       })
+  //     )
+  //   )
+  // }
 
   const processHandles = () => {
     if (!rootRef.current) return
 
-    const { houseId } = siteCtx
+    const { houseId, mode } = siteCtx
     const { selected } = scope
     const { buildingMode, levelMode, siteMode } = getModeBools()
 
-    hideAllHandles()
+    pipe(
+      rootRef.current.children,
 
-    if (houseId && (buildingMode || levelMode)) {
-      showHouseStretchHandles(houseId)
-    }
+      A.filter(isHouseTransformsGroup),
+      A.partition((x) => x.userData.houseId === selected?.houseId),
+      ({ left: otherHouses, right: thisHouses }) => {
+        pipe(
+          thisHouses,
+          A.head,
+          O.map((thisHouse) => {
+            // switch this house's handles by mode
+            thisHouse.userData.switchHandlesVisibility(
+              modeToHandleTypeEnum(mode)
+            )
 
-    if (siteMode) {
-      if (selected !== null) {
-        const { houseId } = selected
-        showHouseRotateHandles(houseId)
+            // if Site -> Building
+            // refresh alt section type layouts
+            // for x-stretch
+
+            // if (
+            //   prev === SiteCtxModeEnum.Enum.SITE &&
+            //   next === SiteCtxModeEnum.Enum.BUILDING
+            // ) {
+            //   thisHouse.userData.refreshAltSectionTypeLayouts()
+            // }
+          })
+        )
+
+        // hide all other house handles
+        otherHouses.forEach((otherHouse) => {
+          otherHouse.userData.switchHandlesVisibility()
+        })
+
+        invalidate()
       }
-    }
-
-    invalidate()
+    )
   }
 
   const processClippingPlanes = () => {
@@ -141,9 +166,12 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   useSubscribeKey(scope, "selected", processHandles)
 
   useModeChangeListener(({ prev, next }) => {
+    // always check handles and clipping planes
     processHandles()
     processClippingPlanes()
 
+    // if site -> building then refresh alt section type layouts
+    // ... for x-stretch
     if (
       prev === SiteCtxModeEnum.Enum.SITE &&
       next === SiteCtxModeEnum.Enum.BUILDING

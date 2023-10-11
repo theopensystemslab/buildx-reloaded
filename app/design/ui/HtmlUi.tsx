@@ -94,7 +94,7 @@ const HtmlUi = (props: Props) => {
       <div className="absolute bottom-0 right-0 pointer-events-none">
         {/* <pre>{JSON.stringify(preTs, null, 2)}</pre>
         <pre>{JSON.stringify(postTs, null, 2)}</pre> */}
-        {/* <pre>{JSON.stringify(ctx, null, 2)}</pre> */}
+        <pre>{JSON.stringify(mode, null, 2)}</pre>
       </div>
       <HeaderEndPortal>
         <div className="flex items-center justify-end">

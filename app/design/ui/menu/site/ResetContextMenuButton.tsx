@@ -97,7 +97,7 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
 
       houseTransformsGroup.userData.updateDB()
 
-      houseTransformsGroup.userData.updateHandlesGroupZ()
+      houseTransformsGroup.userData.updateHandles()
 
       close()
     }

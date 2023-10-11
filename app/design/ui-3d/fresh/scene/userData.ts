@@ -15,13 +15,14 @@ import { O } from "../../../../utils/functions"
 import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import { EnrichedMaterial } from "../systems"
+import { HandleTypeEnum } from "./houseTransformsGroup"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
-//   -> Stretch X Handle groups
+//   -> HouseTransformsHandlesGroup
 //     -> Stretch X Handle meshes
-//   -> Rotate Handles group
-//     -> Rotate Handles meshes
+//     -> Rotate Handles group
+//       -> Rotate Handles meshes
 //   -> HouseLayoutGroup's as children
 //      (alternative layouts;
 //         visibility/raycasting disabled
@@ -73,13 +74,16 @@ export type HouseTransformsGroupUserData = {
   unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   refreshAltSectionTypeLayouts: () => void
-  // handles
-  updateXStretchHandleLengths: () => void
+  // handle init
+  initRotateAndStretchXHandles: () => void
+  // handle visibility
   setXStretchHandlesVisible: (bool?: boolean) => void
   setZStretchHandlesVisible: (bool?: boolean) => void
   setRotateHandlesVisible: (bool?: boolean) => void
-  initRotateAndStretchXHandles: () => void
-  updateHandlesGroupZ: () => void
+  switchHandlesVisibility: (value?: HandleTypeEnum | null) => void
+  // handle dimension sync
+  // updateXStretchHandleLengths: () => void
+  updateHandles: () => void
   // collisions
   computeNearNeighbours: (worldGroup?: Group) => HouseTransformsGroup[]
   computeLengthWiseNeighbours: () => HouseTransformsGroup[]
@@ -164,7 +168,8 @@ export type StretchHandleGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.StretchHandleGroup
   axis: "z" | "x"
   side: 1 | -1
-  updateXHandleLength: (length: number) => void
+  update: () => void
+  // updateXHandleLength: (length: number) => void
 }
 
 export type StretchHandleMeshUserData = {
@@ -173,6 +178,7 @@ export type StretchHandleMeshUserData = {
 
 export type RotateHandlesGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.RotateHandlesGroup
+  update: () => void
 }
 
 export type RotateHandleMeshUserData = {
