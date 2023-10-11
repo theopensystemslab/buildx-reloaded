@@ -6,12 +6,15 @@ import { useMemo } from "react"
 import { suspend } from "suspend-react"
 import { Group } from "three"
 import { useGetFriendlyName, useHouses } from "../../db/user"
-import { O } from "../../utils/functions"
+import { A, O } from "../../utils/functions"
 import { setSidebar } from "../state/settings"
 import { useScene } from "../ui-3d/fresh/FreshApp"
 import { findFirstGuardDown } from "../ui-3d/fresh/helpers/sceneQueries"
 import { createHouseTransformsGroup } from "../ui-3d/fresh/scene/houseTransformsGroup"
-import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
+import {
+  HouseTransformsGroup,
+  isHouseTransformsGroup,
+} from "../ui-3d/fresh/scene/userData"
 import { setRaycasting } from "../../utils/three"
 import Image from "next/image"
 import { getSystemsWorker } from "../../workers"
@@ -114,6 +117,11 @@ const HouseThumbnail = ({ houseType }: Props) => {
             worldGroup.add(houseTransformsGroup)
             houseTransformsGroup.userData.friendlyName = getFriendlyName()
             houseTransformsGroup.userData.addToDB()
+
+            // clear handles
+            pipe(worldGroup.children, A.filter(isHouseTransformsGroup)).forEach(
+              (x) => x.userData.switchHandlesVisibility()
+            )
 
             setSidebar(false)
             invalidate()
