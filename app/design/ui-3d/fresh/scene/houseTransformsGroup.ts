@@ -14,6 +14,7 @@ import elementCategories from "../../../state/elementCategories"
 import {
   SiteCtxMode,
   SiteCtxModeEnum,
+  exitBuildingMode,
   getModeBools,
 } from "../../../state/siteCtx"
 import {
@@ -45,6 +46,7 @@ import {
   isZStretchHandleGroup,
 } from "./userData"
 import { z } from "zod"
+import scope from "../../../state/scope"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -544,6 +546,8 @@ export const createHouseTransformsGroup = ({
       O.map((worldGroup) => {
         worldGroup.remove(houseTransformsGroup)
         userDB.houses.delete(houseId)
+        scope.selected = null
+        exitBuildingMode()
       })
     )
   }

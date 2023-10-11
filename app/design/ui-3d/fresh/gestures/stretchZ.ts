@@ -31,6 +31,7 @@ import {
   isColumnGroup,
   StretchHandleGroup,
 } from "../scene/userData"
+import { DEBUG } from "../../../state/constants"
 
 let lastOBBMesh: Mesh | null = null
 
@@ -127,8 +128,10 @@ const useOnDragStretchZ = () => {
       )
     obb.applyMatrix4(mat)
 
-    const scene = houseTransformsGroup.parent! as Scene
-    renderOBB(obb, scene)
+    if (DEBUG) {
+      const scene = houseTransformsGroup.parent! as Scene
+      renderOBB(obb, scene)
+    }
 
     for (let neighbour of lengthWiseNeighbours) {
       if (

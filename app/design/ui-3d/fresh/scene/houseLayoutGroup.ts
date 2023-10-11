@@ -233,8 +233,14 @@ export const createHouseLayoutGroup = ({
 
                 const { x, y, z } = houseTransformsGroup.position
 
+                const scaleFactor = 1.1
+
                 const center = new Vector3(x, y + height / 2, z)
-                const halfSize = new Vector3(width / 2, height / 2, length / 2)
+                const halfSize = new Vector3(
+                  width / 2,
+                  height / 2,
+                  length / 2
+                ).multiplyScalar(scaleFactor)
                 const rotation = new Matrix3().setFromMatrix4(
                   new Matrix4().extractRotation(houseTransformsGroup.matrix)
                 )
