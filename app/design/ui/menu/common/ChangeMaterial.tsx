@@ -16,7 +16,7 @@ type Props = {
   close: () => void
 }
 
-const ChangeMaterialOptions = (props: Props) => {
+const ChangeMaterial = (props: Props) => {
   const {
     houseTransformsGroup,
     scopeElement: { ifcTag },
@@ -38,8 +38,14 @@ const ChangeMaterialOptions = (props: Props) => {
 
   const closing = useRef(false)
 
-  return (
-    <Fragment>
+  return element.materialOptions.length > 1 ? (
+    <ContextMenuNested
+      long
+      label={`Change material`}
+      icon={<WatsonHealthSubVolume size={20} />}
+    >
+      {/* <ChangeMaterialOptions {...props} /> */}
+
       <ContextMenuHeading>{element?.name}</ContextMenuHeading>
       <Radio
         options={allMaterials.map((material) => ({
@@ -77,19 +83,8 @@ const ChangeMaterialOptions = (props: Props) => {
           invalidate()
         }}
       />
-    </Fragment>
-  )
+    </ContextMenuNested>
+  ) : null
 }
 
-const ChangeMaterial = (props: Props) => {
-  return (
-    <ContextMenuNested
-      long
-      label={`Change material`}
-      icon={<WatsonHealthSubVolume size={20} />}
-    >
-      <ChangeMaterialOptions {...props} />
-    </ContextMenuNested>
-  )
-}
 export default ChangeMaterial

@@ -1,4 +1,6 @@
 "use client"
+import { useAllHouseTypes } from "../db/systems"
+import Loader from "../ui/Loader"
 import {
   initLayoutsWorker,
   initModelsWorker,
@@ -13,11 +15,15 @@ const App = () => {
   initModelsWorker()
   initLayoutsWorker()
 
-  return (
+  const houseTypes = useAllHouseTypes()
+
+  return houseTypes.length > 0 ? (
     <AppInit controlsEnabled={true} mapEnabled={false}>
       <Routing />
       <FreshApp />
     </AppInit>
+  ) : (
+    <Loader />
   )
 }
 

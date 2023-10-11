@@ -16,7 +16,7 @@ const ObjectsSidebar = () => {
   // SiteSidebar in commit older than blame this
 
   return (
-    <Sidebar expanded={sidebar && houseTypes.length > 0} onClose={close}>
+    <Sidebar expanded={sidebar} onClose={close}>
       {pipe(
         houseTypes,
         A.map((houseType) => (
