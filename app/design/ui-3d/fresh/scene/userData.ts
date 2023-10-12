@@ -68,6 +68,8 @@ export type HouseTransformsGroupUserData = {
   resetMaterials: () => void
   pushElement: (element: Element) => ThreeMaterial
   changeMaterial: (ifcTag: string, specification: string) => void
+  // clipping planes
+  setVerticalCuts: (clippingPlanes?: { x?: boolean; z?: boolean }) => void
   // layouts
   updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>

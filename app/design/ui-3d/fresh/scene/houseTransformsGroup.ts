@@ -106,13 +106,17 @@ export const createHouseTransformsGroup = ({
 }: House): T.Task<HouseTransformsGroup> => {
   const houseTransformsGroup = new Group() as HouseTransformsGroup
 
-  const NORMAL_DIRECTION = -1
-
   const clippingPlanes: Plane[] = [
-    new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_CLIP_NUMBER),
-    new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
-    new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(1, 0, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, 1, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, 0, 1), BIG_CLIP_NUMBER),
   ]
+
+  // Save initial states of your clipping planes
+  const initialClippingStates = clippingPlanes.map((plane) => ({
+    normal: plane.normal.clone(),
+    constant: plane.constant,
+  }))
 
   const handlesGroup = new Group() as HouseTransformsHandlesGroup
 
@@ -407,6 +411,15 @@ export const createHouseTransformsGroup = ({
     houseTransformsGroup.userData
       .unsafeGetActiveLayoutGroup()
       .userData.updateBBs()
+
+    // clippingPlanes.forEach((plane, index) => {
+    //   // Reset to the original state
+    //   plane.normal.copy(initialClippingStates[index].normal)
+    //   plane.constant = initialClippingStates[index].constant
+
+    //   // Apply the matrix
+    //   plane.applyMatrix4(houseTransformsGroup.matrix)
+    // })
   }
 
   const computeNearNeighbours = (
@@ -552,6 +565,24 @@ export const createHouseTransformsGroup = ({
     )
   }
 
+  const setVerticalCuts: typeof houseTransformsGroupUserData.setVerticalCuts = (
+    input = { x: false, z: false }
+  ) => {
+    clippingPlanes.forEach((plane, index) => {
+      plane.normal.copy(initialClippingStates[index].normal)
+      plane.constant = BIG_CLIP_NUMBER
+    })
+
+    if (input.x) {
+      clippingPlanes[0].constant = 0
+      clippingPlanes[0].applyMatrix4(houseTransformsGroup.matrix)
+    }
+    if (input.z) {
+      clippingPlanes[2].constant = 0
+      clippingPlanes[2].applyMatrix4(houseTransformsGroup.matrix)
+    }
+  }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -566,6 +597,7 @@ export const createHouseTransformsGroup = ({
     materials,
     activeElementMaterials,
     pushElement,
+    setVerticalCuts,
     updateDB,
     updateActiveLayoutDnas,
     initRotateAndStretchXHandles,

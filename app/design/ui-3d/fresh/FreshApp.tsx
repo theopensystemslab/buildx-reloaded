@@ -11,6 +11,7 @@ import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import { isElementMesh } from "./scene/userData"
+import useCuts from "./useCuts"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -26,6 +27,7 @@ const FreshApp = () => {
 
   useHousesEvents(rootRef)
   useModeChange(rootRef)
+  useCuts(rootRef)
 
   const bindAll = useGestures()
 
