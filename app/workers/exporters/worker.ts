@@ -46,16 +46,15 @@ function flattenObject(root: Object3D): Group {
 }
 
 const OBJMap = new Map<string, string>()
-const GLTFMap = new Map<string, any>()
+const GLBMap = new Map<string, any>()
 
-const parseAndSetGLTF = (houseId: string, object: Object3D) => {
+const parseAndSetGLB = (houseId: string, object: Object3D) => {
   const gltfExporter = new GLTFExporter() as any
 
   gltfExporter.parse(
     object,
-    function (gltf: any) {
-      console.log(gltf)
-      GLTFMap.set(houseId, gltf)
+    function (glb: any) {
+      GLBMap.set(houseId, glb)
     },
     function (e: any) {
       console.error(e)
@@ -82,7 +81,7 @@ const updateModels = async ({
 
   const flattened = flattenObject(parsed)
 
-  parseAndSetGLTF(houseId, flattened)
+  parseAndSetGLB(houseId, flattened)
   parseAndSetOBJ(houseId, flattened)
 }
 
@@ -91,7 +90,7 @@ const getOBJ = (houseId: string) => {
 }
 
 const getGLB = (houseId: string) => {
-  return GLTFMap.get(houseId)
+  return GLBMap.get(houseId)
 }
 
 const api = {

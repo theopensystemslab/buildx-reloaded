@@ -612,19 +612,6 @@ export const createHouseTransformsGroup = ({
       //     }
       //   }
       // }
-      // dispatchUpdateExportModelsEvent({
-      //   houseId,
-      //   payload,
-      // })
-
-      // const debouncedExportUpdater = useDebouncedCallback(
-      //   () => {
-      //     const houseJson = houseGroupRef.current.toJSON()
-
-      //   },
-      //   2000,
-      //   { leading: false, trailing: true }
-      // )
     }
 
   const houseTransformsGroupUserData: Omit<

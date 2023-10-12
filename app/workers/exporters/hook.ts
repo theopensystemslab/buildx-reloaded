@@ -31,8 +31,6 @@ export const useExportersWorker = () => {
 
             if (!gltfData) return
 
-            console.log(gltfData)
-
             const blob = new Blob([gltfData], {
               type: "model/gltf-binary",
             })
@@ -52,10 +50,7 @@ export const useExportersWorker = () => {
             return
           }
           case "OBJ": {
-            console.log(`getting obj`)
             const objData = await getExportersWorker().getOBJ(houseId)
-
-            console.log({ objData })
 
             if (!objData) return
 
