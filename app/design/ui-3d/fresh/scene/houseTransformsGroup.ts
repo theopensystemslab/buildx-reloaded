@@ -9,7 +9,7 @@ import layoutsDB, {
 import userDB, { House } from "../../../../db/user"
 import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
+import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
 import {
   SiteCtxMode,
@@ -48,6 +48,7 @@ import {
 import { z } from "zod"
 import scope from "../../../state/scope"
 import settings from "../../../state/settings"
+import { dispatchUpdateExportModelsEvent } from "../../../../workers/exporters/events"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -517,6 +518,8 @@ export const createHouseTransformsGroup = ({
       }),
       getLayoutsWorker().getLayout({ systemId, dnas }),
     ])
+
+    updateExportModels()
   }
 
   const addToDB = async () => {
@@ -577,6 +580,40 @@ export const createHouseTransformsGroup = ({
       }
     }
 
+  const updateExportModels: typeof houseTransformsGroup.userData.updateExportModels =
+    () => {
+      const clone = houseTransformsGroup.clone()
+
+      clone.traverse((node) => {
+        for (let k of Object.keys(node.userData)) {
+          if (!["type"].includes(k)) delete node.userData[k]
+        }
+      })
+
+      const payload = clone.toJSON()
+
+      getExportersWorker().updateModels({ houseId, payload })
+
+      // function findFunctions(obj: any, path = []) {
+      //   // Check if obj is an object
+      //   if (typeof obj === "object" && obj !== null) {
+      //     // Iterate over all keys in the object
+      //     for (const key in obj) {
+      //       // Construct a new path for this key
+      //       const newPath = path.concat(key as any)
+
+      //       // Check if the property is a function
+      //       if (typeof obj[key] === "function") {
+      //         console.log("Function found at:", newPath.join("."))
+      //       } else {
+      //         // If it's another object, recurse into it
+      //         findFunctions(obj[key], newPath)
+      //       }
+      //     }
+      //   }
+      // }
+    }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -612,6 +649,7 @@ export const createHouseTransformsGroup = ({
     addToDB,
     deleteHouse,
     switchHandlesVisibility,
+    updateExportModels,
   }
 
   houseTransformsGroup.userData =

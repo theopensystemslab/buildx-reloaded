@@ -2,6 +2,7 @@
 import { useAllHouseTypes } from "../db/systems"
 import Loader from "../ui/Loader"
 import {
+  initExportersWorker,
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
@@ -14,6 +15,7 @@ const App = () => {
   initSystemsWorker()
   initModelsWorker()
   initLayoutsWorker()
+  initExportersWorker()
 
   const houseTypes = useAllHouseTypes()
 

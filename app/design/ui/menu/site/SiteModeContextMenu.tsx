@@ -15,6 +15,7 @@ import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
 import ResetContextMenuButton from "./ResetContextMenuButton"
+import Exporters from "../common/Exporters"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const { object } = scopeElement
@@ -92,6 +93,7 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             />
           </Fragment>
         )}
+        <Exporters houseId={houseTransformsGroup.userData.houseId} />
       </Fragment>
     </ContextMenu>
   )

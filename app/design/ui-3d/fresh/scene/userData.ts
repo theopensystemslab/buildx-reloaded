@@ -91,6 +91,8 @@ export type HouseTransformsGroupUserData = {
   computeLengthWiseNeighbours: () => HouseTransformsGroup[]
   checkCollisions: (nearNeighbours: HouseTransformsGroup[]) => boolean
   updateTransforms: () => void
+  // exports
+  updateExportModels: () => void
   // database
   updateDB: () => Promise<void>
   addToDB: () => Promise<void>

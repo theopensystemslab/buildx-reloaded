@@ -2,6 +2,7 @@ import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UpdateWorkerGroupEventDetail } from "./events"
+import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
 
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
@@ -16,7 +17,7 @@ function flattenObject(root: Object3D): Group {
 
   const skipObject = (object: Object3D): boolean =>
     !(object instanceof Mesh) ||
-    object.userData?.identifier?.identifierType !== "HOUSE_ELEMENT"
+    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh
 
   root.traverse((child: Object3D) => {
     if (!skipObject(child)) {
@@ -45,15 +46,15 @@ function flattenObject(root: Object3D): Group {
 }
 
 const OBJMap = new Map<string, string>()
-const GLTFMap = new Map<string, any>()
+const GLBMap = new Map<string, any>()
 
-const parseAndSetGLTF = (houseId: string, object: Object3D) => {
+const parseAndSetGLB = (houseId: string, object: Object3D) => {
   const gltfExporter = new GLTFExporter() as any
 
   gltfExporter.parse(
     object,
-    function (gltf: any) {
-      GLTFMap.set(houseId, gltf)
+    function (glb: any) {
+      GLBMap.set(houseId, glb)
     },
     function (e: any) {
       console.error(e)
@@ -73,12 +74,14 @@ const updateModels = async ({
   payload,
 }: UpdateWorkerGroupEventDetail) => {
   const loader = new ObjectLoader()
+
   const parsed = loader.parse(payload)
+
   parsed.updateMatrixWorld(true)
 
   const flattened = flattenObject(parsed)
 
-  parseAndSetGLTF(houseId, flattened)
+  parseAndSetGLB(houseId, flattened)
   parseAndSetOBJ(houseId, flattened)
 }
 
@@ -87,7 +90,7 @@ const getOBJ = (houseId: string) => {
 }
 
 const getGLB = (houseId: string) => {
-  return GLTFMap.get(houseId)
+  return GLBMap.get(houseId)
 }
 
 const api = {
@@ -96,6 +99,6 @@ const api = {
   getGLB,
 }
 
-export type ExportersWorkerAPI = typeof api
+export type ExportersAPI = typeof api
 
 expose(api)
