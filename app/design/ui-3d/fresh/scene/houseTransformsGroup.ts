@@ -48,6 +48,7 @@ import {
 import { z } from "zod"
 import scope from "../../../state/scope"
 import settings from "../../../state/settings"
+import { dispatchUpdateExportModelsEvent } from "../../../../workers/exporters/events"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -517,6 +518,8 @@ export const createHouseTransformsGroup = ({
       }),
       getLayoutsWorker().getLayout({ systemId, dnas }),
     ])
+
+    updateExportModels()
   }
 
   const addToDB = async () => {
@@ -577,6 +580,24 @@ export const createHouseTransformsGroup = ({
       }
     }
 
+  const updateExportModels: typeof houseTransformsGroup.userData.updateExportModels =
+    () => {
+      const payload = houseTransformsGroup.toJSON()
+
+      dispatchUpdateExportModelsEvent({
+        houseId,
+        payload,
+      })
+      // const debouncedExportUpdater = useDebouncedCallback(
+      //   () => {
+      //     const houseJson = houseGroupRef.current.toJSON()
+
+      //   },
+      //   2000,
+      //   { leading: false, trailing: true }
+      // )
+    }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -612,6 +633,7 @@ export const createHouseTransformsGroup = ({
     addToDB,
     deleteHouse,
     switchHandlesVisibility,
+    updateExportModels,
   }
 
   houseTransformsGroup.userData =

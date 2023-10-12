@@ -1,27 +1,23 @@
-import { Remote, wrap } from "comlink"
-import { useEffect, useRef } from "react"
 import { useEvent } from "react-use"
+import { getExportersWorker } from ".."
 import houses from "../../design/state/houses"
 import {
-  GetModelEvent,
-  UpdateWorkerGroupEvent,
   GET_EXPORT_MODEL_EVENT,
+  GetModelEvent,
   UPDATE_EXPORT_MODELS_EVENT,
+  UpdateWorkerGroupEvent,
 } from "./events"
-import type { ExportersWorkerAPI } from "./worker"
 
 export const useExportersWorker = () => {
-  const ref = useRef<Remote<ExportersWorkerAPI> | null>(null)
-
-  useEffect(() => {
-    const worker = new Worker(new URL("./worker.ts", import.meta.url))
-    ref.current = wrap<ExportersWorkerAPI>(worker)
-  }, [])
-
   useEvent(
     UPDATE_EXPORT_MODELS_EVENT,
     ({ detail: { houseId, payload } }: UpdateWorkerGroupEvent) => {
-      ref.current?.updateModels({ houseId, payload })
+      console.log({ payloadFront: payload })
+
+      getExportersWorker().updateModels({
+        houseId,
+        payload: JSON.stringify(payload),
+      })
     }
   )
 
@@ -30,7 +26,7 @@ export const useExportersWorker = () => {
     async ({ detail: { houseId, format } }: GetModelEvent) => {
       switch (format) {
         case "GLB": {
-          const gltfData = await ref.current?.getGLB(houseId)
+          const gltfData = await getExportersWorker().getGLB(houseId)
           if (!gltfData) return
 
           const blob = new Blob([gltfData], {
@@ -52,7 +48,7 @@ export const useExportersWorker = () => {
           return
         }
         case "OBJ": {
-          const objData = await ref.current?.getOBJ(houseId)
+          const objData = await getExportersWorker().getOBJ(houseId)
           if (!objData) return
 
           const blob = new Blob([objData], { type: "text/plain" })

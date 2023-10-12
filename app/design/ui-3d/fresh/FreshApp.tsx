@@ -12,6 +12,7 @@ import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import { isElementMesh } from "./scene/userData"
 import useVerticalCuts from "./helpers/useVerticalCuts"
+import { useExportersWorker } from "../../../workers/exporters/hook"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -55,6 +56,8 @@ const FreshApp = () => {
     },
     false
   )
+
+  useExportersWorker()
 
   const scene = useThree((t) => t.scene)
 

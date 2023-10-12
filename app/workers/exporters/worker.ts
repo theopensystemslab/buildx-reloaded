@@ -96,6 +96,6 @@ const api = {
   getGLB,
 }
 
-export type ExportersWorkerAPI = typeof api
+export type ExportersAPI = typeof api
 
 expose(api)
