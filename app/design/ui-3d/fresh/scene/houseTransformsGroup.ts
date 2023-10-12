@@ -9,7 +9,7 @@ import layoutsDB, {
 import userDB, { House } from "../../../../db/user"
 import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
+import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
 import {
   SiteCtxMode,
@@ -582,12 +582,41 @@ export const createHouseTransformsGroup = ({
 
   const updateExportModels: typeof houseTransformsGroup.userData.updateExportModels =
     () => {
-      const payload = houseTransformsGroup.toJSON()
+      const clone = houseTransformsGroup.clone()
 
-      dispatchUpdateExportModelsEvent({
-        houseId,
-        payload,
+      clone.traverse((node) => {
+        for (let k of Object.keys(node.userData)) {
+          delete node.userData[k]
+        }
       })
+
+      const payload = clone.toJSON()
+
+      getExportersWorker().updateModels({ houseId, payload })
+
+      // function findFunctions(obj: any, path = []) {
+      //   // Check if obj is an object
+      //   if (typeof obj === "object" && obj !== null) {
+      //     // Iterate over all keys in the object
+      //     for (const key in obj) {
+      //       // Construct a new path for this key
+      //       const newPath = path.concat(key as any)
+
+      //       // Check if the property is a function
+      //       if (typeof obj[key] === "function") {
+      //         console.log("Function found at:", newPath.join("."))
+      //       } else {
+      //         // If it's another object, recurse into it
+      //         findFunctions(obj[key], newPath)
+      //       }
+      //     }
+      //   }
+      // }
+      // dispatchUpdateExportModelsEvent({
+      //   houseId,
+      //   payload,
+      // })
+
       // const debouncedExportUpdater = useDebouncedCallback(
       //   () => {
       //     const houseJson = houseGroupRef.current.toJSON()

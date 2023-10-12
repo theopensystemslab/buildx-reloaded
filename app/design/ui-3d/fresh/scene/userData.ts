@@ -93,7 +93,6 @@ export type HouseTransformsGroupUserData = {
   updateTransforms: () => void
   // exports
   updateExportModels: () => void
-
   // database
   updateDB: () => Promise<void>
   addToDB: () => Promise<void>

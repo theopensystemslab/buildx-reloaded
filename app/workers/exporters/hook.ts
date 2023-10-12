@@ -12,11 +12,9 @@ export const useExportersWorker = () => {
   useEvent(
     UPDATE_EXPORT_MODELS_EVENT,
     ({ detail: { houseId, payload } }: UpdateWorkerGroupEvent) => {
-      console.log({ payloadFront: payload })
-
       getExportersWorker().updateModels({
         houseId,
-        payload: JSON.stringify(payload),
+        payload,
       })
     }
   )

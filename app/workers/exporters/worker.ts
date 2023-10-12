@@ -73,7 +73,9 @@ const updateModels = async ({
   payload,
 }: UpdateWorkerGroupEventDetail) => {
   const loader = new ObjectLoader()
+
   const parsed = loader.parse(payload)
+
   parsed.updateMatrixWorld(true)
 
   const flattened = flattenObject(parsed)
