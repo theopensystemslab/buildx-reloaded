@@ -1,6 +1,6 @@
 import { useEvent } from "react-use"
 import { getExportersWorker } from ".."
-import houses from "../../design/state/houses"
+import userDB from "../../db/user"
 import {
   GET_EXPORT_MODEL_EVENT,
   GetModelEvent,
@@ -22,51 +22,62 @@ export const useExportersWorker = () => {
   useEvent(
     GET_EXPORT_MODEL_EVENT,
     async ({ detail: { houseId, format } }: GetModelEvent) => {
-      switch (format) {
-        case "GLB": {
-          const gltfData = await getExportersWorker().getGLB(houseId)
-          if (!gltfData) return
+      userDB.houses.get(houseId).then(async (house) => {
+        if (!house) return
 
-          const blob = new Blob([gltfData], {
-            type: "model/gltf-binary",
-          })
+        switch (format) {
+          case "GLB": {
+            const gltfData = await getExportersWorker().getGLB(houseId)
 
-          const url = URL.createObjectURL(blob)
+            if (!gltfData) return
 
-          const link = document.createElement("a")
-          link.href = url
-          link.download = `${houses[houseId].friendlyName}.glb`
-          link.style.display = "none"
-          document.body.appendChild(link)
-          link.click()
+            console.log(gltfData)
 
-          // Cleanup
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-          return
+            const blob = new Blob([gltfData], {
+              type: "model/gltf-binary",
+            })
+
+            const url = URL.createObjectURL(blob)
+
+            const link = document.createElement("a")
+            link.href = url
+            link.download = `${house.friendlyName}.glb`
+            link.style.display = "none"
+            document.body.appendChild(link)
+            link.click()
+
+            // Cleanup
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+            return
+          }
+          case "OBJ": {
+            console.log(`getting obj`)
+            const objData = await getExportersWorker().getOBJ(houseId)
+
+            console.log({ objData })
+
+            if (!objData) return
+
+            const blob = new Blob([objData], { type: "text/plain" })
+            const url = URL.createObjectURL(blob)
+
+            const link = document.createElement("a")
+            link.href = url
+            link.download = `${house.friendlyName}.obj`
+            link.style.display = "none"
+            document.body.appendChild(link)
+            link.click()
+
+            // Cleanup
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+            return
+          }
+          default:
+            return
         }
-        case "OBJ": {
-          const objData = await getExportersWorker().getOBJ(houseId)
-          if (!objData) return
-
-          const blob = new Blob([objData], { type: "text/plain" })
-          const url = URL.createObjectURL(blob)
-
-          const link = document.createElement("a")
-          link.href = url
-          link.download = `${houses[houseId].friendlyName}.obj`
-          link.style.display = "none"
-          document.body.appendChild(link)
-          link.click()
-
-          // Cleanup
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-          return
-        }
-        default:
-          return
-      }
+      })
     }
   )
 }

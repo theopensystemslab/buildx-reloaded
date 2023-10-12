@@ -586,7 +586,7 @@ export const createHouseTransformsGroup = ({
 
       clone.traverse((node) => {
         for (let k of Object.keys(node.userData)) {
-          delete node.userData[k]
+          if (!["type"].includes(k)) delete node.userData[k]
         }
       })
 

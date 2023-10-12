@@ -2,6 +2,7 @@ import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UpdateWorkerGroupEventDetail } from "./events"
+import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
 
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
@@ -16,7 +17,7 @@ function flattenObject(root: Object3D): Group {
 
   const skipObject = (object: Object3D): boolean =>
     !(object instanceof Mesh) ||
-    object.userData?.identifier?.identifierType !== "HOUSE_ELEMENT"
+    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh
 
   root.traverse((child: Object3D) => {
     if (!skipObject(child)) {
@@ -53,6 +54,7 @@ const parseAndSetGLTF = (houseId: string, object: Object3D) => {
   gltfExporter.parse(
     object,
     function (gltf: any) {
+      console.log(gltf)
       GLTFMap.set(houseId, gltf)
     },
     function (e: any) {
