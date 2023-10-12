@@ -13,6 +13,7 @@ import {
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
+import settings from "../../../state/settings"
 
 const useOnDragRotate = () => {
   const rotateData = useRef<{
@@ -121,6 +122,10 @@ const useOnDragRotate = () => {
 
         houseTransformsGroup.rotation.y = trueY
         layoutGroup.userData.updateBBs()
+
+        if (settings.verticalCuts.length || settings.verticalCuts.width) {
+          houseTransformsGroup.userData.setVerticalCuts()
+        }
 
         break
       }

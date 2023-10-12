@@ -47,6 +47,7 @@ import {
 } from "./userData"
 import { z } from "zod"
 import scope from "../../../state/scope"
+import settings from "../../../state/settings"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -106,13 +107,17 @@ export const createHouseTransformsGroup = ({
 }: House): T.Task<HouseTransformsGroup> => {
   const houseTransformsGroup = new Group() as HouseTransformsGroup
 
-  const NORMAL_DIRECTION = -1
-
   const clippingPlanes: Plane[] = [
-    new Plane(new Vector3(NORMAL_DIRECTION, 0, 0), BIG_CLIP_NUMBER),
-    new Plane(new Vector3(0, NORMAL_DIRECTION, 0), BIG_CLIP_NUMBER),
-    new Plane(new Vector3(0, 0, NORMAL_DIRECTION), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(1, 0, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, -1, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, 0, 1), BIG_CLIP_NUMBER),
   ]
+
+  // Save initial states of your clipping planes
+  const initialClippingStates = clippingPlanes.map((plane) => ({
+    normal: plane.normal.clone(),
+    constant: plane.constant,
+  }))
 
   const handlesGroup = new Group() as HouseTransformsHandlesGroup
 
@@ -552,6 +557,26 @@ export const createHouseTransformsGroup = ({
     )
   }
 
+  const setVerticalCuts: typeof houseTransformsGroupUserData.setVerticalCuts =
+    () => {
+      const { length, width } = settings.verticalCuts
+
+      ;[0, 2].forEach((i) => {
+        const plane = clippingPlanes[i]
+        plane.normal.copy(initialClippingStates[i].normal)
+        plane.constant = BIG_CLIP_NUMBER
+      })
+
+      if (length) {
+        clippingPlanes[0].constant = 0
+        clippingPlanes[0].applyMatrix4(houseTransformsGroup.matrix)
+      }
+      if (width) {
+        clippingPlanes[2].constant = 0
+        clippingPlanes[2].applyMatrix4(houseTransformsGroup.matrix)
+      }
+    }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -566,6 +591,7 @@ export const createHouseTransformsGroup = ({
     materials,
     activeElementMaterials,
     pushElement,
+    setVerticalCuts,
     updateDB,
     updateActiveLayoutDnas,
     initRotateAndStretchXHandles,
@@ -612,6 +638,7 @@ export const createHouseTransformsGroup = ({
       updateHandles()
 
       switchHandlesVisibility()
+      setVerticalCuts()
 
       return houseTransformsGroup
     })

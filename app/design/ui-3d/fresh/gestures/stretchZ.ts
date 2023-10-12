@@ -471,6 +471,7 @@ const useOnDragStretchZ = () => {
     layoutGroup.userData.updateLength()
     layoutGroup.userData.updateActiveColumnGroupCount(columnGroupCount)
     houseTransformsGroup.userData.updateHandles()
+    houseTransformsGroup.userData.setVerticalCuts()
     houseTransformsGroup.userData.setXStretchHandlesVisible(true)
     layoutGroup.userData.updateDnas()
     houseTransformsGroup.userData.updateDB().then(() => {
