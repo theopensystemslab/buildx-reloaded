@@ -17,6 +17,7 @@ import {
   isHouseTransformsGroup,
   UserDataTypeEnum,
 } from "../scene/userData"
+import settings from "../../../state/settings"
 
 const useOnDragMove = () => {
   const moveData = useRef<{
@@ -126,6 +127,10 @@ const useOnDragMove = () => {
         const threshold = (AABB_OFFSET - 1) ** 2
 
         layoutGroup.userData.updateBBs()
+
+        if (settings.verticalCuts.length || settings.verticalCuts.width) {
+          houseTransformsGroup.userData.setVerticalCuts()
+        }
 
         if (dts >= threshold * thresholdFactor) {
           moveData.current.nearNeighbours =

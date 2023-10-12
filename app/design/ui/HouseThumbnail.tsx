@@ -114,6 +114,8 @@ const HouseThumbnail = ({ houseType }: Props) => {
         pipe(
           maybeWorldGroup,
           O.map((worldGroup) => {
+            houseTransformsGroup.userData.setVerticalCuts()
+
             worldGroup.add(houseTransformsGroup)
 
             houseTransformsGroup.userData

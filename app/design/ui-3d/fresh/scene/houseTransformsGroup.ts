@@ -47,6 +47,7 @@ import {
 } from "./userData"
 import { z } from "zod"
 import scope from "../../../state/scope"
+import settings from "../../../state/settings"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -565,23 +566,24 @@ export const createHouseTransformsGroup = ({
     )
   }
 
-  const setVerticalCuts: typeof houseTransformsGroupUserData.setVerticalCuts = (
-    input = { x: false, z: false }
-  ) => {
-    clippingPlanes.forEach((plane, index) => {
-      plane.normal.copy(initialClippingStates[index].normal)
-      plane.constant = BIG_CLIP_NUMBER
-    })
+  const setVerticalCuts: typeof houseTransformsGroupUserData.setVerticalCuts =
+    () => {
+      const { length, width } = settings.verticalCuts
 
-    if (input.x) {
-      clippingPlanes[0].constant = 0
-      clippingPlanes[0].applyMatrix4(houseTransformsGroup.matrix)
+      clippingPlanes.forEach((plane, index) => {
+        plane.normal.copy(initialClippingStates[index].normal)
+        plane.constant = BIG_CLIP_NUMBER
+      })
+
+      if (length) {
+        clippingPlanes[0].constant = 0
+        clippingPlanes[0].applyMatrix4(houseTransformsGroup.matrix)
+      }
+      if (width) {
+        clippingPlanes[2].constant = 0
+        clippingPlanes[2].applyMatrix4(houseTransformsGroup.matrix)
+      }
     }
-    if (input.z) {
-      clippingPlanes[2].constant = 0
-      clippingPlanes[2].applyMatrix4(houseTransformsGroup.matrix)
-    }
-  }
 
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
@@ -644,6 +646,7 @@ export const createHouseTransformsGroup = ({
       updateHandles()
 
       switchHandlesVisibility()
+      setVerticalCuts()
 
       return houseTransformsGroup
     })

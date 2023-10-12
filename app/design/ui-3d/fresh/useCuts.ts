@@ -11,45 +11,19 @@ const useCuts = (rootRef: RefObject<Group>) => {
   useSubscribe(
     settings.verticalCuts,
     () => {
-      const { width, length } = settings.verticalCuts
-
       pipe(
         rootRef.current,
         O.fromNullable,
         O.map((worldGroup) => {
           pipe(worldGroup.children, A.filter(isHouseTransformsGroup)).forEach(
             (htg) => {
-              console.log(htg.userData.clippingPlanes)
-              htg.userData.setVerticalCuts({ z: width, x: length })
+              htg.userData.setVerticalCuts()
             }
           )
 
           invalidate()
         })
       )
-      // const { width, length } = settings.verticalCuts
-      // const { levelIndex } = siteCtx
-
-      // rootRef.current?.traverseVisible((o3) => {
-      //   const userData = o3.userData as UserData
-
-      //   switch (userData.type) {
-      //     case UserDataTypeEnum.Enum.ElementMesh:
-      //       break
-      //     case UserDataTypeEnum.Enum.HouseTransformsGroup:
-      //       // TypeScript knows that userData is of type HouseModuleGroupUserData in this block
-      //       break
-      //   }
-      // })
-
-      // Object.values(elementMaterials.current).forEach((material) => {
-      //   material.clippingPlanes = [
-      //     width ? [clippingPlaneZ] : [],
-      //     levelIndex !== null ? [clippingPlaneY] : [],
-      //     length ? [clippingPlaneX] : [],
-      //   ].flat()
-      // })
-      invalidate()
     },
     true
   )
