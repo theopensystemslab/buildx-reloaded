@@ -109,7 +109,7 @@ export const createHouseTransformsGroup = ({
 
   const clippingPlanes: Plane[] = [
     new Plane(new Vector3(1, 0, 0), BIG_CLIP_NUMBER),
-    new Plane(new Vector3(0, 1, 0), BIG_CLIP_NUMBER),
+    new Plane(new Vector3(0, -1, 0), BIG_CLIP_NUMBER),
     new Plane(new Vector3(0, 0, 1), BIG_CLIP_NUMBER),
   ]
 
@@ -412,15 +412,6 @@ export const createHouseTransformsGroup = ({
     houseTransformsGroup.userData
       .unsafeGetActiveLayoutGroup()
       .userData.updateBBs()
-
-    // clippingPlanes.forEach((plane, index) => {
-    //   // Reset to the original state
-    //   plane.normal.copy(initialClippingStates[index].normal)
-    //   plane.constant = initialClippingStates[index].constant
-
-    //   // Apply the matrix
-    //   plane.applyMatrix4(houseTransformsGroup.matrix)
-    // })
   }
 
   const computeNearNeighbours = (
@@ -570,8 +561,9 @@ export const createHouseTransformsGroup = ({
     () => {
       const { length, width } = settings.verticalCuts
 
-      clippingPlanes.forEach((plane, index) => {
-        plane.normal.copy(initialClippingStates[index].normal)
+      ;[0, 2].forEach((i) => {
+        const plane = clippingPlanes[i]
+        plane.normal.copy(initialClippingStates[i].normal)
         plane.constant = BIG_CLIP_NUMBER
       })
 
