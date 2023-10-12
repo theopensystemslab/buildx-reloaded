@@ -2,12 +2,12 @@ import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { RefObject } from "react"
 import { Group } from "three"
-import { A, O } from "../../../utils/functions"
-import { useSubscribe } from "../../../utils/hooks"
-import settings from "../../state/settings"
-import { isHouseTransformsGroup } from "./scene/userData"
+import { A, O } from "../../../../utils/functions"
+import { useSubscribe } from "../../../../utils/hooks"
+import settings from "../../../state/settings"
+import { isHouseTransformsGroup } from "../scene/userData"
 
-const useCuts = (rootRef: RefObject<Group>) => {
+const useVerticalCuts = (rootRef: RefObject<Group>) => {
   useSubscribe(
     settings.verticalCuts,
     () => {
@@ -29,4 +29,4 @@ const useCuts = (rootRef: RefObject<Group>) => {
   )
 }
 
-export default useCuts
+export default useVerticalCuts
