@@ -85,7 +85,7 @@ const GeocoderControl = (props: Props) => {
     <div className={css.root}>
       <div>
         <div className={css.above}>
-          <h2>Enter your project location to begin</h2>
+          <h2>Where do you want to build?</h2>
         </div>
         <div ref={geocoderDiv} className={css.geocoder}></div>
         <div className={css.below}>

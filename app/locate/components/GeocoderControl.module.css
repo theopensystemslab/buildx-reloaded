@@ -15,7 +15,7 @@
 }
 
 .above h2 {
-  @apply text-2xl;
+  @apply text-xl;
 }
 
 .geocoder :global(.mapboxgl-ctrl-geocoder) {
