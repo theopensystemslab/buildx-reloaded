@@ -6,11 +6,13 @@ import { isSSR } from "~/utils/next"
 import { formatWithUnit } from "../../analyse/state/data"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
 import houses from "./houses"
+import { useSubscribe } from "../../utils/hooks"
+import userDB from "../../db/user"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
 
-type SiteCtx = {
+export type SiteCtx = {
   mode: SiteCtxMode
   houseId: string | null
   levelIndex: number | null
@@ -18,24 +20,29 @@ type SiteCtx = {
   region: "UK" | "EU"
 }
 
-const defaults = {
+const defaults: SiteCtx = {
   houseId: null,
   levelIndex: null,
-  editMode: null,
   projectName: null,
   mode: SiteCtxModeEnum.Enum.SITE,
   region: "UK",
 }
 
-export const getInitialSiteCtx = () =>
-  isSSR()
-    ? defaults
-    : JSON.parse(
-        localStorage.getItem(BUILDX_LOCAL_STORAGE_CONTEXT_KEY) ??
-          JSON.stringify(defaults)
-      )
+// export const getInitialSiteCtx = () =>
+//   isSSR()
+//     ? defaults
+//     : JSON.parse(
+//         localStorage.getItem(BUILDX_LOCAL_STORAGE_CONTEXT_KEY) ??
+//           JSON.stringify(defaults)
+//       )
 
-const siteCtx = proxy<SiteCtx>(getInitialSiteCtx())
+const siteCtx = proxy<SiteCtx>(defaults)
+
+userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
+  if (x) {
+    Object.assign(siteCtx, x)
+  }
+})
 
 export const useSiteCtx = () => useSnapshot(siteCtx)
 
@@ -56,17 +63,18 @@ export const useTransformabilityBooleans = (houseId: string) => {
   }
 }
 
-export const useLocallyStoredSiteCtx = () =>
-  useEffect(
-    () =>
-      subscribe(siteCtx, () => {
-        localStorage.setItem(
-          BUILDX_LOCAL_STORAGE_CONTEXT_KEY,
-          JSON.stringify(siteCtx)
-        )
-      }),
-    []
-  )
+export const useIndexedSiteCtx = () =>
+  useSubscribe(siteCtx, () => {
+    // Save state asynchronously using Dexie
+    userDB.siteCtx
+      .put({
+        key: BUILDX_LOCAL_STORAGE_CONTEXT_KEY,
+        ...siteCtx,
+      })
+      .catch((err) => {
+        console.error("Failed to save site context:", err)
+      })
+  })
 
 export const useProjectName = () => {
   const ctx = useSnapshot(siteCtx)

@@ -5,6 +5,7 @@ import { z } from "zod"
 import { A, O, R } from "../utils/functions"
 import { useAllModules } from "./systems"
 import { useCallback } from "react"
+import { SiteCtx } from "../design/state/siteCtx"
 
 export const houseParser = z.object({
   houseId: z.string().min(1),
@@ -94,13 +95,16 @@ export const useGetFriendlyName = () => {
 
 class UserDatabase extends Dexie {
   houses: Dexie.Table<House, string>
+  siteCtx: Dexie.Table<SiteCtx & { key: string }, string>
 
   constructor() {
     super("UserDatabase")
     this.version(1).stores({
       houses: "houseId,&friendlyName",
+      siteCtx: "&key, mode, houseId, levelIndex, projectName, region",
     })
     this.houses = this.table("houses")
+    this.siteCtx = this.table("siteCtx")
   }
 }
 
