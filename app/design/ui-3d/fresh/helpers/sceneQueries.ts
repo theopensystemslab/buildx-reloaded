@@ -274,6 +274,7 @@ export const mapNearestCutIntersection = (
         case UserDataTypeEnum.Enum.ElementMesh: {
           if (
             isMesh(object) &&
+            object.visible &&
             !Array.isArray(object.material) &&
             object.material.clippingPlanes !== null
           ) {

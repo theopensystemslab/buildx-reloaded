@@ -174,25 +174,11 @@ const useGestures = () => {
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()
-      pipe(
-        intersections,
-        A.findFirst((x) => {
-          return (
-            isMesh(x.object) &&
-            !Array.isArray(x.object.material) &&
-            x.object.material.visible
-          )
-        }),
-        O.map(({ object }) => {
-          if (!isElementMesh(object)) return
-
-          const scopeItem = elementMeshToScopeItem(object)
-
-          scope.selected = ref(scopeItem)
-
-          openMenu(pageX, pageY)
-        })
-      )
+      mapNearestCutIntersection(intersections, ({ object }) => {
+        const scopeItem = elementMeshToScopeItem(object)
+        scope.selected = ref(scopeItem)
+        openMenu(pageX, pageY)
+      })
     },
     onDoubleClick: ({ event, event: { intersections } }) => {
       event.stopPropagation()
