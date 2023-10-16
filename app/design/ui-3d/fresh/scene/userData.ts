@@ -58,20 +58,20 @@ export type HouseTransformsGroupUserData = {
   houseId: string
   houseTypeId: string
   friendlyName: string
-  clippingPlanes: Plane[]
-  activeLayoutGroupUuid: string
-  activeLayoutDnas: string[]
+  // materials
   materials: Record<string, EnrichedMaterial> // specification : EnrichedMaterial
   elements: Record<string, Element> // ifcTag : Element ... for material opts/defaults
   activeElementMaterials: Record<string, string> // ifcTag : specification
-  // materials
   resetMaterials: () => void
   pushElement: (element: Element) => ThreeMaterial
   changeMaterial: (ifcTag: string, specification: string) => void
   // clipping planes
+  clippingPlanes: Plane[]
   setVerticalCuts: () => void
   setLevelCut: (levelIndex: number | null) => void
   // layouts
+  activeLayoutGroupUuid: string
+  activeLayoutDnas: string[]
   updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
   unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
@@ -110,6 +110,7 @@ export const HouseLayoutGroupUse = z.enum([
   "ALT_SECTION_TYPE",
   "ALT_LEVEL_TYPE",
 ])
+
 export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>
 
 export type HouseLayoutGroupUserData = {
