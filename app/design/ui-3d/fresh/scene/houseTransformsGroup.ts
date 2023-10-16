@@ -21,6 +21,7 @@ import {
   findAllGuardDown,
   findFirstGuardAcross,
   getActiveHouseUserData,
+  getLayoutGroupColumnGroups,
 } from "../helpers/sceneQueries"
 import createRotateHandles from "../shapes/rotateHandles"
 import createStretchHandle from "../shapes/stretchHandle"
@@ -28,6 +29,7 @@ import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
   ElementMesh,
+  GridGroupUserData,
   HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
@@ -617,6 +619,52 @@ export const createHouseTransformsGroup = ({
       // }
     }
 
+  const setLevelCut: typeof houseTransformsGroupUserData.setLevelCut = (
+    levelIndex
+  ) => {
+    const { levelMode } = getModeBools()
+
+    const maybeLevelHeight: O.Option<number> =
+      !levelMode || siteCtx.houseId !== houseTransformsGroup.userData.houseId
+        ? O.none
+        : pipe(
+            getActiveLayoutGroup(),
+            O.chain(
+              flow(
+                getLayoutGroupColumnGroups,
+                A.head,
+                O.chain((columnGroup) => {
+                  const gridGroups = columnGroup.children
+                  return pipe(
+                    gridGroups,
+                    A.findFirst((gridGroup) => {
+                      const gridGroupUserData =
+                        gridGroup.userData as GridGroupUserData
+
+                      return gridGroupUserData.levelIndex === levelIndex
+                    }),
+                    O.map((gridGroup) => {
+                      const { height } = gridGroup.userData as GridGroupUserData
+                      return gridGroup.position.y + height / 2
+                    })
+                  )
+                })
+              )
+            )
+          )
+
+    pipe(
+      maybeLevelHeight,
+      O.getOrElse(() => BIG_CLIP_NUMBER),
+      (levelHeight) => {
+        const {
+          clippingPlanes: [, cpy],
+        } = getActiveHouseUserData(houseTransformsGroup)
+        cpy.constant = levelHeight
+      }
+    )
+  }
+
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
     "activeLayoutGroupUuid" | "activeLayoutDnas"
@@ -632,6 +680,7 @@ export const createHouseTransformsGroup = ({
     activeElementMaterials,
     pushElement,
     setVerticalCuts,
+    setLevelCut,
     updateDB,
     updateActiveLayoutDnas,
     initRotateAndStretchXHandles,

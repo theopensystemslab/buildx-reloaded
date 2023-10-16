@@ -49,7 +49,8 @@ export const useRouting = () => {
       case "levelIndex" in params && "houseId" in params: {
         const levelIndex = Number(params.levelIndex)
         const houseId = String(params.houseId)
-        if (siteCtx.levelIndex === levelIndex || isNaN(levelIndex)) break
+
+        if (isNaN(levelIndex)) break
 
         dispatchModeChange({
           prev,

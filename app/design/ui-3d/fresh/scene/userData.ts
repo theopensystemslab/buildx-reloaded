@@ -70,6 +70,7 @@ export type HouseTransformsGroupUserData = {
   changeMaterial: (ifcTag: string, specification: string) => void
   // clipping planes
   setVerticalCuts: () => void
+  setLevelCut: (levelIndex: number | null) => void
   // layouts
   updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
