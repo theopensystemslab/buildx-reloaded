@@ -64,87 +64,89 @@ const MetricsWidget = () => {
     }
   }, [houses])
 
-  const topMetrics: Metric[] = buildingMode
-    ? [
-        {
-          label: "Estimated build cost",
-          value: byHouse[houseId!].costs.total,
-          displayFn: (value) =>
-            value.toLocaleString("en-GB", {
-              style: "currency",
-              currency: currency.code,
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }),
-        },
-        {
-          label: "Estimated chassis cost",
-          value: houseChassisCosts[houseId!],
-          displayFn: (value) =>
-            value.toLocaleString("en-GB", {
-              style: "currency",
-              currency: currency.code,
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }),
-        },
-      ]
-    : [
-        {
-          label: "Estimated build cost",
-          value: costs.total,
-          displayFn: (value) =>
-            value.toLocaleString("en-GB", {
-              style: "currency",
-              currency: currency.code,
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }),
-        },
-        {
-          label: "Estimated chassis cost",
-          value: totalChassisCost,
-          displayFn: (value) =>
-            value.toLocaleString("en-GB", {
-              style: "currency",
-              currency: currency.code,
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }),
-        },
-      ]
+  const topMetrics: Metric[] =
+    buildingMode && houseId && houseId in byHouse
+      ? [
+          {
+            label: "Estimated build cost",
+            value: byHouse[houseId].costs.total,
+            displayFn: (value) =>
+              value.toLocaleString("en-GB", {
+                style: "currency",
+                currency: currency.code,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }),
+          },
+          {
+            label: "Estimated chassis cost",
+            value: houseChassisCosts[houseId],
+            displayFn: (value) =>
+              value.toLocaleString("en-GB", {
+                style: "currency",
+                currency: currency.code,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }),
+          },
+        ]
+      : [
+          {
+            label: "Estimated build cost",
+            value: costs.total,
+            displayFn: (value) =>
+              value.toLocaleString("en-GB", {
+                style: "currency",
+                currency: currency.code,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }),
+          },
+          {
+            label: "Estimated chassis cost",
+            value: totalChassisCost,
+            displayFn: (value) =>
+              value.toLocaleString("en-GB", {
+                style: "currency",
+                currency: currency.code,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }),
+          },
+        ]
 
-  const bottomMetrics: Metric[] = buildingMode
-    ? [
-        {
-          label: "Estimated carbon cost",
-          value: byHouse[houseId!].embodiedCo2.total / 1000,
-          unit: "tCO₂e",
-          displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
-        },
-        {
-          label: "Internal floor area",
-          value: byHouse[houseId!].areas.totalFloor,
-          unit: "m²",
+  const bottomMetrics: Metric[] =
+    buildingMode && houseId && houseId in byHouse
+      ? [
+          {
+            label: "Estimated carbon cost",
+            value: byHouse[houseId!].embodiedCo2.total / 1000,
+            unit: "tCO₂e",
+            displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
+          },
+          {
+            label: "Internal floor area",
+            value: byHouse[houseId!].areas.totalFloor,
+            unit: "m²",
 
-          displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
-        },
-      ]
-    : [
-        {
-          label: "Estimated carbon cost",
-          value: embodiedCo2.total / 1000,
-          unit: "tCO₂e",
-          displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
-        },
-        {
-          label: "Internal floor area",
-          value: areas.totalFloor,
-          unit: "m²",
+            displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
+          },
+        ]
+      : [
+          {
+            label: "Estimated carbon cost",
+            value: embodiedCo2.total / 1000,
+            unit: "tCO₂e",
+            displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
+          },
+          {
+            label: "Internal floor area",
+            value: areas.totalFloor,
+            unit: "m²",
 
-          displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
-        },
-      ]
+            displayFn: (value, unit) => `${value.toFixed(2)} ${unit}`,
+          },
+        ]
 
   return (
     <div className={css.root}>

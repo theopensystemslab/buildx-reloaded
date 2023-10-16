@@ -1,6 +1,10 @@
 import { Close } from "@carbon/icons-react"
 import usePortal from "react-cool-portal"
-import { SiteCtxModeEnum, upMode, useSiteCtx } from "../state/siteCtx"
+import {
+  SiteCtxModeEnum,
+  dispatchModeChange,
+  useSiteCtx,
+} from "../state/siteCtx"
 
 const ExitMode = () => {
   const { mode } = useSiteCtx()
@@ -9,6 +13,20 @@ const ExitMode = () => {
     autoRemoveContainer: false,
     internalShowHide: false,
   })
+
+  const upMode = () => {
+    if (mode === SiteCtxModeEnum.Enum.LEVEL) {
+      dispatchModeChange({
+        prev: mode,
+        next: SiteCtxModeEnum.Enum.BUILDING,
+      })
+    } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
+      dispatchModeChange({
+        prev: mode,
+        next: SiteCtxModeEnum.Enum.SITE,
+      })
+    }
+  }
 
   return mode === SiteCtxModeEnum.Enum.SITE ? null : (
     <Portal>

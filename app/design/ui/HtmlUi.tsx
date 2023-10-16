@@ -34,6 +34,7 @@ import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
+import Breadcrumbs from "./Breadcrumbs"
 
 type Props = {
   controlsEnabled: boolean
@@ -213,7 +214,9 @@ const HtmlUi = (props: Props) => {
         close={() => setUniversalMenu(false)}
       />
 
-      <HeaderStartPortal>{/* <Breadcrumbs /> */}</HeaderStartPortal>
+      <HeaderStartPortal>
+        <Breadcrumbs />
+      </HeaderStartPortal>
 
       <ContextMenu />
 

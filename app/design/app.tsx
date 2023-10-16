@@ -8,6 +8,7 @@ import {
   initSystemsWorker,
 } from "../workers"
 import { Routing } from "./state/routing"
+import { useIndexedSiteCtx } from "./state/siteCtx"
 import FreshApp from "./ui-3d/fresh/FreshApp"
 import AppInit from "./ui-3d/init/AppInit"
 
@@ -16,6 +17,8 @@ const App = () => {
   initModelsWorker()
   initLayoutsWorker()
   initExportersWorker()
+
+  useIndexedSiteCtx()
 
   const houseTypes = useAllHouseTypes()
 

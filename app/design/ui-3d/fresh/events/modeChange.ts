@@ -1,30 +1,21 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { RefObject } from "react"
+import { RefObject, useEffect } from "react"
 import { Group } from "three"
 import scope from "~/design/state/scope"
 import siteCtx, {
-  getModeBools,
+  ModeChangeEventDetail,
   SiteCtxModeEnum,
+  getModeBools,
   useModeChangeListener,
 } from "~/design/state/siteCtx"
 import { A, O } from "~/utils/functions"
 import { useSubscribeKey } from "~/utils/hooks"
-import useClippingPlaneHelpers from "../helpers/clippingPlanes"
-import {
-  findFirstGuardAcross,
-  getActiveHouseUserData,
-} from "../helpers/sceneQueries"
-import {
-  BIG_CLIP_NUMBER,
-  modeToHandleTypeEnum,
-} from "../scene/houseTransformsGroup"
+import { findFirstGuardAcross } from "../helpers/sceneQueries"
+import { modeToHandleTypeEnum } from "../scene/houseTransformsGroup"
 import { HouseTransformsGroup, isHouseTransformsGroup } from "../scene/userData"
 
 const useModeChange = (rootRef: RefObject<Group>) => {
-  const { houseLevelIndexToCutHeight, setYCut } =
-    useClippingPlaneHelpers(rootRef)
-
   const processHandles = () => {
     if (!rootRef.current) return
 
@@ -58,10 +49,11 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     )
   }
 
-  const processClippingPlanes = () => {
+  const processLevelCuts = () => {
     if (!rootRef.current) return
 
     const { houseId, levelIndex } = siteCtx
+
     const { levelMode } = getModeBools()
 
     const allHouseTransformGroups = pipe(
@@ -69,54 +61,63 @@ const useModeChange = (rootRef: RefObject<Group>) => {
       A.filter(isHouseTransformsGroup)
     )
 
-    pipe(
-      allHouseTransformGroups,
-      A.findFirst((x) => x.userData.houseId === houseId),
-      O.map((houseTransformsGroup) => {
-        const { houseId } = getActiveHouseUserData(houseTransformsGroup)
-        setYCut(houseId, BIG_CLIP_NUMBER)
-      })
-    )
-
-    if (levelMode) {
-      if (houseId !== null && levelIndex !== null) {
-        pipe(
-          houseLevelIndexToCutHeight(houseId, levelIndex),
-          O.map((cutHeight) => {
-            setYCut(houseId, cutHeight)
-          })
-        )
+    allHouseTransformGroups.forEach((htg) => {
+      if (levelMode && htg.userData.houseId === houseId) {
+        htg.userData.setLevelCut(levelIndex)
+      } else {
+        htg.userData.setLevelCut(null)
       }
-    }
+    })
   }
 
   useSubscribeKey(scope, "selected", processHandles)
 
-  useModeChangeListener(({ prev, next }) => {
+  const onModeChange = (incoming: ModeChangeEventDetail) => {
+    const { prev, next } = incoming
+
+    if (incoming.houseId) siteCtx.houseId = incoming.houseId
+    if (incoming.levelIndex) siteCtx.levelIndex = incoming.levelIndex
+    siteCtx.mode = next
+
+    const { mode, houseId } = siteCtx
+
+    switch (mode) {
+      case SiteCtxModeEnum.Enum.SITE:
+        siteCtx.houseId = null
+        siteCtx.levelIndex = null
+        break
+      case SiteCtxModeEnum.Enum.BUILDING:
+        // if site -> building then refresh alt section type layouts
+        // ... for x-stretch
+
+        siteCtx.levelIndex = null
+
+        if (prev === SiteCtxModeEnum.Enum.SITE) {
+          pipe(
+            rootRef.current!,
+            findFirstGuardAcross(
+              (x): x is HouseTransformsGroup =>
+                isHouseTransformsGroup(x) && x.userData.houseId === houseId
+            ),
+            O.map((houseTransformsGroup) => {
+              houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+            })
+          )
+        }
+        break
+      case SiteCtxModeEnum.Enum.LEVEL:
+        break
+    }
+
     // always check handles and clipping planes
     processHandles()
-    processClippingPlanes()
+    processLevelCuts()
+  }
 
-    // if site -> building then refresh alt section type layouts
-    // ... for x-stretch
-    if (
-      prev === SiteCtxModeEnum.Enum.SITE &&
-      next === SiteCtxModeEnum.Enum.BUILDING
-    ) {
-      const { houseId } = siteCtx
+  useModeChangeListener(onModeChange)
 
-      pipe(
-        rootRef.current!,
-        findFirstGuardAcross(
-          (x): x is HouseTransformsGroup =>
-            isHouseTransformsGroup(x) && x.userData.houseId === houseId
-        ),
-        O.map((houseTransformsGroup) => {
-          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-        })
-      )
-    }
-  })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => void onModeChange({ next: siteCtx.mode }), [])
 }
 
 export default useModeChange

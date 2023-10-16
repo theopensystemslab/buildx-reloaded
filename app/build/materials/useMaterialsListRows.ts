@@ -7,14 +7,13 @@ import {
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
 import { useElements } from "~/data/elements"
+import { A, O } from "~/utils/functions"
+import { useGetHouseModules, useHouses } from "../../db/user"
 import {
   ElementNotFoundError,
   MaterialNotFoundError,
   useGetElementMaterial,
-} from "~/design/state/hashedMaterials"
-import { A, O, R, TU } from "~/utils/functions"
-import { LastFetchStamped } from "../../db/systems"
-import { House, useGetHouseModules, useHouses } from "../../db/user"
+} from "../../design/ui-3d/fresh/systems"
 import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
 

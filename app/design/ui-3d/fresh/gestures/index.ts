@@ -1,15 +1,12 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
-import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { ref } from "valtio"
-import { A, O } from "../../../../utils/functions"
-import { isMesh } from "../../../../utils/three"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
 import scope from "../../../state/scope"
 import siteCtx, {
-  downMode,
+  dispatchModeChange,
   getModeBools,
   SiteCtxModeEnum,
 } from "../../../state/siteCtx"
@@ -61,6 +58,7 @@ const useGestures = () => {
         setCameraControlsEnabled(false)
         firstDragEventRef.current = state.event
         const { point, object } = firstDragEventRef.current
+
         dispatchPointerDown({ point, object })
       }
 
@@ -126,6 +124,10 @@ const useGestures = () => {
         switch (object.userData.type) {
           case UserDataTypeEnum.Enum.ElementMesh: {
             const scopeItem = elementMeshToScopeItem(object)
+
+            // if building/level and this some other house exit
+            if (siteCtx.houseId && scopeItem.houseId !== siteCtx.houseId) return
+
             scope.hovered = scopeItem
 
             switch (siteCtx.mode) {
@@ -186,6 +188,7 @@ const useGestures = () => {
       if (intersections.length === 0) return
 
       const {
+        object,
         object: { parent },
       } = intersections[0]
 
@@ -197,7 +200,28 @@ const useGestures = () => {
         ) {
           const { houseId } = parent.parent.parent?.parent?.parent
             ?.userData as HouseTransformsGroupUserData
-          downMode({ houseId, levelIndex })
+
+          const { mode } = siteCtx
+
+          switch (mode) {
+            case SiteCtxModeEnum.Enum.SITE:
+              dispatchModeChange({
+                prev: mode,
+                next: SiteCtxModeEnum.Enum.BUILDING,
+                houseId,
+              })
+              break
+            case SiteCtxModeEnum.Enum.BUILDING:
+              if (houseId !== siteCtx.houseId) return
+
+              dispatchModeChange({
+                prev: mode,
+                next: SiteCtxModeEnum.Enum.LEVEL,
+                houseId,
+                levelIndex,
+              })
+              break
+          }
         }
       }
 

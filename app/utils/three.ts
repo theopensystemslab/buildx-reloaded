@@ -1,7 +1,7 @@
 "use client"
 import { useGLTF as useGLTFDrei } from "@react-three/drei"
 import { RootState } from "@react-three/fiber"
-import { useCallback, useMemo, useRef } from "react"
+import { useCallback, useRef } from "react"
 import {
   BufferGeometry,
   Color,
@@ -20,7 +20,7 @@ import {
 } from "three"
 import { Material } from "../../server/data/materials"
 import { CameraLayer, RaycasterLayer } from "../design/state/constants"
-import dimensions, { getHouseCenter } from "../design/state/dimensions"
+// import dimensions, { getHouseCenter } from "../design/state/dimensions"
 import houses from "../design/state/houses"
 
 export type GltfT = {
@@ -144,45 +144,6 @@ export const rotateAboutPoint = (
   obj.position.applyAxisAngle(axis, theta) // rotate the POSITION
   obj.position.add(point) // re-add the offset
   obj.rotateOnAxis(axis, theta) // rotate the OBJECT
-}
-
-export const useRotateAboutCenter = (houseId: string) => {
-  const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
-
-  return useCallback(
-    (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
-      const dims = dimensions[houseId]
-      if (!dims) return
-
-      const center = dims.obb.center
-      obj.position.sub(center) // remove the offset
-      obj.position.applyAxisAngle(yAxis, theta) // rotate the POSITION
-      obj.position.add(center) // re-add the offset
-      if (rotateOnAxis) obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
-    },
-    [houseId, yAxis]
-  )
-}
-
-export const useSetRotation = (houseId: string) => {
-  const yAxis = useMemo(() => new Vector3(0, 1, 0), [])
-  const defaultCenter = useMemo(() => new Vector3(0, 0, 0), [])
-
-  return useCallback(
-    (obj: Object3D, theta: number, rotateOnAxis: boolean = true) => {
-      const center = getHouseCenter(houseId)
-
-      obj.position.sub(center)
-      obj.position.applyAxisAngle(yAxis, theta)
-      obj.position.add(center)
-
-      if (rotateOnAxis) {
-        obj.rotation.set(0, 0, 0)
-        obj.rotateOnAxis(yAxis, theta) // rotate the OBJECT
-      }
-    },
-    [houseId, yAxis]
-  )
 }
 
 export const xAxis = new Vector3(1, 0, 0)

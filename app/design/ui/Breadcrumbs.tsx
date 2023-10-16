@@ -1,66 +1,100 @@
 import siteContext, {
-  enterBuildingMode,
-  exitBuildingMode,
   SiteCtxModeEnum,
+  dispatchModeChange,
   useProjectName,
   useSiteCtx,
 } from "../state/siteCtx"
 import { useRoute } from "~/utils/wouter"
-import { Fragment, useState } from "react"
+import { Fragment, ReactNode, useState } from "react"
 import houses from "../state/houses"
 import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
+import userDB, { House, housesToRecord, useHouses } from "../../db/user"
+import { pipe } from "fp-ts/lib/function"
+import { O, R } from "../../utils/functions"
 
-type Params = {
-  houseId: string
-  levelIndex?: string
+type Props = {
+  houses: House[]
+  params: {
+    houseId?: string
+    levelIndex?: string
+  }
 }
 
-const BreadcrumbsWithParams = (params: Params) => {
+const BreadcrumbsWithParams = (props: Props) => {
+  const { params, houses } = props
   const { houseId, levelIndex } = params
-
-  const { friendlyName } = houses[houseId]
 
   const [renamingBuilding, setRenamingBuilding] = useState(false)
 
   const { mode } = useSiteCtx()
 
-  return (
-    <Fragment>
-      <span>{`/`}</span>
-      <Breadcrumb
-        path={`/design?houseId=${houseId}`}
-        label={friendlyName}
-        onClick={() => {
-          switch (mode) {
-            case SiteCtxModeEnum.Enum.BUILDING:
-              setRenamingBuilding(true)
-              break
-            case SiteCtxModeEnum.Enum.LEVEL:
-              enterBuildingMode(houseId)
-              break
-          }
-        }}
-      />
-      {renamingBuilding && (
-        <RenameForm
-          currentName={friendlyName}
-          onNewName={(newName) => {
-            if (newName.length > 0) houses[houseId].friendlyName = newName
-            setRenamingBuilding(false)
-          }}
-        />
-      )}
-      {typeof levelIndex !== "undefined" && (
-        <Fragment>
-          <span>{`/`}</span>
-          <Breadcrumb
-            path={`/design?houseId=${houseId}&levelIndex=${levelIndex}`}
-            label={`Level ${levelIndex}`}
-          />
-        </Fragment>
-      )}
-    </Fragment>
+  return pipe(
+    houseId,
+    O.fromNullable,
+    O.chain((houseId) =>
+      pipe(
+        houses,
+        housesToRecord,
+        R.lookup(houseId),
+        O.map((house): JSX.Element => {
+          const { friendlyName } = house
+
+          return (
+            <Fragment key={friendlyName}>
+              <span>{`/`}</span>
+              <Breadcrumb
+                path={`/design?houseId=${houseId}`}
+                label={friendlyName}
+                onClick={() => {
+                  switch (mode) {
+                    case SiteCtxModeEnum.Enum.BUILDING:
+                      setRenamingBuilding(true)
+                      break
+                    case SiteCtxModeEnum.Enum.LEVEL:
+                      dispatchModeChange({
+                        prev: mode,
+                        next: SiteCtxModeEnum.Enum.BUILDING,
+                      })
+                      break
+                  }
+                }}
+              />
+              {renamingBuilding && (
+                <RenameForm
+                  currentName={friendlyName}
+                  onNewName={(newName) => {
+                    if (newName.length > 0) {
+                      userDB.houses.update(houseId, {
+                        friendlyName,
+                      })
+                    }
+                    setRenamingBuilding(false)
+                  }}
+                />
+              )}
+              {pipe(
+                levelIndex,
+                O.fromNullable,
+                O.match(
+                  () => null,
+                  (levelIndex) => (
+                    <Fragment>
+                      <span>{`/`}</span>
+                      <Breadcrumb
+                        path={`/design?houseId=${houseId}&levelIndex=${levelIndex}`}
+                        label={`Level ${levelIndex}`}
+                      />
+                    </Fragment>
+                  )
+                )
+              )}
+            </Fragment>
+          )
+        })
+      )
+    ),
+    O.getOrElse(() => <></>)
   )
 }
 
@@ -68,6 +102,8 @@ const Breadcrumbs = () => {
   const [, params] = useRoute<{ houseId: string; levelIndex?: string }>(
     "/design:rest*"
   )
+
+  const houses = useHouses()
 
   const { mode } = useSiteCtx()
 
@@ -86,7 +122,7 @@ const Breadcrumbs = () => {
         }
         onClick={() => {
           if (mode !== SiteCtxModeEnum.Enum.SITE) {
-            exitBuildingMode()
+            dispatchModeChange({ prev: mode, next: SiteCtxModeEnum.Enum.SITE })
           } else if (!renamingProject) {
             setRenamingProject(true)
           }
@@ -105,7 +141,7 @@ const Breadcrumbs = () => {
         typeof params !== "boolean" &&
         params !== null &&
         "houseId" in params && (
-          <BreadcrumbsWithParams {...(params as Params)} />
+          <BreadcrumbsWithParams {...{ params, houses }} />
         )}
     </Fragment>
   )
