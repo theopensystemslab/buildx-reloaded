@@ -2,11 +2,12 @@ import type { HouseType } from "@/server/data/houseTypes"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
-import { useMemo } from "react"
+import { Suspense, memo, useMemo } from "react"
 import { suspend } from "suspend-react"
 import { Group } from "three"
 import { useGetFriendlyName, useHouses } from "../../db/user"
 import { A, O } from "../../utils/functions"
+import { setRaycasting } from "../../utils/three"
 import { setSidebar } from "../state/settings"
 import { useScene } from "../ui-3d/fresh/FreshApp"
 import { findFirstGuardDown } from "../ui-3d/fresh/helpers/sceneQueries"
@@ -15,16 +16,12 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
 } from "../ui-3d/fresh/scene/userData"
-import { setRaycasting } from "../../utils/three"
-import Image from "next/image"
-import { getSystemsWorker } from "../../workers"
-import siteCtx, { SiteCtxModeEnum } from "../state/siteCtx"
 
 type Props = {
   houseType: HouseType
 }
 
-const HouseThumbnail = ({ houseType }: Props) => {
+const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
   const scene = useScene()
 
   const maybeWorldGroup = useMemo(
@@ -44,8 +41,9 @@ const HouseThumbnail = ({ houseType }: Props) => {
     [scene]
   )
 
-  const houses = useHouses()
   const getFriendlyName = useGetFriendlyName()
+
+  const houses = useHouses()
 
   const maybeHouseTransformsGroup: O.Option<HouseTransformsGroup> =
     suspend(async () => {
@@ -66,44 +64,8 @@ const HouseThumbnail = ({ houseType }: Props) => {
 
       setRaycasting(houseTransformsGroup, true)
 
-      const collisionsCheck = () =>
-        pipe(
-          maybeWorldGroup,
-          O.match(
-            () => false,
-            (worldGroup) => {
-              const nearNeighbours =
-                houseTransformsGroup.userData.computeNearNeighbours(worldGroup)
-
-              return houseTransformsGroup.userData.checkCollisions(
-                nearNeighbours
-              )
-            }
-          )
-        )
-
-      const MAX_T = 99
-      let t = 0 // parameter for the spiral
-      let a = 1 // tightness of the spiral, might need adjustment
-
-      do {
-        // Calculate the new position on the spiral
-        const x = a * t * Math.cos(t)
-        const z = a * t * Math.sin(t)
-
-        // Move the houseTransformsGroup to new position
-        houseTransformsGroup.position.set(x, 0, z)
-
-        houseTransformsGroup.userData
-          .unsafeGetActiveLayoutGroup()
-          .userData.updateBBs()
-        t += 1 // Increment t by an amount to ensure the loop can exit
-      } while (t < MAX_T && collisionsCheck())
-
-      if (t >= MAX_T) throw new Error(`Infinite collision!`)
-
       return O.some(houseTransformsGroup)
-    }, [houseType, houses.length, scene])
+    }, [houseType, scene, houses.length])
 
   const addHouse = () => {
     if (!scene) return
@@ -114,6 +76,44 @@ const HouseThumbnail = ({ houseType }: Props) => {
         pipe(
           maybeWorldGroup,
           O.map((worldGroup) => {
+            const collisionsCheck = () =>
+              pipe(
+                maybeWorldGroup,
+                O.match(
+                  () => false,
+                  (worldGroup) => {
+                    const nearNeighbours =
+                      houseTransformsGroup.userData.computeNearNeighbours(
+                        worldGroup
+                      )
+
+                    return houseTransformsGroup.userData.checkCollisions(
+                      nearNeighbours
+                    )
+                  }
+                )
+              )
+
+            const MAX_T = 99
+            let t = 0 // parameter for the spiral
+            let a = 1 // tightness of the spiral, might need adjustment
+
+            do {
+              // Calculate the new position on the spiral
+              const x = a * t * Math.cos(t)
+              const z = a * t * Math.sin(t)
+
+              // Move the houseTransformsGroup to new position
+              houseTransformsGroup.position.set(x, 0, z)
+
+              houseTransformsGroup.userData
+                .unsafeGetActiveLayoutGroup()
+                .userData.updateBBs()
+              t += 1 // Increment t by an amount to ensure the loop can exit
+            } while (t < MAX_T && collisionsCheck())
+
+            if (t >= MAX_T) throw new Error(`Infinite collision!`)
+
             houseTransformsGroup.userData.setVerticalCuts()
 
             worldGroup.add(houseTransformsGroup)
@@ -140,6 +140,17 @@ const HouseThumbnail = ({ houseType }: Props) => {
   }
 
   return (
+    <button
+      onClick={addHouse}
+      className="rounded bg-grey-80 px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black"
+    >
+      Add to site
+    </button>
+  )
+})
+
+const HouseThumbnail = ({ houseType }: Props) => {
+  return (
     <div className="flex items-center space-x-2 border-b border-grey-20 px-4 py-4">
       <div
         className="h-20 w-20 flex-none rounded-full bg-grey-20"
@@ -159,15 +170,18 @@ const HouseThumbnail = ({ houseType }: Props) => {
             </span>
           ))}
         </div>
-        <button
-          onClick={addHouse}
-          className="rounded bg-grey-80 px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black"
+        <Suspense
+          fallback={
+            <button className="rounded bg-grey-30 px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black">
+              Add to site
+            </button>
+          }
         >
-          Add to site
-        </button>
+          <SuspendingHouseThumbnailButton houseType={houseType} />
+        </Suspense>
       </div>
     </div>
   )
 }
 
-export default HouseThumbnail
+export default memo(HouseThumbnail)

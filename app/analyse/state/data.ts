@@ -598,13 +598,6 @@ const calculateHouseInfo = (
 export const useAnalyseData = () => {
   const houses = useHouses()
 
-  // console.log(
-  //   pipe(
-  //     houses,
-  //     A.map((x) => x.activeElementMaterials)
-  //   )
-  // )
-
   const getHouseModules = useGetHouseModules()
 
   const spaceTypes = useAllSpaceTypes()

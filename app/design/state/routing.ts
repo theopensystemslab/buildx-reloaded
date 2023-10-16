@@ -42,8 +42,6 @@ export const useRouting = () => {
 
     const { mode: prev } = siteCtx
 
-    console.log(params)
-
     if (params === null || typeof params === "boolean") return
 
     switch (true) {
