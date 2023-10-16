@@ -62,6 +62,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     if (!rootRef.current) return
 
     const { houseId, levelIndex } = siteCtx
+
     const { levelMode } = getModeBools()
 
     const allHouseTransformGroups = pipe(
@@ -92,30 +93,46 @@ const useModeChange = (rootRef: RefObject<Group>) => {
 
   useSubscribeKey(scope, "selected", processHandles)
 
-  useModeChangeListener(({ prev, next }) => {
+  useModeChangeListener((incoming) => {
+    const { prev, next } = incoming
+
+    if (incoming.houseId) siteCtx.houseId = incoming.houseId
+    if (incoming.levelIndex) siteCtx.levelIndex = incoming.levelIndex
+    siteCtx.mode = next
+
+    const { mode, houseId } = siteCtx
+
+    switch (mode) {
+      case SiteCtxModeEnum.Enum.SITE:
+        siteCtx.houseId = null
+        siteCtx.levelIndex = null
+        break
+      case SiteCtxModeEnum.Enum.BUILDING:
+        // if site -> building then refresh alt section type layouts
+        // ... for x-stretch
+
+        siteCtx.levelIndex = null
+
+        if (prev === SiteCtxModeEnum.Enum.SITE) {
+          pipe(
+            rootRef.current!,
+            findFirstGuardAcross(
+              (x): x is HouseTransformsGroup =>
+                isHouseTransformsGroup(x) && x.userData.houseId === houseId
+            ),
+            O.map((houseTransformsGroup) => {
+              houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+            })
+          )
+        }
+        break
+      case SiteCtxModeEnum.Enum.LEVEL:
+        break
+    }
+
     // always check handles and clipping planes
     processHandles()
     processClippingPlanes()
-
-    // if site -> building then refresh alt section type layouts
-    // ... for x-stretch
-    if (
-      prev === SiteCtxModeEnum.Enum.SITE &&
-      next === SiteCtxModeEnum.Enum.BUILDING
-    ) {
-      const { houseId } = siteCtx
-
-      pipe(
-        rootRef.current!,
-        findFirstGuardAcross(
-          (x): x is HouseTransformsGroup =>
-            isHouseTransformsGroup(x) && x.userData.houseId === houseId
-        ),
-        O.map((houseTransformsGroup) => {
-          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-        })
-      )
-    }
   })
 }
 

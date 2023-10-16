@@ -46,20 +46,26 @@ export const useRouting = () => {
 
     switch (true) {
       // LEVEL
-      case "levelIndex" in params: {
+      case "levelIndex" in params && "houseId" in params: {
         const levelIndex = Number(params.levelIndex)
+        const houseId = String(params.houseId)
         if (siteCtx.levelIndex === levelIndex || isNaN(levelIndex)) break
+
         dispatchModeChange({
           prev,
           next: SiteCtxModeEnum.Enum.LEVEL,
+          houseId,
+          levelIndex,
         })
         break
       }
       // BUILDING
       case "houseId" in params: {
+        const houseId = String(params.houseId)
         dispatchModeChange({
           prev,
           next: SiteCtxModeEnum.Enum.BUILDING,
+          houseId,
         })
         break
       }

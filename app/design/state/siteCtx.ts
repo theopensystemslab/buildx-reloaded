@@ -117,6 +117,8 @@ const MODE_CHANGE_EVENT = "ModeChangeEvent"
 export type ModeChangeEventDetail = {
   prev?: SiteCtxMode
   next: SiteCtxMode
+  houseId?: string
+  levelIndex?: number
 }
 
 export const dispatchModeChange = (detail: ModeChangeEventDetail) =>

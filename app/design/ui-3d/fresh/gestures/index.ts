@@ -200,15 +200,23 @@ const useGestures = () => {
 
           const { mode } = siteCtx
 
-          dispatchModeChange({
-            prev: mode,
-            next:
-              mode === SiteCtxModeEnum.Enum.SITE
-                ? SiteCtxModeEnum.Enum.BUILDING
-                : mode === SiteCtxModeEnum.Enum.BUILDING
-                ? SiteCtxModeEnum.Enum.LEVEL
-                : SiteCtxModeEnum.Enum.LEVEL,
-          })
+          switch (mode) {
+            case SiteCtxModeEnum.Enum.SITE:
+              dispatchModeChange({
+                prev: mode,
+                next: SiteCtxModeEnum.Enum.BUILDING,
+                houseId,
+              })
+              break
+            case SiteCtxModeEnum.Enum.BUILDING:
+              dispatchModeChange({
+                prev: mode,
+                next: SiteCtxModeEnum.Enum.LEVEL,
+                houseId,
+                levelIndex,
+              })
+              break
+          }
         }
       }
 
