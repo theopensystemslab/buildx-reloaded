@@ -6,16 +6,15 @@ import userDB from "../../../../db/user"
 import { Pencil, TextCursor } from "../../../../ui/icons"
 import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
-import scope from "../../../state/scope"
-import { downMode, exitBuildingMode } from "../../../state/siteCtx"
+import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import RenameForm from "../../RenameForm"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
+import Exporters from "../common/Exporters"
 import { ModeContextMenuProps } from "../common/props"
 import ResetContextMenuButton from "./ResetContextMenuButton"
-import Exporters from "../common/Exporters"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const { object } = scopeElement
@@ -59,7 +58,10 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             text="Edit building"
             unpaddedSvg
             onClick={() => {
-              downMode(scopeElement)
+              dispatchModeChange({
+                prev: SiteCtxModeEnum.Enum.SITE,
+                next: SiteCtxModeEnum.Enum.BUILDING,
+              })
               close()
             }}
           />

@@ -28,6 +28,8 @@ const useModeChange = (rootRef: RefObject<Group>) => {
   const processHandles = () => {
     if (!rootRef.current) return
 
+    console.log(`processHandles`)
+
     const { mode } = siteCtx
     const { selected } = scope
 
@@ -63,6 +65,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
 
     const { houseId, levelIndex } = siteCtx
     const { levelMode } = getModeBools()
+    console.log(0)
 
     const allHouseTransformGroups = pipe(
       rootRef.current.children,
@@ -75,6 +78,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
       O.map((houseTransformsGroup) => {
         const { houseId } = getActiveHouseUserData(houseTransformsGroup)
         setYCut(houseId, BIG_CLIP_NUMBER)
+        console.log(1)
       })
     )
 
@@ -84,6 +88,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
           houseLevelIndexToCutHeight(houseId, levelIndex),
           O.map((cutHeight) => {
             setYCut(houseId, cutHeight)
+            console.log(2)
           })
         )
       }

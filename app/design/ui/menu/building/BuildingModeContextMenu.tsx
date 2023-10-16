@@ -4,7 +4,6 @@ import { Suspense } from "react"
 import { Pencil } from "../../../../ui/icons"
 import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
-import { downMode } from "../../../state/siteCtx"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenu from "../common/ContextMenu"
@@ -13,6 +12,7 @@ import { ModeContextMenuProps } from "../common/props"
 import ChangeLevelType from "./ChangeLevelType"
 import ChangeWindows from "../common/ChangeWindows"
 import ChangeMaterial from "../common/ChangeMaterial"
+import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
 
 const BuildingModeContextMenu = ({
   x,
@@ -49,7 +49,10 @@ const BuildingModeContextMenu = ({
         text="Edit level"
         unpaddedSvg
         onClick={() => {
-          downMode(scopeElement)
+          dispatchModeChange({
+            prev: SiteCtxModeEnum.Enum.BUILDING,
+            next: SiteCtxModeEnum.Enum.LEVEL,
+          })
           close()
         }}
       />

@@ -5,7 +5,7 @@ import { Group, Mesh } from "three"
 import { subscribeKey } from "valtio/utils"
 import { RaycasterLayer } from "~/design/state/constants"
 import { setCameraControlsEnabled } from "../state/camera"
-import dimensions from "../state/dimensions"
+// import dimensions from "../state/dimensions"
 import houses from "../state/houses"
 import pointer from "../state/pointer"
 import CircularHandle from "./CircularHandle"
@@ -23,21 +23,21 @@ const VerticalHandle = (props: Props) => {
 
   const [hovered, setHovered] = useState(false)
 
-  const update = useCallback(() => {
-    if (!groupRef.current || !(houseId in dimensions)) return
-    const {
-      position: { x: px, y: py, z: pz },
-      rotation,
-    } = houses[houseId]
-    const { height, length } = dimensions[houseId]
-    groupRef.current.position.set(px, height + 2, pz + length / 2)
-    groupRef.current.rotation.y = rotation
-  }, [houseId])
+  // const update = useCallback(() => {
+  //   if (!groupRef.current || !(houseId in dimensions)) return
+  //   const {
+  //     position: { x: px, y: py, z: pz },
+  //     rotation,
+  //   } = houses[houseId]
+  //   const { height, length } = dimensions[houseId]
+  //   groupRef.current.position.set(px, height + 2, pz + length / 2)
+  //   groupRef.current.rotation.y = rotation
+  // }, [houseId])
 
-  useEffect(() => {
-    update()
-    return subscribeKey(dimensions, houseId, update)
-  }, [houseId, update])
+  // useEffect(() => {
+  //   update()
+  //   return subscribeKey(dimensions, houseId, update)
+  // }, [houseId, update])
 
   const y0 = useRef(0)
   const dragging = useRef(false)

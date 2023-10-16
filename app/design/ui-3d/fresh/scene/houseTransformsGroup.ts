@@ -11,10 +11,10 @@ import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
-import {
+import siteCtx, {
   SiteCtxMode,
   SiteCtxModeEnum,
-  exitBuildingMode,
+  dispatchModeChange,
   getModeBools,
 } from "../../../state/siteCtx"
 import {
@@ -555,7 +555,10 @@ export const createHouseTransformsGroup = ({
         worldGroup.remove(houseTransformsGroup)
         userDB.houses.delete(houseId)
         scope.selected = null
-        exitBuildingMode()
+        dispatchModeChange({
+          prev: siteCtx.mode,
+          next: SiteCtxModeEnum.Enum.SITE,
+        })
       })
     )
   }

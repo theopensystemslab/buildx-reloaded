@@ -28,14 +28,6 @@ const defaults: SiteCtx = {
   region: "UK",
 }
 
-// export const getInitialSiteCtx = () =>
-//   isSSR()
-//     ? defaults
-//     : JSON.parse(
-//         localStorage.getItem(BUILDX_LOCAL_STORAGE_CONTEXT_KEY) ??
-//           JSON.stringify(defaults)
-//       )
-
 const siteCtx = proxy<SiteCtx>(defaults)
 
 userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
@@ -45,23 +37,6 @@ userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
 })
 
 export const useSiteCtx = () => useSnapshot(siteCtx)
-
-export const useIsBuilding = (houseId: string) => {
-  const { houseId: buildingHouseId } = useSiteCtx()
-  return houseId === buildingHouseId
-}
-
-export const useTransformabilityBooleans = (houseId: string) => {
-  const { mode, houseId: ctxHouseId } = useSiteCtx()
-
-  return {
-    stretchEnabled:
-      mode === SiteCtxModeEnum.Enum.BUILDING ||
-      (mode === SiteCtxModeEnum.Enum.LEVEL && houseId === ctxHouseId),
-    moveRotateEnabled:
-      mode === SiteCtxModeEnum.Enum.SITE && houseId === ctxHouseId,
-  }
-}
 
 export const useIndexedSiteCtx = () =>
   useSubscribe(siteCtx, () => {
@@ -83,64 +58,64 @@ export const useProjectName = () => {
   else return projectName
 }
 
-export const enterBuildingMode = (houseId: string) => {
-  if (siteCtx.houseId !== houseId) siteCtx.houseId = houseId
-  if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-  if (siteCtx.mode !== SiteCtxModeEnum.Enum.BUILDING)
-    siteCtx.mode = SiteCtxModeEnum.Enum.BUILDING
-}
+// export const enterBuildingMode = (houseId: string) => {
+//   if (siteCtx.houseId !== houseId) siteCtx.houseId = houseId
+//   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
+//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.BUILDING)
+//     siteCtx.mode = SiteCtxModeEnum.Enum.BUILDING
+// }
 
-export const exitBuildingMode = () => {
-  if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-  if (siteCtx.houseId !== null) siteCtx.houseId = null
-  if (siteCtx.mode !== SiteCtxModeEnum.Enum.SITE)
-    siteCtx.mode = SiteCtxModeEnum.Enum.SITE
-}
+// export const exitBuildingMode = () => {
+//   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
+//   if (siteCtx.houseId !== null) siteCtx.houseId = null
+//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.SITE)
+//     siteCtx.mode = SiteCtxModeEnum.Enum.SITE
+// }
 
-export const enterLevelMode = (levelIndex: number) => {
-  if (siteCtx.levelIndex !== levelIndex) siteCtx.levelIndex = levelIndex
-  if (siteCtx.mode !== SiteCtxModeEnum.Enum.LEVEL)
-    siteCtx.mode = SiteCtxModeEnum.Enum.LEVEL
-}
+// export const enterLevelMode = (levelIndex: number) => {
+//   if (siteCtx.levelIndex !== levelIndex) siteCtx.levelIndex = levelIndex
+//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.LEVEL)
+//     siteCtx.mode = SiteCtxModeEnum.Enum.LEVEL
+// }
 
-export const upMode = () => {
-  const { houseId, mode } = siteCtx
-  if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
-    enterBuildingMode(houseId)
-    dispatchModeChange({
-      prev: SiteCtxModeEnum.Enum.LEVEL,
-      next: SiteCtxModeEnum.Enum.BUILDING,
-    })
-  } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
-    exitBuildingMode()
-    dispatchModeChange({
-      prev: SiteCtxModeEnum.Enum.BUILDING,
-      next: SiteCtxModeEnum.Enum.SITE,
-    })
-  }
-}
+// export const upMode = () => {
+//   const { houseId, mode } = siteCtx
+//   if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
+//     enterBuildingMode(houseId)
+//     dispatchModeChange({
+//       prev: SiteCtxModeEnum.Enum.LEVEL,
+//       next: SiteCtxModeEnum.Enum.BUILDING,
+//     })
+//   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
+//     exitBuildingMode()
+//     dispatchModeChange({
+//       prev: SiteCtxModeEnum.Enum.BUILDING,
+//       next: SiteCtxModeEnum.Enum.SITE,
+//     })
+//   }
+// }
 
-export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
-  const { mode } = siteCtx
-  if (mode === SiteCtxModeEnum.Enum.SITE) {
-    enterBuildingMode(incoming.houseId)
-    dispatchModeChange({
-      prev: SiteCtxModeEnum.Enum.SITE,
-      next: SiteCtxModeEnum.Enum.BUILDING,
-    })
-  } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
-    enterLevelMode(incoming.levelIndex)
-    dispatchModeChange({
-      prev: SiteCtxModeEnum.Enum.BUILDING,
-      next: SiteCtxModeEnum.Enum.LEVEL,
-    })
-  }
-}
+// export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
+//   const { mode } = siteCtx
+//   if (mode === SiteCtxModeEnum.Enum.SITE) {
+//     enterBuildingMode(incoming.houseId)
+//     dispatchModeChange({
+//       prev: SiteCtxModeEnum.Enum.SITE,
+//       next: SiteCtxModeEnum.Enum.BUILDING,
+//     })
+//   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
+//     enterLevelMode(incoming.levelIndex)
+//     dispatchModeChange({
+//       prev: SiteCtxModeEnum.Enum.BUILDING,
+//       next: SiteCtxModeEnum.Enum.LEVEL,
+//     })
+//   }
+// }
 
 const MODE_CHANGE_EVENT = "ModeChangeEvent"
 
 export type ModeChangeEventDetail = {
-  prev: SiteCtxMode
+  prev?: SiteCtxMode
   next: SiteCtxMode
 }
 

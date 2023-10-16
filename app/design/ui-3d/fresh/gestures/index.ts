@@ -9,7 +9,7 @@ import { setCameraControlsEnabled } from "../../../state/camera"
 import { openMenu } from "../../../state/menu"
 import scope from "../../../state/scope"
 import siteCtx, {
-  downMode,
+  dispatchModeChange,
   getModeBools,
   SiteCtxModeEnum,
 } from "../../../state/siteCtx"
@@ -197,7 +197,18 @@ const useGestures = () => {
         ) {
           const { houseId } = parent.parent.parent?.parent?.parent
             ?.userData as HouseTransformsGroupUserData
-          downMode({ houseId, levelIndex })
+
+          const { mode } = siteCtx
+
+          dispatchModeChange({
+            prev: mode,
+            next:
+              mode === SiteCtxModeEnum.Enum.SITE
+                ? SiteCtxModeEnum.Enum.BUILDING
+                : mode === SiteCtxModeEnum.Enum.BUILDING
+                ? SiteCtxModeEnum.Enum.LEVEL
+                : SiteCtxModeEnum.Enum.LEVEL,
+          })
         }
       }
 

@@ -3,9 +3,8 @@ import { useRoute } from "~/utils/wouter"
 import { useEffect, useRef } from "react"
 import { useLocation } from "wouter"
 import siteCtx, {
-  enterBuildingMode,
-  enterLevelMode,
-  exitBuildingMode,
+  SiteCtxModeEnum,
+  dispatchModeChange,
   getModeBools,
 } from "~/design/state/siteCtx"
 import { useSubscribe } from "~/utils/hooks"
@@ -41,19 +40,37 @@ export const useRouting = () => {
   useEffect(() => {
     urlChangingLock.current = true
 
+    const { mode: prev } = siteCtx
+
+    console.log(params)
+
     if (params === null || typeof params === "boolean") return
+
     switch (true) {
-      case "houseId" in params && siteCtx.houseId !== params.houseId: {
-        enterBuildingMode(params.houseId!)
-      }
+      // LEVEL
       case "levelIndex" in params: {
         const levelIndex = Number(params.levelIndex)
         if (siteCtx.levelIndex === levelIndex || isNaN(levelIndex)) break
-        enterLevelMode(levelIndex)
+        dispatchModeChange({
+          prev,
+          next: SiteCtxModeEnum.Enum.LEVEL,
+        })
         break
       }
+      // BUILDING
+      case "houseId" in params: {
+        dispatchModeChange({
+          prev,
+          next: SiteCtxModeEnum.Enum.BUILDING,
+        })
+        break
+      }
+      // SITE
       case !("houseId" in params): {
-        exitBuildingMode()
+        dispatchModeChange({
+          prev,
+          next: SiteCtxModeEnum.Enum.SITE,
+        })
         break
       }
     }
