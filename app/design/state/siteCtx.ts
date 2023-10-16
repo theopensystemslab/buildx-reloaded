@@ -1,13 +1,11 @@
-import { useEffect } from "react"
 import { useEvent } from "react-use"
-import { proxy, subscribe, useSnapshot } from "valtio"
+import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
-import { isSSR } from "~/utils/next"
 import { formatWithUnit } from "../../analyse/state/data"
+import userDB from "../../db/user"
+import { useSubscribe } from "../../utils/hooks"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
 import houses from "./houses"
-import { useSubscribe } from "../../utils/hooks"
-import userDB from "../../db/user"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
@@ -57,60 +55,6 @@ export const useProjectName = () => {
   if (projectName === null || projectName.length <= 0) return "New project"
   else return projectName
 }
-
-// export const enterBuildingMode = (houseId: string) => {
-//   if (siteCtx.houseId !== houseId) siteCtx.houseId = houseId
-//   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.BUILDING)
-//     siteCtx.mode = SiteCtxModeEnum.Enum.BUILDING
-// }
-
-// export const exitBuildingMode = () => {
-//   if (siteCtx.levelIndex !== null) siteCtx.levelIndex = null
-//   if (siteCtx.houseId !== null) siteCtx.houseId = null
-//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.SITE)
-//     siteCtx.mode = SiteCtxModeEnum.Enum.SITE
-// }
-
-// export const enterLevelMode = (levelIndex: number) => {
-//   if (siteCtx.levelIndex !== levelIndex) siteCtx.levelIndex = levelIndex
-//   if (siteCtx.mode !== SiteCtxModeEnum.Enum.LEVEL)
-//     siteCtx.mode = SiteCtxModeEnum.Enum.LEVEL
-// }
-
-// export const upMode = () => {
-//   const { houseId, mode } = siteCtx
-//   if (mode === SiteCtxModeEnum.Enum.LEVEL && houseId) {
-//     enterBuildingMode(houseId)
-//     dispatchModeChange({
-//       prev: SiteCtxModeEnum.Enum.LEVEL,
-//       next: SiteCtxModeEnum.Enum.BUILDING,
-//     })
-//   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
-//     exitBuildingMode()
-//     dispatchModeChange({
-//       prev: SiteCtxModeEnum.Enum.BUILDING,
-//       next: SiteCtxModeEnum.Enum.SITE,
-//     })
-//   }
-// }
-
-// export const downMode = (incoming: { levelIndex: number; houseId: string }) => {
-//   const { mode } = siteCtx
-//   if (mode === SiteCtxModeEnum.Enum.SITE) {
-//     enterBuildingMode(incoming.houseId)
-//     dispatchModeChange({
-//       prev: SiteCtxModeEnum.Enum.SITE,
-//       next: SiteCtxModeEnum.Enum.BUILDING,
-//     })
-//   } else if (mode === SiteCtxModeEnum.Enum.BUILDING) {
-//     enterLevelMode(incoming.levelIndex)
-//     dispatchModeChange({
-//       prev: SiteCtxModeEnum.Enum.BUILDING,
-//       next: SiteCtxModeEnum.Enum.LEVEL,
-//     })
-//   }
-// }
 
 const MODE_CHANGE_EVENT = "ModeChangeEvent"
 
