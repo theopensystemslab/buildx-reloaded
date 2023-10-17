@@ -51,17 +51,19 @@ export default function ContextMenuNested(props: Props) {
         </span>
         <span>{props.label}</span>
       </div>
-      <div
-        ref={menuRef}
-        className={`${hovered ? "" : "hidden"} absolute ${
-          flip ? "right-full" : "left-full"
-        } z-20 bg-white ${props.long ? "w-64" : "w-48"}`}
-        style={{
-          transform: `translate(${0}px, ${ty}px)`,
-        }}
-      >
-        {props.children}
-      </div>
+      {hovered ? (
+        <div
+          ref={menuRef}
+          className={`absolute ${
+            flip ? "right-full" : "left-full"
+          } z-20 bg-white ${props.long ? "w-64" : "w-48"}`}
+          style={{
+            transform: `translate(${0}px, ${ty}px)`,
+          }}
+        >
+          {props.children}
+        </div>
+      ) : null}
     </div>
   )
 }
