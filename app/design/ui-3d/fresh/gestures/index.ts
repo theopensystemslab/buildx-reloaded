@@ -3,7 +3,7 @@ import { useGesture } from "@use-gesture/react"
 import { useRef } from "react"
 import { ref } from "valtio"
 import { setCameraControlsEnabled } from "../../../state/camera"
-import { openMenu } from "../../../state/menu"
+import menu, { openMenu } from "../../../state/menu"
 import scope from "../../../state/scope"
 import siteCtx, {
   dispatchModeChange,
@@ -105,8 +105,8 @@ const useGestures = () => {
 
       invalidate()
     },
-    onHover: ({ event, event: { intersections }, hovering }) => {
-      if (firstDragEventRef.current) return
+    onHover: ({ event: { intersections }, hovering }) => {
+      if (firstDragEventRef.current || menu.open) return
 
       if (intersections.length === 0) {
         document.body.style.cursor = ""

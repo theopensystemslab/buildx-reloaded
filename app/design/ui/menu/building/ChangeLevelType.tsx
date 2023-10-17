@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense, useCallback, useEffect, useRef } from "react"
+import { Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
@@ -8,17 +8,16 @@ import { A, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
 import systemsDB from "../../../../db/systems"
-import { setInvisibleNoRaycast } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
 import { ScopeElement } from "../../../state/scope"
-import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
+import { findFirstGuardDown } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
+  GridGroup,
   HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
-  isActiveLayoutGroup,
+  isGridGroup,
   isHouseLayoutGroup,
+  isModuleGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "../common/ContextMenuNested"
 
@@ -30,109 +29,128 @@ type Props = {
 
 type LevelTypeOption = {
   label: string
-  value: { levelType: LevelType; houseLayoutGroup: HouseLayoutGroup }
+  value: { levelType: LevelType; layoutGroup: HouseLayoutGroup }
 }
 
 const ChangeLevelTypeOptions = (props: Props) => {
   const { houseTransformsGroup, scopeElement, close } = props
 
   const { levelTypeOptions, originalLevelTypeOption } = suspend(async () => {
-    const { systemId, houseId, dnas } =
-      getActiveHouseUserData(houseTransformsGroup)
+    const { systemId } = houseTransformsGroup.userData
+    const { levelIndex } = scopeElement
 
-    const { levelIndex, dna } = scopeElement
+    const allLevelTypes = await systemsDB.levelTypes
+      .where({ systemId })
+      .toArray()
 
-    const { levelType: currentLevelTypeCode } = parseDna(dna)
-
-    const currentLevelType = await systemsDB.levelTypes.get({
-      systemId,
-      code: currentLevelTypeCode,
-    })
-
-    if (!currentLevelType)
-      throw new Error(
-        `no level type found for ${systemId} ${currentLevelTypeCode}`
+    const getLevelType = (code: string) =>
+      pipe(
+        allLevelTypes,
+        A.findFirst((x) => x.code === code),
+        someOrError(`level type ${code} not found`)
       )
 
-    const activeLayoutGroup = pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
-      someOrError(`no active layout group in change level type`)
-    )
+    const augmentLevelType = (
+      layoutGroup: HouseLayoutGroup
+    ): LevelTypeOption => {
+      const moduleGroup = pipe(
+        layoutGroup,
+        findFirstGuardDown(
+          (x): x is GridGroup =>
+            isGridGroup(x) && x.userData.levelIndex === levelIndex
+        ),
+        someOrError(`no grid group`),
+        findFirstGuardDown(isModuleGroup),
+        someOrError(`no module group`)
+      )
 
-    const originalLevelTypeOption: LevelTypeOption = {
-      label: currentLevelType.description,
-      value: {
-        houseLayoutGroup: activeLayoutGroup,
-        levelType: currentLevelType,
-      },
-    }
+      const { levelType: code } = parseDna(moduleGroup.userData.dna)
 
-    const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
-      {
-        systemId,
-        dnas,
-        currentLevelTypeCode,
-        levelIndex,
+      const levelType = getLevelType(code)
+
+      return {
+        label: levelType.description,
+        value: {
+          layoutGroup,
+          levelType,
+        },
       }
-    )
-
-    let levelTypeOptions: LevelTypeOption[] = []
-
-    for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
-      if (levelType.code === currentLevelTypeCode) continue
-
-      createHouseLayoutGroup({
-        systemId,
-        dnas,
-        houseId,
-        houseLayout: layout,
-        use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
-        houseTransformsGroup,
-      })().then((houseLayoutGroup) => {
-        setInvisibleNoRaycast(houseLayoutGroup)
-        houseTransformsGroup.add(houseLayoutGroup)
-        const lto: LevelTypeOption = {
-          label: levelType.description,
-          value: { levelType, houseLayoutGroup },
-        }
-        levelTypeOptions.push(lto)
-      })
     }
 
-    levelTypeOptions.push(originalLevelTypeOption)
+    const newOptions = pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x): x is HouseLayoutGroup =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
+          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+      ),
+      A.map(augmentLevelType)
+    )
 
-    levelTypeOptions.sort((a, b) => {
+    const originalOption = augmentLevelType(
+      houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
+    )
+
+    const allOptions = pipe(
+      [...newOptions, originalOption],
+      A.uniq({
+        equals: (x, y) => x.value.layoutGroup.uuid === y.value.layoutGroup.uuid,
+      })
+    )
+
+    allOptions.sort((a, b) => {
       if (a.value.levelType.code > b.value.levelType.code) return 1
       if (a.value.levelType.code < b.value.levelType.code) return -1
       return 0
     })
 
-    return { levelTypeOptions, originalLevelTypeOption }
+    return {
+      levelTypeOptions: allOptions,
+      originalLevelTypeOption: originalOption,
+    }
   }, [scopeElement])
 
-  const closing = useRef(false)
+  // const closing = useRef(false)
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    if (closing.current) return
+    // if (closing.current) return
 
     if (incoming) {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        incoming.houseLayoutGroup
-      )
+      houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        originalLevelTypeOption.value.houseLayoutGroup
-      )
+      // houseTransformsGroup.userData.setActiveLayoutGroup(
+      //   originalLevelTypeOption.value.layoutGroup
+      // )
     }
+
     invalidate()
   }
 
-  const changeLevelType = ({ houseLayoutGroup }: LevelTypeOption["value"]) => {
-    closing.current = true
+  const changeLevelType = ({ layoutGroup }: LevelTypeOption["value"]) => {
+    // closing.current = true
+
+    // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+
+    close()
+
+    pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+      ),
+      A.map((x) => {
+        x.removeFromParent()
+      })
+    )
+
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
-    close()
+    // closing.current = false
   }
 
   return (
@@ -147,9 +165,10 @@ const ChangeLevelTypeOptions = (props: Props) => {
 
 const ChangeLevelType = (props: Props) => {
   const {
-    scopeElement: { dna },
+    scopeElement: { dna, levelIndex },
     houseTransformsGroup,
   } = props
+
   const { levelType } = parseDna(dna)
 
   let levelString = "level"
@@ -162,22 +181,10 @@ const ChangeLevelType = (props: Props) => {
     levelString = "roof"
   }
 
-  const cleanup = useCallback(() => {
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          !isActiveLayoutGroup(x)
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
-  }, [houseTransformsGroup])
+  // const cleanup = useCallback(() => {
+  // }, [houseTransformsGroup])
 
-  useEffect(() => cleanup, [cleanup])
+  // useEffect(() => cleanup, [cleanup])
 
   return (
     <ContextMenuNested

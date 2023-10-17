@@ -250,6 +250,9 @@ export const objectToHouseObjects = (object: Object3D) =>
     x.children.flatMap((y) => y.children.flatMap((z) => z.children))
   )
 
+export const objectToHouse = (object: Object3D) =>
+  findFirstGuardUp(isHouseTransformsGroup)(object)
+
 export const objectToIfcTagObjects = (object: Object3D) => {
   const ifcTag: string = object.userData.ifcTag
 

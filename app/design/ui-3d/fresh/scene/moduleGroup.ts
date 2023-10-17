@@ -19,6 +19,7 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
+import { Element } from "../../../../../server/data/elements"
 
 // speckle branch url : geometry by ifc tag
 export let models: Record<string, Record<string, BufferGeometry>> = {}
@@ -170,15 +171,23 @@ export const createModuleGroup = async ({
     speckleBranchUrl,
   })()
 
+  const { activeElementMaterials, elements, pushElement, materials } =
+    houseTransformsGroup.userData
+
   for (let ifcTag of Object.keys(modelGeometries)) {
     const geometry = getGeometry({
       speckleBranchUrl,
       ifcTag,
     })
 
-    const element = getSystemElement({ systemId, ifcTag })
+    const element = pipe(
+      elements,
+      R.lookup(ifcTag),
+      O.getOrElse(() => getSystemElement({ systemId, ifcTag }) as Element)
+    )
 
-    const threeMaterial = houseTransformsGroup.userData.pushElement(element)
+    // const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
+    const threeMaterial = pushElement(element)
 
     // threeMaterial.wireframe = false
 
