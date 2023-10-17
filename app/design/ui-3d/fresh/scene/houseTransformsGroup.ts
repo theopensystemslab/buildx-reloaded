@@ -319,6 +319,10 @@ export const createHouseTransformsGroup = ({
       }
     )
 
+    console.log(
+      `alt layouts length: ${altLevelTypeLayouts.length}; levelIndex: ${levelIndex}`
+    )
+
     for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
       console.log([levelType.code, currentLevelTypeCode])
       if (levelType.code === currentLevelTypeCode) continue
