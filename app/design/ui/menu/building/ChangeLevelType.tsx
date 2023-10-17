@@ -20,6 +20,7 @@ import {
   isModuleGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "../common/ContextMenuNested"
+import { useLevelTypes } from "../../../../data/levelTypes"
 
 type Props = {
   scopeElement: ScopeElement

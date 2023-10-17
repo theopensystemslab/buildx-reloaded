@@ -42,7 +42,7 @@ class SystemsDatabase extends Dexie {
       materials: "id",
       sectionTypes: "id",
       levelTypes: "[systemId+code]",
-      windowTypes: "id",
+      windowTypes: "[systemId+code]",
       blocks: "[systemId+name]",
       blockModuleEntries: "id",
       spaceTypes: "id",

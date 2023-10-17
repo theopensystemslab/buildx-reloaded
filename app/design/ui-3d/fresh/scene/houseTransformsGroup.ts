@@ -336,6 +336,21 @@ export const createHouseTransformsGroup = ({
     }
   }
 
+  const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
+    async ({ columnIndex, levelIndex, gridGroupIndex }) => {
+      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
+
+      const foo = await getLayoutsWorker().getAltWindowTypeLayouts({
+        systemId,
+        columnIndex,
+        levelIndex,
+        gridGroupIndex,
+        dnas,
+      })
+
+      console.log({ foo })
+    }
+
   // ##### HANDLES ######
 
   // init
@@ -749,6 +764,7 @@ export const createHouseTransformsGroup = ({
     updateTransforms,
     refreshAltSectionTypeLayouts,
     refreshAltLevelTypeLayouts,
+    refreshAltWindowTypeLayouts,
     resetMaterials,
     changeMaterial,
     computeNearNeighbours,

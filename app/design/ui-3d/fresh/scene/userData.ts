@@ -78,6 +78,7 @@ export type HouseTransformsGroupUserData = {
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
+  refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void

@@ -2,10 +2,11 @@ import { transpose } from "fp-ts-std/Array"
 import { pipe } from "fp-ts/lib/function"
 import { proxy, useSnapshot } from "valtio"
 import { A, O } from "~/utils/functions"
-import { columnLayoutToMatrix, layouts } from "~/design/state/layouts"
+import { layouts } from "~/design/state/layouts"
 import { getHouseLayoutsKey } from "../../db/layouts"
 import houses from "./houses"
 import { ElementMesh } from "../ui-3d/fresh/scene/userData"
+import { columnLayoutToMatrix } from "../../workers/layouts/worker"
 
 export type ScopeElement = {
   ifcTag: string

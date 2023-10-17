@@ -33,9 +33,9 @@ export const getWindowTypeAlternatives = async ({
           "positionType",
           "levelType",
           "gridType",
-          "gridUnits",
-          "stairsType",
-          "internalLayoutType",
+          // "gridUnits",
+          // "stairsType",
+          // "internalLayoutType",
         ])
     )
   )
