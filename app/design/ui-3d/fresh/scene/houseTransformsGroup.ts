@@ -169,7 +169,10 @@ export const createHouseTransformsGroup = ({
       activeElementMaterials[ifcTag] = element.defaultMaterial
     }
 
-    const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
+    const { threeMaterial, material } =
+      materials[activeElementMaterials[ifcTag]]
+
+    if (ifcTag === "IFCROOF") console.log(material.specification)
 
     return threeMaterial
   }
@@ -231,12 +234,14 @@ export const createHouseTransformsGroup = ({
         if (lastLayoutGroup === nextLayoutGroup) return
         setVisible(nextLayoutGroup, true)
         setVisible(lastLayoutGroup, false)
+        lastLayoutGroup.userData.use = nextLayoutGroup.userData.use
       })
     )
 
     houseTransformsGroup.userData.activeLayoutGroupUuid = nextLayoutGroup.uuid
     houseTransformsGroup.userData.activeLayoutDnas =
       nextLayoutGroup.userData.dnas
+    nextLayoutGroup.userData.use = HouseLayoutGroupUse.Enum.ACTIVE
   }
 
   const refreshAltSectionTypeLayouts = async () => {
@@ -300,14 +305,11 @@ export const createHouseTransformsGroup = ({
     // out with the old
     oldLayouts.forEach((x) => {
       x.removeFromParent()
-      console.log(`removing stuff`)
     })
 
     const { dnas } = getActiveHouseUserData(houseTransformsGroup)
 
     const currentLevelTypeCode = parseDna(dna).levelType
-
-    console.log(`zomg im actually about to get alt level type layouts`)
 
     // in with the new
     const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
@@ -319,15 +321,8 @@ export const createHouseTransformsGroup = ({
       }
     )
 
-    console.log(
-      `alt layouts length: ${altLevelTypeLayouts.length}; levelIndex: ${levelIndex}`
-    )
-
     for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
-      console.log([levelType.code, currentLevelTypeCode])
       if (levelType.code === currentLevelTypeCode) continue
-
-      console.log(`doing something`)
 
       createHouseLayoutGroup({
         systemId: houseTransformsGroup.userData.systemId,
@@ -339,7 +334,6 @@ export const createHouseTransformsGroup = ({
       })().then((layoutGroup) => {
         setInvisibleNoRaycast(layoutGroup)
         houseTransformsGroup.add(layoutGroup)
-        console.log(`adding something`)
       })
     }
   }
@@ -780,7 +774,7 @@ export const createHouseTransformsGroup = ({
         dnas,
         systemId,
         houseId,
-        use: HouseLayoutGroupUse.Enum.INITIAL,
+        use: HouseLayoutGroupUse.Enum.ACTIVE,
       })
     ),
     T.map((layoutGroup) => {

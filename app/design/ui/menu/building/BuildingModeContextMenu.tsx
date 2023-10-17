@@ -63,11 +63,11 @@ const BuildingModeContextMenu = ({
         onComplete={props.onClose}
       /> */}
 
-      <ChangeMaterial
+      {/* <ChangeMaterial
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
-      />
+      /> */}
 
       {/* <ChangeWindows
         houseTransformsGroup={houseTransformsGroup}

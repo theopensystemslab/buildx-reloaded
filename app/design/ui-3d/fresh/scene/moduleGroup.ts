@@ -186,6 +186,7 @@ export const createModuleGroup = async ({
       O.getOrElse(() => getSystemElement({ systemId, ifcTag }) as Element)
     )
 
+    // const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
     const threeMaterial = pushElement(element)
 
     // threeMaterial.wireframe = false

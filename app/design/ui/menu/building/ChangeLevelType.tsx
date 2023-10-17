@@ -36,17 +36,12 @@ const ChangeLevelTypeOptions = (props: Props) => {
   const { houseTransformsGroup, scopeElement, close } = props
 
   const { levelTypeOptions, originalLevelTypeOption } = suspend(async () => {
-    console.log(`suspend start`)
     const { systemId } = houseTransformsGroup.userData
-    const { levelIndex, dna } = scopeElement
-
-    const { levelType: currentLevelTypeCode } = parseDna(dna)
+    const { levelIndex } = scopeElement
 
     const allLevelTypes = await systemsDB.levelTypes
       .where({ systemId })
       .toArray()
-
-    console.log({ allLevelTypes })
 
     const getLevelType = (code: string) =>
       pipe(
@@ -122,10 +117,8 @@ const ChangeLevelTypeOptions = (props: Props) => {
     // if (closing.current) return
 
     if (incoming) {
-      console.log(`setting active new`)
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      // console.log(`setting active original`)
       // houseTransformsGroup.userData.setActiveLayoutGroup(
       //   originalLevelTypeOption.value.layoutGroup
       // )
@@ -145,6 +138,19 @@ const ChangeLevelTypeOptions = (props: Props) => {
 
     close()
 
+    pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+      ),
+      A.map((x) => {
+        x.removeFromParent()
+      })
+    )
+
+    houseTransformsGroup.userData.updateDB()
     // closing.current = false
   }
 
@@ -177,18 +183,6 @@ const ChangeLevelType = (props: Props) => {
   }
 
   // const cleanup = useCallback(() => {
-  //   pipe(
-  //     houseTransformsGroup.children,
-  //     A.filter(
-  //       (x) =>
-  //         isHouseLayoutGroup(x) &&
-  //         x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-  //         !isActiveLayoutGroup(x)
-  //     ),
-  //     A.map((x) => {
-  //       x.removeFromParent()
-  //     })
-  //   )
   // }, [houseTransformsGroup])
 
   // useEffect(() => cleanup, [cleanup])

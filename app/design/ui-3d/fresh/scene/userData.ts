@@ -107,7 +107,7 @@ export type HouseTransformsHandlesGroupUserData = {
 }
 
 export const HouseLayoutGroupUse = z.enum([
-  "INITIAL",
+  "ACTIVE",
   "RESET",
   "ALT_SECTION_TYPE",
   "ALT_LEVEL_TYPE",
