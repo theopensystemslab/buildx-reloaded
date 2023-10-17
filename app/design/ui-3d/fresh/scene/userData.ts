@@ -77,6 +77,8 @@ export type HouseTransformsGroupUserData = {
   unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   refreshAltSectionTypeLayouts: () => void
+  refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
+  // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void
   // handle visibility

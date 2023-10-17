@@ -105,7 +105,7 @@ const useGestures = () => {
 
       invalidate()
     },
-    onHover: ({ event, event: { intersections }, hovering }) => {
+    onHover: ({ event: { intersections }, hovering }) => {
       if (firstDragEventRef.current) return
 
       if (intersections.length === 0) {

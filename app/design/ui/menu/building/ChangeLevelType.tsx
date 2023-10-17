@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import { A, someOrError } from "~/utils/functions"
+import { A, pipeLog, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
 import systemsDB from "../../../../db/systems"
@@ -115,6 +115,8 @@ const ChangeLevelTypeOptions = (props: Props) => {
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
     if (closing.current) return
 
+    console.log(`PREVIEW LEVEL TYPE`, incoming)
+
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(
         incoming.houseLayoutGroup
@@ -124,15 +126,21 @@ const ChangeLevelTypeOptions = (props: Props) => {
         originalLevelTypeOption.value.houseLayoutGroup
       )
     }
+
     invalidate()
   }
 
   const changeLevelType = ({ houseLayoutGroup }: LevelTypeOption["value"]) => {
+    console.log(`CHANGE LEVEL TYPE`)
     closing.current = true
+
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })
+
     close()
+
+    closing.current = false
   }
 
   return (
@@ -150,6 +158,26 @@ const ChangeLevelType = (props: Props) => {
     scopeElement: { dna },
     houseTransformsGroup,
   } = props
+
+  const alts = pipe(
+    houseTransformsGroup.children,
+    A.filter(
+      (x): x is HouseLayoutGroup =>
+        isHouseLayoutGroup(x) &&
+        x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+    )
+  )
+
+  // infer the detail (level type) from
+  // the current level type at level index in this layout
+
+  const active = houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
+
+  const allTogetherNow = pipe(
+    [...alts, active],
+    A.uniq({ equals: (x, y) => x.uuid === y.uuid })
+  )
+
   const { levelType } = parseDna(dna)
 
   let levelString = "level"
@@ -162,22 +190,22 @@ const ChangeLevelType = (props: Props) => {
     levelString = "roof"
   }
 
-  const cleanup = useCallback(() => {
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          !isActiveLayoutGroup(x)
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
-  }, [houseTransformsGroup])
+  // const cleanup = useCallback(() => {
+  //   pipe(
+  //     houseTransformsGroup.children,
+  //     A.filter(
+  //       (x) =>
+  //         isHouseLayoutGroup(x) &&
+  //         x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
+  //         !isActiveLayoutGroup(x)
+  //     ),
+  //     A.map((x) => {
+  //       x.removeFromParent()
+  //     })
+  //   )
+  // }, [houseTransformsGroup])
 
-  useEffect(() => cleanup, [cleanup])
+  // useEffect(() => cleanup, [cleanup])
 
   return (
     <ContextMenuNested
@@ -186,9 +214,9 @@ const ChangeLevelType = (props: Props) => {
       icon={<ChangeLevel />}
       unpaddedSvg
     >
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <ChangeLevelTypeOptions {...props} />
-      </Suspense>
+      </Suspense> */}
     </ContextMenuNested>
   )
 }

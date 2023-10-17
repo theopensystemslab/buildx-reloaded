@@ -66,6 +66,7 @@ export default function Radio<T>(props: Props<T>) {
               id={`radio-${props.id}-${index}`}
               checked={checked}
               onChange={() => {
+                console.log(`radio on change`)
                 props.onChange(option.value)
               }}
             />

@@ -1,6 +1,7 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Plane, Vector3 } from "three"
+import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
 import layoutsDB, {
   ColumnLayout,
@@ -11,6 +12,8 @@ import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
+import scope, { ScopeElement } from "../../../state/scope"
+import settings from "../../../state/settings"
 import siteCtx, {
   SiteCtxMode,
   SiteCtxModeEnum,
@@ -47,10 +50,7 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
-import { z } from "zod"
-import scope from "../../../state/scope"
-import settings from "../../../state/settings"
-import { dispatchUpdateExportModelsEvent } from "../../../../workers/exporters/events"
+import { parseDna } from "../../../../../server/data/modules"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -250,6 +250,7 @@ export const createHouseTransformsGroup = ({
       )
     )
 
+    // out with the old
     oldLayouts.forEach((x) => {
       x.removeFromParent()
     })
@@ -257,6 +258,7 @@ export const createHouseTransformsGroup = ({
     const { dnas, sectionType: currentSectionType } =
       getActiveHouseUserData(houseTransformsGroup)
 
+    // in with the new
     const altSectionTypeLayouts =
       await getLayoutsWorker().getAltSectionTypeLayouts({
         systemId,
@@ -277,6 +279,63 @@ export const createHouseTransformsGroup = ({
       })().then((layoutGroup) => {
         setInvisibleNoRaycast(layoutGroup)
         houseTransformsGroup.add(layoutGroup)
+      })
+    }
+  }
+
+  const refreshAltLevelTypeLayouts = async ({
+    levelIndex,
+    dna,
+  }: ScopeElement) => {
+    const oldLayouts = pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
+          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+      )
+    )
+
+    // out with the old
+    oldLayouts.forEach((x) => {
+      x.removeFromParent()
+      console.log(`removing stuff`)
+    })
+
+    const { dnas } = getActiveHouseUserData(houseTransformsGroup)
+
+    const currentLevelTypeCode = parseDna(dna).levelType
+
+    console.log(`zomg im actually about to get alt level type layouts`)
+
+    // in with the new
+    const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
+      {
+        systemId,
+        dnas,
+        levelIndex,
+        currentLevelTypeCode,
+      }
+    )
+
+    for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
+      console.log([levelType.code, currentLevelTypeCode])
+      if (levelType.code === currentLevelTypeCode) continue
+
+      console.log(`doing something`)
+
+      createHouseLayoutGroup({
+        systemId: houseTransformsGroup.userData.systemId,
+        dnas,
+        houseId,
+        houseLayout: layout,
+        use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
+        houseTransformsGroup,
+      })().then((layoutGroup) => {
+        setInvisibleNoRaycast(layoutGroup)
+        houseTransformsGroup.add(layoutGroup)
+        console.log(`adding something`)
       })
     }
   }
@@ -693,6 +752,7 @@ export const createHouseTransformsGroup = ({
     setRotateHandlesVisible,
     updateTransforms,
     refreshAltSectionTypeLayouts,
+    refreshAltLevelTypeLayouts,
     resetMaterials,
     changeMaterial,
     computeNearNeighbours,

@@ -186,20 +186,7 @@ export const createModuleGroup = async ({
       O.getOrElse(() => getSystemElement({ systemId, ifcTag }) as Element)
     )
 
-    const threeMaterial = pipe(
-      activeElementMaterials,
-      R.lookup(ifcTag),
-      O.chain((spec) =>
-        pipe(
-          materials,
-          R.lookup(spec),
-          O.map((x) => x.threeMaterial)
-        )
-      ),
-      O.getOrElse(() => {
-        return pushElement(element)
-      })
-    )
+    const threeMaterial = pushElement(element)
 
     // threeMaterial.wireframe = false
 
