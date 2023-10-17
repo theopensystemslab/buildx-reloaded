@@ -72,10 +72,15 @@ const FreshApp = () => {
   const lastScopeElement = useRef<ScopeElement | null>(null)
 
   // change level stuff
-  useSubscribeKey(scope, "hovered", () => {
-    if (!scope.hovered) return
+  useSubscribe(scope, () => {
+    if (!scope.selected && !scope.hovered) {
+      lastScopeElement.current = null
+      return
+    }
 
-    const { houseId, levelIndex, object } = scope.hovered
+    const item: ScopeElement = scope.selected ?? (scope.hovered as ScopeElement)
+
+    const { houseId, levelIndex, object } = item
 
     if (houseId !== siteCtx.houseId) return
 
