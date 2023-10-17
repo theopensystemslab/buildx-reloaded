@@ -132,10 +132,6 @@ const ChangeLevelTypeOptions = (props: Props) => {
 
     // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
-    // houseTransformsGroup.userData.updateDB().then(() => {
-    //   houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-    // })
-
     close()
 
     pipe(
@@ -150,7 +146,10 @@ const ChangeLevelTypeOptions = (props: Props) => {
       })
     )
 
-    houseTransformsGroup.userData.updateDB()
+    houseTransformsGroup.userData.updateDB().then(() => {
+      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
+    })
     // closing.current = false
   }
 

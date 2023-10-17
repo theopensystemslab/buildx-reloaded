@@ -172,8 +172,6 @@ export const createHouseTransformsGroup = ({
     const { threeMaterial, material } =
       materials[activeElementMaterials[ifcTag]]
 
-    if (ifcTag === "IFCROOF") console.log(material.specification)
-
     return threeMaterial
   }
 
