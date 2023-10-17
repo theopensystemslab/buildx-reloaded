@@ -55,7 +55,6 @@ const ChangeMaterial = (props: Props) => {
         }))}
         selected={selectedMaterial}
         onChange={(newMaterial) => {
-          console.log(`on change material`)
           closing.current = true
 
           houseTransformsGroup.userData.changeMaterial(
@@ -68,7 +67,6 @@ const ChangeMaterial = (props: Props) => {
           close()
         }}
         onHoverChange={(hoveredMaterial) => {
-          console.log(`on hover change material`)
           if (closing.current) return
 
           if (hoveredMaterial) {
