@@ -62,7 +62,11 @@ const ChangeWindowsOptions = (props: Props) => {
     if (!originalModule)
       throw new Error(`no original module ${systemId} ${dna}`)
 
-    const candidates = await getWindowTypeAlternatives({ systemId, dna })
+    const candidates = await getWindowTypeAlternatives({
+      systemId,
+      dna,
+      side: "LEFT",
+    })
     const windowTypes = await systemsDB.windowTypes.toArray()
 
     const getWindowType = (candidate: Module) =>

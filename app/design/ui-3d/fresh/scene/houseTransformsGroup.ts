@@ -51,6 +51,7 @@ import {
   isZStretchHandleGroup,
 } from "./userData"
 import { parseDna } from "../../../../../server/data/modules"
+import { getSide } from "../../../state/camera"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -340,15 +341,47 @@ export const createHouseTransformsGroup = ({
     async ({ columnIndex, levelIndex, gridGroupIndex }) => {
       const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
 
-      const foo = await getLayoutsWorker().getAltWindowTypeLayouts({
-        systemId,
-        columnIndex,
-        levelIndex,
-        gridGroupIndex,
-        dnas,
+      const oldLayouts = pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE &&
+            x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+        )
+      )
+
+      // out with the old
+      oldLayouts.forEach((x) => {
+        x.removeFromParent()
       })
 
-      console.log({ foo })
+      const side = getSide(houseTransformsGroup)
+
+      const altWindowTypeLayouts =
+        await getLayoutsWorker().getAltWindowTypeLayouts({
+          systemId,
+          columnIndex,
+          levelIndex,
+          gridGroupIndex,
+          dnas,
+          side,
+        })
+
+      for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
+        createHouseLayoutGroup({
+          systemId: houseTransformsGroup.userData.systemId,
+          dnas,
+          houseId,
+          houseLayout: layout,
+          use: HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE,
+          houseTransformsGroup,
+        })().then((layoutGroup) => {
+          setInvisibleNoRaycast(layoutGroup)
+          houseTransformsGroup.add(layoutGroup)
+          console.log(houseTransformsGroup.children.length)
+        })
+      }
     }
 
   // ##### HANDLES ######

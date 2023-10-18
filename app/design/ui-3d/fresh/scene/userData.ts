@@ -112,6 +112,7 @@ export const HouseLayoutGroupUse = z.enum([
   "RESET",
   "ALT_SECTION_TYPE",
   "ALT_LEVEL_TYPE",
+  "ALT_WINDOW_TYPE",
 ])
 
 export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>

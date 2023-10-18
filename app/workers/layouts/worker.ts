@@ -31,7 +31,7 @@ import {
   TO,
   unwrapSome,
 } from "../../utils/functions"
-import { sign } from "../../utils/math"
+import { round, sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { getModules, getWindowTypeAlternatives } from "./modules"
 import {
@@ -40,6 +40,7 @@ import {
   postVanillaColumn,
 } from "./vanilla"
 import { transpose as transposeA } from "fp-ts-std/Array"
+import { Side } from "../../design/state/camera"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -856,14 +857,16 @@ const getAltWindowTypeLayouts = async ({
   columnIndex,
   levelIndex,
   gridGroupIndex,
+  side,
 }: {
   systemId: string
   dnas: string[]
   columnIndex: number
   levelIndex: number
   gridGroupIndex: number
+  side: Side
 }) => {
-  const allModules = await getModules()
+  // const allModules = await getModules()
   const windowTypes = await systemsDB.windowTypes.where({ systemId }).toArray()
 
   const currentIndexedLayout = await layoutsDB.houseLayouts.get({
@@ -904,7 +907,7 @@ const getAltWindowTypeLayouts = async ({
     gridType,
   })()
 
-  const columnWithVanilla = await pipe(
+  const vanillaModulesByLevelIndex = await pipe(
     thisColumn.gridGroups,
     A.map((posRow) =>
       pipe(
@@ -914,12 +917,6 @@ const getAltWindowTypeLayouts = async ({
           positionType,
           levelType: posRow.levelType,
           gridType,
-        }),
-        T.map((vanillaModule) => {
-          return {
-            ...posRow,
-            vanillaModule,
-          }
         })
       )
     ),
@@ -927,39 +924,90 @@ const getAltWindowTypeLayouts = async ({
   )()
 
   const candidates = pipe(
-    await getWindowTypeAlternatives({ systemId, dna }),
+    await getWindowTypeAlternatives({ systemId, dna, side }),
     A.map((candidate) => {
       const gridUnitDelta =
         candidate.structuredDna.gridUnits -
         thisModule.module.structuredDna.gridUnits
 
-      // EACH LEVEL NEEDS ITS OWN VANILLA
+      const lengthDelta = candidate.length - thisModule.module.length
 
-      const matrix = pipe(
-        currentMatrix,
-        produce((draft) => {
-          draft[columnIndex][levelIndex][gridGroupIndex] = candidate
+      const updatedColumn = pipe(
+        thisColumn,
+        produce((draft: PositionedColumn) => {
+          draft.gridGroups[levelIndex].modules[gridGroupIndex].module =
+            candidate
 
-          const levelIndexHeight = draft[columnIndex].length
-
-          for (let i = 0; i < levelIndexHeight; i++) {
-            if (i === levelIndex) continue
-
-            draft[columnIndex][i][gridGroupIndex]
+          for (
+            let i = gridGroupIndex;
+            i < draft.gridGroups[levelIndex].modules.length;
+            i++
+          ) {
+            draft.gridGroups[levelIndex].modules[i].z += lengthDelta
           }
 
-          // if necessary (switch delta)
-          // for every other level
           switch (sign(gridUnitDelta)) {
             // pad every other level
-            case 1:
+            case 1: {
+              for (let gridGroup of draft.gridGroups) {
+                if (gridGroup.levelIndex === levelIndex) continue
+
+                const vanillaModule =
+                  vanillaModulesByLevelIndex[gridGroup.levelIndex]
+
+                const n = round(vanillaModule.length / gridUnitDelta)
+
+                let { gridGroupIndex: initialGridGroupIndex, z: initialZ } =
+                  pipe(
+                    gridGroup.modules,
+                    A.last,
+                    O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
+                    O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
+                  )
+
+                // z wants to be z so far + ...
+                // gridGroupIndex wants to be so far + ...
+                gridGroup.modules.concat(
+                  pipe(
+                    A.replicate(n, vanillaModule),
+                    A.mapWithIndex((i, module) => ({
+                      gridGroupIndex: initialGridGroupIndex + i,
+                      module,
+                      z: initialZ + i * vanillaModule.length,
+                    }))
+                  )
+                )
+              }
               break
+            }
 
             // pad this level
-            case -1:
-              break
+            case -1: {
+              const vanillaModule = vanillaModulesByLevelIndex[levelIndex]
 
-            // do nothing
+              const n = round(vanillaModule.length / gridUnitDelta)
+
+              let { gridGroupIndex: initialGridGroupIndex, z: initialZ } = pipe(
+                draft.gridGroups[levelIndex].modules,
+                A.last,
+                O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
+                O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
+              )
+
+              draft.gridGroups[levelIndex].modules.concat(
+                pipe(
+                  A.replicate(n, vanillaModule),
+                  A.mapWithIndex((i, module) => ({
+                    gridGroupIndex: initialGridGroupIndex + i,
+                    module,
+                    z: initialZ + i * vanillaModule.length,
+                  }))
+                )
+              )
+              break
+            }
+
+            // do nothing more
             case 0:
             default:
               break
@@ -967,11 +1015,48 @@ const getAltWindowTypeLayouts = async ({
         })
       )
 
+      const layout = pipe(
+        currentLayout,
+        produce((draft: ColumnLayout) => {
+          draft[columnIndex] = updatedColumn
+        })
+      )
+      postVanillaColumn(layout[0])
+      const dnas = columnLayoutToDnas(layout)
+      layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+
       return {
         candidate,
+        layout,
+        dnas,
+        windowType: pipe(
+          windowTypes,
+          A.findFirst((x) => true)
+        ),
       }
+      // EACH LEVEL NEEDS ITS OWN VANILLA
+
+      // const matrix = pipe(
+      //   currentMatrix,
+      //   produce((draft) => {
+      //     draft[columnIndex][levelIndex][gridGroupIndex] = candidate
+
+      //     const levelIndexHeight = draft[columnIndex].length
+
+      //     for (let i = 0; i < levelIndexHeight; i++) {
+      //       if (i === levelIndex) continue
+
+      //       draft[columnIndex][i][gridGroupIndex]
+      //     }
+
+      //     // if necessary (switch delta)
+      //     // for every other level
+      //   })
+      // )
     })
   )
+
+  return candidates
   // SEE USE PAD COLUMN
 
   // maybe we're just after a dnas matrix
