@@ -79,8 +79,8 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
     return () => {
       if (
         resetLayoutGroupRef.current &&
-        resetLayoutGroupRef.current.uuid !==
-          houseTransformsGroup.userData.activeLayoutGroupUuid
+        resetLayoutGroupRef.current.userData.use !==
+          HouseLayoutGroupUse.Enum.ACTIVE
       ) {
         houseTransformsGroup.remove(resetLayoutGroupRef.current)
       }

@@ -6,6 +6,7 @@ import { isMesh } from "../../../../utils/three"
 import {
   ColumnGroup,
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
@@ -152,10 +153,8 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
 export const getActiveHouseUserData = (
   houseTransformsGroup: HouseTransformsGroup
 ) => {
-  const activeLayoutGroup = pipe(
-    houseTransformsGroup.userData.getActiveLayoutGroup(),
-    someOrError(`no active layout group in getActiveHouseUserData`)
-  )
+  const activeLayoutGroup =
+    houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
 
   return {
     ...houseTransformsGroup.userData,
@@ -174,9 +173,7 @@ export const getPartitionedLayoutGroups = (
   pipe(
     houseTransformsGroup,
     getLayoutGroups,
-    A.partition(
-      (x) => x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-    ),
+    A.partition((x) => x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE),
     ({ left: otherLayoutGroups, right: [activeLayoutGroup] }) => ({
       activeLayoutGroup,
       otherLayoutGroups,

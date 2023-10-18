@@ -1,9 +1,23 @@
 import { liveQuery } from "dexie"
 import { flow, identity, pipe } from "fp-ts/lib/function"
 import { Module } from "../../../server/data/modules"
-import layoutsDB, { PositionedColumn, PositionedRow } from "../../db/layouts"
+import layoutsDB, {
+  IndexedVanillaModule,
+  PositionedColumn,
+  PositionedRow,
+} from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, all, O, Ord, S } from "../../utils/functions"
+import {
+  A,
+  all,
+  compareProps,
+  O,
+  Ord,
+  S,
+  someOrError,
+  T,
+  TO,
+} from "../../utils/functions"
 import { getModules } from "./modules"
 
 export const createVanillaModuleGetter =
@@ -87,26 +101,48 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
   }
 )
 
-export const getIndexedVanillaModule = ({
-  systemId,
-  sectionType,
-  positionType,
-  levelType,
-  gridType,
-}: {
-  systemId: string
-  sectionType: string
-  positionType: string
-  levelType: string
-  gridType: string
-}) =>
-  layoutsDB.vanillaModules.get([
+export const getIndexedVanillaModule =
+  ({
     systemId,
     sectionType,
     positionType,
     levelType,
     gridType,
-  ])
+  }: Omit<IndexedVanillaModule, "moduleDna">): T.Task<
+    IndexedVanillaModule | undefined
+  > =>
+  () =>
+    layoutsDB.vanillaModules.get([
+      systemId,
+      sectionType,
+      positionType,
+      levelType,
+      gridType,
+    ])
+
+export const getVanillaModule = flow(
+  getIndexedVanillaModule,
+  T.chain((indexedVanillaModule) => {
+    if (!indexedVanillaModule) {
+      throw new Error(`no vanilla`)
+    }
+
+    return pipe(
+      () => getModules(),
+      T.map((allModules) =>
+        pipe(
+          allModules,
+          A.findFirst(
+            ({ systemId, dna }) =>
+              systemId === indexedVanillaModule.systemId &&
+              indexedVanillaModule.moduleDna === dna
+          ),
+          someOrError(`no vanilla`)
+        )
+      )
+    )
+  })
+)
 
 export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
   const modules = await getModules()

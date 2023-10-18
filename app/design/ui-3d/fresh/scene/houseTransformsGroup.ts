@@ -8,7 +8,17 @@ import layoutsDB, {
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
 import userDB, { House } from "../../../../db/user"
-import { A, O, R, S, T, someOrError } from "../../../../utils/functions"
+import {
+  A,
+  O,
+  R,
+  S,
+  T,
+  debounce,
+  pipeLog,
+  pipeLogWith,
+  someOrError,
+} from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import elementCategories from "../../../state/elementCategories"
@@ -51,6 +61,7 @@ import {
   isZStretchHandleGroup,
 } from "./userData"
 import { parseDna } from "../../../../../server/data/modules"
+import { getSide } from "../../../state/camera"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -216,10 +227,13 @@ export const createHouseTransformsGroup = ({
   const getActiveLayoutGroup = (): O.Option<HouseLayoutGroup> =>
     pipe(
       houseTransformsGroup.children,
+      pipeLogWith((xs) => xs.map((x) => x.userData.use)),
       A.findFirst(
         (x): x is HouseLayoutGroup =>
-          x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-      )
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
+      ),
+      pipeLogWith((x) => (O.isSome(x) ? x.value.userData.use : null))
     )
 
   const unsafeGetActiveLayoutGroup = (): HouseLayoutGroup =>
@@ -232,109 +246,167 @@ export const createHouseTransformsGroup = ({
         if (lastLayoutGroup === nextLayoutGroup) return
         setVisible(nextLayoutGroup, true)
         setVisible(lastLayoutGroup, false)
+        console.log(
+          `setting last ${lastLayoutGroup.userData.use} to ${nextLayoutGroup.userData.use}`
+        )
         lastLayoutGroup.userData.use = nextLayoutGroup.userData.use
       })
     )
 
-    houseTransformsGroup.userData.activeLayoutGroupUuid = nextLayoutGroup.uuid
+    nextLayoutGroup.userData.use = HouseLayoutGroupUse.Enum.ACTIVE
     houseTransformsGroup.userData.activeLayoutDnas =
       nextLayoutGroup.userData.dnas
-    nextLayoutGroup.userData.use = HouseLayoutGroupUse.Enum.ACTIVE
   }
 
-  const refreshAltSectionTypeLayouts = async () => {
-    const oldLayouts = pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE &&
-          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+  const refreshAltSectionTypeLayouts = debounce(
+    async () => {
+      const oldLayouts = pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE
+        )
       )
-    )
 
-    // out with the old
-    oldLayouts.forEach((x) => {
-      x.removeFromParent()
-    })
-
-    const { dnas, sectionType: currentSectionType } =
-      getActiveHouseUserData(houseTransformsGroup)
-
-    // in with the new
-    const altSectionTypeLayouts =
-      await getLayoutsWorker().getAltSectionTypeLayouts({
-        systemId,
-        dnas,
-        currentSectionType,
+      // out with the old
+      oldLayouts.forEach((x) => {
+        x.removeFromParent()
       })
 
-    for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
-      if (sectionType.code === currentSectionType) continue
-
-      createHouseLayoutGroup({
-        systemId: houseTransformsGroup.userData.systemId,
-        dnas,
-        houseId,
-        houseLayout: layout,
-        use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
-        houseTransformsGroup,
-      })().then((layoutGroup) => {
-        setInvisibleNoRaycast(layoutGroup)
-        houseTransformsGroup.add(layoutGroup)
-      })
-    }
-  }
-
-  const refreshAltLevelTypeLayouts = async ({
-    levelIndex,
-    dna,
-  }: ScopeElement) => {
-    const oldLayouts = pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+      console.log(
+        houseTransformsGroup.children
+          .filter(isHouseLayoutGroup)
+          .map((x) => x.userData.use)
       )
-    )
 
-    // out with the old
-    oldLayouts.forEach((x) => {
-      x.removeFromParent()
-    })
+      const { dnas, sectionType: currentSectionType } =
+        getActiveHouseUserData(houseTransformsGroup)
 
-    const { dnas } = getActiveHouseUserData(houseTransformsGroup)
+      // in with the new
+      const altSectionTypeLayouts =
+        await getLayoutsWorker().getAltSectionTypeLayouts({
+          systemId,
+          dnas,
+          currentSectionType,
+        })
 
-    const currentLevelTypeCode = parseDna(dna).levelType
+      for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
+        if (sectionType.code === currentSectionType) continue
 
-    // in with the new
-    const altLevelTypeLayouts = await getLayoutsWorker().getAltLevelTypeLayouts(
-      {
-        systemId,
-        dnas,
-        levelIndex,
-        currentLevelTypeCode,
+        createHouseLayoutGroup({
+          systemId: houseTransformsGroup.userData.systemId,
+          dnas,
+          houseId,
+          houseLayout: layout,
+          use: HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE,
+          houseTransformsGroup,
+        })().then((layoutGroup) => {
+          setInvisibleNoRaycast(layoutGroup)
+          houseTransformsGroup.add(layoutGroup)
+        })
       }
-    )
+    },
+    500,
+    true
+  )
 
-    for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
-      if (levelType.code === currentLevelTypeCode) continue
+  const refreshAltLevelTypeLayouts = debounce(
+    async ({ levelIndex, dna }: ScopeElement) => {
+      const oldLayouts = pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+        )
+      )
 
-      createHouseLayoutGroup({
-        systemId: houseTransformsGroup.userData.systemId,
-        dnas,
-        houseId,
-        houseLayout: layout,
-        use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
-        houseTransformsGroup,
-      })().then((layoutGroup) => {
-        setInvisibleNoRaycast(layoutGroup)
-        houseTransformsGroup.add(layoutGroup)
+      // out with the old
+      oldLayouts.forEach((x) => {
+        x.removeFromParent()
       })
+
+      const { dnas } = getActiveHouseUserData(houseTransformsGroup)
+
+      const currentLevelTypeCode = parseDna(dna).levelType
+
+      // in with the new
+      const altLevelTypeLayouts =
+        await getLayoutsWorker().getAltLevelTypeLayouts({
+          systemId,
+          dnas,
+          levelIndex,
+          currentLevelTypeCode,
+        })
+
+      for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
+        if (levelType.code === currentLevelTypeCode) continue
+
+        createHouseLayoutGroup({
+          systemId: houseTransformsGroup.userData.systemId,
+          dnas,
+          houseId,
+          houseLayout: layout,
+          use: HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE,
+          houseTransformsGroup,
+        })().then((layoutGroup) => {
+          setInvisibleNoRaycast(layoutGroup)
+          houseTransformsGroup.add(layoutGroup)
+        })
+      }
+    },
+    500,
+    true
+  )
+
+  const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
+    async ({ columnIndex, levelIndex, gridGroupIndex }) => {
+      return
+
+      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
+
+      const oldLayouts = pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+        )
+      )
+
+      // out with the old
+      oldLayouts.forEach((x) => {
+        x.removeFromParent()
+      })
+
+      const side = getSide(houseTransformsGroup)
+
+      const altWindowTypeLayouts =
+        await getLayoutsWorker().getAltWindowTypeLayouts({
+          systemId,
+          columnIndex,
+          levelIndex,
+          gridGroupIndex,
+          dnas,
+          side,
+        })
+
+      for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
+        createHouseLayoutGroup({
+          systemId: houseTransformsGroup.userData.systemId,
+          dnas,
+          houseId,
+          houseLayout: layout,
+          use: HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE,
+          houseTransformsGroup,
+        })().then((layoutGroup) => {
+          layoutGroup.userData.windowType = windowType
+          setInvisibleNoRaycast(layoutGroup)
+          houseTransformsGroup.add(layoutGroup)
+        })
+      }
     }
-  }
 
   // ##### HANDLES ######
 
@@ -722,7 +794,7 @@ export const createHouseTransformsGroup = ({
 
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
-    "activeLayoutGroupUuid" | "activeLayoutDnas"
+    "activeLayoutDnas"
   > = {
     type: UserDataTypeEnum.Enum.HouseTransformsGroup,
     systemId,
@@ -749,6 +821,7 @@ export const createHouseTransformsGroup = ({
     updateTransforms,
     refreshAltSectionTypeLayouts,
     refreshAltLevelTypeLayouts,
+    refreshAltWindowTypeLayouts,
     resetMaterials,
     changeMaterial,
     computeNearNeighbours,

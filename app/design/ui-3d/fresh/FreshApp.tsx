@@ -71,7 +71,6 @@ const FreshApp = () => {
 
   const lastScopeElement = useRef<ScopeElement | null>(null)
 
-  // change level stuff
   useSubscribe(scope, () => {
     if (!scope.selected && !scope.hovered) {
       lastScopeElement.current = null
@@ -80,25 +79,39 @@ const FreshApp = () => {
 
     const item: ScopeElement = scope.selected ?? (scope.hovered as ScopeElement)
 
-    const { houseId, levelIndex, object } = item
+    const { houseId, columnIndex, levelIndex, gridGroupIndex, object } = item
 
     if (houseId !== siteCtx.houseId) return
+
+    let refreshLevelAlts = true,
+      refreshWindowAlts = true
 
     const last = lastScopeElement.current
 
     if (last && last.houseId === houseId && last.levelIndex === levelIndex) {
-      return
+      refreshLevelAlts = false
+
+      if (
+        last.columnIndex === columnIndex &&
+        last.gridGroupIndex === gridGroupIndex
+      ) {
+        refreshWindowAlts = false
+      }
     }
 
-    // else
-    // refresh alt level type layouts!
-    // for this level index, this level type
-    pipe(
-      objectToHouse(object),
-      O.map((houseTransformsGroup) => {
-        houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scope.hovered!)
-      })
-    )
+    if (refreshWindowAlts || refreshLevelAlts) {
+      pipe(
+        objectToHouse(object),
+        O.map((houseTransformsGroup) => {
+          if (refreshLevelAlts) {
+            houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
+          }
+          if (refreshWindowAlts) {
+            houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
+          }
+        })
+      )
+    }
 
     lastScopeElement.current = scope.hovered
   })

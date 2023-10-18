@@ -148,3 +148,21 @@ export const compareProps = <T>(
   obj2: T,
   props: (keyof T)[]
 ): boolean => props.every((prop) => obj1[prop] === obj2[prop])
+
+export function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number,
+  leading = false
+): (...args: Parameters<T>) => void {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return function (...args: Parameters<T>): void {
+    const later = () => {
+      timer = null
+      if (!leading) fn(...args)
+    }
+    const callNow = leading && !timer
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(later, delay)
+    if (callNow) fn(...args)
+  }
+}

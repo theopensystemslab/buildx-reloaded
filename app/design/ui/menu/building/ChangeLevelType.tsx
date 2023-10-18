@@ -7,7 +7,7 @@ import { ChangeLevel } from "~/ui/icons"
 import { A, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
-import systemsDB from "../../../../db/systems"
+import systemsDB, { useAllLevelTypes } from "../../../../db/systems"
 import { ScopeElement } from "../../../state/scope"
 import { findFirstGuardDown } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
@@ -20,6 +20,7 @@ import {
   isModuleGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "../common/ContextMenuNested"
+import { useLevelTypes } from "../../../../data/levelTypes"
 
 type Props = {
   scopeElement: ScopeElement
@@ -32,20 +33,15 @@ type LevelTypeOption = {
   value: { levelType: LevelType; layoutGroup: HouseLayoutGroup }
 }
 
-const ChangeLevelTypeOptions = (props: Props) => {
-  const { houseTransformsGroup, scopeElement, close } = props
+const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
+  const { houseTransformsGroup, scopeElement, close, levelTypes } = props
 
-  const { levelTypeOptions, originalLevelTypeOption } = suspend(async () => {
-    const { systemId } = houseTransformsGroup.userData
+  const { levelTypeOptions, originalLevelTypeOption } = (() => {
     const { levelIndex } = scopeElement
-
-    const allLevelTypes = await systemsDB.levelTypes
-      .where({ systemId })
-      .toArray()
 
     const getLevelType = (code: string) =>
       pipe(
-        allLevelTypes,
+        levelTypes,
         A.findFirst((x) => x.code === code),
         someOrError(`level type ${code} not found`)
       )
@@ -82,8 +78,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
       A.filter(
         (x): x is HouseLayoutGroup =>
           isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
       ),
       A.map(augmentLevelType)
     )
@@ -109,7 +104,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
       levelTypeOptions: allOptions,
       originalLevelTypeOption: originalOption,
     }
-  }, [scopeElement])
+  })()
 
   // const closing = useRef(false)
 
@@ -119,9 +114,9 @@ const ChangeLevelTypeOptions = (props: Props) => {
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      // houseTransformsGroup.userData.setActiveLayoutGroup(
-      //   originalLevelTypeOption.value.layoutGroup
-      // )
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalLevelTypeOption.value.layoutGroup
+      )
     }
 
     invalidate()
@@ -132,7 +127,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
 
     // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
-    close()
+    // close()
 
     pipe(
       houseTransformsGroup.children,
@@ -142,14 +137,18 @@ const ChangeLevelTypeOptions = (props: Props) => {
           x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
       ),
       A.map((x) => {
+        console.log(`removing ${x.userData.use}`)
         x.removeFromParent()
       })
     )
 
     houseTransformsGroup.userData.updateDB().then(() => {
+      console.log(`refresh alt sec type lay`)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
+
+    // close()
     // closing.current = false
   }
 
@@ -168,6 +167,10 @@ const ChangeLevelType = (props: Props) => {
     scopeElement: { dna, levelIndex },
     houseTransformsGroup,
   } = props
+
+  const levelTypes = useAllLevelTypes().filter(
+    (x) => x.systemId === houseTransformsGroup.userData.systemId
+  )
 
   const { levelType } = parseDna(dna)
 
@@ -193,9 +196,7 @@ const ChangeLevelType = (props: Props) => {
       icon={<ChangeLevel />}
       unpaddedSvg
     >
-      <Suspense fallback={null}>
-        <ChangeLevelTypeOptions {...props} />
-      </Suspense>
+      <ChangeLevelTypeOptions {...{ ...props, levelTypes }} />
     </ContextMenuNested>
   )
 }

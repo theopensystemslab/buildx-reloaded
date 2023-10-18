@@ -188,8 +188,8 @@ export const createHouseLayoutGroup = ({
               houseLayoutGroup.parent as HouseTransformsGroup
 
             if (
-              houseTransformsGroup.userData.activeLayoutGroupUuid ===
-              houseLayoutGroup.uuid
+              houseTransformsGroup.userData.use ===
+              HouseLayoutGroupUse.Enum.ACTIVE
             ) {
               return houseTransformsGroup.userData.updateActiveLayoutDnas(
                 nextDnas
