@@ -90,6 +90,9 @@ export const useAllSpaceTypes = (): SpaceType[] =>
 export const useAllWindowTypes = (): WindowType[] =>
   useLiveQuery(() => systemsDB.windowTypes.toArray(), [], [])
 
+export const useAllLevelTypes = (): LevelType[] =>
+  useLiveQuery(() => systemsDB.levelTypes.toArray(), [], [])
+
 export const useAllMaterials = (): Material[] =>
   useLiveQuery(() => systemsDB.materials.toArray(), [], [])
 

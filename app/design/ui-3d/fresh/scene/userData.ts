@@ -70,7 +70,6 @@ export type HouseTransformsGroupUserData = {
   setVerticalCuts: () => void
   setLevelCut: (levelIndex: number | null) => void
   // layouts
-  activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
   updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
@@ -278,8 +277,7 @@ export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
 
 export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   isHouseLayoutGroup(node) &&
-  node.uuid ===
-    (node.parent as HouseTransformsGroup).userData.activeLayoutGroupUuid
+  node.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
 
 export const isHouseTransformsGroup = (
   node: Object3D
