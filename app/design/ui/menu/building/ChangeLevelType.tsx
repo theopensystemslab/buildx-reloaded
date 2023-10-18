@@ -120,9 +120,9 @@ const ChangeLevelTypeOptions = (props: Props) => {
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      // houseTransformsGroup.userData.setActiveLayoutGroup(
-      //   originalLevelTypeOption.value.layoutGroup
-      // )
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalLevelTypeOption.value.layoutGroup
+      )
     }
 
     invalidate()

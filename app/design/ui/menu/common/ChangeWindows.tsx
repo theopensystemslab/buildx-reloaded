@@ -1,34 +1,26 @@
 import { invalidate } from "@react-three/fiber"
-import { flow, pipe } from "fp-ts/lib/function"
-import { Suspense, useRef } from "react"
-import { suspend } from "suspend-react"
-import { Module } from "../../../../../server/data/modules"
+import { pipe } from "fp-ts/lib/function"
+import { Suspense } from "react"
 import { WindowType } from "../../../../../server/data/windowTypes"
-import systemsDB from "../../../../db/systems"
-import { Opening } from "../../../../ui/icons"
+import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
 import Radio from "../../../../ui/Radio"
-import { A, O, Ord, S, someOrError, T } from "../../../../utils/functions"
-import { setInvisibleNoRaycast } from "../../../../utils/three"
-import { getWindowTypeAlternatives } from "../../../../workers/layouts/modules"
+import { Opening } from "../../../../ui/icons"
+import { A, someOrError } from "../../../../utils/functions"
+import { getWindowType } from "../../../../workers/layouts/worker"
 import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
+import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
-  findFirstGuardUp,
-  getActiveHouseUserData,
-} from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { createModuleGroup } from "../../../ui-3d/fresh/scene/moduleGroup"
-import {
+  HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseTransformsGroup,
-  isColumnGroup,
-  isModuleGroup,
-  ModuleGroup,
-  ModuleGroupUse,
+  isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "./ContextMenuNested"
 
 type WindowTypeOption = {
   label: string
-  value: { windowType: string; moduleGroup: ModuleGroup }
+  value: { windowType: WindowType; layoutGroup: HouseLayoutGroup }
   thumbnail?: string
 }
 
@@ -41,163 +33,104 @@ type Props = {
 const ChangeWindowsOptions = (props: Props) => {
   const {
     houseTransformsGroup,
-    scopeElement: { dna, houseId, gridGroupIndex, object },
+    scopeElement: { dna },
     close,
   } = props
 
-  const originalModuleGroup = pipe(
-    object,
-    findFirstGuardUp(isModuleGroup),
-    someOrError(`no module group`)
-  )
-
-  const side = getSide(houseTransformsGroup)
-
   const { systemId } = getActiveHouseUserData(houseTransformsGroup)
 
-  const closing = useRef(false)
+  const windowTypes = useAllWindowTypes()
+  const allModules = useAllModules()
 
-  const { windowTypeOptions, originalWindowTypeOption } = suspend(async () => {
-    const originalModule = await systemsDB.modules.get({ systemId, dna })
-    if (!originalModule)
-      throw new Error(`no original module ${systemId} ${dna}`)
+  if (windowTypes.length === 0 || allModules.length === 0) return null
 
-    const candidates = await getWindowTypeAlternatives({
-      systemId,
-      dna,
-      side: "LEFT",
-    })
-    const windowTypes = await systemsDB.windowTypes.toArray()
+  const thisModule = pipe(
+    allModules,
+    A.findFirst((x) => x.systemId === systemId && x.dna === dna),
+    someOrError(`no module`)
+  )
 
-    const getWindowType = (candidate: Module) =>
-      pipe(
-        windowTypes,
-        A.findFirstMap((windowType): O.Option<WindowType> => {
-          switch (true) {
-            // special case end modules
-            case candidate.structuredDna.positionType === "END":
-              return windowType.code === candidate.structuredDna.windowTypeEnd
-                ? O.some(windowType)
-                : O.none
-            // left = windowTypeSide2
-            case side === "LEFT":
-              return windowType.code === candidate.structuredDna.windowTypeSide1
-                ? O.some(windowType)
-                : O.none
-            // right = windowTypeSide1
-            case side === "RIGHT":
-              return windowType.code === candidate.structuredDna.windowTypeSide2
-                ? O.some(windowType)
-                : O.none
-            default:
-              return O.none
-          }
-        })
-      )
-
-    const originalColumnGroup = pipe(
-      originalModuleGroup,
-      findFirstGuardUp(isColumnGroup),
-
-      someOrError(`no column group`)
-    )
+  const { windowTypeOptions, originalWindowTypeOption } = (() => {
+    const side = getSide(houseTransformsGroup)
 
     const originalWindowType = pipe(
-      originalModule,
-      getWindowType,
-      someOrError(`no window type`)
+      getWindowType(windowTypes, thisModule, side),
+      someOrError(`no original window type`)
     )
 
     const originalWindowTypeOption: WindowTypeOption = {
       value: {
-        moduleGroup: originalModuleGroup,
-        windowType: originalWindowType.code,
+        layoutGroup: houseTransformsGroup.userData.unsafeGetActiveLayoutGroup(),
+        windowType: originalWindowType,
       },
       label: originalWindowType.description,
     }
 
-    return pipe(
-      candidates,
-      A.filterMap((candidate) =>
-        pipe(
-          candidate,
-          getWindowType,
-          O.map(
-            (windowType): T.Task<WindowTypeOption> =>
-              () =>
-                createModuleGroup({
-                  systemId,
-                  houseId,
-                  gridGroupIndex,
-                  module: candidate,
-                  use: ModuleGroupUse.Enum.ALT_WINDOW_TYPE,
-                  flip: originalColumnGroup.userData.endColumn ?? false,
-                  visible: false,
-                  z: originalModuleGroup.userData.z,
-                  houseTransformsGroup,
-                }).then((moduleGroup) => {
-                  setInvisibleNoRaycast(moduleGroup)
-                  originalModuleGroup.parent!.add(moduleGroup)
-
-                  return {
-                    value: {
-                      moduleGroup,
-                      windowType: windowType.code,
-                    },
-                    label: windowType.description,
-                    thumbnail: windowType.imageUrl,
-                  }
-                })
-          )
-        )
+    const otherOptions: WindowTypeOption[] = pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x): x is HouseLayoutGroup =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE &&
+          x.userData.windowType
       ),
-      A.sequence(T.ApplicativeSeq),
-      T.map(
-        flow(
-          A.concat([originalWindowTypeOption]),
-          A.sort(
-            pipe(
-              S.Ord,
-              Ord.contramap((o: WindowTypeOption) => o.value.windowType)
-            )
-          ),
-          (windowTypeOptions) => {
-            return {
-              windowTypeOptions,
-              originalWindowTypeOption,
-            }
-          }
-        )
-      )
-    )()
-  }, [systemId, dna])
+      A.map((layoutGroup): WindowTypeOption => {
+        // TODO: DEBT
+        const windowType: WindowType = layoutGroup.userData.windowType
+
+        return {
+          value: {
+            layoutGroup,
+            windowType,
+          },
+          label: windowType.description,
+        }
+      })
+    )
+
+    return {
+      originalWindowTypeOption,
+      windowTypeOptions: pipe(
+        otherOptions,
+        A.append(originalWindowTypeOption),
+        A.uniq({
+          equals: (x, y) => x.value.windowType.code === y.value.windowType.code,
+        })
+      ),
+    }
+  })()
 
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    if (closing.current) return
-
     if (incoming === null) {
-      originalModuleGroup.userData.setThisModuleGroupVisible()
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalWindowTypeOption.value.layoutGroup
+      )
     } else {
-      incoming.moduleGroup.userData.setThisModuleGroupVisible()
+      houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     }
 
     invalidate()
   }
 
-  const changeWindowType = ({ moduleGroup }: WindowTypeOption["value"]) => {
-    closing.current = true
+  const changeWindowType = () => {
+    close()
 
-    moduleGroup.userData.setThisModuleGroupVisible()
-
-    houseTransformsGroup.userData
-      .unsafeGetActiveLayoutGroup()
-      .userData.updateDnas()
+    pipe(
+      houseTransformsGroup.children,
+      A.filter(
+        (x) =>
+          isHouseLayoutGroup(x) &&
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+      ),
+      A.map((x) => {
+        x.removeFromParent()
+      })
+    )
 
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
-
-    close()
   }
 
   return (

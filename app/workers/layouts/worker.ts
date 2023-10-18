@@ -41,6 +41,7 @@ import {
 } from "./vanilla"
 import { transpose as transposeA } from "fp-ts-std/Array"
 import { Side } from "../../design/state/camera"
+import { WindowType } from "../../../server/data/windowTypes"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -851,6 +852,30 @@ const getAltLevelTypeLayouts = async ({
   )()
 }
 
+export const getWindowType = (
+  windowTypes: WindowType[],
+  candidate: Module,
+  side: Side
+) =>
+  pipe(
+    windowTypes,
+    A.findFirst((windowType) => {
+      switch (true) {
+        // special case end modules
+        case candidate.structuredDna.positionType === "END":
+          return windowType.code === candidate.structuredDna.windowTypeEnd
+        // left = windowTypeSide2
+        case side === "LEFT":
+          return windowType.code === candidate.structuredDna.windowTypeSide1
+        // right = windowTypeSide1
+        case side === "RIGHT":
+          return windowType.code === candidate.structuredDna.windowTypeSide2
+        default:
+          return false
+      }
+    })
+  )
+
 const getAltWindowTypeLayouts = async ({
   systemId,
   dnas,
@@ -879,8 +904,6 @@ const getAltWindowTypeLayouts = async ({
 
   const { layout: currentLayout } = currentIndexedLayout
 
-  const currentMatrix = columnLayoutToMatrix(currentLayout)
-
   const thisColumn = pipe(
     currentLayout,
     A.lookup(columnIndex),
@@ -898,14 +921,6 @@ const getAltWindowTypeLayouts = async ({
     dna,
     structuredDna: { sectionType, positionType, levelType, gridType },
   } = thisModule.module
-
-  const thisVanilla = await getVanillaModule({
-    systemId,
-    sectionType,
-    positionType,
-    levelType,
-    gridType,
-  })()
 
   const vanillaModulesByLevelIndex = await pipe(
     thisColumn.gridGroups,
@@ -932,23 +947,40 @@ const getAltWindowTypeLayouts = async ({
 
       const lengthDelta = candidate.length - thisModule.module.length
 
+      console.log([thisModule.module.structuredDna, candidate.structuredDna])
+
       const updatedColumn = pipe(
         thisColumn,
         produce((draft: PositionedColumn) => {
+          // swap the module
           draft.gridGroups[levelIndex].modules[gridGroupIndex].module =
             candidate
+
+          return
+
+          // const positionedModules = draft.gridGroups[levelIndex].modules
+
+          // const isFirst: boolean = gridGroupIndex === 0
+
+          // const z = isFirst
+          //   ? candidate.length / 2
+          //   : positionedModules[gridGroupIndex - 1].z +
+          //     positionedModules[gridGroupIndex - 1].module.length / 2 +
+          //     candidate.length / 2
 
           for (
             let i = gridGroupIndex;
             i < draft.gridGroups[levelIndex].modules.length;
             i++
           ) {
+            console.log(`ADDING LENGTH DELTA`)
             draft.gridGroups[levelIndex].modules[i].z += lengthDelta
           }
 
           switch (sign(gridUnitDelta)) {
             // pad every other level
             case 1: {
+              console.log(`PAD EVERY OTHER LEVEL`)
               for (let gridGroup of draft.gridGroups) {
                 if (gridGroup.levelIndex === levelIndex) continue
 
@@ -983,6 +1015,7 @@ const getAltWindowTypeLayouts = async ({
 
             // pad this level
             case -1: {
+              console.log(`PAD THIS LEVEL`)
               const vanillaModule = vanillaModulesByLevelIndex[levelIndex]
 
               const n = round(vanillaModule.length / gridUnitDelta)
@@ -1010,6 +1043,7 @@ const getAltWindowTypeLayouts = async ({
             // do nothing more
             case 0:
             default:
+              console.log(`DO NOTHING`)
               break
           }
         })
@@ -1021,8 +1055,10 @@ const getAltWindowTypeLayouts = async ({
           draft[columnIndex] = updatedColumn
         })
       )
+
       postVanillaColumn(layout[0])
       const dnas = columnLayoutToDnas(layout)
+
       layoutsDB.houseLayouts.put({ systemId, dnas, layout })
 
       return {
@@ -1030,8 +1066,8 @@ const getAltWindowTypeLayouts = async ({
         layout,
         dnas,
         windowType: pipe(
-          windowTypes,
-          A.findFirst((x) => true)
+          getWindowType(windowTypes, candidate, side),
+          someOrError(`no window type`)
         ),
       }
       // EACH LEVEL NEEDS ITS OWN VANILLA

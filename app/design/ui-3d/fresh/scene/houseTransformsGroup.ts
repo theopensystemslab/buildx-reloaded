@@ -219,6 +219,7 @@ export const createHouseTransformsGroup = ({
       houseTransformsGroup.children,
       A.findFirst(
         (x): x is HouseLayoutGroup =>
+          isHouseLayoutGroup(x) &&
           x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
       )
     )
@@ -377,9 +378,9 @@ export const createHouseTransformsGroup = ({
           use: HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE,
           houseTransformsGroup,
         })().then((layoutGroup) => {
+          layoutGroup.userData.windowType = windowType
           setInvisibleNoRaycast(layoutGroup)
           houseTransformsGroup.add(layoutGroup)
-          console.log(houseTransformsGroup.children.length)
         })
       }
     }
