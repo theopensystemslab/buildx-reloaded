@@ -3,6 +3,7 @@ import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Plane, Vector3 } from "three"
 import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
+import { parseDna } from "../../../../../server/data/modules"
 import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
@@ -15,12 +16,11 @@ import {
   S,
   T,
   debounce,
-  pipeLog,
-  pipeLogWith,
   someOrError,
 } from "../../../../utils/functions"
 import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
+import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
 import scope, { ScopeElement } from "../../../state/scope"
 import settings from "../../../state/settings"
@@ -60,8 +60,6 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
-import { parseDna } from "../../../../../server/data/modules"
-import { getSide } from "../../../state/camera"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -227,13 +225,11 @@ export const createHouseTransformsGroup = ({
   const getActiveLayoutGroup = (): O.Option<HouseLayoutGroup> =>
     pipe(
       houseTransformsGroup.children,
-      pipeLogWith((xs) => xs.map((x) => x.userData.use)),
       A.findFirst(
         (x): x is HouseLayoutGroup =>
           isHouseLayoutGroup(x) &&
           x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
-      ),
-      pipeLogWith((x) => (O.isSome(x) ? x.value.userData.use : null))
+      )
     )
 
   const unsafeGetActiveLayoutGroup = (): HouseLayoutGroup =>
@@ -246,9 +242,6 @@ export const createHouseTransformsGroup = ({
         if (lastLayoutGroup === nextLayoutGroup) return
         setVisible(nextLayoutGroup, true)
         setVisible(lastLayoutGroup, false)
-        console.log(
-          `setting last ${lastLayoutGroup.userData.use} to ${nextLayoutGroup.userData.use}`
-        )
         lastLayoutGroup.userData.use = nextLayoutGroup.userData.use
       })
     )
@@ -273,12 +266,6 @@ export const createHouseTransformsGroup = ({
       oldLayouts.forEach((x) => {
         x.removeFromParent()
       })
-
-      console.log(
-        houseTransformsGroup.children
-          .filter(isHouseLayoutGroup)
-          .map((x) => x.userData.use)
-      )
 
       const { dnas, sectionType: currentSectionType } =
         getActiveHouseUserData(houseTransformsGroup)

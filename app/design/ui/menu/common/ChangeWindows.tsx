@@ -113,8 +113,6 @@ const ChangeWindowsOptions = (props: Props) => {
   }
 
   const changeWindowType = () => {
-    close()
-
     pipe(
       houseTransformsGroup.children,
       A.filter(
@@ -131,6 +129,8 @@ const ChangeWindowsOptions = (props: Props) => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
+
+    // close()
   }
 
   return (

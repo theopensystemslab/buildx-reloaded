@@ -947,8 +947,6 @@ const getAltWindowTypeLayouts = async ({
 
       const lengthDelta = candidate.length - thisModule.module.length
 
-      console.log([thisModule.module.structuredDna, candidate.structuredDna])
-
       const updatedColumn = pipe(
         thisColumn,
         produce((draft: PositionedColumn) => {
@@ -973,14 +971,12 @@ const getAltWindowTypeLayouts = async ({
             i < draft.gridGroups[levelIndex].modules.length;
             i++
           ) {
-            console.log(`ADDING LENGTH DELTA`)
             draft.gridGroups[levelIndex].modules[i].z += lengthDelta
           }
 
           switch (sign(gridUnitDelta)) {
             // pad every other level
             case 1: {
-              console.log(`PAD EVERY OTHER LEVEL`)
               for (let gridGroup of draft.gridGroups) {
                 if (gridGroup.levelIndex === levelIndex) continue
 
@@ -1015,7 +1011,6 @@ const getAltWindowTypeLayouts = async ({
 
             // pad this level
             case -1: {
-              console.log(`PAD THIS LEVEL`)
               const vanillaModule = vanillaModulesByLevelIndex[levelIndex]
 
               const n = round(vanillaModule.length / gridUnitDelta)
@@ -1043,7 +1038,6 @@ const getAltWindowTypeLayouts = async ({
             // do nothing more
             case 0:
             default:
-              console.log(`DO NOTHING`)
               break
           }
         })

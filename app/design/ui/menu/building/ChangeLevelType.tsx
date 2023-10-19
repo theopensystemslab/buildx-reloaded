@@ -137,13 +137,11 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
           x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
       ),
       A.map((x) => {
-        console.log(`removing ${x.userData.use}`)
         x.removeFromParent()
       })
     )
 
     houseTransformsGroup.userData.updateDB().then(() => {
-      console.log(`refresh alt sec type lay`)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
