@@ -100,7 +100,7 @@ const useModeChange = (rootRef: RefObject<Group>) => {
                 isHouseTransformsGroup(x) && x.userData.houseId === houseId
             ),
             O.map((houseTransformsGroup) => {
-              houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+              // houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
             })
           )
         }

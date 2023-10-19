@@ -1,6 +1,18 @@
 import { A } from "./functions"
 
-export const { abs, atan2, min, max, ceil, floor, round, PI, sign, sqrt } = Math
+export const {
+  abs,
+  atan2,
+  min,
+  max,
+  ceil,
+  floor,
+  random,
+  round,
+  PI,
+  sign,
+  sqrt,
+} = Math
 
 // export { abs, min, max }
 

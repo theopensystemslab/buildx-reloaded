@@ -275,6 +275,16 @@ export const isColumnGroup = (node: Object3D): node is ColumnGroup =>
 export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
 
+export const isHiddenLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
+  isHouseLayoutGroup(node) &&
+  node.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE
+
+export const isWindowTypeAltLayoutGroup = (
+  node: Object3D
+): node is HouseLayoutGroup =>
+  isHouseLayoutGroup(node) &&
+  node.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+
 export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   isHouseLayoutGroup(node) &&
   node.userData.use === HouseLayoutGroupUse.Enum.ACTIVE

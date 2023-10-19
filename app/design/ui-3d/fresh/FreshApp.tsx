@@ -1,21 +1,36 @@
 import { invalidate, useThree } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { A, O } from "../../../utils/functions"
+import { A, O, R, pipeLog, pipeLogWith } from "../../../utils/functions"
 import { useSubscribe, useSubscribeKey } from "../../../utils/hooks"
 import elementCategories from "../../state/elementCategories"
 import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
-import { isElementMesh } from "./scene/userData"
+import {
+  HouseLayoutGroup,
+  HouseLayoutGroupUse,
+  HouseTransformsGroup,
+  isElementMesh,
+  isHouseLayoutGroup,
+  isHouseTransformsGroup,
+  isWindowTypeAltLayoutGroup,
+} from "./scene/userData"
 import useVerticalCuts from "./helpers/useVerticalCuts"
 import { useExportersWorker } from "../../../workers/exporters/hook"
 import scope, { ScopeElement } from "../../state/scope"
 import siteCtx from "../../state/siteCtx"
-import { objectToHouse, objectToHouseObjects } from "./helpers/sceneQueries"
+import {
+  findFirstGuardAcross,
+  objectToHouse,
+  objectToHouseObjects,
+} from "./helpers/sceneQueries"
+import { useKey } from "react-use"
+import { floor, random } from "../../../utils/math"
+import menu from "../../state/menu"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -71,13 +86,46 @@ const FreshApp = () => {
 
   const lastScopeElement = useRef<ScopeElement | null>(null)
 
+  const clearAltWindows = (houseId: string): void =>
+    void pipe(
+      rootRef.current?.children,
+      O.fromNullable,
+      O.chain((children) =>
+        pipe(
+          children,
+          A.findFirst(
+            (x): x is HouseTransformsGroup =>
+              isHouseTransformsGroup(x) && x.userData.houseId === houseId
+          )
+        )
+      ),
+      O.map((houseTransformsGroup) =>
+        pipe(
+          houseTransformsGroup.children,
+          A.filter(isWindowTypeAltLayoutGroup)
+        ).forEach((lg) => {
+          console.log(`removing ${lg.uuid} FULLY`)
+          lg.removeFromParent()
+        })
+      )
+    )
+
   useSubscribe(scope, () => {
-    if (!scope.selected && !scope.hovered) {
-      lastScopeElement.current = null
+    const item = (menu.open ? scope.selected : null) ?? scope.hovered
+
+    if (!item) {
+      console.log(`???`)
+
+      if (lastScopeElement.current) {
+        const { houseId } = lastScopeElement.current
+
+        clearAltWindows(houseId)
+
+        lastScopeElement.current = null
+      }
+
       return
     }
-
-    const item: ScopeElement = scope.selected ?? (scope.hovered as ScopeElement)
 
     const { houseId, columnIndex, levelIndex, gridGroupIndex, object } = item
 
@@ -104,9 +152,10 @@ const FreshApp = () => {
         objectToHouse(object),
         O.map((houseTransformsGroup) => {
           if (refreshLevelAlts) {
-            houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
+            // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
           }
           if (refreshWindowAlts) {
+            console.log(`refreshing window alts`)
             houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
           }
         })
@@ -114,6 +163,39 @@ const FreshApp = () => {
     }
 
     lastScopeElement.current = scope.hovered
+  })
+
+  useKey("c", () => {
+    const maybeHouse = pipe(
+      rootRef.current?.children ?? [],
+      A.findFirst(isHouseTransformsGroup)
+    )
+
+    pipe(
+      maybeHouse,
+      O.map((house) => {
+        console.log("get first non-active layout")
+        const maybeNextLayout = pipe(
+          house.children,
+          A.filter(isHouseLayoutGroup),
+          pipeLogWith((xs) => xs.map((x) => x.userData.use)),
+          A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
+          (groups) => {
+            const i = floor(random() * groups.length)
+            return pipe(groups, A.lookup(i))
+          }
+        )
+
+        pipe(
+          maybeNextLayout,
+          O.map((nextLayout) => {
+            console.log(`set it ${nextLayout.uuid}`)
+            house.userData.setActiveLayoutGroup(nextLayout)
+            invalidate()
+          })
+        )
+      })
+    )
   })
 
   return (

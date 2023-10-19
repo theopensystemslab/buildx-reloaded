@@ -349,10 +349,6 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async ({ columnIndex, levelIndex, gridGroupIndex }) => {
-      return
-
-      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
-
       const oldLayouts = pipe(
         houseTransformsGroup.children,
         A.filter(
@@ -364,10 +360,13 @@ export const createHouseTransformsGroup = ({
 
       // out with the old
       oldLayouts.forEach((x) => {
+        console.log(`removing ${x.uuid}`)
         x.removeFromParent()
       })
 
       const side = getSide(houseTransformsGroup)
+
+      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
 
       const altWindowTypeLayouts =
         await getLayoutsWorker().getAltWindowTypeLayouts({
@@ -390,7 +389,17 @@ export const createHouseTransformsGroup = ({
         })().then((layoutGroup) => {
           layoutGroup.userData.windowType = windowType
           setInvisibleNoRaycast(layoutGroup)
+          console.log(`adding ${layoutGroup.uuid}`)
           houseTransformsGroup.add(layoutGroup)
+          dispatchEvent(
+            new CustomEvent("FOO", {
+              detail: {
+                foo: houseTransformsGroup.children
+                  .filter(isHouseLayoutGroup)
+                  .map((x) => x.userData.use),
+              },
+            })
+          )
         })
       }
     }

@@ -35,6 +35,7 @@ import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
 import Breadcrumbs from "./Breadcrumbs"
+import { useEvent } from "react-use"
 
 type Props = {
   controlsEnabled: boolean
@@ -90,10 +91,16 @@ const HtmlUi = (props: Props) => {
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 
+  const [foo, setFoo] = useState<object>({})
+
+  useEvent("FOO", ({ detail: { foo } }: CustomEvent<{ foo: object }>) => {
+    setFoo(foo)
+  })
+
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
-        {/* <pre>{JSON.stringify(mode, null, 2)}</pre> */}
+        <pre>{JSON.stringify(foo, null, 2)}</pre>
       </div>
       <HeaderEndPortal>
         <div className="flex items-center justify-end">

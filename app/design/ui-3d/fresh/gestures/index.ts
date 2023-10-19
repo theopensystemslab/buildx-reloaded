@@ -114,7 +114,7 @@ const useGestures = () => {
           hoveredObjects: [],
         })
         invalidate()
-        // scope.hovered = null
+        scope.hovered = null
         return
       }
 
