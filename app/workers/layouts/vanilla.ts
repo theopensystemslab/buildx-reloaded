@@ -7,17 +7,7 @@ import layoutsDB, {
   PositionedRow,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import {
-  A,
-  all,
-  compareProps,
-  O,
-  Ord,
-  S,
-  someOrError,
-  T,
-  TO,
-} from "../../utils/functions"
+import { A, O, Ord, S, T, all, someOrError } from "../../utils/functions"
 import { getModules } from "./modules"
 
 export const createVanillaModuleGetter =
@@ -185,6 +175,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
             y,
             levelIndex,
             levelType,
+            vanillaModule,
           }))
         )
       }

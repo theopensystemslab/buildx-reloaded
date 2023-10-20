@@ -28,6 +28,7 @@ import {
   O,
   T,
   TO,
+  pipeLog,
   reduceToOption,
   someOrError,
   unwrapSome,
@@ -130,22 +131,22 @@ const analyzeColumn =
 
 const columnify =
   <A extends unknown>(toLength: (a: A) => number) =>
-  (input: readonly A[][]) => {
+  (input: A[][]) => {
     let slices = new Array<[number, number]>(input.length).fill([0, 1])
     const lengths = input.map((v) => v.length)
 
-    let acc: (readonly A[][])[] = []
+    let acc: A[][][] = []
 
     const slicesRemaining = () =>
       !pipe(
-        RA.zip(slices)(lengths),
-        RA.reduce(true, (acc, [length, [start]]) => acc && start > length - 1)
+        A.zip(slices)(lengths),
+        A.reduce(true, (acc, [length, [start]]) => acc && start > length - 1)
       )
 
     while (slicesRemaining()) {
       pipe(
         slices,
-        RA.mapWithIndex((rowIndex, [start, end]) =>
+        A.mapWithIndex((rowIndex, [start, end]) =>
           input[rowIndex].slice(start, end)
         ),
         (column) =>
@@ -162,18 +163,30 @@ const columnify =
       )
     }
 
-    return pipe(acc, transposeRA)
+    return pipe(acc, transposeA)
   }
+// This helper function allows you to map over an array
+// within a Task context (i.e., Task<Array<T>> -> Task<Array<U>>)
+const mapTaskArray = <T, U>(
+  taskArray: T.Task<T[]>,
+  fn: (value: T) => T.Task<U>
+): T.Task<U[]> => {
+  return pipe(
+    taskArray,
+    T.chain((arr) => T.sequenceArray(arr.map(fn))),
+    T.map((arr) => [...arr]) // This spreads the elements into a new mutable array
+  )
+}
 
-const modulesToColumnLayout = (modules: Module[]) => {
-  const columns = pipe(
+const modulesToColumnLayout = (modules: Module[]): T.Task<ColumnLayout> => {
+  const matrixColumnsByGridType = pipe(
     modules,
     modulesToRows,
-    RA.map((row) =>
+    A.map((row) =>
       pipe(
         row,
         // group by grid type
-        RA.reduce(
+        A.reduce(
           { prev: null, acc: [] },
           (
             { prev, acc }: { prev: Module | null; acc: Module[][] },
@@ -195,21 +208,21 @@ const modulesToColumnLayout = (modules: Module[]) => {
         ({ acc }) => acc
       )
     ),
-    transposeRA
+    transposeA
   )
 
   const sameLengthColumns = pipe(
-    columns,
-    RA.map((column) =>
+    matrixColumnsByGridType,
+    A.map((column) =>
       pipe(
         column,
-        RA.map((module) =>
+        A.map((module) =>
           pipe(
             module,
-            RA.reduce(0, (b, v) => b + v.structuredDna.gridUnits)
+            A.reduce(0, (b, v) => b + v.structuredDna.gridUnits)
           )
         ),
-        RA.reduce(
+        A.reduce(
           { acc: true, prev: null },
           ({ prev }: { prev: number | null }, a: number) => ({
             acc: prev === null || prev === a,
@@ -219,103 +232,120 @@ const modulesToColumnLayout = (modules: Module[]) => {
         ({ acc }) => acc
       )
     ),
-    RA.reduce(true, (b, a) => b && a)
+    A.reduce(true, (b, a) => b && a)
   )
 
   if (!sameLengthColumns) throw new Error("not sameLengthColumns")
 
-  const columnifiedFurther = pipe(
-    columns,
-    RA.map((column) =>
+  const matrixColumnsByGridUnitAlignment = pipe(
+    matrixColumnsByGridType,
+    A.map((column) =>
       pipe(
         column,
         columnify((a) => a.structuredDna.gridUnits),
-        transposeRA
+        transposeA
       )
     ),
-    RA.flatten
+    A.flatten
   )
 
-  return pipe(
-    columnifiedFurther,
-    RA.reduceWithIndex(
-      [],
-      (columnIndex, positionedCols: PositionedColumn[], loadedModules) => {
-        const last =
-          columnIndex === 0 ? null : positionedCols[positionedCols.length - 1]
-        const z = !last
-          ? 0
-          : last.z +
-            last.positionedRows[0].positionedModules.reduce(
-              (modulesLength, module) => modulesLength + module.module.length,
-              0
-            )
+  let positionedCols: PositionedColumn[] = []
 
-        const gridGroups = pipe(
-          loadedModules,
-          RA.reduceWithIndex(
-            [],
-            (levelIndex, positionedRows: PositionedRow[], modules) => {
-              const levelType = modules[0].structuredDna.levelType
+  return pipe(
+    T.of(matrixColumnsByGridUnitAlignment), // wrap matrixColumnsByGridUnitAlignment in a Task context
+    T.chain((matrixCols) => {
+      // Using array's map to process matrixCols
+      return pipe(
+        matrixCols,
+        RA.mapWithIndex((columnIndex, matrixColumn) => {
+          const last =
+            columnIndex === 0 ? null : positionedCols[positionedCols.length - 1]
+
+          const z = !last
+            ? 0
+            : last.z +
+              last.positionedRows[0].positionedModules.reduce(
+                (modulesLength, module) => modulesLength + module.module.length,
+                0
+              )
+
+          // Using array's map to process matrixRow
+          return pipe(
+            matrixColumn,
+            A.mapWithIndex((levelIndex, matrixRow) => {
+              const {
+                systemId,
+                structuredDna: {
+                  sectionType,
+                  positionType,
+                  levelType,
+                  gridType,
+                },
+              } = matrixRow[0]
               const levelLetter = levelType[0]
+
+              console.log({ levelLetter, positionedCols })
               const y =
                 levelLetter === "F"
                   ? 0
-                  : positionedRows[levelIndex - 1].y +
-                    positionedRows[levelIndex - 1].positionedModules[0].module
-                      .height
+                  : positionedCols[positionedCols.length - 1].positionedRows[0]
+                      .y +
+                    positionedCols[positionedCols.length - 1].positionedRows[0]
+                      .positionedModules[0].module.height
 
-              return [
-                ...positionedRows,
-                {
-                  positionedModules: pipe(
-                    modules,
-                    RA.reduceWithIndex(
-                      [],
-                      (
-                        i,
-                        positionedModules: PositionedModule[],
-                        module: Module
-                      ) => {
-                        const isFirst: boolean = i === 0
-
-                        const z = isFirst
-                          ? module.length / 2
-                          : positionedModules[i - 1].z +
-                            positionedModules[i - 1].module.length / 2 +
-                            module.length / 2
-
-                        return [
-                          ...positionedModules,
-                          {
-                            module,
-                            gridGroupIndex: i,
-                            z,
-                          },
-                        ]
-                      }
-                    )
-                  ),
-                  levelIndex,
+              return pipe(
+                getVanillaModule({
+                  systemId,
+                  sectionType,
+                  positionType,
                   levelType,
-                  y,
-                  length: modules.reduce((acc, m) => acc + m.length, 0),
-                },
-              ]
-            }
+                  gridType,
+                }),
+                T.map((vanillaModule): PositionedRow => {
+                  return {
+                    positionedModules: pipe(
+                      matrixRow,
+                      A.reduceWithIndex(
+                        [],
+                        (i, positionedModules: PositionedModule[], module) => {
+                          const isFirst = i === 0
+                          const z = isFirst
+                            ? module.length / 2
+                            : positionedModules[i - 1].z +
+                              positionedModules[i - 1].module.length / 2 +
+                              module.length / 2
+                          return [
+                            ...positionedModules,
+                            { module, gridGroupIndex: i, z },
+                          ]
+                        }
+                      )
+                    ),
+                    levelIndex,
+                    levelType,
+                    y,
+                    length: matrixRow.reduce((acc, m) => acc + m.length, 0),
+                    vanillaModule,
+                  }
+                })
+              )
+            }),
+            T.sequenceArray, // This will transform array of Tasks to Task of array
+            T.map((positionedRows) => {
+              positionedCols.push({
+                columnIndex: matrixCols.indexOf(matrixColumn),
+                positionedRows: [...positionedRows],
+                z,
+                length: positionedRows[0].length,
+              })
+              return positionedCols
+            })
           )
-        )
-        return [
-          ...positionedCols,
-          {
-            columnIndex,
-            positionedRows: gridGroups,
-            z,
-            length: gridGroups[0].length,
-          },
-        ]
-      }
-    )
+        }),
+        T.sequenceArray // Transforming the outer array of Tasks to a single Task
+      )
+    }),
+    T.map((xs) => pipe([...xs], pipeLog, A.flatten))
   )
 }
 
@@ -339,6 +369,7 @@ const getLayout = async ({
   dnas,
 }: HouseLayoutsKey): Promise<ColumnLayout> => {
   const allModules = await getModules()
+
   const maybeLayout = await layoutsDB.houseLayouts
     .get({ systemId, dnas })
     .then((x) => x?.layout)
@@ -358,7 +389,7 @@ const getLayout = async ({
         )
       )
     )
-    const layout = modulesToColumnLayout(modules)
+    const layout = await modulesToColumnLayout(modules)()
 
     layoutsDB.houseLayouts.put({
       layout,

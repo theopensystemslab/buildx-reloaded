@@ -14,6 +14,7 @@ export type PositionedRow = {
   y: number
   positionedModules: Array<PositionedModule>
   length: number
+  vanillaModule: Module
 }
 
 export type RowLayout = Array<PositionedRow>
