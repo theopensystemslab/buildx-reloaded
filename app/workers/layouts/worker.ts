@@ -906,7 +906,7 @@ export const stripForDebug = (posCol: AugPosCol) => {
               ...restPosMod
             }) => ({
               ...restPosMod,
-              foo: {
+              module: {
                 dna,
                 structuredDna: {
                   sectionType,
@@ -999,8 +999,6 @@ const getAltWindowTypeLayouts = async ({
 
   validatePositionedColumn(augColumn)
 
-  console.log(stripForDebug(augColumn))
-
   const candidates = pipe(
     await getWindowTypeAlternatives({ systemId, dna, side }),
     A.map((candidate) => {
@@ -1014,7 +1012,7 @@ const getAltWindowTypeLayouts = async ({
 
           if (sign(gridUnitDelta) === 1) {
             // pad all other rows with gridUnitDelta vanilla
-            for (let i = 0; i < augColumn.length; i++) {
+            for (let i = 0; i < draft.positionedRows.length; i++) {
               if (i === levelIndex) continue
 
               draft.positionedRows[i] = addModulesToRow(

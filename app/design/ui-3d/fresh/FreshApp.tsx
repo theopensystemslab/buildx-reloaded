@@ -1,17 +1,24 @@
 import { invalidate, useThree } from "@react-three/fiber"
-import { flow, pipe } from "fp-ts/lib/function"
+import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
+import { useKey } from "react-use"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { A, O, R, pipeLog, pipeLogWith } from "../../../utils/functions"
-import { useSubscribe, useSubscribeKey } from "../../../utils/hooks"
+import { A, O, pipeLogWith } from "../../../utils/functions"
+import { useSubscribe } from "../../../utils/hooks"
+import { floor, random } from "../../../utils/math"
+import { useExportersWorker } from "../../../workers/exporters/hook"
 import elementCategories from "../../state/elementCategories"
+import menu from "../../state/menu"
+import scope, { ScopeElement } from "../../state/scope"
+import siteCtx from "../../state/siteCtx"
 import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
+import { objectToHouse } from "./helpers/sceneQueries"
+import useVerticalCuts from "./helpers/useVerticalCuts"
 import {
-  HouseLayoutGroup,
   HouseLayoutGroupUse,
   HouseTransformsGroup,
   isElementMesh,
@@ -19,18 +26,6 @@ import {
   isHouseTransformsGroup,
   isWindowTypeAltLayoutGroup,
 } from "./scene/userData"
-import useVerticalCuts from "./helpers/useVerticalCuts"
-import { useExportersWorker } from "../../../workers/exporters/hook"
-import scope, { ScopeElement } from "../../state/scope"
-import siteCtx from "../../state/siteCtx"
-import {
-  findFirstGuardAcross,
-  objectToHouse,
-  objectToHouseObjects,
-} from "./helpers/sceneQueries"
-import { useKey } from "react-use"
-import { floor, random } from "../../../utils/math"
-import menu from "../../state/menu"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -170,7 +165,7 @@ const FreshApp = () => {
     pipe(
       maybeHtg,
       O.map(async (htg) => {
-        const foo = await htg.userData.refreshAltWindowTypeLayouts({
+        await htg.userData.refreshAltWindowTypeLayouts({
           columnIndex: 1,
           levelIndex: 1,
           gridGroupIndex: 0,
