@@ -58,7 +58,7 @@ export const getVanillaColumnLength = (column: PositionedRow[]) =>
   pipe(
     column,
     A.head,
-    O.map((row) => row.length),
+    O.map((row) => row.rowLength),
     someOrError(`getVanillaColumnLength column of 0 height`)
   )
 
@@ -85,7 +85,7 @@ export const useGetVanillaModule = (systemId: string) => {
 
     const vanillaModule = pipe(
       systemModules,
-      RA.filter((sysModule) =>
+      A.filter((sysModule) =>
         all(
           sectionType
             ? sysModule.structuredDna.sectionType === sectionType
@@ -103,13 +103,13 @@ export const useGetVanillaModule = (systemId: string) => {
             sysModule.structuredDna.gridType === module.structuredDna.gridType
         )
       ),
-      RA.sort(
+      A.sort(
         pipe(
           S.Ord,
           Ord.contramap((m: Module) => m.dna)
         )
       ),
-      RA.head,
+      A.head,
       O.toNullable
     )
 

@@ -13,7 +13,7 @@ export type PositionedRow = {
   levelType: string
   y: number
   positionedModules: Array<PositionedModule>
-  length: number
+  rowLength: number
 }
 
 export type RowLayout = Array<PositionedRow>
@@ -22,7 +22,7 @@ export type PositionedColumn = {
   positionedRows: Array<PositionedRow>
   z: number
   columnIndex: number
-  length: number
+  columnLength: number
 }
 
 export type ColumnLayout = Array<PositionedColumn>
@@ -33,14 +33,14 @@ export const validatePositionedRow = (row: PositionedRow): void => {
     (acc, mod) => acc + mod.module.length,
     0
   )
-  if (row.length !== totalModulesLength) {
+  if (row.rowLength !== totalModulesLength) {
     console.log(`Row Length Mismatch: `, {
-      rowLength: row.length,
+      rowLength: row.rowLength,
       totalModulesLength,
       positionedModules: row.positionedModules,
     })
     throw new Error(
-      `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.length}`
+      `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.rowLength}`
     )
   }
 
@@ -109,21 +109,21 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
   })
 
   // Get the length of the first row to compare with the others and with the column's length
-  const firstRowLength = column.positionedRows[0].length
+  const firstRowLength = column.positionedRows[0].rowLength
 
-  if (column.length !== firstRowLength) {
+  if (column.columnLength !== firstRowLength) {
     console.log("Column Length Mismatch:", {
-      columnLength: column.length,
+      columnLength: column.columnLength,
       expectedLength: firstRowLength,
     })
     throw new Error(
-      `Invalid PositionedColumn length. Expected ${firstRowLength} but got ${column.length}`
+      `Invalid PositionedColumn length. Expected ${firstRowLength} but got ${column.columnLength}`
     )
   }
 
   // Ensure all rows have the same length as the first row
   for (let i = 1; i < column.positionedRows.length; i++) {
-    const rowLength = column.positionedRows[i].length
+    const rowLength = column.positionedRows[i].rowLength
     if (rowLength !== firstRowLength) {
       console.log(`Row Length Mismatch at Row Index ${i}:`, {
         rowLength,
@@ -175,7 +175,7 @@ export const addModuleToRow = (
   }
 
   // 4. Update the length
-  const updatedLength = row.length + moduleToAdd.length
+  const updatedLength = row.rowLength + moduleToAdd.length
 
   // 5. Update the gridUnits by extracting gridUnits from moduleToAdd's structuredDna
   const additionalGridUnits = moduleToAdd.structuredDna.gridUnits
@@ -191,7 +191,7 @@ export const addModuleToRow = (
   return {
     ...row,
     positionedModules: updatedPositionedModules,
-    length: updatedLength,
+    rowLength: updatedLength,
     gridUnits: updatedGridUnits,
   }
 }
@@ -234,13 +234,13 @@ export const swapModuleInRow = (
 
   // Recalculate z values for subsequent modules if needed
   if (lengthDiff !== 0) {
-    for (let i = targetIndex + 1; i < positionedModulesCopy.length; i++) {
+    for (let i = targetIndex; i < positionedModulesCopy.length; i++) {
       positionedModulesCopy[i].z += lengthDiff / 2
     }
   }
 
   // Update the length and gridUnits
-  const updatedLength = row.length + lengthDiff
+  const updatedLength = row.rowLength + lengthDiff
   const gridUnitsDiff =
     newModule.structuredDna.gridUnits - oldModule.structuredDna.gridUnits
   const updatedGridUnits = row.gridUnits + gridUnitsDiff
@@ -248,7 +248,7 @@ export const swapModuleInRow = (
   return {
     ...row,
     positionedModules: positionedModulesCopy,
-    length: updatedLength,
+    rowLength: updatedLength,
     gridUnits: updatedGridUnits,
   }
 }

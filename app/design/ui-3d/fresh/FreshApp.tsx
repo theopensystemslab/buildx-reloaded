@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { A, O, pipeLogWith } from "../../../utils/functions"
+import { A, O, pipeLog, pipeLogWith } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { floor, random } from "../../../utils/math"
 import { useExportersWorker } from "../../../workers/exporters/hook"
@@ -99,7 +99,6 @@ const FreshApp = () => {
           houseTransformsGroup.children,
           A.filter(isWindowTypeAltLayoutGroup)
         ).forEach((lg) => {
-          console.log(`removing ${lg.uuid} FULLY`)
           lg.removeFromParent()
         })
       )
@@ -183,22 +182,22 @@ const FreshApp = () => {
     pipe(
       maybeHouse,
       O.map((house) => {
-        console.log("get first non-active layout")
         const maybeNextLayout = pipe(
           house.children,
           A.filter(isHouseLayoutGroup),
           pipeLogWith((xs) => xs.map((x) => x.userData.use)),
           A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
-          (groups) => {
-            const i = floor(random() * groups.length)
-            return pipe(groups, A.lookup(i))
-          }
+          A.head
+          // (groups) => {
+          //   const i = floor(random() * groups.length)
+          //   return pipe(groups, A.lookup(i))
+          // }
         )
 
         pipe(
           maybeNextLayout,
+          pipeLog,
           O.map((nextLayout) => {
-            console.log(`set it ${nextLayout.uuid}`)
             house.userData.setActiveLayoutGroup(nextLayout)
             invalidate()
           })

@@ -181,7 +181,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
                 z: vanillaModule.length / 2,
               },
             ],
-            length: vanillaModule.length,
+            rowLength: vanillaModule.length,
             y,
             levelIndex,
             levelType,
@@ -217,7 +217,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
                 sectionType,
                 vanillaColumn: {
                   positionedRows: gridGroups,
-                  length,
+                  columnLength: length,
                 },
               })
             })

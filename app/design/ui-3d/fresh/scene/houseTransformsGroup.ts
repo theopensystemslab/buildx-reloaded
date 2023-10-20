@@ -60,7 +60,6 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
-import { stripForDebug } from "../../../../workers/layouts/worker"
 
 export const BIG_CLIP_NUMBER = 999
 

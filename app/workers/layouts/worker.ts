@@ -1,8 +1,6 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
 import { transpose as transposeA } from "fp-ts-std/Array"
-import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import * as RA from "fp-ts/ReadonlyArray"
 import { flow, pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { LevelType } from "../../../server/data/levelTypes"
@@ -15,6 +13,7 @@ import {
 } from "../../data/modules"
 import layoutsDB, {
   AugPosCol,
+  AugPosRow,
   ColumnLayout,
   HouseLayoutsKey,
   PositionedColumn,
@@ -80,15 +79,15 @@ export const columnLayoutToMatrix = (columnLayout: ColumnLayout) => {
 const modulesToRows = (modules: Module[]): Module[][] => {
   const jumpIndices = pipe(
     modules,
-    RA.filterMapWithIndex((i, m) =>
+    A.filterMapWithIndex((i, m) =>
       m.structuredDna.positionType === "END" ? O.some(i) : O.none
     ),
-    RA.filterWithIndex((i) => i % 2 === 0)
+    A.filterWithIndex((i) => i % 2 === 0)
   )
 
   return pipe(
     modules,
-    RA.reduceWithIndex(
+    A.reduceWithIndex(
       [],
       (moduleIndex, modules: Module[][], module: Module) => {
         return jumpIndices.includes(moduleIndex)
@@ -104,10 +103,10 @@ const modulesToRows = (modules: Module[]): Module[][] => {
 
 const analyzeColumn =
   <A extends unknown>(toLength: (a: A) => number) =>
-  (as: readonly A[][]) => {
+  (as: A[][]) => {
     return pipe(
       as,
-      RA.reduceWithIndex(
+      A.reduceWithIndex(
         { legit: true, target: -1, rows: [] },
         (
           index,
@@ -135,22 +134,22 @@ const analyzeColumn =
 
 const columnify =
   <A extends unknown>(toLength: (a: A) => number) =>
-  (input: readonly A[][]) => {
+  (input: A[][]) => {
     let slices = new Array<[number, number]>(input.length).fill([0, 1])
     const lengths = input.map((v) => v.length)
 
-    let acc: (readonly A[][])[] = []
+    let acc: A[][][] = []
 
     const slicesRemaining = () =>
       !pipe(
-        RA.zip(slices)(lengths),
-        RA.reduce(true, (acc, [length, [start]]) => acc && start > length - 1)
+        A.zip(slices)(lengths),
+        A.reduce(true, (acc, [length, [start]]) => acc && start > length - 1)
       )
 
     while (slicesRemaining()) {
       pipe(
         slices,
-        RA.mapWithIndex((rowIndex, [start, end]) =>
+        A.mapWithIndex((rowIndex, [start, end]) =>
           input[rowIndex].slice(start, end)
         ),
         (column) =>
@@ -167,18 +166,18 @@ const columnify =
       )
     }
 
-    return pipe(acc, transposeRA)
+    return pipe(acc, transposeA)
   }
 
 const modulesToColumnLayout = (modules: Module[]) => {
   const columns = pipe(
     modules,
     modulesToRows,
-    RA.map((row) =>
+    A.map((row) =>
       pipe(
         row,
         // group by grid type
-        RA.reduce(
+        A.reduce(
           { prev: null, acc: [] },
           (
             { prev, acc }: { prev: Module | null; acc: Module[][] },
@@ -200,21 +199,21 @@ const modulesToColumnLayout = (modules: Module[]) => {
         ({ acc }) => acc
       )
     ),
-    transposeRA
+    transposeA
   )
 
   const sameLengthColumns = pipe(
     columns,
-    RA.map((column) =>
+    A.map((column) =>
       pipe(
         column,
-        RA.map((module) =>
+        A.map((module) =>
           pipe(
             module,
-            RA.reduce(0, (b, v) => b + v.structuredDna.gridUnits)
+            A.reduce(0, (b, v) => b + v.structuredDna.gridUnits)
           )
         ),
-        RA.reduce(
+        A.reduce(
           { acc: true, prev: null },
           ({ prev }: { prev: number | null }, a: number) => ({
             acc: prev === null || prev === a,
@@ -224,26 +223,26 @@ const modulesToColumnLayout = (modules: Module[]) => {
         ({ acc }) => acc
       )
     ),
-    RA.reduce(true, (b, a) => b && a)
+    A.reduce(true, (b, a) => b && a)
   )
 
   if (!sameLengthColumns) throw new Error("not sameLengthColumns")
 
   const columnifiedFurther = pipe(
     columns,
-    RA.map((column) =>
+    A.map((column) =>
       pipe(
         column,
         columnify((a) => a.structuredDna.gridUnits),
-        transposeRA
+        transposeA
       )
     ),
-    RA.flatten
+    A.flatten
   )
 
   return pipe(
     columnifiedFurther,
-    RA.reduceWithIndex(
+    A.reduceWithIndex(
       [],
       (columnIndex, positionedCols: PositionedColumn[], loadedModules) => {
         const last =
@@ -258,7 +257,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
 
         const gridGroups = pipe(
           loadedModules,
-          RA.reduceWithIndex(
+          A.reduceWithIndex(
             [],
             (levelIndex, positionedRows: PositionedRow[], modules) => {
               const levelType = modules[0].structuredDna.levelType
@@ -275,7 +274,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
                 {
                   positionedModules: pipe(
                     modules,
-                    RA.reduceWithIndex(
+                    A.reduceWithIndex(
                       [],
                       (
                         i,
@@ -304,7 +303,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
                   levelIndex,
                   levelType,
                   y,
-                  length: modules.reduce((acc, m) => acc + m.length, 0),
+                  rowLength: modules.reduce((acc, m) => acc + m.length, 0),
                 },
               ]
             }
@@ -316,7 +315,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
             columnIndex,
             positionedRows: gridGroups,
             z,
-            length: gridGroups[0].length,
+            columnLength: gridGroups[0].rowLength,
           },
         ]
       }
@@ -392,20 +391,20 @@ export const columnLayoutToDnas = (
 ) =>
   pipe(
     columnLayout,
-    RA.map(({ positionedRows: gridGroups }) =>
+    A.map(({ positionedRows: gridGroups }) =>
       pipe(
         gridGroups,
-        RA.map(({ positionedModules: modules }) =>
+        A.map(({ positionedModules: modules }) =>
           pipe(
             modules,
-            RA.map(({ module }) => module.dna)
+            A.map(({ module }) => module.dna)
           )
         )
       )
     ),
-    transposeRA,
-    RA.flatten,
-    RA.flatten
+    transposeA,
+    A.flatten,
+    A.flatten
   ) as string[]
 
 const changeLayoutSectionType = async ({
@@ -880,14 +879,14 @@ export const getWindowType = (
     })
   )
 
-export const stripForDebug = (posCol: AugPosCol) => {
+export const stripForDebug = (posCol: PositionedColumn) => {
   const { positionedRows, ...restCol } = posCol
 
   return {
     ...restCol,
     positionedRows: pipe(
-      positionedRows,
-      A.map(({ positionedModules, vanillaModule, ...restRow }) => ({
+      positionedRows as AugPosRow[],
+      A.map(({ positionedModules, vanillaModule, ...restRow }: AugPosRow) => ({
         ...restRow,
         positionedModules: pipe(
           positionedModules,
@@ -902,6 +901,7 @@ export const stripForDebug = (posCol: AugPosCol) => {
                   gridUnits,
                 },
                 dna,
+                length,
               },
               ...restPosMod
             }) => ({
@@ -915,6 +915,7 @@ export const stripForDebug = (posCol: AugPosCol) => {
                   gridType,
                   gridUnits,
                 },
+                length,
               },
             })
           )
@@ -1036,28 +1037,41 @@ const getAltWindowTypeLayouts = async ({
           // validatePositionedRow(draft.positionedRows[levelIndex])
 
           // validatePositionedColumn(draft)
-        }),
-        pipeLogWith((x) => {
-          console.log("AFTER")
-          return stripForDebug(x)
         })
       )
 
-      const layout = pipe(
+      const lengthDelta =
+        updatedColumn.positionedRows[0].rowLength - updatedColumn.columnLength
+
+      console.log(pipe(currentLayout, A.map(stripForDebug)))
+
+      const nextLayout = pipe(
         currentLayout,
         produce((draft: ColumnLayout) => {
-          draft[columnIndex] = updatedColumn
+          draft[columnIndex] = {
+            ...updatedColumn,
+            columnLength: updatedColumn.positionedRows[0].rowLength,
+          }
+
+          for (let i = columnIndex + 1; i < draft.length; i++) {
+            draft[i] = {
+              ...draft[i],
+              z: draft[i].z + lengthDelta,
+            }
+          }
         })
       )
 
-      postVanillaColumn(layout[0])
-      const dnas = columnLayoutToDnas(layout)
+      console.log(pipe(nextLayout, A.map(stripForDebug)))
+
+      // postVanillaColumn(nextLayout[0])
+      const dnas = columnLayoutToDnas(nextLayout)
 
       // layoutsDB.houseLayouts.put({ systemId, dnas, layout })
 
       return {
         candidate,
-        layout,
+        layout: nextLayout,
         dnas,
         windowType: pipe(
           getWindowType(windowTypes, candidate, side),

@@ -133,7 +133,7 @@ export const createColumnGroup =
     const columnGroupUserData: ColumnGroupUserData = {
       type: UserDataTypeEnum.Enum.ColumnGroup,
       columnIndex,
-      length: positionedRows[0].length,
+      length: positionedRows[0].rowLength,
       startColumn,
       endColumn,
     }

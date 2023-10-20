@@ -22,7 +22,10 @@ export const useVerticalCutPlanes = (
     rotation,
   } = house
 
-  const buildingLength = columnLayout.reduce((acc, v) => acc + v.length, 0)
+  const buildingLength = columnLayout.reduce(
+    (acc, v) => acc + v.columnLength,
+    0
+  )
   const lengthMiddle = buildingLength / 2 + z
   const widthMiddle = x
 
