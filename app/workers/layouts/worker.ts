@@ -14,12 +14,18 @@ import {
   topCandidateByHamming,
 } from "../../data/modules"
 import layoutsDB, {
+  AugPosCol,
   ColumnLayout,
   HouseLayoutsKey,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
   VanillaColumnsKey,
+  addModuleToRow,
+  addModulesToRow,
+  swapModuleInRow,
+  validatePositionedColumn,
+  validatePositionedRow,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
 import { Side } from "../../design/state/camera"
@@ -918,10 +924,10 @@ const getAltWindowTypeLayouts = async ({
 
   const {
     dna,
-    structuredDna: { sectionType, positionType, levelType, gridType },
+    structuredDna: { sectionType, positionType, gridType },
   } = thisModule.module
 
-  const vanillaModulesByLevelIndex = await pipe(
+  const augColumn = await pipe(
     thisColumn.positionedRows,
     A.map((posRow) =>
       pipe(
@@ -931,147 +937,63 @@ const getAltWindowTypeLayouts = async ({
           positionType,
           levelType: posRow.levelType,
           gridType,
-        })
+        }),
+        T.map((vanillaModule) => ({
+          ...posRow,
+          vanillaModule,
+          gridUnits: posRow.positionedModules.reduce(
+            (acc, v) => acc + v.module.structuredDna.gridUnits,
+            0
+          ),
+        }))
       )
     ),
-    A.sequence(T.ApplicativeSeq) // Convert Array<Task<T>> to Task<Array<T>>
+    A.sequence(T.ApplicativeSeq), // Convert Array<Task<T>> to Task<Array<T>>
+    T.map((positionedRows) => ({
+      ...thisColumn,
+      positionedRows,
+    }))
   )()
 
   const candidates = pipe(
     await getWindowTypeAlternatives({ systemId, dna, side }),
     A.map((candidate) => {
-      const gridUnitDelta =
-        candidate.structuredDna.gridUnits -
-        thisModule.module.structuredDna.gridUnits
-
-      const lengthDelta = candidate.length - thisModule.module.length
-
       const updatedColumn = pipe(
-        thisColumn,
-        produce((draft: PositionedColumn) => {
-          const mainPosRow = draft.positionedRows[levelIndex]
+        augColumn,
+        produce((draft: AugPosCol) => {
+          // const thisPosRow = draft.positionedRows[levelIndex]
+          const origRow = draft.positionedRows[levelIndex]
+          const newRow = swapModuleInRow(origRow, gridGroupIndex, candidate)
 
-          const mainGridGroup = mainPosRow.positionedModules[gridGroupIndex]
+          const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
 
-          // swap the module
-          mainGridGroup.module = candidate
+          if (sign(gridUnitDelta) === 1) {
+            // pad all other rows with gridUnitDelta vanilla
+            for (let i = 0; i < augColumn.length; i++) {
+              if (i === levelIndex) continue
 
-          const isFirst: boolean = gridGroupIndex === 0
-
-          mainGridGroup.z = isFirst
-            ? candidate.length / 2
-            : mainPosRow.positionedModules[gridGroupIndex - 1].z +
-              mainPosRow.positionedModules[gridGroupIndex - 1].module.length /
-                2 +
-              candidate.length / 2
-
-          for (
-            let i = gridGroupIndex;
-            i < mainPosRow.positionedModules.length;
-            i++
-          ) {
-            // might be lengthDelta/2?
-            draft.positionedRows[levelIndex].positionedModules[i].z +=
-              lengthDelta
-          }
-
-          draft.positionedRows[levelIndex].length += lengthDelta
-
-          const check = () => {
-            // I want to write this check function that checks that the
-            // lengths of the levels (gridGroups) in the column
-            // are consistent
-            // to log out the length of each
-            return false
-          }
-
-          switch (sign(gridUnitDelta)) {
-            // pad every other level
-            case 1: {
-              for (let posRow of draft.positionedRows) {
-                if (posRow.levelIndex === levelIndex) continue
-
-                const vanillaModule =
-                  vanillaModulesByLevelIndex[posRow.levelIndex]
-
-                const n = round(lengthDelta / vanillaModule.length)
-
-                let { gridGroupIndex: initialGridGroupIndex, z: initialZ } =
-                  pipe(
-                    posRow.positionedModules,
-                    A.last,
-                    O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
-                    O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
-                  )
-
-                for (
-                  let i = initialGridGroupIndex;
-                  i <= initialGridGroupIndex + n;
-                  i++
-                ) {
-                  // might be lengthDelta/2?
-                  posRow.positionedModules[i].z += lengthDelta
-                }
-
-                draft.positionedRows[levelIndex].length += lengthDelta
-
-                // console.log(`before`, gridGroup)
-
-                // z wants to be z so far + ...
-                // gridGroupIndex wants to be so far + ...
-
-                // gridGroup.gridGroups.concat(
-                //   pipe(
-                //     A.replicate(n, vanillaModule),
-                //     A.mapWithIndex((i, module) => ({
-                //       gridGroupIndex: initialGridGroupIndex + i,
-                //       module,
-                //       z: initialZ + i * vanillaModule.length,
-                //     }))
-                //   )
-                // )
-
-                // gridGroup.length = gridGroup.gridGroups.reduce(
-                //   (acc, v) => acc + v.module.length,
-                //   0
-                // )
-
-                // console.log(`after`, gridGroup)
-              }
-              break
-            }
-
-            // pad this level
-            case -1: {
-              const vanillaModule = vanillaModulesByLevelIndex[levelIndex]
-
-              const n = round(vanillaModule.length / gridUnitDelta)
-
-              let { gridGroupIndex: initialGridGroupIndex, z: initialZ } = pipe(
-                draft.positionedRows[levelIndex].positionedModules,
-                A.last,
-                O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
-                O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
-              )
-
-              draft.positionedRows[levelIndex].positionedModules.concat(
-                pipe(
-                  A.replicate(n, vanillaModule),
-                  A.mapWithIndex((i, module) => ({
-                    gridGroupIndex: initialGridGroupIndex + i,
-                    module,
-                    z: initialZ + i * vanillaModule.length,
-                  }))
+              draft.positionedRows[i] = addModulesToRow(
+                draft.positionedRows[i],
+                A.replicate(
+                  gridUnitDelta,
+                  draft.positionedRows[i].vanillaModule
                 )
               )
-              break
+              validatePositionedRow(draft.positionedRows[i])
             }
-
-            // do nothing more
-            case 0:
-            default:
-              break
+            draft.positionedRows[levelIndex] = newRow
+            validatePositionedRow(draft.positionedRows[levelIndex])
+          } else if (sign(gridUnitDelta) === -1) {
+            // pad this column with gridUnitDelta vanilla
+            draft.positionedRows[levelIndex] = addModulesToRow(
+              newRow,
+              A.replicate(gridUnitDelta, newRow.vanillaModule)
+            )
+            validatePositionedRow(draft.positionedRows[levelIndex])
           }
+
+          // validate
+          validatePositionedColumn(draft)
         })
       )
 

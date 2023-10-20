@@ -93,6 +93,123 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
   })
 }
 
+export type AugPosRow = PositionedRow & {
+  vanillaModule: Module
+  gridUnits: number
+}
+
+export type AugPosCol = PositionedColumn & {
+  positionedRows: AugPosRow[]
+}
+
+export const addModuleToRow = (
+  row: AugPosRow,
+  moduleToAdd: Module
+): AugPosRow => {
+  // 1. Calculate the new z value for the module being added
+  const lastPositionedModule =
+    row.positionedModules[row.positionedModules.length - 1]
+  const lastModuleZ = lastPositionedModule ? lastPositionedModule.z : 0
+  const lastModuleLength = lastPositionedModule
+    ? lastPositionedModule.module.length
+    : 0
+
+  const newModuleZ = lastPositionedModule
+    ? lastModuleZ + lastModuleLength / 2 + moduleToAdd.length / 2
+    : moduleToAdd.length / 2
+
+  // 2. Calculate the gridGroupIndex for the new PositionedModule
+  const lastGridGroupIndex = lastPositionedModule
+    ? lastPositionedModule.gridGroupIndex
+    : -1
+  const newGridGroupIndex = lastGridGroupIndex + 1
+
+  // 3. Create the PositionedModule using the computed values
+  const newPositionedModule: PositionedModule = {
+    module: moduleToAdd,
+    z: newModuleZ,
+    gridGroupIndex: newGridGroupIndex,
+  }
+
+  // 4. Update the length
+  const updatedLength = row.length + moduleToAdd.length
+
+  // 5. Update the gridUnits by extracting gridUnits from moduleToAdd's structuredDna
+  const additionalGridUnits = moduleToAdd.structuredDna.gridUnits
+  const updatedGridUnits = row.gridUnits + additionalGridUnits
+
+  // 6. Add the module to positionedModules
+  const updatedPositionedModules = [
+    ...row.positionedModules,
+    newPositionedModule,
+  ]
+
+  // Return the updated AugPosRow
+  return {
+    ...row,
+    positionedModules: updatedPositionedModules,
+    length: updatedLength,
+    gridUnits: updatedGridUnits,
+  }
+}
+
+export const addModulesToRow = (
+  row: AugPosRow,
+  modulesToAdd: Module[]
+): AugPosRow => {
+  let currentRow = row
+
+  for (const moduleToAdd of modulesToAdd) {
+    currentRow = addModuleToRow(currentRow, moduleToAdd)
+  }
+
+  return currentRow
+}
+
+export const swapModuleInRow = (
+  row: AugPosRow,
+  gridGroupIndexToSwap: number,
+  newModule: Module
+): AugPosRow => {
+  const positionedModulesCopy = [...row.positionedModules]
+  const targetIndex = positionedModulesCopy.findIndex(
+    (pm) => pm.gridGroupIndex === gridGroupIndexToSwap
+  )
+
+  if (targetIndex === -1) {
+    throw new Error(
+      `No PositionedModule found with gridGroupIndex: ${gridGroupIndexToSwap}`
+    )
+  }
+
+  // Extract the old module and calculate difference in lengths
+  const oldModule = positionedModulesCopy[targetIndex].module
+  const lengthDiff = newModule.length - oldModule.length
+
+  // Update the module at target index
+  positionedModulesCopy[targetIndex].module = newModule
+
+  // Recalculate z values for subsequent modules if needed
+  if (lengthDiff !== 0) {
+    for (let i = targetIndex + 1; i < positionedModulesCopy.length; i++) {
+      positionedModulesCopy[i].z += lengthDiff / 2
+    }
+  }
+
+  // Update the length and gridUnits
+  const updatedLength = row.length + lengthDiff
+  const gridUnitsDiff =
+    newModule.structuredDna.gridUnits - oldModule.structuredDna.gridUnits
+  const updatedGridUnits = row.gridUnits + gridUnitsDiff
+
+  return {
+    ...row,
+    positionedModules: positionedModulesCopy,
+    length: updatedLength,
+    gridUnits: updatedGridUnits,
+  }
+}
+
 export type IndexedModel = LastFetchStamped<{
   speckleBranchUrl: string
   geometries: any
