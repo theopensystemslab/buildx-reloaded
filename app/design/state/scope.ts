@@ -38,9 +38,8 @@ export const getSelectedModule = () => {
 
   const layoutsKey = getHouseLayoutsKey({ systemId, dnas })
 
-  return layouts[layoutsKey][columnIndex].gridGroups[levelIndex].modules[
-    gridGroupIndex
-  ].module
+  return layouts[layoutsKey][columnIndex].positionedRows[levelIndex]
+    .positionedModules[gridGroupIndex].module
 }
 
 export const getSelectedLevelType = () =>

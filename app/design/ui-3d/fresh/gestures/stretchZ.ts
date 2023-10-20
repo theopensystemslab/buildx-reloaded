@@ -198,12 +198,12 @@ const useOnDragStretchZ = () => {
 
     const task = pipe(
       T.of(vanillaColumn),
-      T.chain(({ gridGroups }) =>
+      T.chain(({ positionedRows: positionedRows }) =>
         pipe(
           createColumnGroup({
             systemId,
             houseId,
-            gridGroups,
+            positionedRows: positionedRows,
             columnIndex: -1,
             houseTransformsGroup,
           }),

@@ -1,34 +1,35 @@
 import { expose } from "comlink"
 import { liveQuery } from "dexie"
+import { transpose as transposeA } from "fp-ts-std/Array"
 import { transpose as transposeRA } from "fp-ts-std/ReadonlyArray"
-import { flow, pipe } from "fp-ts/lib/function"
 import * as RA from "fp-ts/ReadonlyArray"
+import { flow, pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { LevelType } from "../../../server/data/levelTypes"
 import { Module } from "../../../server/data/modules"
 import { SectionType } from "../../../server/data/sectionTypes"
+import { WindowType } from "../../../server/data/windowTypes"
 import {
   filterCompatibleModules,
   topCandidateByHamming,
 } from "../../data/modules"
 import layoutsDB, {
   ColumnLayout,
-  GridGroup,
   HouseLayoutsKey,
-  IndexedVanillaModule,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
   VanillaColumnsKey,
 } from "../../db/layouts"
-import systemsDB, { LastFetchStamped } from "../../db/systems"
+import systemsDB from "../../db/systems"
+import { Side } from "../../design/state/camera"
 import {
   A,
   O,
-  reduceToOption,
-  someOrError,
   T,
   TO,
+  reduceToOption,
+  someOrError,
   unwrapSome,
 } from "../../utils/functions"
 import { round, sign } from "../../utils/math"
@@ -39,9 +40,6 @@ import {
   getVanillaModule,
   postVanillaColumn,
 } from "./vanilla"
-import { transpose as transposeA } from "fp-ts-std/Array"
-import { Side } from "../../design/state/camera"
-import { WindowType } from "../../../server/data/windowTypes"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -63,10 +61,10 @@ export const columnLayoutToMatrix = (columnLayout: ColumnLayout) => {
     columnLayout,
     A.map((column) =>
       pipe(
-        column.gridGroups,
+        column.positionedRows,
         A.map((gridGroup) =>
           pipe(
-            gridGroup.modules,
+            gridGroup.positionedModules,
             A.map(({ module }) => module)
           )
         )
@@ -248,7 +246,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
         const z = !last
           ? 0
           : last.z +
-            last.gridGroups[0].modules.reduce(
+            last.positionedRows[0].positionedModules.reduce(
               (modulesLength, module) => modulesLength + module.module.length,
               0
             )
@@ -264,12 +262,13 @@ const modulesToColumnLayout = (modules: Module[]) => {
                 levelLetter === "F"
                   ? 0
                   : positionedRows[levelIndex - 1].y +
-                    positionedRows[levelIndex - 1].modules[0].module.height
+                    positionedRows[levelIndex - 1].positionedModules[0].module
+                      .height
 
               return [
                 ...positionedRows,
                 {
-                  modules: pipe(
+                  positionedModules: pipe(
                     modules,
                     RA.reduceWithIndex(
                       [],
@@ -310,7 +309,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
           ...positionedCols,
           {
             columnIndex,
-            gridGroups,
+            positionedRows: gridGroups,
             z,
             length: gridGroups[0].length,
           },
@@ -388,10 +387,10 @@ export const columnLayoutToDnas = (
 ) =>
   pipe(
     columnLayout,
-    RA.map(({ gridGroups }) =>
+    RA.map(({ positionedRows: gridGroups }) =>
       pipe(
         gridGroups,
-        RA.map(({ modules }) =>
+        RA.map(({ positionedModules: modules }) =>
           pipe(
             modules,
             RA.map(({ module }) => module.dna)
@@ -421,11 +420,11 @@ const changeLayoutSectionType = async ({
     layout,
     A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
       pipe(
-        positionedColumn.gridGroups,
+        positionedColumn.positionedRows,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
           const {
-            modules,
-            modules: [
+            positionedModules: modules,
+            positionedModules: [
               {
                 module: {
                   // we just destructure the first module for this data
@@ -536,9 +535,9 @@ const changeLayoutSectionType = async ({
                   }
                 ),
                 O.map(
-                  (modules): GridGroup => ({
+                  (modules): PositionedRow => ({
                     ...gridGroup,
-                    modules,
+                    positionedModules: modules,
                   })
                 ),
                 TO.fromOption
@@ -633,7 +632,7 @@ const getChangeLayoutTypeLayout = async ({
     layout,
     A.traverse(TO.ApplicativeSeq)((positionedColumn) =>
       pipe(
-        positionedColumn.gridGroups,
+        positionedColumn.positionedRows,
         A.traverse(TO.ApplicativeSeq)((gridGroup) => {
           if (gridGroup.levelIndex !== levelIndex)
             return TO.of({
@@ -645,8 +644,8 @@ const getChangeLayoutTypeLayout = async ({
             })
 
           const {
-            modules,
-            modules: [
+            positionedModules: modules,
+            positionedModules: [
               {
                 module: {
                   structuredDna: { sectionType, positionType, gridType },
@@ -757,11 +756,11 @@ const getChangeLayoutTypeLayout = async ({
                     )
                   }
                 ),
-                O.map((modules): GridGroup => {
+                O.map((modules): PositionedRow => {
                   return {
                     ...gridGroup,
                     levelType: nextLevelType.code,
-                    modules,
+                    positionedModules: modules,
                   }
                 }),
                 TO.fromOption
@@ -911,9 +910,9 @@ const getAltWindowTypeLayouts = async ({
   )
 
   const thisModule = pipe(
-    thisColumn.gridGroups,
+    thisColumn.positionedRows,
     A.lookup(levelIndex),
-    O.chain((x) => pipe(x.modules, A.lookup(gridGroupIndex))),
+    O.chain((x) => pipe(x.positionedModules, A.lookup(gridGroupIndex))),
     someOrError(`no module`)
   )
 
@@ -923,7 +922,7 @@ const getAltWindowTypeLayouts = async ({
   } = thisModule.module
 
   const vanillaModulesByLevelIndex = await pipe(
-    thisColumn.gridGroups,
+    thisColumn.positionedRows,
     A.map((posRow) =>
       pipe(
         getVanillaModule({
@@ -950,61 +949,94 @@ const getAltWindowTypeLayouts = async ({
       const updatedColumn = pipe(
         thisColumn,
         produce((draft: PositionedColumn) => {
+          const mainPosRow = draft.positionedRows[levelIndex]
+
+          const mainGridGroup = mainPosRow.positionedModules[gridGroupIndex]
+
           // swap the module
-          draft.gridGroups[levelIndex].modules[gridGroupIndex].module =
-            candidate
+          mainGridGroup.module = candidate
 
-          return
+          const isFirst: boolean = gridGroupIndex === 0
 
-          // const positionedModules = draft.gridGroups[levelIndex].modules
-
-          // const isFirst: boolean = gridGroupIndex === 0
-
-          // const z = isFirst
-          //   ? candidate.length / 2
-          //   : positionedModules[gridGroupIndex - 1].z +
-          //     positionedModules[gridGroupIndex - 1].module.length / 2 +
-          //     candidate.length / 2
+          mainGridGroup.z = isFirst
+            ? candidate.length / 2
+            : mainPosRow.positionedModules[gridGroupIndex - 1].z +
+              mainPosRow.positionedModules[gridGroupIndex - 1].module.length /
+                2 +
+              candidate.length / 2
 
           for (
             let i = gridGroupIndex;
-            i < draft.gridGroups[levelIndex].modules.length;
+            i < mainPosRow.positionedModules.length;
             i++
           ) {
-            draft.gridGroups[levelIndex].modules[i].z += lengthDelta
+            // might be lengthDelta/2?
+            draft.positionedRows[levelIndex].positionedModules[i].z +=
+              lengthDelta
+          }
+
+          draft.positionedRows[levelIndex].length += lengthDelta
+
+          const check = () => {
+            // I want to write this check function that checks that the
+            // lengths of the levels (gridGroups) in the column
+            // are consistent
+            // to log out the length of each
+            return false
           }
 
           switch (sign(gridUnitDelta)) {
             // pad every other level
             case 1: {
-              for (let gridGroup of draft.gridGroups) {
-                if (gridGroup.levelIndex === levelIndex) continue
+              for (let posRow of draft.positionedRows) {
+                if (posRow.levelIndex === levelIndex) continue
 
                 const vanillaModule =
-                  vanillaModulesByLevelIndex[gridGroup.levelIndex]
+                  vanillaModulesByLevelIndex[posRow.levelIndex]
 
-                const n = round(vanillaModule.length / gridUnitDelta)
+                const n = round(lengthDelta / vanillaModule.length)
 
                 let { gridGroupIndex: initialGridGroupIndex, z: initialZ } =
                   pipe(
-                    gridGroup.modules,
+                    posRow.positionedModules,
                     A.last,
                     O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
                     O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
                   )
 
+                for (
+                  let i = initialGridGroupIndex;
+                  i <= initialGridGroupIndex + n;
+                  i++
+                ) {
+                  // might be lengthDelta/2?
+                  posRow.positionedModules[i].z += lengthDelta
+                }
+
+                draft.positionedRows[levelIndex].length += lengthDelta
+
+                // console.log(`before`, gridGroup)
+
                 // z wants to be z so far + ...
                 // gridGroupIndex wants to be so far + ...
-                gridGroup.modules.concat(
-                  pipe(
-                    A.replicate(n, vanillaModule),
-                    A.mapWithIndex((i, module) => ({
-                      gridGroupIndex: initialGridGroupIndex + i,
-                      module,
-                      z: initialZ + i * vanillaModule.length,
-                    }))
-                  )
-                )
+
+                // gridGroup.gridGroups.concat(
+                //   pipe(
+                //     A.replicate(n, vanillaModule),
+                //     A.mapWithIndex((i, module) => ({
+                //       gridGroupIndex: initialGridGroupIndex + i,
+                //       module,
+                //       z: initialZ + i * vanillaModule.length,
+                //     }))
+                //   )
+                // )
+
+                // gridGroup.length = gridGroup.gridGroups.reduce(
+                //   (acc, v) => acc + v.module.length,
+                //   0
+                // )
+
+                // console.log(`after`, gridGroup)
               }
               break
             }
@@ -1016,13 +1048,13 @@ const getAltWindowTypeLayouts = async ({
               const n = round(vanillaModule.length / gridUnitDelta)
 
               let { gridGroupIndex: initialGridGroupIndex, z: initialZ } = pipe(
-                draft.gridGroups[levelIndex].modules,
+                draft.positionedRows[levelIndex].positionedModules,
                 A.last,
                 O.map(({ gridGroupIndex, z }) => ({ gridGroupIndex, z })),
                 O.getOrElse(() => ({ gridGroupIndex: 0, z: 0 }))
               )
 
-              draft.gridGroups[levelIndex].modules.concat(
+              draft.positionedRows[levelIndex].positionedModules.concat(
                 pipe(
                   A.replicate(n, vanillaModule),
                   A.mapWithIndex((i, module) => ({
@@ -1053,7 +1085,7 @@ const getAltWindowTypeLayouts = async ({
       postVanillaColumn(layout[0])
       const dnas = columnLayoutToDnas(layout)
 
-      layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+      // layoutsDB.houseLayouts.put({ systemId, dnas, layout })
 
       return {
         candidate,
@@ -1064,43 +1096,10 @@ const getAltWindowTypeLayouts = async ({
           someOrError(`no window type`)
         ),
       }
-      // EACH LEVEL NEEDS ITS OWN VANILLA
-
-      // const matrix = pipe(
-      //   currentMatrix,
-      //   produce((draft) => {
-      //     draft[columnIndex][levelIndex][gridGroupIndex] = candidate
-
-      //     const levelIndexHeight = draft[columnIndex].length
-
-      //     for (let i = 0; i < levelIndexHeight; i++) {
-      //       if (i === levelIndex) continue
-
-      //       draft[columnIndex][i][gridGroupIndex]
-      //     }
-
-      //     // if necessary (switch delta)
-      //     // for every other level
-      //   })
-      // )
     })
   )
 
   return candidates
-  // SEE USE PAD COLUMN
-
-  // maybe we're just after a dnas matrix
-  // so hopefully don't worry about z etc
-
-  // we need to map each candidate into a layout change
-  // f(layout, col i, lev j, gg k) ->
-
-  // a. if we're now bigger we need to pad
-  //  each other adjacent grid group with vanilla
-  // (so we need to cache those other adjacent grid groups)
-  //
-  // b. if we're now smaller we need to pad ourself based on delta
-  // assume no weird division stuff, assume vanilla will divide nicely
 }
 
 // const getChangeWindowTypeLayout = async ({

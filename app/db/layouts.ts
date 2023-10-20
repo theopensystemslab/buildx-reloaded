@@ -8,32 +8,100 @@ export type PositionedModule = {
   gridGroupIndex: number
 }
 
-export type PositionedInstancedModule = {
-  module: Module
-  y: number
-  z: number
-  columnIndex: number
-  levelIndex: number
-  gridGroupIndex: number
-}
-
 export type PositionedRow = {
   levelIndex: number
   levelType: string
   y: number
-  modules: Array<PositionedModule>
+  positionedModules: Array<PositionedModule>
   length: number
 }
-
-export type GridGroup = PositionedRow
 
 export type RowLayout = Array<PositionedRow>
 
 export type PositionedColumn = {
-  gridGroups: Array<PositionedRow>
+  positionedRows: Array<PositionedRow>
   z: number
   columnIndex: number
   length: number
+}
+
+export type ColumnLayout = Array<PositionedColumn>
+
+export const validatePositionedRow = (row: PositionedRow): void => {
+  // Validate the length of the PositionedRow
+  const totalModulesLength = row.positionedModules.reduce(
+    (acc, mod) => acc + mod.module.length,
+    0
+  )
+  if (row.length !== totalModulesLength) {
+    throw new Error(
+      `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.length}`
+    )
+  }
+
+  // Validate the z values of PositionedModules
+  for (let i = 0; i < row.positionedModules.length; i++) {
+    const positionedModule = row.positionedModules[i]
+    const isFirst = i === 0
+
+    const expectedZ = isFirst
+      ? positionedModule.module.length / 2
+      : row.positionedModules[i - 1].z +
+        row.positionedModules[i - 1].module.length / 2 +
+        positionedModule.module.length / 2
+
+    if (positionedModule.z !== expectedZ) {
+      throw new Error(
+        `Invalid z value for module at index ${i}. Expected ${expectedZ} but got ${positionedModule.z}`
+      )
+    }
+
+    // New logic to validate module's levelType against PositionedRow's levelType
+    const moduleLevelType = positionedModule.module.structuredDna.levelType
+    if (moduleLevelType !== row.levelType) {
+      throw new Error(
+        `Mismatched levelType for module at index ${i}. Module has levelType '${moduleLevelType}', but PositionedRow expects '${row.levelType}'.`
+      )
+    }
+  }
+}
+
+export const validatePositionedColumn = (column: PositionedColumn): void => {
+  // Validate the length of the PositionedColumn
+  const totalRowsLength = column.positionedRows.reduce(
+    (acc, row) => acc + row.length,
+    0
+  )
+  if (column.length !== totalRowsLength) {
+    throw new Error(
+      `Invalid PositionedColumn length. Expected ${totalRowsLength} but got ${column.length}`
+    )
+  }
+
+  // Validate each PositionedRow in the column
+  column.positionedRows.forEach((row, rowIndex) => {
+    try {
+      validatePositionedRow(row)
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Error in PositionedRow at index ${rowIndex}: ${error.message}`
+        )
+      }
+      throw error // If it's not an instance of Error, rethrow it anyway
+    }
+  })
+}
+
+export type IndexedModel = LastFetchStamped<{
+  speckleBranchUrl: string
+  geometries: any
+  systemId: string
+}>
+
+export type HouseLayoutsKey = {
+  systemId: string
+  dnas: string[]
 }
 
 export type ModuleIdentifier = {
@@ -48,19 +116,6 @@ export type HouseModuleIdentifier = ModuleIdentifier & {
 
 export type SystemHouseModuleIdentifier = HouseModuleIdentifier & {
   systemId: string
-}
-
-export type ColumnLayout = Array<PositionedColumn>
-
-export type IndexedModel = LastFetchStamped<{
-  speckleBranchUrl: string
-  geometries: any
-  systemId: string
-}>
-
-export type HouseLayoutsKey = {
-  systemId: string
-  dnas: string[]
 }
 
 export const getHouseLayoutsKey = ({ systemId, dnas }: HouseLayoutsKey) =>

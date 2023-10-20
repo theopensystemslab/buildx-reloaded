@@ -348,7 +348,9 @@ export const createHouseTransformsGroup = ({
   )
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
-    async ({ columnIndex, levelIndex, gridGroupIndex }) => {
+    async (scopeElement) => {
+      const { columnIndex, levelIndex, gridGroupIndex } = scopeElement
+
       const oldLayouts = pipe(
         houseTransformsGroup.children,
         A.filter(
@@ -360,11 +362,15 @@ export const createHouseTransformsGroup = ({
 
       // out with the old
       oldLayouts.forEach((x) => {
-        console.log(`removing ${x.uuid}`)
         x.removeFromParent()
       })
 
       const side = getSide(houseTransformsGroup)
+
+      console.log({
+        ...scopeElement,
+        side,
+      })
 
       const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
 

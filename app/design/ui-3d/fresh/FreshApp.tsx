@@ -114,8 +114,6 @@ const FreshApp = () => {
     const item = (menu.open ? scope.selected : null) ?? scope.hovered
 
     if (!item) {
-      console.log(`???`)
-
       if (lastScopeElement.current) {
         const { houseId } = lastScopeElement.current
 
@@ -155,7 +153,6 @@ const FreshApp = () => {
             // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
           }
           if (refreshWindowAlts) {
-            console.log(`refreshing window alts`)
             houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
           }
         })

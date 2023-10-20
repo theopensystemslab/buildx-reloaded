@@ -56,7 +56,7 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
     columnLayout,
     A.head,
-    O.map(({ gridGroups }) =>
+    O.map(({ positionedRows: gridGroups }) =>
       pipe(
         gridGroups,
         A.map(({ levelType }) => levelType)
@@ -93,11 +93,13 @@ export const createHouseLayoutGroup = ({
       const activeColumnGroupCount = columnGroups.length
 
       const sectionType =
-        houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+        houseLayout[0].positionedRows[0].positionedModules[0].module
+          .structuredDna.sectionType
 
-      const width = houseLayout[0].gridGroups[0].modules[0].module.width
-      const height = houseLayout[0].gridGroups.reduce(
-        (acc, v) => acc + v.modules[0].module.height,
+      const width =
+        houseLayout[0].positionedRows[0].positionedModules[0].module.width
+      const height = houseLayout[0].positionedRows.reduce(
+        (acc, v) => acc + v.positionedModules[0].module.height,
         0
       )
       const length = columnGroups.reduce(

@@ -148,13 +148,13 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
   const modules = await getModules()
 
   pipe(
-    arbitraryColumn.gridGroups,
+    arbitraryColumn.positionedRows,
     A.traverse(O.Applicative)(
       ({
         levelIndex,
         levelType,
         y,
-        modules: [
+        positionedModules: [
           {
             module,
             module: {
@@ -173,7 +173,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
           module,
           getVanillaModule,
           O.map((vanillaModule) => ({
-            modules: [
+            positionedModules: [
               {
                 module: vanillaModule,
                 gridGroupIndex: 0,
@@ -200,7 +200,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
         A.head,
         O.chain((gridGroup) =>
           pipe(
-            gridGroup.modules,
+            gridGroup.positionedModules,
             A.head,
             O.map((firstModule) => {
               const {
@@ -216,7 +216,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
                 levelTypes,
                 sectionType,
                 vanillaColumn: {
-                  gridGroups,
+                  positionedRows: gridGroups,
                   length,
                 },
               })
