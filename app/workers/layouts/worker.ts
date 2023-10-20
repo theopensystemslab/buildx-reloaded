@@ -21,11 +21,9 @@ import layoutsDB, {
   PositionedModule,
   PositionedRow,
   VanillaColumnsKey,
-  addModuleToRow,
   addModulesToRow,
   swapModuleInRow,
   validatePositionedColumn,
-  validatePositionedRow,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
 import { Side } from "../../design/state/camera"
@@ -34,11 +32,12 @@ import {
   O,
   T,
   TO,
+  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
 } from "../../utils/functions"
-import { round, sign } from "../../utils/math"
+import { sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { getModules, getWindowTypeAlternatives } from "./modules"
 import {
@@ -881,6 +880,50 @@ export const getWindowType = (
     })
   )
 
+export const stripForDebug = (posCol: AugPosCol) => {
+  const { positionedRows, ...restCol } = posCol
+
+  return {
+    ...restCol,
+    positionedRows: pipe(
+      positionedRows,
+      A.map(({ positionedModules, vanillaModule, ...restRow }) => ({
+        ...restRow,
+        positionedModules: pipe(
+          positionedModules,
+          A.map(
+            ({
+              module: {
+                structuredDna: {
+                  sectionType,
+                  positionType,
+                  levelType,
+                  gridType,
+                  gridUnits,
+                },
+                dna,
+              },
+              ...restPosMod
+            }) => ({
+              ...restPosMod,
+              foo: {
+                dna,
+                structuredDna: {
+                  sectionType,
+                  positionType,
+                  levelType,
+                  gridType,
+                  gridUnits,
+                },
+              },
+            })
+          )
+        ),
+      }))
+    ),
+  }
+}
+
 const getAltWindowTypeLayouts = async ({
   systemId,
   dnas,
@@ -896,7 +939,6 @@ const getAltWindowTypeLayouts = async ({
   gridGroupIndex: number
   side: Side
 }) => {
-  // const allModules = await getModules()
   const windowTypes = await systemsDB.windowTypes.where({ systemId }).toArray()
 
   const currentIndexedLayout = await layoutsDB.houseLayouts.get({
@@ -955,13 +997,16 @@ const getAltWindowTypeLayouts = async ({
     }))
   )()
 
+  validatePositionedColumn(augColumn)
+
+  console.log(stripForDebug(augColumn))
+
   const candidates = pipe(
     await getWindowTypeAlternatives({ systemId, dna, side }),
     A.map((candidate) => {
       const updatedColumn = pipe(
         augColumn,
         produce((draft: AugPosCol) => {
-          // const thisPosRow = draft.positionedRows[levelIndex]
           const origRow = draft.positionedRows[levelIndex]
           const newRow = swapModuleInRow(origRow, gridGroupIndex, candidate)
 
@@ -979,21 +1024,24 @@ const getAltWindowTypeLayouts = async ({
                   draft.positionedRows[i].vanillaModule
                 )
               )
-              validatePositionedRow(draft.positionedRows[i])
+              // validatePositionedRow(draft.positionedRows[i])
             }
             draft.positionedRows[levelIndex] = newRow
-            validatePositionedRow(draft.positionedRows[levelIndex])
+            // validatePositionedRow(draft.positionedRows[levelIndex])
           } else if (sign(gridUnitDelta) === -1) {
             // pad this column with gridUnitDelta vanilla
             draft.positionedRows[levelIndex] = addModulesToRow(
               newRow,
               A.replicate(gridUnitDelta, newRow.vanillaModule)
             )
-            validatePositionedRow(draft.positionedRows[levelIndex])
           }
+          // validatePositionedRow(draft.positionedRows[levelIndex])
 
-          // validate
-          validatePositionedColumn(draft)
+          // validatePositionedColumn(draft)
+        }),
+        pipeLogWith((x) => {
+          console.log("AFTER")
+          return stripForDebug(x)
         })
       )
 

@@ -60,6 +60,7 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
+import { stripForDebug } from "../../../../workers/layouts/worker"
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -348,67 +349,56 @@ export const createHouseTransformsGroup = ({
   )
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
-    async (scopeElement) => {
-      const { columnIndex, levelIndex, gridGroupIndex } = scopeElement
+    debounce(
+      async (scopeElement) => {
+        const { columnIndex, levelIndex, gridGroupIndex } = scopeElement
 
-      const oldLayouts = pipe(
-        houseTransformsGroup.children,
-        A.filter(
-          (x) =>
-            isHouseLayoutGroup(x) &&
-            x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
-        )
-      )
-
-      // out with the old
-      oldLayouts.forEach((x) => {
-        x.removeFromParent()
-      })
-
-      const side = getSide(houseTransformsGroup)
-
-      console.log({
-        ...scopeElement,
-        side,
-      })
-
-      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
-
-      const altWindowTypeLayouts =
-        await getLayoutsWorker().getAltWindowTypeLayouts({
-          systemId,
-          columnIndex,
-          levelIndex,
-          gridGroupIndex,
-          dnas,
-          side,
-        })
-
-      for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
-        createHouseLayoutGroup({
-          systemId: houseTransformsGroup.userData.systemId,
-          dnas,
-          houseId,
-          houseLayout: layout,
-          use: HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE,
-          houseTransformsGroup,
-        })().then((layoutGroup) => {
-          layoutGroup.userData.windowType = windowType
-          setInvisibleNoRaycast(layoutGroup)
-          console.log(`adding ${layoutGroup.uuid}`)
-          houseTransformsGroup.add(layoutGroup)
-          dispatchEvent(
-            new CustomEvent("FOO", {
-              detail: {
-                foo: houseTransformsGroup.children
-                  .filter(isHouseLayoutGroup)
-                  .map((x) => x.userData.use),
-              },
-            })
+        const oldLayouts = pipe(
+          houseTransformsGroup.children,
+          A.filter(
+            (x) =>
+              isHouseLayoutGroup(x) &&
+              x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
           )
+        )
+
+        // out with the old
+        oldLayouts.forEach((x) => {
+          x.removeFromParent()
         })
-      }
-    }
+
+        const side = getSide(houseTransformsGroup)
+
+        const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
+
+        const altWindowTypeLayouts =
+          await getLayoutsWorker().getAltWindowTypeLayouts({
+            systemId,
+            columnIndex,
+            levelIndex,
+            gridGroupIndex,
+            dnas,
+            side,
+          })
+
+        for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
+          createHouseLayoutGroup({
+            systemId: houseTransformsGroup.userData.systemId,
+            dnas,
+            houseId,
+            houseLayout: layout,
+            use: HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE,
+            houseTransformsGroup,
+          })().then((layoutGroup) => {
+            layoutGroup.userData.windowType = windowType
+            setInvisibleNoRaycast(layoutGroup)
+            houseTransformsGroup.add(layoutGroup)
+          })
+        }
+      },
+      30_000,
+      true
+    )
 
   // ##### HANDLES ######
 

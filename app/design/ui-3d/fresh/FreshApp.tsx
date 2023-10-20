@@ -162,6 +162,23 @@ const FreshApp = () => {
     lastScopeElement.current = scope.hovered
   })
 
+  useKey("d", () => {
+    const maybeHtg = pipe(
+      rootRef.current?.children ?? [],
+      A.findFirst(isHouseTransformsGroup)
+    )
+    pipe(
+      maybeHtg,
+      O.map(async (htg) => {
+        const foo = await htg.userData.refreshAltWindowTypeLayouts({
+          columnIndex: 1,
+          levelIndex: 1,
+          gridGroupIndex: 0,
+        } as ScopeElement)
+      })
+    )
+  })
+
   useKey("c", () => {
     const maybeHouse = pipe(
       rootRef.current?.children ?? [],

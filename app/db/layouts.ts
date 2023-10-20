@@ -34,6 +34,11 @@ export const validatePositionedRow = (row: PositionedRow): void => {
     0
   )
   if (row.length !== totalModulesLength) {
+    console.log(`Row Length Mismatch: `, {
+      rowLength: row.length,
+      totalModulesLength,
+      positionedModules: row.positionedModules,
+    })
     throw new Error(
       `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.length}`
     )
@@ -51,6 +56,11 @@ export const validatePositionedRow = (row: PositionedRow): void => {
         positionedModule.module.length / 2
 
     if (positionedModule.z !== expectedZ) {
+      console.log(`Z-Value Mismatch for Module at Index ${i}:`, {
+        expectedZ,
+        actualZ: positionedModule.z,
+        positionedModule,
+      })
       throw new Error(
         `Invalid z value for module at index ${i}. Expected ${expectedZ} but got ${positionedModule.z}`
       )
@@ -59,6 +69,11 @@ export const validatePositionedRow = (row: PositionedRow): void => {
     // New logic to validate module's levelType against PositionedRow's levelType
     const moduleLevelType = positionedModule.module.structuredDna.levelType
     if (moduleLevelType !== row.levelType) {
+      console.log(`LevelType Mismatch for Module at Index ${i}:`, {
+        moduleLevelType,
+        rowLevelType: row.levelType,
+        positionedModule,
+      })
       throw new Error(
         `Mismatched levelType for module at index ${i}. Module has levelType '${moduleLevelType}', but PositionedRow expects '${row.levelType}'.`
       )
@@ -67,15 +82,8 @@ export const validatePositionedRow = (row: PositionedRow): void => {
 }
 
 export const validatePositionedColumn = (column: PositionedColumn): void => {
-  // Validate the length of the PositionedColumn
-  const totalRowsLength = column.positionedRows.reduce(
-    (acc, row) => acc + row.length,
-    0
-  )
-  if (column.length !== totalRowsLength) {
-    throw new Error(
-      `Invalid PositionedColumn length. Expected ${totalRowsLength} but got ${column.length}`
-    )
+  if (column.positionedRows.length === 0) {
+    throw new Error("PositionedColumn contains no PositionedRows.")
   }
 
   // Validate each PositionedRow in the column
@@ -84,6 +92,14 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
       validatePositionedRow(row)
     } catch (error) {
       if (error instanceof Error) {
+        console.log(
+          `Validation Error for PositionedRow at Index ${rowIndex}:`,
+          {
+            rowIndex,
+            error,
+            row,
+          }
+        )
         throw new Error(
           `Error in PositionedRow at index ${rowIndex}: ${error.message}`
         )
@@ -91,7 +107,100 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
       throw error // If it's not an instance of Error, rethrow it anyway
     }
   })
+
+  // Get the length of the first row to compare with the others and with the column's length
+  const firstRowLength = column.positionedRows[0].length
+
+  if (column.length !== firstRowLength) {
+    console.log("Column Length Mismatch:", {
+      columnLength: column.length,
+      expectedLength: firstRowLength,
+    })
+    throw new Error(
+      `Invalid PositionedColumn length. Expected ${firstRowLength} but got ${column.length}`
+    )
+  }
+
+  // Ensure all rows have the same length as the first row
+  for (let i = 1; i < column.positionedRows.length; i++) {
+    const rowLength = column.positionedRows[i].length
+    if (rowLength !== firstRowLength) {
+      console.log(`Row Length Mismatch at Row Index ${i}:`, {
+        rowLength,
+        expectedLength: firstRowLength,
+      })
+      throw new Error(
+        `Mismatched length for PositionedRow at index ${i}. Expected ${firstRowLength} but got ${rowLength}`
+      )
+    }
+  }
 }
+
+// export const validatePositionedRow = (row: PositionedRow): void => {
+//   // Validate the length of the PositionedRow
+//   const totalModulesLength = row.positionedModules.reduce(
+//     (acc, mod) => acc + mod.module.length,
+//     0
+//   )
+//   if (row.length !== totalModulesLength) {
+//     throw new Error(
+//       `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.length}`
+//     )
+//   }
+
+//   // Validate the z values of PositionedModules
+//   for (let i = 0; i < row.positionedModules.length; i++) {
+//     const positionedModule = row.positionedModules[i]
+//     const isFirst = i === 0
+
+//     const expectedZ = isFirst
+//       ? positionedModule.module.length / 2
+//       : row.positionedModules[i - 1].z +
+//         row.positionedModules[i - 1].module.length / 2 +
+//         positionedModule.module.length / 2
+
+//     if (positionedModule.z !== expectedZ) {
+//       throw new Error(
+//         `Invalid z value for module at index ${i}. Expected ${expectedZ} but got ${positionedModule.z}`
+//       )
+//     }
+
+//     // New logic to validate module's levelType against PositionedRow's levelType
+//     const moduleLevelType = positionedModule.module.structuredDna.levelType
+//     if (moduleLevelType !== row.levelType) {
+//       throw new Error(
+//         `Mismatched levelType for module at index ${i}. Module has levelType '${moduleLevelType}', but PositionedRow expects '${row.levelType}'.`
+//       )
+//     }
+//   }
+// }
+
+// export const validatePositionedColumn = (column: PositionedColumn): void => {
+//   // Validate the length of the PositionedColumn
+//   const totalRowsLength = column.positionedRows.reduce(
+//     (acc, row) => acc + row.length,
+//     0
+//   )
+//   if (column.length !== totalRowsLength) {
+//     throw new Error(
+//       `Invalid PositionedColumn length. Expected ${totalRowsLength} but got ${column.length}`
+//     )
+//   }
+
+//   // Validate each PositionedRow in the column
+//   column.positionedRows.forEach((row, rowIndex) => {
+//     try {
+//       validatePositionedRow(row)
+//     } catch (error) {
+//       if (error instanceof Error) {
+//         throw new Error(
+//           `Error in PositionedRow at index ${rowIndex}: ${error.message}`
+//         )
+//       }
+//       throw error // If it's not an instance of Error, rethrow it anyway
+//     }
+//   })
+// }
 
 export type AugPosRow = PositionedRow & {
   vanillaModule: Module

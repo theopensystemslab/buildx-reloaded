@@ -27,6 +27,7 @@ export const setCameraControlsEnabled = (b: boolean) => {
 export type Side = "LEFT" | "RIGHT"
 
 export const getSide = (houseTransformsGroup: HouseTransformsGroup) => {
+  return "RIGHT"
   const houseDirection = new Vector3(0, 0, -1)
   const rotationMatrix = new Matrix4().makeRotationY(
     houseTransformsGroup.rotation.y
