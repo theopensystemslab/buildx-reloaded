@@ -21,8 +21,10 @@ import layoutsDB, {
   PositionedRow,
   VanillaColumnsKey,
   addModulesToRow,
+  roundp,
   swapModuleInRow,
   validatePositionedColumn,
+  validatePositionedRow,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
 import { Side } from "../../design/state/camera"
@@ -36,7 +38,7 @@ import {
   someOrError,
   unwrapSome,
 } from "../../utils/functions"
-import { sign } from "../../utils/math"
+import { abs, round, sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { getModules, getWindowTypeAlternatives } from "./modules"
 import {
@@ -44,6 +46,7 @@ import {
   getVanillaModule,
   postVanillaColumn,
 } from "./vanilla"
+import { ref, snapshot } from "valtio"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -247,6 +250,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
       (columnIndex, positionedCols: PositionedColumn[], loadedModules) => {
         const last =
           columnIndex === 0 ? null : positionedCols[positionedCols.length - 1]
+
         const z = !last
           ? 0
           : last.z +
@@ -294,7 +298,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
                           {
                             module,
                             gridGroupIndex: i,
-                            z,
+                            z: roundp(z),
                           },
                         ]
                       }
@@ -314,7 +318,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
           {
             columnIndex,
             positionedRows: gridGroups,
-            z,
+            z: roundp(z),
             columnLength: gridGroups[0].rowLength,
           },
         ]
@@ -500,15 +504,17 @@ const changeLayoutSectionType = async ({
                             return [
                               bestModule,
                               ...A.replicate(
-                                distanceToTarget / vanillaModule.length,
+                                round(distanceToTarget / vanillaModule.length),
                                 vanillaModule
                               ),
                             ]
                           case sign(distanceToTarget) < 0:
                             // abort and only vanilla
                             return A.replicate(
-                              positionedModule.module.length /
-                                vanillaModule.length,
+                              round(
+                                positionedModule.module.length /
+                                  vanillaModule.length
+                              ),
                               vanillaModule
                             )
 
@@ -549,10 +555,12 @@ const changeLayoutSectionType = async ({
             )
           )
         }),
-        TO.map((gridGroups) => ({
-          ...positionedColumn,
-          gridGroups,
-        }))
+        TO.map((positionedRows) => {
+          return validatePositionedColumn({
+            ...positionedColumn,
+            positionedRows,
+          })
+        })
       )
     )
   )()
@@ -722,15 +730,17 @@ const getChangeLayoutTypeLayout = async ({
                             return [
                               bestModule,
                               ...A.replicate(
-                                distanceToTarget / vanillaModule.length,
+                                round(distanceToTarget / vanillaModule.length),
                                 vanillaModule
                               ),
                             ]
                           case sign(distanceToTarget) < 0:
                             // abort and only vanilla
                             return A.replicate(
-                              positionedModule.module.length /
-                                vanillaModule.length,
+                              round(
+                                positionedModule.module.length /
+                                  vanillaModule.length
+                              ),
                               vanillaModule
                             )
 
@@ -925,6 +935,203 @@ export const stripForDebug = (posCol: PositionedColumn) => {
   }
 }
 
+const getAllAltsForWholeHouse = async ({
+  systemId,
+  dnas,
+  side,
+}: {
+  systemId: string
+  dnas: string[]
+  side: Side
+}) => {
+  const windowTypes = await systemsDB.windowTypes.where({ systemId }).toArray()
+
+  const currentIndexedLayout = await layoutsDB.houseLayouts.get({
+    systemId,
+    dnas,
+  })
+
+  if (!currentIndexedLayout)
+    throw new Error(`no currentLayout for ${systemId} ${dnas}`)
+
+  const { layout: currentLayout } = currentIndexedLayout
+
+  for (let columnIndex = 0; columnIndex < currentLayout.length; columnIndex++) {
+    const thisColumn = currentLayout[columnIndex]
+    const { positionedRows } = thisColumn
+
+    for (let levelIndex = 0; levelIndex < positionedRows.length; levelIndex++) {
+      const { positionedModules } = positionedRows[levelIndex]
+
+      for (
+        let moduleIndex = 0;
+        moduleIndex < positionedModules.length;
+        moduleIndex++
+      ) {
+        const { gridGroupIndex, module: thisModule } =
+          positionedModules[moduleIndex]
+
+        const {
+          dna,
+          structuredDna: { sectionType, positionType, gridType },
+        } = thisModule
+
+        const augColumn = await pipe(
+          positionedRows,
+          A.map((posRow) =>
+            pipe(
+              getVanillaModule({
+                systemId,
+                sectionType,
+                positionType,
+                levelType: posRow.levelType,
+                gridType,
+              }),
+              T.map((vanillaModule) => ({
+                ...posRow,
+                vanillaModule,
+                gridUnits: posRow.positionedModules.reduce(
+                  (acc, v) => acc + v.module.structuredDna.gridUnits,
+                  0
+                ),
+              }))
+            )
+          ),
+          A.sequence(T.ApplicativeSeq), // Convert Array<Task<T>> to Task<Array<T>>
+          T.map((positionedRows) => ({
+            ...thisColumn,
+            positionedRows,
+          }))
+        )()
+
+        const candidates = pipe(
+          await getWindowTypeAlternatives({ systemId, dna, side }),
+          A.map((candidate) => {
+            const updatedColumn = pipe(
+              augColumn,
+              produce((draft: AugPosCol) => {
+                const origRow = draft.positionedRows[levelIndex]
+                const newRow = swapModuleInRow(
+                  origRow,
+                  gridGroupIndex,
+                  candidate
+                )
+
+                const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
+
+                if (sign(gridUnitDelta) === 1) {
+                  // pad all other rows with gridUnitDelta vanilla
+                  for (let i = 0; i < draft.positionedRows.length; i++) {
+                    if (i === levelIndex) {
+                      draft.positionedRows[levelIndex] = newRow
+                    }
+
+                    console.log(`PAD OTHERS`, [columnIndex, levelIndex, i])
+
+                    draft.positionedRows[i] = addModulesToRow(
+                      draft.positionedRows[i],
+                      A.replicate(
+                        abs(gridUnitDelta),
+                        draft.positionedRows[i].vanillaModule
+                      )
+                    )
+
+                    validatePositionedRow(draft.positionedRows[i])
+                  }
+                  draft.positionedRows[levelIndex] = newRow
+                  // validatePositionedRow(draft.positionedRows[levelIndex])
+                } else if (sign(gridUnitDelta) === -1) {
+                  // pad this column with gridUnitDelta vanilla
+                  console.log(`PAD THIS`)
+
+                  draft.positionedRows[levelIndex] = addModulesToRow(
+                    newRow,
+                    A.replicate(abs(gridUnitDelta), newRow.vanillaModule)
+                  )
+                }
+
+                console.log(`VALIDATE THIS`, [
+                  columnIndex,
+                  levelIndex,
+                  gridGroupIndex,
+                ])
+
+                console.log(
+                  draft.positionedRows[levelIndex].positionedModules.map(
+                    ({ module, ...x }) => ({
+                      ...x,
+                      dna: module.dna,
+                      length: module.length,
+                    })
+                  )
+                )
+
+                validatePositionedRow(draft.positionedRows[levelIndex])
+
+                // validatePositionedColumn(draft)
+                draft.columnLength = draft.positionedRows[0].rowLength
+              })
+            )
+
+            // console.log(
+            //   [columnIndex, levelIndex, moduleIndex],
+            //   {
+            //     thisModule,
+            //     candidate,
+            //     updatedColumn,
+            //     currentLayout,
+            //   },
+            //   `all alts`
+            // )
+            // validatePositionedColumn(updatedColumn)
+
+            const lengthDelta =
+              updatedColumn.positionedRows[0].rowLength -
+              updatedColumn.columnLength
+
+            const nextLayout = pipe(
+              currentLayout,
+              produce((draft: ColumnLayout) => {
+                draft[columnIndex] = updatedColumn
+
+                for (let i = columnIndex + 1; i < draft.length; i++) {
+                  draft[i] = {
+                    ...draft[i],
+                    z: draft[i].z + lengthDelta,
+                  }
+                }
+              })
+            )
+
+            // postVanillaColumn(nextLayout[0])
+            const dnas = columnLayoutToDnas(nextLayout)
+
+            // layoutsDB.houseLayouts.put({ systemId, dnas, layout: nextLayout })
+
+            return {
+              candidate,
+              layout: nextLayout,
+              dnas,
+              windowType: pipe(
+                getWindowType(windowTypes, candidate, side),
+                someOrError(`no window type`)
+              ),
+            }
+          })
+        )
+      }
+    }
+  }
+
+  // for each module in each row in each column
+
+  // get all viable module candidates
+
+  // for each viable candidate module try to compute the next layout
+
+  // if any failure please report the dnas, [c,r,i], etc
+}
+
 const getAltWindowTypeLayouts = async ({
   systemId,
   dnas,
@@ -1040,10 +1247,10 @@ const getAltWindowTypeLayouts = async ({
         })
       )
 
+      validatePositionedColumn(updatedColumn)
+
       const lengthDelta =
         updatedColumn.positionedRows[0].rowLength - updatedColumn.columnLength
-
-      console.log(pipe(currentLayout, A.map(stripForDebug)))
 
       const nextLayout = pipe(
         currentLayout,
@@ -1062,12 +1269,10 @@ const getAltWindowTypeLayouts = async ({
         })
       )
 
-      console.log(pipe(nextLayout, A.map(stripForDebug)))
-
-      // postVanillaColumn(nextLayout[0])
+      postVanillaColumn(nextLayout[0])
       const dnas = columnLayoutToDnas(nextLayout)
 
-      // layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+      layoutsDB.houseLayouts.put({ systemId, dnas, layout: nextLayout })
 
       return {
         candidate,
@@ -1281,6 +1486,7 @@ const api = {
   getAltSectionTypeLayouts,
   getAltLevelTypeLayouts,
   getAltWindowTypeLayouts,
+  getAllAltsForWholeHouse,
 }
 
 export type LayoutsAPI = typeof api

@@ -16,7 +16,7 @@ import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
-import { objectToHouse } from "./helpers/sceneQueries"
+import { findFirstGuardDown, objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
 import {
   HouseLayoutGroupUse,
@@ -26,6 +26,8 @@ import {
   isHouseTransformsGroup,
   isWindowTypeAltLayoutGroup,
 } from "./scene/userData"
+import { getLayoutsWorker } from "../../../workers"
+import { getSide } from "../../state/camera"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -156,6 +158,30 @@ const FreshApp = () => {
     lastScopeElement.current = scope.hovered
   })
 
+  const foo = useRef<ScopeElement>({
+    columnIndex: 0,
+    levelIndex: 0,
+    gridGroupIndex: 0,
+  } as ScopeElement)
+
+  useKey("k", () => {
+    const maybeHtg = pipe(
+      rootRef.current?.children ?? [],
+      A.findFirst(isHouseTransformsGroup)
+    )
+    pipe(
+      maybeHtg,
+      O.map(async (htg) => {
+        const { activeLayoutDnas: dnas, systemId } = htg.userData
+        await getLayoutsWorker().getAllAltsForWholeHouse({
+          systemId,
+          dnas,
+          side: getSide(htg),
+        })
+      })
+    )
+  })
+
   useKey("d", () => {
     const maybeHtg = pipe(
       rootRef.current?.children ?? [],
@@ -164,11 +190,8 @@ const FreshApp = () => {
     pipe(
       maybeHtg,
       O.map(async (htg) => {
-        await htg.userData.refreshAltWindowTypeLayouts({
-          columnIndex: 1,
-          levelIndex: 1,
-          gridGroupIndex: 0,
-        } as ScopeElement)
+        await htg.userData.refreshAltWindowTypeLayouts(foo.current)
+        foo.current.levelIndex++
       })
     )
   })
@@ -187,11 +210,11 @@ const FreshApp = () => {
           A.filter(isHouseLayoutGroup),
           pipeLogWith((xs) => xs.map((x) => x.userData.use)),
           A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
-          A.head
-          // (groups) => {
-          //   const i = floor(random() * groups.length)
-          //   return pipe(groups, A.lookup(i))
-          // }
+          // A.head
+          (groups) => {
+            const i = floor(random() * groups.length)
+            return pipe(groups, A.lookup(i))
+          }
         )
 
         pipe(

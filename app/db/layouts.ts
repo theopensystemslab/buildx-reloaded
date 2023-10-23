@@ -49,11 +49,13 @@ export const validatePositionedRow = (row: PositionedRow): void => {
     const positionedModule = row.positionedModules[i]
     const isFirst = i === 0
 
-    const expectedZ = isFirst
-      ? positionedModule.module.length / 2
-      : row.positionedModules[i - 1].z +
-        row.positionedModules[i - 1].module.length / 2 +
-        positionedModule.module.length / 2
+    const expectedZ = roundp(
+      isFirst
+        ? positionedModule.module.length / 2
+        : row.positionedModules[i - 1].z +
+            row.positionedModules[i - 1].module.length / 2 +
+            positionedModule.module.length / 2
+    )
 
     if (positionedModule.z !== expectedZ) {
       console.log(`Z-Value Mismatch for Module at Index ${i}:`, {
@@ -81,7 +83,9 @@ export const validatePositionedRow = (row: PositionedRow): void => {
   }
 }
 
-export const validatePositionedColumn = (column: PositionedColumn): void => {
+export const validatePositionedColumn = (
+  column: PositionedColumn
+): PositionedColumn => {
   if (column.positionedRows.length === 0) {
     throw new Error("PositionedColumn contains no PositionedRows.")
   }
@@ -115,6 +119,7 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
     console.log("Column Length Mismatch:", {
       columnLength: column.columnLength,
       expectedLength: firstRowLength,
+      column,
     })
     throw new Error(
       `Invalid PositionedColumn length. Expected ${firstRowLength} but got ${column.columnLength}`
@@ -134,6 +139,8 @@ export const validatePositionedColumn = (column: PositionedColumn): void => {
       )
     }
   }
+
+  return column
 }
 
 export type AugPosRow = PositionedRow & {
@@ -143,6 +150,11 @@ export type AugPosRow = PositionedRow & {
 
 export type AugPosCol = PositionedColumn & {
   positionedRows: AugPosRow[]
+}
+
+export const roundp = (v: number, precision: number = 3) => {
+  const multiplier = Math.pow(10, precision)
+  return Math.round(v * multiplier) / multiplier
 }
 
 export const addModuleToRow = (
@@ -170,9 +182,11 @@ export const addModuleToRow = (
   // 3. Create the PositionedModule using the computed values
   const newPositionedModule: PositionedModule = {
     module: moduleToAdd,
-    z: newModuleZ,
+    z: roundp(newModuleZ),
     gridGroupIndex: newGridGroupIndex,
   }
+
+  console.log(`LALALALA`, { newPositionedModule })
 
   // 4. Update the length
   const updatedLength = row.rowLength + moduleToAdd.length
@@ -191,8 +205,8 @@ export const addModuleToRow = (
   return {
     ...row,
     positionedModules: updatedPositionedModules,
-    rowLength: updatedLength,
-    gridUnits: updatedGridUnits,
+    rowLength: roundp(updatedLength),
+    gridUnits: roundp(updatedGridUnits),
   }
 }
 
@@ -202,9 +216,23 @@ export const addModulesToRow = (
 ): AugPosRow => {
   let currentRow = row
 
+  console.log(
+    `BEFORE`,
+    currentRow.positionedModules.map(
+      ({ gridGroupIndex, z, module: { dna } }) => ({ gridGroupIndex, z, dna })
+    )
+  )
+
   for (const moduleToAdd of modulesToAdd) {
     currentRow = addModuleToRow(currentRow, moduleToAdd)
   }
+
+  console.log(
+    `AFTER`,
+    currentRow.positionedModules.map(
+      ({ gridGroupIndex, z, module: { dna } }) => ({ gridGroupIndex, z, dna })
+    )
+  )
 
   return currentRow
 }
@@ -215,6 +243,7 @@ export const swapModuleInRow = (
   newModule: Module
 ): AugPosRow => {
   const positionedModulesCopy = [...row.positionedModules]
+
   const targetIndex = positionedModulesCopy.findIndex(
     (pm) => pm.gridGroupIndex === gridGroupIndexToSwap
   )
@@ -235,7 +264,9 @@ export const swapModuleInRow = (
   // Recalculate z values for subsequent modules if needed
   if (lengthDiff !== 0) {
     for (let i = targetIndex; i < positionedModulesCopy.length; i++) {
-      positionedModulesCopy[i].z += lengthDiff / 2
+      positionedModulesCopy[i].z = roundp(
+        positionedModulesCopy[i].z + lengthDiff / 2
+      )
     }
   }
 
@@ -245,12 +276,19 @@ export const swapModuleInRow = (
     newModule.structuredDna.gridUnits - oldModule.structuredDna.gridUnits
   const updatedGridUnits = row.gridUnits + gridUnitsDiff
 
-  return {
+  const foo = {
     ...row,
     positionedModules: positionedModulesCopy,
-    rowLength: updatedLength,
+    rowLength: roundp(updatedLength),
     gridUnits: updatedGridUnits,
   }
+
+  console.log(
+    `OOOOOOOOOOOOOOOOOOOOO`,
+    positionedModulesCopy.map((x) => x.z)
+  )
+
+  return foo
 }
 
 export type IndexedModel = LastFetchStamped<{

@@ -178,7 +178,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
                 module: vanillaModule,
                 gridGroupIndex: 0,
                 // TODO: document me (quirk)
-                z: vanillaModule.length / 2,
+                z: Number((vanillaModule.length / 2).toFixed(3)),
               },
             ],
             rowLength: vanillaModule.length,

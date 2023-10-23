@@ -395,7 +395,7 @@ export const createHouseTransformsGroup = ({
           })
         }
       },
-      30_000,
+      500,
       true
     )
 
