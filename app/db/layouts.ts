@@ -62,20 +62,12 @@ export type Row = {
   vanillaModule: Module
 }
 
-export type PositionedRow = Row & {
-  levelIndex: number
-  y: number
-}
+export const createRow = (modules: Module[]): T.Task<Row> => {
+  const {
+    systemId,
+    structuredDna: { sectionType, positionType, levelType, gridType },
+  } = modules[0]
 
-export const createPositionedRow = ({
-  modules,
-  levelIndex,
-  y,
-}: {
-  modules: Module[]
-  levelIndex: number
-  y: number
-}): T.Task<PositionedRow> => {
   let positionedModules: PositionedModule[] = [],
     gridUnits = 0,
     rowLength = 0
@@ -85,11 +77,6 @@ export const createPositionedRow = ({
     ;(gridUnits += modules[i].structuredDna.gridUnits),
       (rowLength += modules[i].length)
   }
-
-  const {
-    systemId,
-    structuredDna: { sectionType, positionType, levelType, gridType },
-  } = modules[0]
 
   return pipe(
     getVanillaModule({
@@ -105,9 +92,32 @@ export const createPositionedRow = ({
       rowLength,
       levelType,
       vanillaModule,
-      levelIndex,
-      y,
     }))
+  )
+}
+
+export type PositionedRow = Row & {
+  levelIndex: number
+  y: number
+}
+
+export const createRowLayout = (rows: Module[][]): T.Task<PositionedRow[]> => {
+  return pipe(
+    rows,
+    A.traverse(T.ApplicativeSeq)(createRow),
+    T.map(
+      A.reduceWithIndex([], (levelIndex, acc: PositionedRow[], row: Row) => {
+        const levelLetter = row.levelType[0]
+
+        const y =
+          levelLetter === "F"
+            ? 0
+            : acc[levelIndex - 1].y +
+              acc[levelIndex - 1].positionedModules[0].module.height
+
+        return [...acc, { ...row, levelIndex, y }]
+      })
+    )
   )
 }
 
@@ -115,48 +125,21 @@ export type Column = {
   positionedRows: Array<PositionedRow>
 }
 
+export const createColumn = (rows: Module[][]): T.Task<Column> =>
+  pipe(
+    rows,
+    createRowLayout,
+    T.map((positionedRows) => ({ positionedRows }))
+  )
+
 export type PositionedColumn = Column & {
   z: number
   columnIndex: number
   columnLength: number
 }
 
-export const createColumn = (rows: Module[][]): T.Task<Column> =>
-  pipe(
-    rows,
-    A.reduceWithIndex(
-      [],
-      (
-        levelIndex,
-        acc: { modules: Module[]; levelIndex: number; y: number }[],
-        modules: Module[]
-      ) => {
-        const {
-          structuredDna: { levelType },
-        } = modules[0]
-
-        const levelLetter = levelType[0]
-
-        const y =
-          levelLetter === "F"
-            ? 0
-            : acc[levelIndex - 1].y + acc[levelIndex - 1].modules[0].height
-
-        return [
-          ...acc,
-          {
-            modules,
-            y,
-            levelIndex,
-          },
-        ]
-      }
-    ),
-    A.traverse(T.ApplicativeSeq)(({ modules, levelIndex, y }) =>
-      createPositionedRow({ modules, levelIndex, y })
-    ),
-    T.map((positionedRows) => ({ positionedRows }))
-  )
+export type RowLayout = Array<PositionedRow>
+export type ColumnLayout = Array<PositionedColumn>
 
 export const createColumnLayout = (
   matrix: Module[][][]
@@ -199,10 +182,6 @@ export const createColumnLayout = (
       )
     )
   )
-
-export type RowLayout = Array<PositionedRow>
-
-export type ColumnLayout = Array<PositionedColumn>
 
 export const roundp = (v: number, precision: number = 3) => {
   const multiplier = Math.pow(10, precision)
