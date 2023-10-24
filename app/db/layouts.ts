@@ -1,294 +1,212 @@
 import Dexie from "dexie"
 import { Module } from "../../server/data/modules"
 import { LastFetchStamped } from "./systems"
+import { A, T } from "../utils/functions"
+import { getVanillaModule } from "../workers/layouts/vanilla"
+import { pipe } from "fp-ts/lib/function"
 
 export type PositionedModule = {
   module: Module
   z: number
-  gridGroupIndex: number
+  moduleIndex: number
 }
 
-export type PositionedRow = {
-  levelIndex: number
-  levelType: string
-  y: number
+export const createPositionedModules = (
+  module: Module,
+  acc?: PositionedModule[]
+): PositionedModule[] => {
+  if (acc && acc.length > 0) {
+    const prev = acc[acc.length - 1]
+    return [
+      ...acc,
+      {
+        module,
+        moduleIndex: prev.moduleIndex + 1,
+        z: prev.z + prev.module.length / 2 + module.length / 2,
+      },
+    ]
+  } else {
+    return [
+      {
+        module,
+        moduleIndex: 0,
+        z: module.length / 2,
+      },
+    ]
+  }
+}
+
+export const createInitialPositionedModules = (
+  modules: Module[]
+): PositionedModule[] => {
+  let result: PositionedModule[] = []
+
+  for (let i = 0; i < modules.length; i++) {
+    const dz = i === 0 ? 0 : result[i - 1].z + result[i - 1].module.length / 2
+
+    result[i] = {
+      module: modules[i],
+      moduleIndex: i,
+      z: dz + modules[i].length / 2,
+    }
+  }
+
+  return result
+}
+
+export type Row = {
   positionedModules: Array<PositionedModule>
+  levelType: string
+  gridUnits: number
   rowLength: number
+  vanillaModule: Module
 }
 
-export type RowLayout = Array<PositionedRow>
+export type PositionedRow = Row & {
+  levelIndex: number
+  y: number
+}
 
-export type PositionedColumn = {
+export const createPositionedRow = ({
+  modules,
+  levelIndex,
+  y,
+}: {
+  modules: Module[]
+  levelIndex: number
+  y: number
+}): T.Task<PositionedRow> => {
+  let positionedModules: PositionedModule[] = [],
+    gridUnits = 0,
+    rowLength = 0
+
+  for (let i = 0; i < modules.length; i++) {
+    positionedModules = createPositionedModules(modules[i], positionedModules)
+    ;(gridUnits += modules[i].structuredDna.gridUnits),
+      (rowLength += modules[i].length)
+  }
+
+  const {
+    systemId,
+    structuredDna: { sectionType, positionType, levelType, gridType },
+  } = modules[0]
+
+  return pipe(
+    getVanillaModule({
+      systemId,
+      sectionType,
+      positionType,
+      levelType,
+      gridType,
+    }),
+    T.map((vanillaModule) => ({
+      positionedModules,
+      gridUnits,
+      rowLength,
+      levelType,
+      vanillaModule,
+      levelIndex,
+      y,
+    }))
+  )
+}
+
+export type Column = {
   positionedRows: Array<PositionedRow>
+}
+
+export type PositionedColumn = Column & {
   z: number
   columnIndex: number
   columnLength: number
 }
 
-export type ColumnLayout = Array<PositionedColumn>
+export const createColumn = (rows: Module[][]): T.Task<Column> =>
+  pipe(
+    rows,
+    A.reduceWithIndex(
+      [],
+      (
+        levelIndex,
+        acc: { modules: Module[]; levelIndex: number; y: number }[],
+        modules: Module[]
+      ) => {
+        const {
+          structuredDna: { levelType },
+        } = modules[0]
 
-export const validatePositionedRow = (row: PositionedRow): void => {
-  // Validate the length of the PositionedRow
-  const totalModulesLength = row.positionedModules.reduce(
-    (acc, mod) => acc + mod.module.length,
-    0
-  )
-  if (row.rowLength !== totalModulesLength) {
-    console.log(`Row Length Mismatch: `, {
-      rowLength: row.rowLength,
-      totalModulesLength,
-      positionedModules: row.positionedModules,
-    })
-    throw new Error(
-      `Invalid PositionedRow length. Expected ${totalModulesLength} but got ${row.rowLength}`
-    )
-  }
+        const levelLetter = levelType[0]
 
-  // Validate the z values of PositionedModules
-  for (let i = 0; i < row.positionedModules.length; i++) {
-    const positionedModule = row.positionedModules[i]
-    const isFirst = i === 0
+        const y =
+          levelLetter === "F"
+            ? 0
+            : acc[levelIndex - 1].y + acc[levelIndex - 1].modules[0].height
 
-    const expectedZ = roundp(
-      isFirst
-        ? positionedModule.module.length / 2
-        : row.positionedModules[i - 1].z +
-            row.positionedModules[i - 1].module.length / 2 +
-            positionedModule.module.length / 2
-    )
-
-    if (positionedModule.z !== expectedZ) {
-      console.log(`Z-Value Mismatch for Module at Index ${i}:`, {
-        expectedZ,
-        actualZ: positionedModule.z,
-        positionedModule,
-      })
-      throw new Error(
-        `Invalid z value for module at index ${i}. Expected ${expectedZ} but got ${positionedModule.z}`
-      )
-    }
-
-    // New logic to validate module's levelType against PositionedRow's levelType
-    const moduleLevelType = positionedModule.module.structuredDna.levelType
-    if (moduleLevelType !== row.levelType) {
-      console.log(`LevelType Mismatch for Module at Index ${i}:`, {
-        moduleLevelType,
-        rowLevelType: row.levelType,
-        positionedModule,
-      })
-      throw new Error(
-        `Mismatched levelType for module at index ${i}. Module has levelType '${moduleLevelType}', but PositionedRow expects '${row.levelType}'.`
-      )
-    }
-  }
-}
-
-export const validatePositionedColumn = (
-  column: PositionedColumn
-): PositionedColumn => {
-  if (column.positionedRows.length === 0) {
-    throw new Error("PositionedColumn contains no PositionedRows.")
-  }
-
-  // Validate each PositionedRow in the column
-  column.positionedRows.forEach((row, rowIndex) => {
-    try {
-      validatePositionedRow(row)
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log(
-          `Validation Error for PositionedRow at Index ${rowIndex}:`,
+        return [
+          ...acc,
           {
-            rowIndex,
-            error,
-            row,
-          }
-        )
-        throw new Error(
-          `Error in PositionedRow at index ${rowIndex}: ${error.message}`
-        )
+            modules,
+            y,
+            levelIndex,
+          },
+        ]
       }
-      throw error // If it's not an instance of Error, rethrow it anyway
-    }
-  })
+    ),
+    A.traverse(T.ApplicativeSeq)(({ modules, levelIndex, y }) =>
+      createPositionedRow({ modules, levelIndex, y })
+    ),
+    T.map((positionedRows) => ({ positionedRows }))
+  )
 
-  // Get the length of the first row to compare with the others and with the column's length
-  const firstRowLength = column.positionedRows[0].rowLength
+export const createColumnLayout = (
+  matrix: Module[][][]
+): T.Task<ColumnLayout> =>
+  pipe(
+    matrix,
+    A.traverse(T.ApplicativeSeq)(createColumn),
+    T.map(
+      A.reduceWithIndex(
+        [],
+        (
+          columnIndex: number,
+          acc: PositionedColumn[],
+          { positionedRows }: Column
+        ) => {
+          const columnLength = positionedRows[0].rowLength
+          if (columnIndex === 0) {
+            return [
+              {
+                positionedRows,
+                columnIndex,
+                columnLength,
+                z: 0,
+              },
+            ]
+          } else {
+            const last = acc[columnIndex - 1]
 
-  if (column.columnLength !== firstRowLength) {
-    console.log("Column Length Mismatch:", {
-      columnLength: column.columnLength,
-      expectedLength: firstRowLength,
-      column,
-    })
-    throw new Error(
-      `Invalid PositionedColumn length. Expected ${firstRowLength} but got ${column.columnLength}`
-    )
-  }
-
-  // Ensure all rows have the same length as the first row
-  for (let i = 1; i < column.positionedRows.length; i++) {
-    const rowLength = column.positionedRows[i].rowLength
-    if (rowLength !== firstRowLength) {
-      console.log(`Row Length Mismatch at Row Index ${i}:`, {
-        rowLength,
-        expectedLength: firstRowLength,
-      })
-      throw new Error(
-        `Mismatched length for PositionedRow at index ${i}. Expected ${firstRowLength} but got ${rowLength}`
+            return [
+              ...acc,
+              {
+                positionedRows,
+                columnIndex,
+                columnLength,
+                z: last.z + last.columnLength,
+              },
+            ]
+          }
+        }
       )
-    }
-  }
+    )
+  )
 
-  return column
-}
+export type RowLayout = Array<PositionedRow>
 
-export type AugPosRow = PositionedRow & {
-  vanillaModule: Module
-  gridUnits: number
-}
-
-export type AugPosCol = PositionedColumn & {
-  positionedRows: AugPosRow[]
-}
+export type ColumnLayout = Array<PositionedColumn>
 
 export const roundp = (v: number, precision: number = 3) => {
   const multiplier = Math.pow(10, precision)
   return Math.round(v * multiplier) / multiplier
-}
-
-export const addModuleToRow = (
-  row: AugPosRow,
-  moduleToAdd: Module
-): AugPosRow => {
-  // 1. Calculate the new z value for the module being added
-  const lastPositionedModule =
-    row.positionedModules[row.positionedModules.length - 1]
-  const lastModuleZ = lastPositionedModule ? lastPositionedModule.z : 0
-  const lastModuleLength = lastPositionedModule
-    ? lastPositionedModule.module.length
-    : 0
-
-  const newModuleZ = lastPositionedModule
-    ? lastModuleZ + lastModuleLength / 2 + moduleToAdd.length / 2
-    : moduleToAdd.length / 2
-
-  // 2. Calculate the gridGroupIndex for the new PositionedModule
-  const lastGridGroupIndex = lastPositionedModule
-    ? lastPositionedModule.gridGroupIndex
-    : -1
-  const newGridGroupIndex = lastGridGroupIndex + 1
-
-  // 3. Create the PositionedModule using the computed values
-  const newPositionedModule: PositionedModule = {
-    module: moduleToAdd,
-    z: roundp(newModuleZ),
-    gridGroupIndex: newGridGroupIndex,
-  }
-
-  console.log(`LALALALA`, { newPositionedModule })
-
-  // 4. Update the length
-  const updatedLength = row.rowLength + moduleToAdd.length
-
-  // 5. Update the gridUnits by extracting gridUnits from moduleToAdd's structuredDna
-  const additionalGridUnits = moduleToAdd.structuredDna.gridUnits
-  const updatedGridUnits = row.gridUnits + additionalGridUnits
-
-  // 6. Add the module to positionedModules
-  const updatedPositionedModules = [
-    ...row.positionedModules,
-    newPositionedModule,
-  ]
-
-  // Return the updated AugPosRow
-  return {
-    ...row,
-    positionedModules: updatedPositionedModules,
-    rowLength: roundp(updatedLength),
-    gridUnits: roundp(updatedGridUnits),
-  }
-}
-
-export const addModulesToRow = (
-  row: AugPosRow,
-  modulesToAdd: Module[]
-): AugPosRow => {
-  let currentRow = row
-
-  console.log(
-    `BEFORE`,
-    currentRow.positionedModules.map(
-      ({ gridGroupIndex, z, module: { dna } }) => ({ gridGroupIndex, z, dna })
-    )
-  )
-
-  for (const moduleToAdd of modulesToAdd) {
-    currentRow = addModuleToRow(currentRow, moduleToAdd)
-  }
-
-  console.log(
-    `AFTER`,
-    currentRow.positionedModules.map(
-      ({ gridGroupIndex, z, module: { dna } }) => ({ gridGroupIndex, z, dna })
-    )
-  )
-
-  return currentRow
-}
-
-export const swapModuleInRow = (
-  row: AugPosRow,
-  gridGroupIndexToSwap: number,
-  newModule: Module
-): AugPosRow => {
-  const positionedModulesCopy = [...row.positionedModules]
-
-  const targetIndex = positionedModulesCopy.findIndex(
-    (pm) => pm.gridGroupIndex === gridGroupIndexToSwap
-  )
-
-  if (targetIndex === -1) {
-    throw new Error(
-      `No PositionedModule found with gridGroupIndex: ${gridGroupIndexToSwap}`
-    )
-  }
-
-  // Extract the old module and calculate difference in lengths
-  const oldModule = positionedModulesCopy[targetIndex].module
-  const lengthDiff = newModule.length - oldModule.length
-
-  // Update the module at target index
-  positionedModulesCopy[targetIndex].module = newModule
-
-  // Recalculate z values for subsequent modules if needed
-  if (lengthDiff !== 0) {
-    for (let i = targetIndex; i < positionedModulesCopy.length; i++) {
-      positionedModulesCopy[i].z = roundp(
-        positionedModulesCopy[i].z + lengthDiff / 2
-      )
-    }
-  }
-
-  // Update the length and gridUnits
-  const updatedLength = row.rowLength + lengthDiff
-  const gridUnitsDiff =
-    newModule.structuredDna.gridUnits - oldModule.structuredDna.gridUnits
-  const updatedGridUnits = row.gridUnits + gridUnitsDiff
-
-  const foo = {
-    ...row,
-    positionedModules: positionedModulesCopy,
-    rowLength: roundp(updatedLength),
-    gridUnits: updatedGridUnits,
-  }
-
-  console.log(
-    `OOOOOOOOOOOOOOOOOOOOO`,
-    positionedModulesCopy.map((x) => x.z)
-  )
-
-  return foo
 }
 
 export type IndexedModel = LastFetchStamped<{

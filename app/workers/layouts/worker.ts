@@ -12,19 +12,14 @@ import {
   topCandidateByHamming,
 } from "../../data/modules"
 import layoutsDB, {
-  AugPosCol,
-  AugPosRow,
   ColumnLayout,
   HouseLayoutsKey,
   PositionedColumn,
   PositionedModule,
   PositionedRow,
   VanillaColumnsKey,
-  addModulesToRow,
+  createColumnLayout,
   roundp,
-  swapModuleInRow,
-  validatePositionedColumn,
-  validatePositionedRow,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
 import { Side } from "../../design/state/camera"
@@ -33,7 +28,6 @@ import {
   O,
   T,
   TO,
-  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
@@ -46,7 +40,6 @@ import {
   getVanillaModule,
   postVanillaColumn,
 } from "./vanilla"
-import { ref, snapshot } from "valtio"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -172,7 +165,7 @@ const columnify =
     return pipe(acc, transposeA)
   }
 
-const modulesToColumnLayout = (modules: Module[]) => {
+const modulesToMatrix = (modules: Module[]): Module[][][] => {
   const columns = pipe(
     modules,
     modulesToRows,
@@ -231,7 +224,7 @@ const modulesToColumnLayout = (modules: Module[]) => {
 
   if (!sameLengthColumns) throw new Error("not sameLengthColumns")
 
-  const columnifiedFurther = pipe(
+  return pipe(
     columns,
     A.map((column) =>
       pipe(
@@ -241,89 +234,6 @@ const modulesToColumnLayout = (modules: Module[]) => {
       )
     ),
     A.flatten
-  )
-
-  return pipe(
-    columnifiedFurther,
-    A.reduceWithIndex(
-      [],
-      (columnIndex, positionedCols: PositionedColumn[], loadedModules) => {
-        const last =
-          columnIndex === 0 ? null : positionedCols[positionedCols.length - 1]
-
-        const z = !last
-          ? 0
-          : last.z +
-            last.positionedRows[0].positionedModules.reduce(
-              (modulesLength, module) => modulesLength + module.module.length,
-              0
-            )
-
-        const gridGroups = pipe(
-          loadedModules,
-          A.reduceWithIndex(
-            [],
-            (levelIndex, positionedRows: PositionedRow[], modules) => {
-              const levelType = modules[0].structuredDna.levelType
-              const levelLetter = levelType[0]
-              const y =
-                levelLetter === "F"
-                  ? 0
-                  : positionedRows[levelIndex - 1].y +
-                    positionedRows[levelIndex - 1].positionedModules[0].module
-                      .height
-
-              return [
-                ...positionedRows,
-                {
-                  positionedModules: pipe(
-                    modules,
-                    A.reduceWithIndex(
-                      [],
-                      (
-                        i,
-                        positionedModules: PositionedModule[],
-                        module: Module
-                      ) => {
-                        const isFirst: boolean = i === 0
-
-                        const z = isFirst
-                          ? module.length / 2
-                          : positionedModules[i - 1].z +
-                            positionedModules[i - 1].module.length / 2 +
-                            module.length / 2
-
-                        return [
-                          ...positionedModules,
-                          {
-                            module,
-                            gridGroupIndex: i,
-                            z: roundp(z),
-                          },
-                        ]
-                      }
-                    )
-                  ),
-                  levelIndex,
-                  levelType,
-                  y,
-                  rowLength: modules.reduce((acc, m) => acc + m.length, 0),
-                },
-              ]
-            }
-          )
-        )
-        return [
-          ...positionedCols,
-          {
-            columnIndex,
-            positionedRows: gridGroups,
-            z: roundp(z),
-            columnLength: gridGroups[0].rowLength,
-          },
-        ]
-      }
-    )
   )
 }
 
@@ -366,7 +276,8 @@ const getLayout = async ({
         )
       )
     )
-    const layout = modulesToColumnLayout(modules)
+
+    const layout = await pipe(modules, modulesToMatrix, createColumnLayout)()
 
     layoutsDB.houseLayouts.put({
       layout,
@@ -534,7 +445,7 @@ const changeLayoutSectionType = async ({
                                 ({
                                   module,
                                   z: positionedModule.z,
-                                  gridGroupIndex: i,
+                                  moduleIndex: i,
                                 } as PositionedModule)
                             ),
                           ])
@@ -556,10 +467,10 @@ const changeLayoutSectionType = async ({
           )
         }),
         TO.map((positionedRows) => {
-          return validatePositionedColumn({
+          return {
             ...positionedColumn,
             positionedRows,
-          })
+          }
         })
       )
     )
@@ -760,7 +671,7 @@ const getChangeLayoutTypeLayout = async ({
                                 ({
                                   module,
                                   z: positionedModule.z,
-                                  gridGroupIndex: i,
+                                  moduleIndex: i,
                                 } as PositionedModule)
                             ),
                           ])
@@ -895,8 +806,8 @@ export const stripForDebug = (posCol: PositionedColumn) => {
   return {
     ...restCol,
     positionedRows: pipe(
-      positionedRows as AugPosRow[],
-      A.map(({ positionedModules, vanillaModule, ...restRow }: AugPosRow) => ({
+      positionedRows,
+      A.map(({ positionedModules, vanillaModule, ...restRow }) => ({
         ...restRow,
         positionedModules: pipe(
           positionedModules,
@@ -968,7 +879,7 @@ const getAllAltsForWholeHouse = async ({
         moduleIndex < positionedModules.length;
         moduleIndex++
       ) {
-        const { gridGroupIndex, module: thisModule } =
+        const { moduleIndex: gridGroupIndex, module: thisModule } =
           positionedModules[moduleIndex]
 
         const {
@@ -1009,7 +920,7 @@ const getAllAltsForWholeHouse = async ({
           A.map((candidate) => {
             const updatedColumn = pipe(
               augColumn,
-              produce((draft: AugPosCol) => {
+              produce((draft: PositionedColumn) => {
                 const origRow = draft.positionedRows[levelIndex]
                 const newRow = swapModuleInRow(
                   origRow,

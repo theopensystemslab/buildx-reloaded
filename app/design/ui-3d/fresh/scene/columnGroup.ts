@@ -100,7 +100,11 @@ export const createColumnGroup =
       const gridGroup = new Group()
       let length = 0
 
-      for (let { z, module, gridGroupIndex } of positionedModules) {
+      for (let {
+        z,
+        module,
+        moduleIndex: gridGroupIndex,
+      } of positionedModules) {
         const moduleGroup = await createModuleGroup({
           systemId,
           houseId,
