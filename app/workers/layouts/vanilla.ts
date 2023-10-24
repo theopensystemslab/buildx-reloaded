@@ -135,7 +135,7 @@ export const getVanillaModule = flow(
   })
 )
 
-export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
+export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
   pipe(
     arbitraryColumn.positionedRows,
     A.traverse(T.ApplicativeSeq)(
@@ -192,7 +192,7 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
         A.map((row) => row.levelType)
       )
 
-      layoutsDB.vanillaColumns.put({
+      return layoutsDB.vanillaColumns.put({
         systemId,
         levelTypes,
         sectionType,
@@ -203,4 +203,3 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
       })
     })
   )
-}

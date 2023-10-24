@@ -289,10 +289,7 @@ const getLayout = async ({
 
     const { startColumn } = splitColumns(layout)
 
-    console.log(startColumn, `posting vanilla`)
-    await postVanillaColumn(startColumn)
-
-    console.log(`posted for`, layout)
+    await postVanillaColumn(startColumn)()
 
     return layout
   }
@@ -891,30 +888,29 @@ const getAllAltsForWholeHouse = async ({
           structuredDna: { sectionType, positionType, gridType },
         } = thisModule
 
-        const candidates = await pipe(
+        const foo = await pipe(
           getWindowTypeAlternatives({ systemId, dna, side }),
           T.chain(
             A.traverse(T.ApplicativeSeq)((candidate) =>
-              modifyColumnAt(thisColumn, levelIndex, moduleIndex, candidate)
+              pipe(
+                modifyColumnAt(thisColumn, levelIndex, moduleIndex, candidate),
+                T.map((newColumn) =>
+                  pipe(
+                    positionColumns(
+                      pipe(
+                        currentLayout,
+                        A.modifyAt(columnIndex, () => newColumn),
+                        someOrError(`blah`)
+                      )
+                    ),
+                    (columnLayout) => ({
+                      columnLayout,
+                      candidate,
+                    })
+                  )
+                )
+              )
             )
-            // A.map((candidate) => {
-            //   const updatedColumn = pipe(
-            //     modifyColumnAt(thisColumn, levelIndex, moduleIndex, candidate)
-            //   )
-
-            //   const nextLayout = pipe(
-            //     currentLayout,
-            //     produce((draft: ColumnLayout) => {
-            //       draft[columnIndex] = updatedColumn
-
-            //       for (let i = columnIndex + 1; i < draft.length; i++) {
-            //         draft[i] = {
-            //           ...draft[i],
-            //           z: draft[i].z + lengthDelta,
-            //         }
-            //       }
-            //     })
-            //   )
 
             //   // postVanillaColumn(nextLayout[0])
             //   const dnas = columnLayoutToDnas(nextLayout)
@@ -931,9 +927,10 @@ const getAllAltsForWholeHouse = async ({
             //     ),
             //   }
             // })
-          ),
-          T.map(positionColumns)
+          )
         )()
+
+        console.log(foo)
       }
     }
   }

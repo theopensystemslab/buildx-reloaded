@@ -4,10 +4,12 @@ import { Fragment, useEffect, useRef } from "react"
 import { useKey } from "react-use"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { A, O, pipeLog, pipeLogWith } from "../../../utils/functions"
+import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { floor, random } from "../../../utils/math"
+import { getLayoutsWorker } from "../../../workers"
 import { useExportersWorker } from "../../../workers/exporters/hook"
+import { getSide } from "../../state/camera"
 import elementCategories from "../../state/elementCategories"
 import menu from "../../state/menu"
 import scope, { ScopeElement } from "../../state/scope"
@@ -16,7 +18,7 @@ import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
-import { findFirstGuardDown, objectToHouse } from "./helpers/sceneQueries"
+import { objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
 import {
   HouseLayoutGroupUse,
@@ -26,8 +28,6 @@ import {
   isHouseTransformsGroup,
   isWindowTypeAltLayoutGroup,
 } from "./scene/userData"
-import { getLayoutsWorker } from "../../../workers"
-import { getSide } from "../../state/camera"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -169,6 +169,7 @@ const FreshApp = () => {
       rootRef.current?.children ?? [],
       A.findFirst(isHouseTransformsGroup)
     )
+
     pipe(
       maybeHtg,
       O.map(async (htg) => {
@@ -208,7 +209,6 @@ const FreshApp = () => {
         const maybeNextLayout = pipe(
           house.children,
           A.filter(isHouseLayoutGroup),
-          pipeLogWith((xs) => xs.map((x) => x.userData.use)),
           A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
           // A.head
           (groups) => {
@@ -219,7 +219,6 @@ const FreshApp = () => {
 
         pipe(
           maybeNextLayout,
-          pipeLog,
           O.map((nextLayout) => {
             house.userData.setActiveLayoutGroup(nextLayout)
             invalidate()

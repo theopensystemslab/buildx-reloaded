@@ -50,16 +50,11 @@ export const getVanillaColumn = ({
         const layoutsWorker = getLayoutsWorker()
         if (!layoutsWorker) throw new Error(`no layouts worker`)
         return () =>
-          layoutsWorker
-            .getVanillaColumn({
-              systemId,
-              sectionType,
-              levelTypes,
-            })
-            .catch((e) => {
-              console.log(e, `in getVanillaColumn in columnGroup`)
-              throw e
-            })
+          layoutsWorker.getVanillaColumn({
+            systemId,
+            sectionType,
+            levelTypes,
+          })
       },
       (vanillaColumn) => T.of(vanillaColumn)
     )
