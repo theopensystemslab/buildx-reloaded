@@ -333,7 +333,7 @@ export const elementMeshToScopeItem = (object: Object3D): ScopeElement => {
 
   return {
     ifcTag,
-    gridGroupIndex,
+    moduleIndex: gridGroupIndex,
     levelIndex,
     columnIndex,
     houseId,

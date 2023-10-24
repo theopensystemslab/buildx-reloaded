@@ -11,9 +11,9 @@ import { columnLayoutToMatrix } from "../../workers/layouts/worker"
 export type ScopeElement = {
   ifcTag: string
   dna: string
-  gridGroupIndex: number
-  levelIndex: number
   columnIndex: number
+  levelIndex: number
+  moduleIndex: number
   houseId: string
   object: ElementMesh
 }
@@ -32,7 +32,12 @@ export const useScope = () => useSnapshot(scope) as typeof scope
 
 export const getSelectedModule = () => {
   if (scope.selected === null) return null
-  const { houseId, columnIndex, levelIndex, gridGroupIndex } = scope.selected
+  const {
+    houseId,
+    columnIndex,
+    levelIndex,
+    moduleIndex: gridGroupIndex,
+  } = scope.selected
 
   const { systemId, dnas } = houses[houseId]
 

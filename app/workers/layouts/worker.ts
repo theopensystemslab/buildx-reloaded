@@ -20,6 +20,7 @@ import layoutsDB, {
   VanillaColumnsKey,
   createColumnLayout,
   modifyColumnAt,
+  modifyLayoutAt,
   positionColumns,
   roundp,
 } from "../../db/layouts"
@@ -949,14 +950,14 @@ const getAltWindowTypeLayouts = async ({
   dnas,
   columnIndex,
   levelIndex,
-  gridGroupIndex,
+  moduleIndex,
   side,
 }: {
   systemId: string
   dnas: string[]
   columnIndex: number
   levelIndex: number
-  gridGroupIndex: number
+  moduleIndex: number
   side: Side
 }) => {
   const windowTypes = await systemsDB.windowTypes.where({ systemId }).toArray()
@@ -977,54 +978,73 @@ const getAltWindowTypeLayouts = async ({
     someOrError(`no column`)
   )
 
+  console.log({ thisColumn, columnIndex, levelIndex, moduleIndex })
+
   const thisModule = pipe(
     thisColumn.positionedRows,
     A.lookup(levelIndex),
-    O.chain((x) => pipe(x.positionedModules, A.lookup(gridGroupIndex))),
+    O.chain((x) => pipe(x.positionedModules, A.lookup(moduleIndex))),
     someOrError(`no module`)
   )
+
+  console.log({ thisModule })
 
   const {
     dna,
     structuredDna: { sectionType, positionType, gridType },
   } = thisModule.module
 
-  const augColumn = await pipe(
-    thisColumn.positionedRows,
-    A.map((posRow) =>
-      pipe(
-        getVanillaModule({
-          systemId,
-          sectionType,
-          positionType,
-          levelType: posRow.levelType,
-          gridType,
-        }),
-        T.map((vanillaModule) => ({
-          ...posRow,
-          vanillaModule,
-          gridUnits: posRow.positionedModules.reduce(
-            (acc, v) => acc + v.module.structuredDna.gridUnits,
-            0
+  return await pipe(
+    getWindowTypeAlternatives({ systemId, dna, side }),
+    T.chain(
+      A.traverse(T.ApplicativeSeq)((candidate) =>
+        pipe(
+          modifyLayoutAt(
+            currentLayout,
+            columnIndex,
+            levelIndex,
+            moduleIndex,
+            candidate
           ),
-        }))
+          T.map((layout) => {
+            const dnas = columnLayoutToDnas(layout)
+            const windowType = pipe(
+              getWindowType(windowTypes, candidate, side),
+              someOrError(`no window type`)
+            )
+
+            layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+
+            console.log({ layout, currentLayout })
+
+            console.log([
+              layout[columnIndex].positionedRows[levelIndex].positionedModules[
+                moduleIndex
+              ].module.dna,
+              currentLayout[columnIndex].positionedRows[levelIndex]
+                .positionedModules[moduleIndex].module.dna,
+            ])
+
+            return {
+              candidate,
+              layout,
+              dnas,
+              windowType,
+            }
+          })
+        )
       )
-    ),
-    A.sequence(T.ApplicativeSeq), // Convert Array<Task<T>> to Task<Array<T>>
-    T.map((positionedRows) => ({
-      ...thisColumn,
-      positionedRows,
-    }))
+    )
   )()
 
   // validatePositionedColumn(augColumn)
 
-  const candidates: {
-    candidate: Module
-    layout: ColumnLayout
-    dnas: string[]
-    windowType: WindowType
-  }[] = []
+  // const candidates: {
+  //   candidate: Module
+  //   layout: ColumnLayout
+  //   dnas: string[]
+  //   windowType: WindowType
+  // }[] = []
 
   // const candidates = pipe(
   //   await getWindowTypeAlternatives({ systemId, dna, side }),
@@ -1104,8 +1124,6 @@ const getAltWindowTypeLayouts = async ({
   //     }
   //   })
   // )
-
-  return candidates
 }
 
 // const getChangeWindowTypeLayout = async ({

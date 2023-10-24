@@ -1,7 +1,7 @@
 import Dexie from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { Module } from "../../server/data/modules"
-import { A, T } from "../utils/functions"
+import { A, O, T } from "../utils/functions"
 import { sign } from "../utils/math"
 import { getVanillaModule } from "../workers/layouts/vanilla"
 import { LastFetchStamped } from "./systems"
@@ -256,6 +256,24 @@ export const createColumnLayout = (
   pipe(
     matrix,
     A.traverse(T.ApplicativeSeq)(createColumn),
+    T.map(positionColumns)
+  )
+
+export const modifyLayoutAt = (
+  layout: ColumnLayout,
+  columnIndex: number,
+  levelIndex: number,
+  moduleIndex: number,
+  newModule: Module
+): T.Task<ColumnLayout> =>
+  pipe(
+    layout,
+    A.mapWithIndex((index, positionedColumn) =>
+      index === columnIndex
+        ? modifyColumnAt(positionedColumn, levelIndex, moduleIndex, newModule)
+        : T.of(positionedColumn)
+    ),
+    A.sequence(T.ApplicativeSeq),
     T.map(positionColumns)
   )
 

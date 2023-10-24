@@ -121,7 +121,13 @@ const FreshApp = () => {
       return
     }
 
-    const { houseId, columnIndex, levelIndex, gridGroupIndex, object } = item
+    const {
+      houseId,
+      columnIndex,
+      levelIndex,
+      moduleIndex: gridGroupIndex,
+      object,
+    } = item
 
     if (houseId !== siteCtx.houseId) return
 
@@ -135,7 +141,7 @@ const FreshApp = () => {
 
       if (
         last.columnIndex === columnIndex &&
-        last.gridGroupIndex === gridGroupIndex
+        last.moduleIndex === gridGroupIndex
       ) {
         refreshWindowAlts = false
       }
@@ -149,6 +155,7 @@ const FreshApp = () => {
             // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
           }
           if (refreshWindowAlts) {
+            console.log(`refreshing window alts`, lastScopeElement.current)
             houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
           }
         })
@@ -159,9 +166,9 @@ const FreshApp = () => {
   })
 
   const foo = useRef<ScopeElement>({
-    columnIndex: 0,
-    levelIndex: 0,
-    gridGroupIndex: 0,
+    columnIndex: 1,
+    levelIndex: 1,
+    moduleIndex: 0,
   } as ScopeElement)
 
   useKey("k", () => {
@@ -192,7 +199,7 @@ const FreshApp = () => {
       maybeHtg,
       O.map(async (htg) => {
         await htg.userData.refreshAltWindowTypeLayouts(foo.current)
-        foo.current.levelIndex++
+        foo.current.columnIndex++
       })
     )
   })
@@ -210,11 +217,11 @@ const FreshApp = () => {
           house.children,
           A.filter(isHouseLayoutGroup),
           A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
-          // A.head
-          (groups) => {
-            const i = floor(random() * groups.length)
-            return pipe(groups, A.lookup(i))
-          }
+          A.head
+          // (groups) => {
+          //   const i = floor(random() * groups.length)
+          //   return pipe(groups, A.lookup(i))
+          // }
         )
 
         pipe(

@@ -350,7 +350,8 @@ export const createHouseTransformsGroup = ({
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     debounce(
       async (scopeElement) => {
-        const { columnIndex, levelIndex, gridGroupIndex } = scopeElement
+        const { columnIndex, levelIndex, moduleIndex }: ScopeElement =
+          scopeElement
 
         const oldLayouts = pipe(
           houseTransformsGroup.children,
@@ -363,6 +364,7 @@ export const createHouseTransformsGroup = ({
 
         // out with the old
         oldLayouts.forEach((x) => {
+          console.log(`removed ${x.uuid}`)
           x.removeFromParent()
         })
 
@@ -375,10 +377,12 @@ export const createHouseTransformsGroup = ({
             systemId,
             columnIndex,
             levelIndex,
-            gridGroupIndex,
+            moduleIndex,
             dnas,
             side,
           })
+
+        console.log(altWindowTypeLayouts)
 
         for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
           createHouseLayoutGroup({
@@ -392,6 +396,7 @@ export const createHouseTransformsGroup = ({
             layoutGroup.userData.windowType = windowType
             setInvisibleNoRaycast(layoutGroup)
             houseTransformsGroup.add(layoutGroup)
+            console.log(`added ${layoutGroup.uuid}`)
           })
         }
       },
