@@ -19,6 +19,7 @@ import layoutsDB, {
   PositionedRow,
   VanillaColumnsKey,
   createColumnLayout,
+  modifyColumnAt,
   roundp,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
@@ -879,109 +880,81 @@ const getAllAltsForWholeHouse = async ({
         moduleIndex < positionedModules.length;
         moduleIndex++
       ) {
-        const { moduleIndex: gridGroupIndex, module: thisModule } =
-          positionedModules[moduleIndex]
+        const { module: thisModule } = positionedModules[moduleIndex]
 
         const {
           dna,
           structuredDna: { sectionType, positionType, gridType },
         } = thisModule
 
-        const augColumn = await pipe(
-          positionedRows,
-          A.map((posRow) =>
-            pipe(
-              getVanillaModule({
-                systemId,
-                sectionType,
-                positionType,
-                levelType: posRow.levelType,
-                gridType,
-              }),
-              T.map((vanillaModule) => ({
-                ...posRow,
-                vanillaModule,
-                gridUnits: posRow.positionedModules.reduce(
-                  (acc, v) => acc + v.module.structuredDna.gridUnits,
-                  0
-                ),
-              }))
-            )
-          ),
-          A.sequence(T.ApplicativeSeq), // Convert Array<Task<T>> to Task<Array<T>>
-          T.map((positionedRows) => ({
-            ...thisColumn,
-            positionedRows,
-          }))
-        )()
-
         const candidates = pipe(
           await getWindowTypeAlternatives({ systemId, dna, side }),
           A.map((candidate) => {
             const updatedColumn = pipe(
-              augColumn,
-              produce((draft: PositionedColumn) => {
-                const origRow = draft.positionedRows[levelIndex]
-                const newRow = swapModuleInRow(
-                  origRow,
-                  gridGroupIndex,
-                  candidate
-                )
+              modifyColumnAt(thisColumn, levelIndex, moduleIndex, candidate)
+              // produce((draft: PositionedColumn) => {
+              //   const origRow = draft.positionedRows[levelIndex]
 
-                const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
+              //   const newRow = swapModuleInRow(
+              //     origRow,
+              //     gridGroupIndex,
+              //     candidate
+              //   )
 
-                if (sign(gridUnitDelta) === 1) {
-                  // pad all other rows with gridUnitDelta vanilla
-                  for (let i = 0; i < draft.positionedRows.length; i++) {
-                    if (i === levelIndex) {
-                      draft.positionedRows[levelIndex] = newRow
-                    }
+              //   const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
 
-                    console.log(`PAD OTHERS`, [columnIndex, levelIndex, i])
+              //   if (sign(gridUnitDelta) === 1) {
+              //     // pad all other rows with gridUnitDelta vanilla
+              //     for (let i = 0; i < draft.positionedRows.length; i++) {
+              //       if (i === levelIndex) {
+              //         draft.positionedRows[levelIndex] = newRow
+              //       }
 
-                    draft.positionedRows[i] = addModulesToRow(
-                      draft.positionedRows[i],
-                      A.replicate(
-                        abs(gridUnitDelta),
-                        draft.positionedRows[i].vanillaModule
-                      )
-                    )
+              //       console.log(`PAD OTHERS`, [columnIndex, levelIndex, i])
 
-                    validatePositionedRow(draft.positionedRows[i])
-                  }
-                  draft.positionedRows[levelIndex] = newRow
-                  // validatePositionedRow(draft.positionedRows[levelIndex])
-                } else if (sign(gridUnitDelta) === -1) {
-                  // pad this column with gridUnitDelta vanilla
-                  console.log(`PAD THIS`)
+              //       draft.positionedRows[i] = addModulesToRow(
+              //         draft.positionedRows[i],
+              //         A.replicate(
+              //           abs(gridUnitDelta),
+              //           draft.positionedRows[i].vanillaModule
+              //         )
+              //       )
 
-                  draft.positionedRows[levelIndex] = addModulesToRow(
-                    newRow,
-                    A.replicate(abs(gridUnitDelta), newRow.vanillaModule)
-                  )
-                }
+              //       validatePositionedRow(draft.positionedRows[i])
+              //     }
+              //     draft.positionedRows[levelIndex] = newRow
+              //     // validatePositionedRow(draft.positionedRows[levelIndex])
+              //   } else if (sign(gridUnitDelta) === -1) {
+              //     // pad this column with gridUnitDelta vanilla
+              //     console.log(`PAD THIS`)
 
-                console.log(`VALIDATE THIS`, [
-                  columnIndex,
-                  levelIndex,
-                  gridGroupIndex,
-                ])
+              //     draft.positionedRows[levelIndex] = addModulesToRow(
+              //       newRow,
+              //       A.replicate(abs(gridUnitDelta), newRow.vanillaModule)
+              //     )
+              //   }
 
-                console.log(
-                  draft.positionedRows[levelIndex].positionedModules.map(
-                    ({ module, ...x }) => ({
-                      ...x,
-                      dna: module.dna,
-                      length: module.length,
-                    })
-                  )
-                )
+              //   console.log(`VALIDATE THIS`, [
+              //     columnIndex,
+              //     levelIndex,
+              //     gridGroupIndex,
+              //   ])
 
-                validatePositionedRow(draft.positionedRows[levelIndex])
+              //   console.log(
+              //     draft.positionedRows[levelIndex].positionedModules.map(
+              //       ({ module, ...x }) => ({
+              //         ...x,
+              //         dna: module.dna,
+              //         length: module.length,
+              //       })
+              //     )
+              //   )
 
-                // validatePositionedColumn(draft)
-                draft.columnLength = draft.positionedRows[0].rowLength
-              })
+              //   validatePositionedRow(draft.positionedRows[levelIndex])
+
+              //   // validatePositionedColumn(draft)
+              //   draft.columnLength = draft.positionedRows[0].rowLength
+              // })
             )
 
             // console.log(

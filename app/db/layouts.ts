@@ -1,9 +1,10 @@
 import Dexie from "dexie"
-import { Module } from "../../server/data/modules"
-import { LastFetchStamped } from "./systems"
-import { A, T } from "../utils/functions"
-import { getVanillaModule } from "../workers/layouts/vanilla"
 import { pipe } from "fp-ts/lib/function"
+import { Module } from "../../server/data/modules"
+import { A, T } from "../utils/functions"
+import { sign } from "../utils/math"
+import { getVanillaModule } from "../workers/layouts/vanilla"
+import { LastFetchStamped } from "./systems"
 
 export type PositionedModule = {
   module: Module
@@ -96,28 +97,53 @@ export const createRow = (modules: Module[]): T.Task<Row> => {
   )
 }
 
+export const modifyRowAt = (
+  row: Row,
+  moduleIndex: number,
+  newModule: Module
+): T.Task<Row> =>
+  createRow(
+    pipe(
+      row.positionedModules,
+      A.mapWithIndex((i, { module }) =>
+        i === moduleIndex ? newModule : module
+      )
+    )
+  )
+
+export const vanillaPadRow = (row: Row, n: number) =>
+  createRow(
+    pipe(
+      row.positionedModules.map((x) => x.module),
+      A.concat(A.replicate(n, row.vanillaModule))
+    )
+  )
+
 export type PositionedRow = Row & {
   levelIndex: number
   y: number
 }
 
+export const positionRows = A.reduceWithIndex(
+  [],
+  (levelIndex, acc: PositionedRow[], row: Row) => {
+    const levelLetter = row.levelType[0]
+
+    const y =
+      levelLetter === "F"
+        ? 0
+        : acc[levelIndex - 1].y +
+          acc[levelIndex - 1].positionedModules[0].module.height
+
+    return [...acc, { ...row, levelIndex, y }]
+  }
+)
+
 export const createRowLayout = (rows: Module[][]): T.Task<PositionedRow[]> => {
   return pipe(
     rows,
     A.traverse(T.ApplicativeSeq)(createRow),
-    T.map(
-      A.reduceWithIndex([], (levelIndex, acc: PositionedRow[], row: Row) => {
-        const levelLetter = row.levelType[0]
-
-        const y =
-          levelLetter === "F"
-            ? 0
-            : acc[levelIndex - 1].y +
-              acc[levelIndex - 1].positionedModules[0].module.height
-
-        return [...acc, { ...row, levelIndex, y }]
-      })
-    )
+    T.map(positionRows)
   )
 }
 
@@ -132,6 +158,54 @@ export const createColumn = (rows: Module[][]): T.Task<Column> =>
     T.map((positionedRows) => ({ positionedRows }))
   )
 
+export const modifyColumnAt = (
+  column: Column,
+  levelIndex: number,
+  moduleIndex: number,
+  newModule: Module
+): T.Task<Column> => {
+  const initialGridUnits = column.positionedRows[levelIndex].gridUnits
+
+  // so you wanna split the positioned rows up
+  return pipe(
+    column.positionedRows,
+    A.mapWithIndex((i, row) => {
+      if (i === levelIndex) {
+        return modifyRowAt(row, moduleIndex, newModule)
+      } else {
+        return T.of(row)
+      }
+    }),
+    A.sequence(T.ApplicativeSeq),
+    T.chain((rows): T.Task<Row[]> => {
+      const delta = rows[levelIndex].gridUnits - initialGridUnits
+      switch (sign(delta)) {
+        // this row now bigger
+        case 1:
+          return pipe(
+            rows,
+            A.mapWithIndex((i, row) =>
+              i === levelIndex ? T.of(row) : vanillaPadRow(row, delta)
+            ),
+            A.sequence(T.ApplicativeSeq)
+          )
+        // this row now smaller
+        case -1:
+          pipe(
+            rows,
+            A.mapWithIndex((i, row) =>
+              i === levelIndex ? vanillaPadRow(row, delta) : T.of(row)
+            ),
+            A.sequence(T.ApplicativeSeq)
+          )
+        default:
+          return T.of(rows)
+      }
+    }),
+    T.map((rows) => ({ positionedRows: positionRows(rows) }))
+  )
+}
+
 export type PositionedColumn = Column & {
   z: number
   columnIndex: number
@@ -141,46 +215,46 @@ export type PositionedColumn = Column & {
 export type RowLayout = Array<PositionedRow>
 export type ColumnLayout = Array<PositionedColumn>
 
+export const positionColumns = A.reduceWithIndex(
+  [],
+  (
+    columnIndex: number,
+    acc: PositionedColumn[],
+    { positionedRows }: Column
+  ) => {
+    const columnLength = positionedRows[0].rowLength
+    if (columnIndex === 0) {
+      return [
+        {
+          positionedRows,
+          columnIndex,
+          columnLength,
+          z: 0,
+        },
+      ]
+    } else {
+      const last = acc[columnIndex - 1]
+
+      return [
+        ...acc,
+        {
+          positionedRows,
+          columnIndex,
+          columnLength,
+          z: last.z + last.columnLength,
+        },
+      ]
+    }
+  }
+)
+
 export const createColumnLayout = (
   matrix: Module[][][]
 ): T.Task<ColumnLayout> =>
   pipe(
     matrix,
     A.traverse(T.ApplicativeSeq)(createColumn),
-    T.map(
-      A.reduceWithIndex(
-        [],
-        (
-          columnIndex: number,
-          acc: PositionedColumn[],
-          { positionedRows }: Column
-        ) => {
-          const columnLength = positionedRows[0].rowLength
-          if (columnIndex === 0) {
-            return [
-              {
-                positionedRows,
-                columnIndex,
-                columnLength,
-                z: 0,
-              },
-            ]
-          } else {
-            const last = acc[columnIndex - 1]
-
-            return [
-              ...acc,
-              {
-                positionedRows,
-                columnIndex,
-                columnLength,
-                z: last.z + last.columnLength,
-              },
-            ]
-          }
-        }
-      )
-    )
+    T.map(positionColumns)
   )
 
 export const roundp = (v: number, precision: number = 3) => {
