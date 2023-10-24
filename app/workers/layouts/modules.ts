@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { Module, parseDna } from "../../../server/data/modules"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, compareProps } from "../../utils/functions"
+import { A, T, compareProps } from "../../utils/functions"
 import { Side } from "../../design/state/camera"
 
 let modulesCache: LastFetchStamped<Module>[] = []
@@ -12,7 +12,7 @@ export const getModules = async () => {
   return modulesCache
 }
 
-export const getWindowTypeAlternatives = async ({
+export const getWindowTypeAlternatives = ({
   systemId,
   dna,
   side,
@@ -20,55 +20,50 @@ export const getWindowTypeAlternatives = async ({
   systemId: string
   dna: string
   side: Side
-}) => {
-  const allModules = await getModules()
-
+}): T.Task<LastFetchStamped<Module>[]> => {
   const parsedStructuredDna = parseDna(dna)
   const { levelType, positionType, windowTypeTop, windowTypeEnd } =
     parsedStructuredDna
 
-  const looseCandidates = pipe(
-    allModules,
-    A.filter(
-      (x) =>
-        x.systemId === systemId &&
-        x.dna !== dna &&
-        compareProps(x.structuredDna, parsedStructuredDna, [
-          "sectionType",
-          "positionType",
-          "levelType",
-          "gridType",
-        ])
+  return pipe(
+    () => getModules(),
+    T.map((looseCandidates) =>
+      pipe(
+        looseCandidates,
+        A.filter((x) => {
+          let check =
+            x.systemId === systemId &&
+            x.dna !== dna &&
+            compareProps(x.structuredDna, parsedStructuredDna, [
+              "sectionType",
+              "positionType",
+              "levelType",
+              "gridType",
+            ])
+
+          if (!check) return false
+
+          if (positionType === "END") {
+            if (x.structuredDna.windowTypeEnd !== windowTypeEnd) {
+              return false
+            }
+          }
+
+          if (levelType[0] === "R") {
+            if (x.structuredDna.windowTypeTop !== windowTypeTop) {
+              return false
+            }
+          }
+
+          const k: keyof typeof parsedStructuredDna =
+            side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
+          if (x.structuredDna[k] !== parsedStructuredDna[k]) {
+            return false
+          }
+
+          return true
+        })
+      )
     )
   )
-  switch (true) {
-    // top openings
-    case levelType[0] === "R": {
-      return pipe(
-        looseCandidates,
-        A.filter((x) => x.structuredDna.windowTypeTop !== windowTypeTop)
-      )
-    }
-
-    // end openings
-    case positionType === "END": {
-      return pipe(
-        looseCandidates,
-        A.filter((x) => x.structuredDna.windowTypeEnd !== windowTypeEnd)
-      )
-    }
-
-    // left/right side openings
-    default: {
-      const k: keyof typeof parsedStructuredDna =
-        side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
-
-      // might need to constrain harder here? or not?
-
-      return pipe(
-        looseCandidates,
-        A.filter((x) => x.structuredDna[k] !== parsedStructuredDna[k])
-      )
-    }
-  }
 }

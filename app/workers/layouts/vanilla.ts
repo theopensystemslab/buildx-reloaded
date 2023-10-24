@@ -4,7 +4,8 @@ import { Module } from "../../../server/data/modules"
 import layoutsDB, {
   IndexedVanillaModule,
   PositionedColumn,
-  createPositionedRow,
+  createRow,
+  positionRows,
 } from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import { A, O, Ord, S, T, all, someOrError } from "../../utils/functions"
@@ -170,12 +171,11 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
             levelType,
             gridType,
           }),
-          T.chain((vanillaModule) =>
-            createPositionedRow({ modules: [vanillaModule], levelIndex, y })
-          )
+          T.chain((vanillaModule) => createRow([vanillaModule]))
         )
       }
     ),
+    T.map(positionRows),
     T.map((positionedRows) => {
       const columnLength = positionedRows.reduce(
         (acc, { positionedModules }) =>
