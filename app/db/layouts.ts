@@ -23,7 +23,7 @@ export const createPositionedModules = (
       {
         module,
         moduleIndex: prev.moduleIndex + 1,
-        z: prev.z + prev.module.length / 2 + module.length / 2,
+        z: roundp(prev.z + prev.module.length / 2 + module.length / 2),
       },
     ]
   } else {
@@ -31,7 +31,7 @@ export const createPositionedModules = (
       {
         module,
         moduleIndex: 0,
-        z: module.length / 2,
+        z: roundp(module.length / 2),
       },
     ]
   }
@@ -48,7 +48,7 @@ export const createInitialPositionedModules = (
     result[i] = {
       module: modules[i],
       moduleIndex: i,
-      z: dz + modules[i].length / 2,
+      z: roundp(dz + modules[i].length / 2),
     }
   }
 
@@ -74,9 +74,9 @@ export const createRow = (modules: Module[]): T.Task<Row> => {
     rowLength = 0
 
   for (let i = 0; i < modules.length; i++) {
+    gridUnits += modules[i].structuredDna.gridUnits
+    rowLength += modules[i].length
     positionedModules = createPositionedModules(modules[i], positionedModules)
-    ;(gridUnits += modules[i].structuredDna.gridUnits),
-      (rowLength += modules[i].length)
   }
 
   return pipe(
@@ -132,8 +132,10 @@ export const positionRows = A.reduceWithIndex(
     const y =
       levelLetter === "F"
         ? 0
-        : acc[levelIndex - 1].y +
-          acc[levelIndex - 1].positionedModules[0].module.height
+        : roundp(
+            acc[levelIndex - 1].y +
+              acc[levelIndex - 1].positionedModules[0].module.height
+          )
 
     return [...acc, { ...row, levelIndex, y }]
   }
@@ -241,7 +243,7 @@ export const positionColumns = A.reduceWithIndex(
           positionedRows,
           columnIndex,
           columnLength,
-          z: last.z + last.columnLength,
+          z: roundp(last.z + last.columnLength),
         },
       ]
     }

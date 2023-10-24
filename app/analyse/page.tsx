@@ -1,25 +1,9 @@
-"use client"
-import { useOrderListData } from "../build/order/useOrderListData"
-import { useAllModules } from "../db/systems"
-import css from "./page.module.css"
-import { useAnalyseData } from "./state/data"
-import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
-import ChassisCostChart from "./ui/ChassisCostChart"
-import FloorAreaChart from "./ui/FloorAreaChart"
-import { useSelectedHouses } from "./ui/HousesPillsSelector"
+import dynamic from "next/dynamic"
 
-const AnalyseIndex = () => {
-  const selectedHouses = useSelectedHouses()
-  const { orderListRows } = useOrderListData(selectedHouses)
-  const analyseData = useAnalyseData()
+const App = dynamic(() => import("./app"), { ssr: false })
 
-  return (
-    <div className={css.pageRoot}>
-      <ChassisCostChart orderListRows={orderListRows} />
-      <FloorAreaChart analyseData={analyseData} />
-      <CarbonEmissionsChart analyseData={analyseData} />
-    </div>
-  )
+const IndexPage = () => {
+  return <App />
 }
 
-export default AnalyseIndex
+export default IndexPage

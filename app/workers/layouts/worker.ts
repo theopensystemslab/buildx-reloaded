@@ -289,7 +289,10 @@ const getLayout = async ({
 
     const { startColumn } = splitColumns(layout)
 
-    postVanillaColumn(startColumn)
+    console.log(startColumn, `posting vanilla`)
+    await postVanillaColumn(startColumn)
+
+    console.log(`posted for`, layout)
 
     return layout
   }
@@ -888,7 +891,7 @@ const getAllAltsForWholeHouse = async ({
           structuredDna: { sectionType, positionType, gridType },
         } = thisModule
 
-        const candidates = pipe(
+        const candidates = await pipe(
           getWindowTypeAlternatives({ systemId, dna, side }),
           T.chain(
             A.traverse(T.ApplicativeSeq)((candidate) =>
@@ -930,7 +933,7 @@ const getAllAltsForWholeHouse = async ({
             // })
           ),
           T.map(positionColumns)
-        )
+        )()
       }
     }
   }
@@ -1017,86 +1020,93 @@ const getAltWindowTypeLayouts = async ({
     }))
   )()
 
-  validatePositionedColumn(augColumn)
+  // validatePositionedColumn(augColumn)
 
-  const candidates = pipe(
-    await getWindowTypeAlternatives({ systemId, dna, side }),
-    A.map((candidate) => {
-      const updatedColumn = pipe(
-        augColumn,
-        produce((draft: AugPosCol) => {
-          const origRow = draft.positionedRows[levelIndex]
-          const newRow = swapModuleInRow(origRow, gridGroupIndex, candidate)
+  const candidates: {
+    candidate: Module
+    layout: ColumnLayout
+    dnas: string[]
+    windowType: WindowType
+  }[] = []
 
-          const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
+  // const candidates = pipe(
+  //   await getWindowTypeAlternatives({ systemId, dna, side }),
+  //   A.map((candidate) => {
+  //     const updatedColumn = pipe(
+  //       augColumn,
+  //       produce((draft: AugPosCol) => {
+  //         const origRow = draft.positionedRows[levelIndex]
+  //         const newRow = swapModuleInRow(origRow, gridGroupIndex, candidate)
 
-          if (sign(gridUnitDelta) === 1) {
-            // pad all other rows with gridUnitDelta vanilla
-            for (let i = 0; i < draft.positionedRows.length; i++) {
-              if (i === levelIndex) continue
+  //         const gridUnitDelta = newRow.gridUnits - origRow.gridUnits
 
-              draft.positionedRows[i] = addModulesToRow(
-                draft.positionedRows[i],
-                A.replicate(
-                  gridUnitDelta,
-                  draft.positionedRows[i].vanillaModule
-                )
-              )
-              // validatePositionedRow(draft.positionedRows[i])
-            }
-            draft.positionedRows[levelIndex] = newRow
-            // validatePositionedRow(draft.positionedRows[levelIndex])
-          } else if (sign(gridUnitDelta) === -1) {
-            // pad this column with gridUnitDelta vanilla
-            draft.positionedRows[levelIndex] = addModulesToRow(
-              newRow,
-              A.replicate(gridUnitDelta, newRow.vanillaModule)
-            )
-          }
-          // validatePositionedRow(draft.positionedRows[levelIndex])
+  //         if (sign(gridUnitDelta) === 1) {
+  //           // pad all other rows with gridUnitDelta vanilla
+  //           for (let i = 0; i < draft.positionedRows.length; i++) {
+  //             if (i === levelIndex) continue
 
-          // validatePositionedColumn(draft)
-        })
-      )
+  //             draft.positionedRows[i] = addModulesToRow(
+  //               draft.positionedRows[i],
+  //               A.replicate(
+  //                 gridUnitDelta,
+  //                 draft.positionedRows[i].vanillaModule
+  //               )
+  //             )
+  //             // validatePositionedRow(draft.positionedRows[i])
+  //           }
+  //           draft.positionedRows[levelIndex] = newRow
+  //           // validatePositionedRow(draft.positionedRows[levelIndex])
+  //         } else if (sign(gridUnitDelta) === -1) {
+  //           // pad this column with gridUnitDelta vanilla
+  //           draft.positionedRows[levelIndex] = addModulesToRow(
+  //             newRow,
+  //             A.replicate(gridUnitDelta, newRow.vanillaModule)
+  //           )
+  //         }
+  //         // validatePositionedRow(draft.positionedRows[levelIndex])
 
-      validatePositionedColumn(updatedColumn)
+  //         // validatePositionedColumn(draft)
+  //       })
+  //     )
 
-      const lengthDelta =
-        updatedColumn.positionedRows[0].rowLength - updatedColumn.columnLength
+  //     validatePositionedColumn(updatedColumn)
 
-      const nextLayout = pipe(
-        currentLayout,
-        produce((draft: ColumnLayout) => {
-          draft[columnIndex] = {
-            ...updatedColumn,
-            columnLength: updatedColumn.positionedRows[0].rowLength,
-          }
+  //     const lengthDelta =
+  //       updatedColumn.positionedRows[0].rowLength - updatedColumn.columnLength
 
-          for (let i = columnIndex + 1; i < draft.length; i++) {
-            draft[i] = {
-              ...draft[i],
-              z: draft[i].z + lengthDelta,
-            }
-          }
-        })
-      )
+  //     const nextLayout = pipe(
+  //       currentLayout,
+  //       produce((draft: ColumnLayout) => {
+  //         draft[columnIndex] = {
+  //           ...updatedColumn,
+  //           columnLength: updatedColumn.positionedRows[0].rowLength,
+  //         }
 
-      postVanillaColumn(nextLayout[0])
-      const dnas = columnLayoutToDnas(nextLayout)
+  //         for (let i = columnIndex + 1; i < draft.length; i++) {
+  //           draft[i] = {
+  //             ...draft[i],
+  //             z: draft[i].z + lengthDelta,
+  //           }
+  //         }
+  //       })
+  //     )
 
-      layoutsDB.houseLayouts.put({ systemId, dnas, layout: nextLayout })
+  //     postVanillaColumn(nextLayout[0])
+  //     const dnas = columnLayoutToDnas(nextLayout)
 
-      return {
-        candidate,
-        layout: nextLayout,
-        dnas,
-        windowType: pipe(
-          getWindowType(windowTypes, candidate, side),
-          someOrError(`no window type`)
-        ),
-      }
-    })
-  )
+  //     layoutsDB.houseLayouts.put({ systemId, dnas, layout: nextLayout })
+
+  //     return {
+  //       candidate,
+  //       layout: nextLayout,
+  //       dnas,
+  //       windowType: pipe(
+  //         getWindowType(windowTypes, candidate, side),
+  //         someOrError(`no window type`)
+  //       ),
+  //     }
+  //   })
+  // )
 
   return candidates
 }

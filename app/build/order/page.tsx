@@ -1,40 +1,9 @@
-"use client"
-import { Download } from "@carbon/icons-react"
-import { useState } from "react"
-import OrderListTable from "./OrderListTable"
+import dynamic from "next/dynamic"
 
-const OrderIndexPage = () => {
-  const [csvDownloadUrl, setCsvDownloadUrl] = useState<string | null>(null)
+const App = dynamic(() => import("./app"), { ssr: false })
 
-  return (
-    <div>
-      <div className="flex justify-between px-3 py-5">
-        <div>
-          <h1>Order list</h1>
-          <p className="max-w-3xl mt-2">
-            A list of all the WikiHouse blocks you will need to build your
-            project. All prices are estimated. Send this list to a WikiHouse
-            manufacturer to get a precise quote.
-          </p>
-        </div>
-        <div>
-          {csvDownloadUrl !== null && (
-            <a
-              href={csvDownloadUrl}
-              download={`order-list.csv`}
-              className="flex font-semibold items-center"
-            >
-              <span>Download CSV</span>
-              <span className="ml-2">
-                <Download size={"20"} />
-              </span>
-            </a>
-          )}
-        </div>
-      </div>
-      <OrderListTable setCsvDownloadUrl={setCsvDownloadUrl} />
-    </div>
-  )
+const IndexPage = () => {
+  return <App />
 }
 
-export default OrderIndexPage
+export default IndexPage
