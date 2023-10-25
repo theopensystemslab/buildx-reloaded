@@ -114,9 +114,9 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        originalLevelTypeOption.value.layoutGroup
-      )
+      // houseTransformsGroup.userData.setActiveLayoutGroup(
+      //   originalLevelTypeOption.value.layoutGroup
+      // )
     }
 
     invalidate()
@@ -129,24 +129,24 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
 
     // close()
 
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
+    // pipe(
+    //   houseTransformsGroup.children,
+    //   A.filter(
+    //     (x) =>
+    //       isHouseLayoutGroup(x) &&
+    //       x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+    //   ),
+    //   A.map((x) => {
+    //     x.removeFromParent()
+    //   })
+    // )
 
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
+      // close()
     })
 
-    // close()
     // closing.current = false
   }
 

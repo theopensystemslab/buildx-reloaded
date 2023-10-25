@@ -43,25 +43,16 @@ export const getWindowTypeAlternatives = ({
 
           if (!check) return false
 
-          if (positionType === "END") {
-            if (x.structuredDna.windowTypeEnd !== windowTypeEnd) {
-              return false
-            }
-          }
+          if (positionType === "END")
+            return x.structuredDna.windowTypeEnd !== windowTypeEnd
 
-          if (levelType[0] === "R") {
-            if (x.structuredDna.windowTypeTop !== windowTypeTop) {
-              return false
-            }
-          }
+          if (levelType[0] === "R")
+            return x.structuredDna.windowTypeTop !== windowTypeTop
 
           const k: keyof typeof parsedStructuredDna =
             side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
-          if (x.structuredDna[k] !== parsedStructuredDna[k]) {
-            return false
-          }
 
-          return true
+          return x.structuredDna[k] !== parsedStructuredDna[k]
         })
       )
     )

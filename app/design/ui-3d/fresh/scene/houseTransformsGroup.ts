@@ -394,6 +394,7 @@ export const createHouseTransformsGroup = ({
           })().then((layoutGroup) => {
             layoutGroup.userData.windowType = windowType
             setInvisibleNoRaycast(layoutGroup)
+            console.log(windowType, `added ${layoutGroup.uuid}`)
             houseTransformsGroup.add(layoutGroup)
           })
         }

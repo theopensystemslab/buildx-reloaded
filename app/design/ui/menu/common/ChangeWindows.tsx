@@ -100,11 +100,13 @@ const ChangeWindowsOptions = (props: Props) => {
     }
   })()
 
+  console.log({ windowTypeOptions })
+
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
     if (incoming === null) {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        originalWindowTypeOption.value.layoutGroup
-      )
+      // houseTransformsGroup.userData.setActiveLayoutGroup(
+      //   originalWindowTypeOption.value.layoutGroup
+      // )
     } else {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     }
@@ -113,17 +115,17 @@ const ChangeWindowsOptions = (props: Props) => {
   }
 
   const changeWindowType = () => {
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
+    // pipe(
+    //   houseTransformsGroup.children,
+    //   A.filter(
+    //     (x) =>
+    //       isHouseLayoutGroup(x) &&
+    //       x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+    //   ),
+    //   A.map((x) => {
+    //     x.removeFromParent()
+    //   })
+    // )
 
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
