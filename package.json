@@ -28,7 +28,7 @@
     "camera-controls": "^1.37.2",
     "clsx": "^1.2.1",
     "comlink": "^4.4.1",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "d3-dsv": "^3.0.1",
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.6",
