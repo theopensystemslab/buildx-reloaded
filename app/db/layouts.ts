@@ -151,13 +151,17 @@ export const createRowLayout = (rows: Module[][]): T.Task<PositionedRow[]> => {
 
 export type Column = {
   positionedRows: Array<PositionedRow>
+  columnLength: number
 }
 
 export const createColumn = (rows: Module[][]): T.Task<Column> =>
   pipe(
     rows,
     createRowLayout,
-    T.map((positionedRows) => ({ positionedRows }))
+    T.map((positionedRows) => ({
+      positionedRows,
+      columnLength: positionedRows[0].rowLength,
+    }))
   )
 
 export const modifyColumnAt = (
@@ -204,14 +208,16 @@ export const modifyColumnAt = (
           return T.of(rows)
       }
     }),
-    T.map((rows) => ({ positionedRows: positionRows(rows) }))
+    T.map((rows) => {
+      const positionedRows = positionRows(rows)
+      return { positionedRows, columnLength: positionedRows[0].rowLength }
+    })
   )
 }
 
 export type PositionedColumn = Column & {
   z: number
   columnIndex: number
-  columnLength: number
 }
 
 export type RowLayout = Array<PositionedRow>
@@ -331,13 +337,11 @@ export type IndexedVanillaModule = {
   moduleDna: string
 }
 
-export type VanillaColumn = Omit<PositionedColumn, "z" | "columnIndex">
-
 export type IndexedVanillaColumn = {
   systemId: string
   sectionType: string
   levelTypes: string[]
-  vanillaColumn: VanillaColumn
+  vanillaColumn: Column
 }
 
 export type VanillaColumnsKey = {

@@ -152,27 +152,40 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
           },
         ],
       }) => {
-        // const getVanillaModule = createVanillaModuleGetter(modules)({
-        //   constrainGridType: false,
-        //   sectionType,
-        //   levelType,
-        //   positionType: "MID",
-        // })
         const {
           systemId,
           structuredDna: { gridType, positionType },
         } = module
 
         return pipe(
-          getVanillaModule({
-            systemId,
-            sectionType,
-            positionType,
-            levelType,
-            gridType,
-          }),
-          T.chain((vanillaModule) => createRow([vanillaModule]))
+          () => getModules(),
+          T.chain((modules) => {
+            const getVanillaModule = createVanillaModuleGetter(modules)({
+              constrainGridType: false,
+              sectionType,
+              levelType,
+              positionType: "MID",
+            })
+
+            return pipe(
+              getVanillaModule(module),
+              O.map((vanillaModule) => createRow([vanillaModule])),
+              someOrError(`no vanilla module for ${module.dna}`)
+              // T.map((vanillaModule) => createRow([vanillaModule]))
+            )
+          })
         )
+
+        // return pipe(
+        //   getVanillaModule({
+        //     systemId,
+        //     sectionType,
+        //     positionType,
+        //     levelType,
+        //     gridType,
+        //   }),
+        //   T.chain((vanillaModule) => createRow([vanillaModule]))
+        // )
       }
     ),
     T.map(positionRows),

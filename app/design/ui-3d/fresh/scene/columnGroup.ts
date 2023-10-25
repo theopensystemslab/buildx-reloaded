@@ -2,10 +2,10 @@ import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { Group } from "three"
 import layoutsDB, {
+  Column,
   ColumnLayout,
   getVanillaColumnsKey,
   PositionedRow,
-  VanillaColumn,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
 import { A, O, R, T } from "../../../../utils/functions"
@@ -21,7 +21,7 @@ import {
 } from "./userData"
 
 // serialized layout key : column
-export let vanillaColumns: Record<string, VanillaColumn> = {}
+export let vanillaColumns: Record<string, Column> = {}
 
 liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
   (dbVanillaColumns) => {
@@ -39,7 +39,7 @@ export const getVanillaColumn = ({
   systemId,
   sectionType,
   levelTypes,
-}: VanillaColumnsKey): T.Task<VanillaColumn> => {
+}: VanillaColumnsKey): T.Task<Column> => {
   const key = getVanillaColumnsKey({ systemId, sectionType, levelTypes })
 
   return pipe(

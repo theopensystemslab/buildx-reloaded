@@ -10,7 +10,7 @@ import {
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
-import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
+import { ColumnLayout, Column } from "../../../../db/layouts"
 import { O } from "../../../../utils/functions"
 import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
@@ -121,7 +121,7 @@ export type HouseLayoutGroupUserData = {
   use: HouseLayoutGroupUse
   dnas: string[]
   houseLayout: ColumnLayout
-  vanillaColumn: VanillaColumn
+  vanillaColumn: Column
   levelTypes: string[]
   obb: OBB
   aabb: Box3
