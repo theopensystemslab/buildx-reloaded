@@ -56,9 +56,9 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
     columnLayout,
     A.head,
-    O.map(({ positionedRows: gridGroups }) =>
+    O.map(({ positionedRows }) =>
       pipe(
-        gridGroups,
+        positionedRows,
         A.map(({ levelType }) => levelType)
       )
     ),

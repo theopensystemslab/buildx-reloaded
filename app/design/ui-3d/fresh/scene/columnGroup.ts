@@ -161,14 +161,14 @@ export const createColumnGroups = ({
   pipe(
     houseLayout,
     A.traverseWithIndex(T.ApplicativeSeq)(
-      (i, { positionedRows: gridGroups, z, columnIndex }) => {
+      (i, { positionedRows, z, columnIndex }) => {
         const startColumn = i === 0
         const endColumn = i === houseLayout.length - 1
 
         const task = createColumnGroup({
           systemId,
           houseId,
-          positionedRows: gridGroups,
+          positionedRows,
           startColumn,
           endColumn,
           columnIndex,

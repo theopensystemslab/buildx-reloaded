@@ -304,12 +304,12 @@ export const columnLayoutToDnas = (
 ) =>
   pipe(
     columnLayout,
-    A.map(({ positionedRows: gridGroups }) =>
+    A.map(({ positionedRows }) =>
       pipe(
-        gridGroups,
-        A.map(({ positionedModules: modules }) =>
+        positionedRows,
+        A.map(({ positionedModules }) =>
           pipe(
-            modules,
+            positionedModules,
             A.map(({ module }) => module.dna)
           )
         )
@@ -658,12 +658,11 @@ const getChangeLayoutTypeLayout = async ({
                           O.map((positionedModules) => [
                             ...positionedModules,
                             ...nextModules.map(
-                              (module, i) =>
-                                ({
-                                  module,
-                                  z: positionedModule.z,
-                                  moduleIndex: i,
-                                } as PositionedModule)
+                              (module, i): PositionedModule => ({
+                                module,
+                                z: positionedModule.z,
+                                moduleIndex: i,
+                              })
                             ),
                           ])
                         )
@@ -684,9 +683,9 @@ const getChangeLayoutTypeLayout = async ({
             )
           )
         }),
-        TO.map((gridGroups) => ({
+        TO.map((positionedRows) => ({
           ...positionedColumn,
-          gridGroups,
+          positionedRows,
         }))
       )
     )
@@ -750,6 +749,7 @@ const getAltLevelTypeLayouts = async ({
             levelIndex,
           }).then(
             O.map((layout) => {
+              console.log({ levelType, layout })
               postVanillaColumn(layout[0])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })

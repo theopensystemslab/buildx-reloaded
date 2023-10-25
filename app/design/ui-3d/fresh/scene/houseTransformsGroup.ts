@@ -755,12 +755,12 @@ export const createHouseTransformsGroup = ({
                 getLayoutGroupColumnGroups,
                 A.head,
                 O.chain((columnGroup) => {
-                  const gridGroups = columnGroup.children
+                  const positionedRows = columnGroup.children
                   return pipe(
-                    gridGroups,
-                    A.findFirst((gridGroup) => {
+                    positionedRows,
+                    A.findFirst((positionedRow) => {
                       const gridGroupUserData =
-                        gridGroup.userData as GridGroupUserData
+                        positionedRow.userData as GridGroupUserData
 
                       return gridGroupUserData.levelIndex === levelIndex
                     }),
