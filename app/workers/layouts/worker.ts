@@ -22,7 +22,6 @@ import layoutsDB, {
   modifyColumnAt,
   modifyLayoutAt,
   positionColumns,
-  roundp,
 } from "../../db/layouts"
 import systemsDB from "../../db/systems"
 import { Side } from "../../design/state/camera"
@@ -35,14 +34,10 @@ import {
   someOrError,
   unwrapSome,
 } from "../../utils/functions"
-import { abs, round, sign } from "../../utils/math"
+import { round, sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
 import { getModules, getWindowTypeAlternatives } from "./modules"
-import {
-  getIndexedVanillaModule,
-  getVanillaModule,
-  postVanillaColumn,
-} from "./vanilla"
+import { getIndexedVanillaModule, postVanillaColumn } from "./vanilla"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
   pipe(
@@ -444,12 +439,11 @@ const changeLayoutSectionType = async ({
                           O.map((positionedModules) => [
                             ...positionedModules,
                             ...nextModules.map(
-                              (module, i) =>
-                                ({
-                                  module,
-                                  z: positionedModule.z,
-                                  moduleIndex: i,
-                                } as PositionedModule)
+                              (module, i): PositionedModule => ({
+                                module,
+                                z: positionedModule.z,
+                                moduleIndex: i,
+                              })
                             ),
                           ])
                         )
@@ -489,13 +483,7 @@ const getAltSectionTypeLayouts = async ({
   dnas: string[]
   currentSectionType: string
 }) => {
-  const currentIndexedLayout = await layoutsDB.houseLayouts.get({
-    systemId,
-    dnas,
-  })
-
-  if (!currentIndexedLayout)
-    throw new Error(`no currentLayout for ${systemId} ${dnas}`)
+  const layout = await getLayout({ systemId, dnas })
 
   const sectionTypes = await systemsDB.sectionTypes.toArray()
 
@@ -516,11 +504,11 @@ const getAltSectionTypeLayouts = async ({
         () =>
           changeLayoutSectionType({
             systemId,
-            layout: currentIndexedLayout.layout,
+            layout,
             sectionType,
           }).then(
             O.map((layout) => {
-              postVanillaColumn(layout[0])
+              postVanillaColumn(layout[1])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
               return {
@@ -762,7 +750,7 @@ const getAltLevelTypeLayouts = async ({
             levelIndex,
           }).then(
             O.map((layout) => {
-              postVanillaColumn(layout[0])
+              postVanillaColumn(layout[1])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
               return {
@@ -930,8 +918,6 @@ const getAllAltsForWholeHouse = async ({
             // })
           )
         )()
-
-        console.log(foo)
       }
     }
   }
@@ -978,8 +964,6 @@ const getAltWindowTypeLayouts = async ({
     someOrError(`no column`)
   )
 
-  console.log({ thisColumn, columnIndex, levelIndex, moduleIndex })
-
   const thisModule = pipe(
     thisColumn.positionedRows,
     A.lookup(levelIndex),
@@ -987,12 +971,7 @@ const getAltWindowTypeLayouts = async ({
     someOrError(`no module`)
   )
 
-  console.log({ thisModule })
-
-  const {
-    dna,
-    structuredDna: { sectionType, positionType, gridType },
-  } = thisModule.module
+  const { dna } = thisModule.module
 
   return await pipe(
     getWindowTypeAlternatives({ systemId, dna, side }),
@@ -1014,16 +993,6 @@ const getAltWindowTypeLayouts = async ({
             )
 
             layoutsDB.houseLayouts.put({ systemId, dnas, layout })
-
-            console.log({ layout, currentLayout })
-
-            console.log([
-              layout[columnIndex].positionedRows[levelIndex].positionedModules[
-                moduleIndex
-              ].module.dna,
-              currentLayout[columnIndex].positionedRows[levelIndex]
-                .positionedModules[moduleIndex].module.dna,
-            ])
 
             return {
               candidate,

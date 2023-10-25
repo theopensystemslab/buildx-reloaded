@@ -278,6 +278,8 @@ export const createHouseTransformsGroup = ({
           currentSectionType,
         })
 
+      console.log({ altSectionTypeLayouts })
+
       for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
         if (sectionType.code === currentSectionType) continue
 
@@ -364,7 +366,6 @@ export const createHouseTransformsGroup = ({
 
         // out with the old
         oldLayouts.forEach((x) => {
-          console.log(`removed ${x.uuid}`)
           x.removeFromParent()
         })
 
@@ -382,8 +383,6 @@ export const createHouseTransformsGroup = ({
             side,
           })
 
-        console.log(altWindowTypeLayouts)
-
         for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
           createHouseLayoutGroup({
             systemId: houseTransformsGroup.userData.systemId,
@@ -396,7 +395,6 @@ export const createHouseTransformsGroup = ({
             layoutGroup.userData.windowType = windowType
             setInvisibleNoRaycast(layoutGroup)
             houseTransformsGroup.add(layoutGroup)
-            console.log(`added ${layoutGroup.uuid}`)
           })
         }
       },

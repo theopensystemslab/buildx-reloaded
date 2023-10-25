@@ -160,7 +160,7 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
         // })
         const {
           systemId,
-          structuredDna: { positionType, gridType },
+          structuredDna: { gridType, positionType },
         } = module
 
         return pipe(
