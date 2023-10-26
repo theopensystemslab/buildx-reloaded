@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { WindowType } from "../../../../../server/data/windowTypes"
 import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
 import Radio from "../../../../ui/Radio"
@@ -116,39 +116,43 @@ const ChangeWindows = (props: Props) => {
     [allModules, houseTransformsGroup, scopeElement.dna, systemId, windowTypes]
   )
 
-  console.log({ originalWindowTypeOption, windowTypeOptions })
+  const locked = useRef(false)
 
-  console.log({ windowTypeOptions })
+  useEffect(() => {
+    locked.current = false
+  }, [])
 
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    if (incoming === null && originalWindowTypeOption !== null) {
-      // houseTransformsGroup.userData.setActiveLayoutGroup(
-      //   originalWindowTypeOption.value.layoutGroup
-      // )
+    if (locked.current) return
+
+    if (incoming) {
+      houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
+      houseTransformsGroup.userData.updateHandles()
     } else {
-      if (incoming?.layoutGroup) {
-        houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
-        houseTransformsGroup.userData.updateHandles()
-      }
+      if (originalWindowTypeOption)
+        houseTransformsGroup.userData.setActiveLayoutGroup(
+          originalWindowTypeOption.value.layoutGroup
+        )
     }
 
     invalidate()
   }
 
   const changeWindowType = () => {
-    // pipe(
-    //   houseTransformsGroup.children,
-    //   A.filter(
-    //     (x) =>
-    //       isHouseLayoutGroup(x) &&
-    //       x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
-    //   ),
-    //   A.map((x) => {
-    //     x.removeFromParent()
-    //   })
-    // )
+    locked.current = true
 
     houseTransformsGroup.userData.updateDB().then(() => {
+      pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+        ),
+        A.map((x) => {
+          x.removeFromParent()
+        })
+      )
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })

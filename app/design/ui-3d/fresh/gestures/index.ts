@@ -210,6 +210,9 @@ const useGestures = () => {
                 next: SiteCtxModeEnum.Enum.BUILDING,
                 houseId,
               })
+              dispatchOutline({
+                selectedObjects: [],
+              })
               break
             case SiteCtxModeEnum.Enum.BUILDING:
               if (houseId !== siteCtx.houseId) return

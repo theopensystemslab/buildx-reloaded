@@ -749,7 +749,6 @@ const getAltLevelTypeLayouts = async ({
             levelIndex,
           }).then(
             O.map((layout) => {
-              console.log({ levelType, layout })
               postVanillaColumn(layout[0])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })

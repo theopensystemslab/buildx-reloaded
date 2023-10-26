@@ -134,7 +134,6 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
     // close()
 
     houseTransformsGroup.userData.updateDB().then(() => {
-      // houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
       pipe(
         houseTransformsGroup.children,
         A.filter(
@@ -147,6 +146,7 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
         })
       )
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
 
     close()

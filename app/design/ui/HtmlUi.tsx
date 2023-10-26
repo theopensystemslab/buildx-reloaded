@@ -75,7 +75,6 @@ const HtmlUi = (props: Props) => {
   const menu = useMenu()
 
   const ContextMenu = useMemo((): (() => JSX.Element | null) => {
-    console.log({ menu, selected, mode })
     if (!menu.open || selected === null) return () => null
 
     const scopeElement = selected

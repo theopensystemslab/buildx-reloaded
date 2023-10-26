@@ -285,8 +285,6 @@ export const createHouseTransformsGroup = ({
           currentSectionType,
         })
 
-      console.log({ altSectionTypeLayouts })
-
       for (let { sectionType, layout, dnas } of altSectionTypeLayouts) {
         if (sectionType.code === currentSectionType) continue
 
@@ -335,6 +333,12 @@ export const createHouseTransformsGroup = ({
           levelIndex,
           currentLevelTypeCode,
         })
+
+      htgProxy.foo = {
+        levelIndex,
+        dna,
+        altLevels: altLevelTypeLayouts.map((x) => x.levelType.code),
+      }
 
       for (let { levelType, layout, dnas } of altLevelTypeLayouts) {
         if (levelType.code === currentLevelTypeCode) continue
@@ -402,7 +406,6 @@ export const createHouseTransformsGroup = ({
           })().then((layoutGroup) => {
             layoutGroup.userData.windowType = windowType
             setInvisibleNoRaycast(layoutGroup)
-            console.log(windowType, `added ${layoutGroup.uuid}`)
             houseTransformsGroup.add(layoutGroup)
           })
         }
