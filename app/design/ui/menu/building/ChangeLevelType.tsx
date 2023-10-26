@@ -1,6 +1,6 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense, useRef } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
@@ -106,10 +106,14 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
     }
   })()
 
-  const closing = useRef(false)
+  const locked = useRef(false)
+
+  useEffect(() => {
+    locked.current = false
+  }, [])
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    if (closing.current) return
+    if (locked.current) return
 
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
@@ -123,28 +127,28 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
   }
 
   const changeLevelType = ({ layoutGroup }: LevelTypeOption["value"]) => {
-    // closing.current = true
+    locked.current = true
 
-    // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+    houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
     // close()
 
-    // pipe(
-    //   houseTransformsGroup.children,
-    //   A.filter(
-    //     (x) =>
-    //       isHouseLayoutGroup(x) &&
-    //       x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
-    //   ),
-    //   A.map((x) => {
-    //     x.removeFromParent()
-    //   })
-    // )
-
     houseTransformsGroup.userData.updateDB().then(() => {
+      // houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
+      pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+        ),
+        A.map((x) => {
+          x.removeFromParent()
+        })
+      )
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
+
     close()
     // closing.current = false
   }

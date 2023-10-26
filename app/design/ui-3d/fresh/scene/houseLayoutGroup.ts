@@ -34,6 +34,7 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
   isModuleGroup,
+  isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -373,6 +374,14 @@ export const createHouseLayoutGroup = ({
             renderAABB()
           }
 
+          const updateZStretchHandles = () => {
+            houseLayoutGroup.traverse((node) => {
+              if (isZStretchHandleGroup(node)) {
+                node.userData.update()
+              }
+            })
+          }
+
           const userData: HouseLayoutGroupUserData = {
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
@@ -393,6 +402,7 @@ export const createHouseLayoutGroup = ({
             updateDnas,
             updateBBs,
             renderBBs,
+            updateZStretchHandles,
           }
 
           houseLayoutGroup.userData = userData

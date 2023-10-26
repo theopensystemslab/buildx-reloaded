@@ -136,6 +136,7 @@ export type HouseLayoutGroupUserData = {
   updateDnas: () => void
   updateBBs: () => void
   renderBBs: () => void
+  updateZStretchHandles: () => void
 }
 
 export type ColumnGroupUserData = {

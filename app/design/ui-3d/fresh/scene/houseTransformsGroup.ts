@@ -349,6 +349,7 @@ export const createHouseTransformsGroup = ({
         })().then((layoutGroup) => {
           setInvisibleNoRaycast(layoutGroup)
           houseTransformsGroup.add(layoutGroup)
+          layoutGroup.userData.updateZStretchHandles()
         })
       }
     },
