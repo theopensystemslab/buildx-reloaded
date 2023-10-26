@@ -1,11 +1,11 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense } from "react"
+import { useMemo } from "react"
 import { WindowType } from "../../../../../server/data/windowTypes"
 import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
 import Radio from "../../../../ui/Radio"
 import { Opening } from "../../../../ui/icons"
-import { A, someOrError } from "../../../../utils/functions"
+import { A, O, debounce } from "../../../../utils/functions"
 import { getWindowType } from "../../../../workers/layouts/worker"
 import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
@@ -30,85 +30,106 @@ type Props = {
   close: () => void
 }
 
-const ChangeWindowsOptions = (props: Props) => {
-  const {
-    houseTransformsGroup,
-    scopeElement: { dna },
-    close,
-  } = props
+const ChangeWindows = (props: Props) => {
+  const { houseTransformsGroup, scopeElement, close } = props
 
   const { systemId } = getActiveHouseUserData(houseTransformsGroup)
 
   const windowTypes = useAllWindowTypes()
   const allModules = useAllModules()
 
-  if (windowTypes.length === 0 || allModules.length === 0) return null
+  const { windowTypeOptions, originalWindowTypeOption } = useMemo(
+    () =>
+      pipe(
+        allModules,
+        A.findFirst(
+          (x) => x.systemId === systemId && x.dna === scopeElement.dna
+        ),
+        O.chain((thisModule) =>
+          pipe(
+            getWindowType(
+              windowTypes,
+              thisModule,
+              getSide(houseTransformsGroup)
+            ),
+            O.map((originalWindowType) => {
+              const originalWindowTypeOption: WindowTypeOption | null = {
+                value: {
+                  layoutGroup:
+                    houseTransformsGroup.userData.unsafeGetActiveLayoutGroup(),
+                  windowType: originalWindowType,
+                },
+                label: originalWindowType.description,
+              }
 
-  const thisModule = pipe(
-    allModules,
-    A.findFirst((x) => x.systemId === systemId && x.dna === dna),
-    someOrError(`no module`)
+              const otherOptions: WindowTypeOption[] = pipe(
+                houseTransformsGroup.children,
+                A.filter(
+                  (x): x is HouseLayoutGroup =>
+                    isHouseLayoutGroup(x) &&
+                    x.userData.use ===
+                      HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE &&
+                    x.userData.windowType
+                ),
+                A.map((layoutGroup): WindowTypeOption => {
+                  // TODO: DEBT
+                  const windowType: WindowType = layoutGroup.userData.windowType
+
+                  return {
+                    value: {
+                      layoutGroup,
+                      windowType,
+                    },
+                    label: windowType.description,
+                  }
+                })
+              )
+
+              return {
+                originalWindowTypeOption,
+                windowTypeOptions: pipe(
+                  otherOptions,
+                  A.concat(
+                    pipe(
+                      originalWindowTypeOption,
+                      O.fromNullable,
+                      O.match(
+                        () => [],
+                        (x) => [x]
+                      )
+                    )
+                  ),
+                  A.uniq({
+                    equals: (x, y) =>
+                      x.value.windowType.code === y.value.windowType.code,
+                  })
+                ),
+              }
+            })
+          )
+        ),
+        O.getOrElse(() => ({
+          originalWindowTypeOption: null as WindowTypeOption | null,
+          windowTypeOptions: [] as WindowTypeOption[],
+        }))
+      ),
+    [allModules, houseTransformsGroup, scopeElement.dna, systemId, windowTypes]
   )
 
-  const { windowTypeOptions, originalWindowTypeOption } = (() => {
-    const side = getSide(houseTransformsGroup)
-
-    const originalWindowType = pipe(
-      getWindowType(windowTypes, thisModule, side),
-      someOrError(`no original window type`)
-    )
-
-    const originalWindowTypeOption: WindowTypeOption = {
-      value: {
-        layoutGroup: houseTransformsGroup.userData.unsafeGetActiveLayoutGroup(),
-        windowType: originalWindowType,
-      },
-      label: originalWindowType.description,
-    }
-
-    const otherOptions: WindowTypeOption[] = pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x): x is HouseLayoutGroup =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE &&
-          x.userData.windowType
-      ),
-      A.map((layoutGroup): WindowTypeOption => {
-        // TODO: DEBT
-        const windowType: WindowType = layoutGroup.userData.windowType
-
-        return {
-          value: {
-            layoutGroup,
-            windowType,
-          },
-          label: windowType.description,
-        }
-      })
-    )
-
-    return {
-      originalWindowTypeOption,
-      windowTypeOptions: pipe(
-        otherOptions,
-        A.append(originalWindowTypeOption),
-        A.uniq({
-          equals: (x, y) => x.value.windowType.code === y.value.windowType.code,
-        })
-      ),
-    }
-  })()
+  console.log({ originalWindowTypeOption, windowTypeOptions })
 
   console.log({ windowTypeOptions })
 
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    if (incoming === null) {
+    if (incoming === null && originalWindowTypeOption !== null) {
       // houseTransformsGroup.userData.setActiveLayoutGroup(
       //   originalWindowTypeOption.value.layoutGroup
       // )
     } else {
-      houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
+      if (incoming?.layoutGroup) {
+        houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
+        houseTransformsGroup.userData.updateHandles()
+      }
     }
 
     invalidate()
@@ -131,33 +152,24 @@ const ChangeWindowsOptions = (props: Props) => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
-
-    // close()
+    close()
   }
 
-  return (
-    <Radio
-      options={windowTypeOptions}
-      selected={originalWindowTypeOption.value}
-      onChange={changeWindowType}
-      onHoverChange={previewWindowType}
-    />
-  )
-}
-
-const ChangeWindows = (props: Props) => {
-  return (
+  return originalWindowTypeOption !== null && windowTypeOptions.length > 1 ? (
     <ContextMenuNested
       long
       label={`Change windows`}
       icon={<Opening />}
       unpaddedSvg
     >
-      <Suspense fallback={null}>
-        <ChangeWindowsOptions {...props} />
-      </Suspense>
+      <Radio
+        options={windowTypeOptions}
+        selected={originalWindowTypeOption.value}
+        onChange={changeWindowType}
+        onHoverChange={previewWindowType}
+      />
     </ContextMenuNested>
-  )
+  ) : null
 }
 
 export default ChangeWindows

@@ -60,6 +60,13 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
+import { proxy, useSnapshot } from "valtio"
+
+export const htgProxy = proxy<{ foo: any }>({ foo: null })
+
+export const useHtgFoo = () => useSnapshot(htgProxy).foo
+
+const DEBOUNCE_TIME = 200
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -296,7 +303,7 @@ export const createHouseTransformsGroup = ({
         })
       }
     },
-    500,
+    DEBOUNCE_TIME,
     true
   )
 
@@ -345,7 +352,7 @@ export const createHouseTransformsGroup = ({
         })
       }
     },
-    500,
+    DEBOUNCE_TIME,
     true
   )
 
@@ -384,7 +391,7 @@ export const createHouseTransformsGroup = ({
           })
 
         for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
-          createHouseLayoutGroup({
+          await createHouseLayoutGroup({
             systemId: houseTransformsGroup.userData.systemId,
             dnas,
             houseId,
@@ -399,7 +406,7 @@ export const createHouseTransformsGroup = ({
           })
         }
       },
-      500,
+      DEBOUNCE_TIME,
       true
     )
 

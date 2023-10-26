@@ -1,15 +1,11 @@
 import { invalidate, useThree } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
-import { useKey } from "react-use"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
-import { floor, random } from "../../../utils/math"
-import { getLayoutsWorker } from "../../../workers"
 import { useExportersWorker } from "../../../workers/exporters/hook"
-import { getSide } from "../../state/camera"
 import elementCategories from "../../state/elementCategories"
 import menu from "../../state/menu"
 import scope, { ScopeElement } from "../../state/scope"
@@ -21,10 +17,8 @@ import useGestures from "./gestures"
 import { objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
 import {
-  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isElementMesh,
-  isHouseLayoutGroup,
   isHouseTransformsGroup,
   isWindowTypeAltLayoutGroup,
 } from "./scene/userData"
@@ -170,69 +164,69 @@ const FreshApp = () => {
     moduleIndex: 0,
   } as ScopeElement)
 
-  useKey("k", () => {
-    const maybeHtg = pipe(
-      rootRef.current?.children ?? [],
-      A.findFirst(isHouseTransformsGroup)
-    )
+  // useKey("k", () => {
+  //   const maybeHtg = pipe(
+  //     rootRef.current?.children ?? [],
+  //     A.findFirst(isHouseTransformsGroup)
+  //   )
 
-    pipe(
-      maybeHtg,
-      O.map(async (htg) => {
-        const { activeLayoutDnas: dnas, systemId } = htg.userData
-        await getLayoutsWorker().getAllAltsForWholeHouse({
-          systemId,
-          dnas,
-          side: getSide(htg),
-        })
-      })
-    )
-  })
+  //   pipe(
+  //     maybeHtg,
+  //     O.map(async (htg) => {
+  //       const { activeLayoutDnas: dnas, systemId } = htg.userData
+  //       await getLayoutsWorker().getAllAltsForWholeHouse({
+  //         systemId,
+  //         dnas,
+  //         side: getSide(htg),
+  //       })
+  //     })
+  //   )
+  // })
 
-  useKey("d", () => {
-    const maybeHtg = pipe(
-      rootRef.current?.children ?? [],
-      A.findFirst(isHouseTransformsGroup)
-    )
-    pipe(
-      maybeHtg,
-      O.map(async (htg) => {
-        await htg.userData.refreshAltWindowTypeLayouts(foo.current)
-        foo.current.columnIndex++
-      })
-    )
-  })
+  // useKey("d", () => {
+  //   const maybeHtg = pipe(
+  //     rootRef.current?.children ?? [],
+  //     A.findFirst(isHouseTransformsGroup)
+  //   )
+  //   pipe(
+  //     maybeHtg,
+  //     O.map(async (htg) => {
+  //       await htg.userData.refreshAltWindowTypeLayouts(foo.current)
+  //       foo.current.columnIndex++
+  //     })
+  //   )
+  // })
 
-  useKey("c", () => {
-    const maybeHouse = pipe(
-      rootRef.current?.children ?? [],
-      A.findFirst(isHouseTransformsGroup)
-    )
+  // useKey("c", () => {
+  //   const maybeHouse = pipe(
+  //     rootRef.current?.children ?? [],
+  //     A.findFirst(isHouseTransformsGroup)
+  //   )
 
-    pipe(
-      maybeHouse,
-      O.map((house) => {
-        const maybeNextLayout = pipe(
-          house.children,
-          A.filter(isHouseLayoutGroup),
-          A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
-          A.head
-          // (groups) => {
-          //   const i = floor(random() * groups.length)
-          //   return pipe(groups, A.lookup(i))
-          // }
-        )
+  //   pipe(
+  //     maybeHouse,
+  //     O.map((house) => {
+  //       const maybeNextLayout = pipe(
+  //         house.children,
+  //         A.filter(isHouseLayoutGroup),
+  //         A.filter((x) => x.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE),
+  //         A.head
+  //         // (groups) => {
+  //         //   const i = floor(random() * groups.length)
+  //         //   return pipe(groups, A.lookup(i))
+  //         // }
+  //       )
 
-        pipe(
-          maybeNextLayout,
-          O.map((nextLayout) => {
-            house.userData.setActiveLayoutGroup(nextLayout)
-            invalidate()
-          })
-        )
-      })
-    )
-  })
+  //       pipe(
+  //         maybeNextLayout,
+  //         O.map((nextLayout) => {
+  //           house.userData.setActiveLayoutGroup(nextLayout)
+  //           invalidate()
+  //         })
+  //       )
+  //     })
+  //   )
+  // })
 
   return (
     <Fragment>

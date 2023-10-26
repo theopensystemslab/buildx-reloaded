@@ -4,7 +4,7 @@ import { Suspense, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import { A, someOrError } from "~/utils/functions"
+import { A, debounce, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
 import systemsDB, { useAllLevelTypes } from "../../../../db/systems"
@@ -106,17 +106,17 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
     }
   })()
 
-  // const closing = useRef(false)
+  const closing = useRef(false)
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    // if (closing.current) return
+    if (closing.current) return
 
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      // houseTransformsGroup.userData.setActiveLayoutGroup(
-      //   originalLevelTypeOption.value.layoutGroup
-      // )
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalLevelTypeOption.value.layoutGroup
+      )
     }
 
     invalidate()
@@ -144,9 +144,8 @@ const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
-      // close()
     })
-
+    close()
     // closing.current = false
   }
 

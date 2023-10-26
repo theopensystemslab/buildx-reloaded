@@ -36,6 +36,8 @@ import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
 import Breadcrumbs from "./Breadcrumbs"
 import { useEvent } from "react-use"
+import { useSnapshot } from "valtio"
+import { useHtgFoo } from "../ui-3d/fresh/scene/houseTransformsGroup"
 
 type Props = {
   controlsEnabled: boolean
@@ -73,6 +75,7 @@ const HtmlUi = (props: Props) => {
   const menu = useMenu()
 
   const ContextMenu = useMemo((): (() => JSX.Element | null) => {
+    console.log({ menu, selected, mode })
     if (!menu.open || selected === null) return () => null
 
     const scopeElement = selected
@@ -91,11 +94,7 @@ const HtmlUi = (props: Props) => {
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 
-  const [foo, setFoo] = useState<object>({})
-
-  useEvent("FOO", ({ detail: { foo } }: CustomEvent<{ foo: object }>) => {
-    setFoo(foo)
-  })
+  const foo = useHtgFoo()
 
   return (
     <Fragment>
