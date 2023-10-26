@@ -66,7 +66,7 @@ export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
 export const useHtgFoo = () => useSnapshot(htgProxy).foo
 
-const DEBOUNCE_TIME = 200
+const DEBOUNCE_TIME = 50
 
 export const BIG_CLIP_NUMBER = 999
 
