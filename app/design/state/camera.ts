@@ -41,7 +41,7 @@ export const getSide = (houseTransformsGroup: HouseTransformsGroup) => {
 
   console.log(v.y)
 
-  return v.y < 0 ? "LEFT" : "RIGHT"
+  return v.y < 0 ? "RIGHT" : "LEFT"
 }
 
 // export const useCameraFocus = () => {
