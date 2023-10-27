@@ -41,7 +41,7 @@ export const materialParser = z
         )
         .default([]),
       material_cost_per_unit: z.number().default(0),
-      embodied_carbon_cost_per_unit: z.number().default(0),
+      embodied_carbon_per_unit: z.number().default(0),
       link_url: z.string().optional(),
       unit: z.string().nullable().default(null),
       last_modified: z
@@ -70,7 +70,7 @@ export const materialParser = z
         material_image,
         default_colour,
         material_cost_per_unit,
-        embodied_carbon_cost_per_unit,
+        embodied_carbon_per_unit,
         link_url,
         unit,
         last_modified,
@@ -83,7 +83,7 @@ export const materialParser = z
       imageUrl: material_image?.[0]?.url,
       defaultColor: default_colour,
       costPerUnit: material_cost_per_unit,
-      embodiedCarbonPerUnit: embodied_carbon_cost_per_unit,
+      embodiedCarbonPerUnit: embodied_carbon_per_unit,
       linkUrl: link_url,
       unit,
       lastModified: last_modified,

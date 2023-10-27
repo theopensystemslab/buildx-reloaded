@@ -153,13 +153,15 @@ export const useMaterialsListRows = () => {
           const reducer = getQuantityReducer(item)
 
           try {
+            const material = getElementMaterial(houseId, item)
+
             const {
               specification,
               costPerUnit,
               embodiedCarbonPerUnit,
               linkUrl,
               unit,
-            } = getElementMaterial(houseId, item)
+            } = material
 
             const quantity = pipe(
               houseModules,
