@@ -6,7 +6,6 @@ import {
   useGetColorClass,
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
-import { useElements } from "~/data/elements"
 import { A, O } from "~/utils/functions"
 import { useGetHouseModules, useHouses } from "../../db/user"
 import {
@@ -16,12 +15,13 @@ import {
 } from "../../design/ui-3d/fresh/systems"
 import { useOrderListData } from "../order/useOrderListData"
 import { MaterialsListRow } from "./MaterialsListTable"
+import { useAllElements } from "../../db/systems"
 
 export const useMaterialsListRows = () => {
   const selectedHouseIds = useSelectedHouseIds()
   const getColorClass = useGetColorClass()
   const getModuleWindowTypes = useGetModuleWindowTypes()
-  const elements = useElements()
+  const elements = useAllElements()
   const getElementMaterial = useGetElementMaterial()
 
   const houses = useHouses()
