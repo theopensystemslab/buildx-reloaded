@@ -1,17 +1,16 @@
+import { pipe } from "fp-ts/lib/function"
+import { Fragment, useState } from "react"
+import { useRoute } from "~/utils/wouter"
+import userDB, { House, housesToRecord, useHouses } from "../../db/user"
+import { O, R } from "../../utils/functions"
 import siteContext, {
   SiteCtxModeEnum,
   dispatchModeChange,
   useProjectName,
   useSiteCtx,
 } from "../state/siteCtx"
-import { useRoute } from "~/utils/wouter"
-import { Fragment, ReactNode, useState } from "react"
-import houses from "../state/houses"
 import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
-import userDB, { House, housesToRecord, useHouses } from "../../db/user"
-import { pipe } from "fp-ts/lib/function"
-import { O, R } from "../../utils/functions"
 
 type Props = {
   houses: House[]

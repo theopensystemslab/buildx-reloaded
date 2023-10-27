@@ -5,7 +5,6 @@ import { formatWithUnit } from "../../analyse/state/data"
 import userDB from "../../db/user"
 import { useSubscribe } from "../../utils/hooks"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
-import houses from "./houses"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
@@ -83,12 +82,6 @@ export const useSiteCurrency = () => {
     formatWithSymbol: (x: number) => formatWithUnit(x, symbol),
     formatWithCode: (x: number) => formatWithUnit(x, code),
   }
-}
-
-export const useSystemId = () => {
-  const { houseId } = useSiteCtx()
-  if (houseId === null) return null
-  return houses[houseId].systemId
 }
 
 export const getModeBools = (_mode?: SiteCtxMode) => {
