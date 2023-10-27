@@ -2,13 +2,13 @@
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, Suspense } from "react"
 import { systems } from "../../../../server/data/system"
-import { useModules } from "../../../data/modules"
 import { A, O, S } from "../../../utils/functions"
 import { useControls } from "leva"
 import DebugSpeckleModule from "./DebugSpeckleModule"
+import { useAllModules } from "../../../db/systems"
 
 const DebugSystemApp = () => {
-  const allModules = useModules()
+  const allModules = useAllModules()
 
   const { system } = useControls({
     system: {

@@ -11,11 +11,10 @@ import { Vector3 } from "three"
 import { useDebouncedCallback } from "use-debounce"
 import { proxy, ref, snapshot, subscribe, useSnapshot } from "valtio"
 import { A, clearRecord, R, RA, RR, S } from "~/utils/functions"
-import { useHouseTypes } from "../../data/houseTypes"
-import { useModules, useSystemModules } from "../../data/modules"
 import userDB, { House } from "../../db/user"
 import { isSSR } from "../../utils/next"
 import Dexie from "dexie"
+import { useAllHouseTypes, useSystemModules } from "../../db/systems"
 
 const houses = proxy<Record<string, House>>({})
 
@@ -71,7 +70,7 @@ export const useHouse = (houseId: string) => {
 
 export const useHouseType = (houseId: string) => {
   const house = useHouse(houseId)
-  const houseTypes = useHouseTypes()
+  const houseTypes = useAllHouseTypes()
   const houseType = houseTypes.find((ht) => ht.id === house.houseTypeId)
   if (!houseType) throw new Error("houseType not found")
   return houseType
@@ -79,7 +78,7 @@ export const useHouseType = (houseId: string) => {
 
 export const useHouseModules = (houseId: string) => {
   const { systemId, dnas: dna } = useHouse(houseId)
-  const systemModules = useSystemModules({ systemId })
+  const systemModules = useSystemModules(systemId)
 
   return useMemo(
     () =>
@@ -100,7 +99,7 @@ export const useHouseModules = (houseId: string) => {
 }
 
 export const useDnasModules = (systemId: string, dnas: string[]) => {
-  const systemModules = useSystemModules({ systemId })
+  const systemModules = useSystemModules(systemId)
 
   return useMemo(
     () =>
@@ -151,7 +150,7 @@ export const useSystemUniqueDnas = (systemId: string): string[] => {
 }
 
 export const useInsert1000Skylarks = () => {
-  const houseTypes = useHouseTypes()
+  const houseTypes = useAllHouseTypes()
 
   useKey(
     "x",
