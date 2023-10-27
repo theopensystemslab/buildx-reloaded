@@ -7,10 +7,7 @@ import { LevelType } from "../../../server/data/levelTypes"
 import { Module } from "../../../server/data/modules"
 import { SectionType } from "../../../server/data/sectionTypes"
 import { WindowType } from "../../../server/data/windowTypes"
-import {
-  filterCompatibleModules,
-  topCandidateByHamming,
-} from "../../data/modules"
+import { filterCompatibleModules, topCandidateByHamming } from "~/utils/modules"
 import layoutsDB, {
   ColumnLayout,
   HouseLayoutsKey,
