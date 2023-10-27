@@ -836,100 +836,6 @@ export const stripForDebug = (posCol: PositionedColumn) => {
   }
 }
 
-const getAllAltsForWholeHouse = async ({
-  systemId,
-  dnas,
-  side,
-}: {
-  systemId: string
-  dnas: string[]
-  side: Side
-}) => {
-  const windowTypes = await systemsDB.windowTypes.where({ systemId }).toArray()
-
-  const currentIndexedLayout = await layoutsDB.houseLayouts.get({
-    systemId,
-    dnas,
-  })
-
-  if (!currentIndexedLayout)
-    throw new Error(`no currentLayout for ${systemId} ${dnas}`)
-
-  const { layout: currentLayout } = currentIndexedLayout
-
-  for (let columnIndex = 0; columnIndex < currentLayout.length; columnIndex++) {
-    const thisColumn = currentLayout[columnIndex]
-    const { positionedRows } = thisColumn
-
-    for (let levelIndex = 0; levelIndex < positionedRows.length; levelIndex++) {
-      const { positionedModules } = positionedRows[levelIndex]
-
-      for (
-        let moduleIndex = 0;
-        moduleIndex < positionedModules.length;
-        moduleIndex++
-      ) {
-        const { module: thisModule } = positionedModules[moduleIndex]
-
-        const {
-          dna,
-          structuredDna: { sectionType, positionType, gridType },
-        } = thisModule
-
-        const foo = await pipe(
-          getWindowTypeAlternatives({ systemId, dna, side }),
-          T.chain(
-            A.traverse(T.ApplicativeSeq)((candidate) =>
-              pipe(
-                modifyColumnAt(thisColumn, levelIndex, moduleIndex, candidate),
-                T.map((newColumn) =>
-                  pipe(
-                    positionColumns(
-                      pipe(
-                        currentLayout,
-                        A.modifyAt(columnIndex, () => newColumn),
-                        someOrError(`blah`)
-                      )
-                    ),
-                    (columnLayout) => ({
-                      columnLayout,
-                      candidate,
-                    })
-                  )
-                )
-              )
-            )
-
-            //   // postVanillaColumn(nextLayout[0])
-            //   const dnas = columnLayoutToDnas(nextLayout)
-
-            //   // layoutsDB.houseLayouts.put({ systemId, dnas, layout: nextLayout })
-
-            //   return {
-            //     candidate,
-            //     layout: nextLayout,
-            //     dnas,
-            //     windowType: pipe(
-            //       getWindowType(windowTypes, candidate, side),
-            //       someOrError(`no window type`)
-            //     ),
-            //   }
-            // })
-          )
-        )()
-      }
-    }
-  }
-
-  // for each module in each row in each column
-
-  // get all viable module candidates
-
-  // for each viable candidate module try to compute the next layout
-
-  // if any failure please report the dnas, [c,r,i], etc
-}
-
 const getAltWindowTypeLayouts = async ({
   systemId,
   dnas,
@@ -1291,7 +1197,6 @@ const api = {
   getAltSectionTypeLayouts,
   getAltLevelTypeLayouts,
   getAltWindowTypeLayouts,
-  getAllAltsForWholeHouse,
 }
 
 export type LayoutsAPI = typeof api
