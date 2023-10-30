@@ -750,11 +750,6 @@ const getAltLevelTypeLayouts = async ({
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
 
-              console.log({
-                currentLevelTypeCode,
-                levelTypeCode: levelType.code,
-              })
-
               return {
                 layout,
                 levelType,

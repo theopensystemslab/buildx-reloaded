@@ -123,7 +123,6 @@ export type HouseTransformsGroupUserData = {
   // layouts
   layouts: Layouts
   activeLayoutDnas: string[]
-  updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => HouseLayoutGroup
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
@@ -131,6 +130,8 @@ export type HouseTransformsGroupUserData = {
   refreshAltResetLayout: () => Promise<void>
   setActiveLayout: (altLayout: AltLayout) => void
   setPreviewLayout: (altLayout: AltLayout) => void
+  pushAltLayout: (altLayout: AltLayout) => void
+  dropAltLayout: (altLayout: AltLayout) => void
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void
