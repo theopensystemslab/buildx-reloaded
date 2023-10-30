@@ -7,12 +7,11 @@ import { dispatchOutline } from "../events/outlines"
 import {
   findFirstGuardAcross,
   getHouseTransformsGroupUp,
-  getPartitionedLayoutGroups,
   sortLayoutGroupsByWidth,
 } from "../helpers/sceneQueries"
 import {
+  AltLayoutGroupType,
   HouseLayoutGroup,
-  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isXStretchHandleGroup,
   StretchHandleGroup,
@@ -54,12 +53,13 @@ const useOnDragStretchX = () => {
     const otherSide = side * -1
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
-    const { activeLayoutGroup, otherLayoutGroups } =
-      getPartitionedLayoutGroups(houseTransformsGroup)
 
-    ;[activeLayoutGroup, ...otherLayoutGroups].forEach((x) => {
-      houseTransformsGroup.userData.setZStretchHandlesVisible(false)
-    })
+    // const { activeLayoutGroup, otherLayoutGroups } =
+    //   getPartitionedLayoutGroups(houseTransformsGroup)
+
+    // ;[activeLayoutGroup, ...otherLayoutGroups].forEach((x) => {
+    //   houseTransformsGroup.userData.setZStretchHandlesVisible(false)
+    // })
 
     const otherSideHandleGroup = pipe(
       houseTransformsGroup,
@@ -72,8 +72,16 @@ const useOnDragStretchX = () => {
 
     let fenceIndex = 0
 
-    const otherSTLayoutGroups = otherLayoutGroups.filter(
-      (x) => x.userData.use === HouseLayoutGroupUse.Enum.ALT_SECTION_TYPE
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
+
+    const otherSTLayoutGroups = pipe(
+      houseTransformsGroup.userData.layouts.alts,
+      A.filterMap((x) =>
+        x.type !== AltLayoutGroupType.Enum.ALT_SECTION_TYPE
+          ? O.none
+          : O.some(x.houseLayoutGroup)
+      )
     )
 
     const fences = pipe(

@@ -53,7 +53,7 @@ const createRotateHandles = (
     type: UserDataTypeEnum.Enum.RotateHandlesGroup,
     update: () => {
       const { width, length } =
-        houseTransformsGroup.userData.unsafeGetActiveLayoutGroup().userData
+        houseTransformsGroup.userData.getActiveLayoutGroup().userData
 
       planeMesh2.position.set(-width / 1.05, 0, length / 2)
       circleMesh2.position.set(-ROTATE_HANDLE_OFFSET - width / 4, 0, length / 2)

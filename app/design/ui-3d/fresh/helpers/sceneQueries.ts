@@ -7,7 +7,6 @@ import {
   ColumnGroup,
   ElementMesh,
   HouseLayoutGroup,
-  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
@@ -155,8 +154,7 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
 export const getActiveHouseUserData = (
   houseTransformsGroup: HouseTransformsGroup
 ) => {
-  const activeLayoutGroup =
-    houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
+  const activeLayoutGroup = houseTransformsGroup.userData.getActiveLayoutGroup()
 
   return {
     ...houseTransformsGroup.userData,
@@ -168,19 +166,6 @@ export const getLayoutGroups = (
   houseTransformsGroup: HouseTransformsGroup
 ): HouseLayoutGroup[] =>
   houseTransformsGroup.children.filter(isHouseLayoutGroup)
-
-export const getPartitionedLayoutGroups = (
-  houseTransformsGroup: HouseTransformsGroup
-) =>
-  pipe(
-    houseTransformsGroup,
-    getLayoutGroups,
-    A.partition((x) => x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE),
-    ({ left: otherLayoutGroups, right: [activeLayoutGroup] }) => ({
-      activeLayoutGroup,
-      otherLayoutGroups,
-    })
-  )
 
 export const getLayoutGroupColumnGroups = (
   layoutGroup: HouseLayoutGroup
@@ -258,17 +243,12 @@ export const objectToIfcTagObjects = (object: Object3D) => {
   return pipe(
     object,
     findFirstGuardUp(isHouseTransformsGroup),
-    O.chain((htg) =>
+    O.map((htg) =>
       pipe(
         htg.userData.getActiveLayoutGroup(),
-        O.map((activeLayoutGroup) =>
-          pipe(
-            activeLayoutGroup,
-            findAllGuardDown(
-              (x): x is ElementMesh =>
-                isElementMesh(x) && x.userData.ifcTag === ifcTag
-            )
-          )
+        findAllGuardDown(
+          (x): x is ElementMesh =>
+            isElementMesh(x) && x.userData.ifcTag === ifcTag
         )
       )
     ),

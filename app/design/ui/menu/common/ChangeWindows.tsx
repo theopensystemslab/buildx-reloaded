@@ -11,8 +11,9 @@ import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
 import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
+  AltLayoutGroupType,
+  AltWindowTypeLayout,
   HouseLayoutGroup,
-  HouseLayoutGroupUse,
   HouseTransformsGroup,
   isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
@@ -20,7 +21,7 @@ import ContextMenuNested from "./ContextMenuNested"
 
 type WindowTypeOption = {
   label: string
-  value: { windowType: WindowType; layoutGroup: HouseLayoutGroup }
+  value: { windowType: WindowType; houseLayoutGroup: HouseLayoutGroup }
   thumbnail?: string
 }
 
@@ -55,29 +56,23 @@ const ChangeWindows = (props: Props) => {
             O.map((originalWindowType) => {
               const originalWindowTypeOption: WindowTypeOption | null = {
                 value: {
-                  layoutGroup:
-                    houseTransformsGroup.userData.unsafeGetActiveLayoutGroup(),
+                  houseLayoutGroup:
+                    houseTransformsGroup.userData.getActiveLayoutGroup(),
                   windowType: originalWindowType,
                 },
                 label: originalWindowType.description,
               }
 
               const otherOptions: WindowTypeOption[] = pipe(
-                houseTransformsGroup.children,
+                houseTransformsGroup.userData.layouts.alts,
                 A.filter(
-                  (x): x is HouseLayoutGroup =>
-                    isHouseLayoutGroup(x) &&
-                    x.userData.use ===
-                      HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE &&
-                    x.userData.windowType
+                  (x): x is AltWindowTypeLayout =>
+                    x.type === AltLayoutGroupType.Enum.ALT_WINDOW_TYPE
                 ),
-                A.map((layoutGroup): WindowTypeOption => {
-                  // TODO: DEBT
-                  const windowType: WindowType = layoutGroup.userData.windowType
-
+                A.map(({ windowType, houseLayoutGroup }) => {
                   return {
                     value: {
-                      layoutGroup,
+                      houseLayoutGroup,
                       windowType,
                     },
                     label: windowType.description,
@@ -126,12 +121,14 @@ const ChangeWindows = (props: Props) => {
     if (locked.current) return
 
     if (incoming) {
-      houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        incoming.houseLayoutGroup
+      )
       houseTransformsGroup.userData.updateHandles()
     } else {
       if (originalWindowTypeOption)
         houseTransformsGroup.userData.setActiveLayoutGroup(
-          originalWindowTypeOption.value.layoutGroup
+          originalWindowTypeOption.value.houseLayoutGroup
         )
     }
 
@@ -142,20 +139,10 @@ const ChangeWindows = (props: Props) => {
     locked.current = true
 
     houseTransformsGroup.userData.updateDB().then(() => {
-      pipe(
-        houseTransformsGroup.children,
-        A.filter(
-          (x) =>
-            isHouseLayoutGroup(x) &&
-            x.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
-        ),
-        A.map((x) => {
-          x.removeFromParent()
-        })
-      )
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
+
     close()
   }
 

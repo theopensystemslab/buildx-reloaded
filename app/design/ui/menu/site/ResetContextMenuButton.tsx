@@ -1,18 +1,12 @@
 import { Reset } from "@carbon/icons-react"
-import { flow, pipe } from "fp-ts/lib/function"
-import { useEffect, useRef } from "react"
-import systemsDB from "../../../../db/systems"
-import { A, O, T } from "../../../../utils/functions"
-import { setInvisibleNoRaycast } from "../../../../utils/three"
-import { getLayoutsWorker } from "../../../../workers"
-import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
+import { pipe } from "fp-ts/lib/function"
+import { A, O } from "../../../../utils/functions"
 import {
-  HouseLayoutGroup,
-  HouseLayoutGroupUse,
+  AltLayoutGroupType,
   HouseTransformsGroup,
-  isHouseLayoutGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuButton from "../common/ContextMenuButton"
+import { useEffect } from "react"
 
 type Props = {
   houseTransformsGroup: HouseTransformsGroup
@@ -20,87 +14,20 @@ type Props = {
 }
 
 const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
-  const resetLayoutGroupRef = useRef<HouseLayoutGroup | null>(null)
-
-  const { systemId, houseId, houseTypeId } = houseTransformsGroup.userData
-
   useEffect(() => {
-    const initReset = async () => {
-      const houseTypeTask = () => systemsDB.houseTypes.get(houseTypeId)
-
-      const { getLayout } = getLayoutsWorker()
-
-      const houseLayoutGroupTask = pipe(
-        houseTypeTask,
-        T.chain(
-          flow(
-            O.fromNullable,
-            O.fold(
-              () => () => Promise.reject(),
-              ({ dnas }) =>
-                pipe(
-                  () => getLayout({ systemId, dnas }),
-                  T.chain((houseLayout) =>
-                    createHouseLayoutGroup({
-                      systemId,
-                      houseId,
-                      dnas,
-                      houseLayout,
-                      use: HouseLayoutGroupUse.Enum.RESET,
-                      houseTransformsGroup,
-                    })
-                  )
-                )
-            )
-          )
-        )
-      )
-
-      houseLayoutGroupTask().then((houseLayoutGroup) => {
-        pipe(
-          houseTransformsGroup.children,
-          A.findFirst(
-            (child) =>
-              isHouseLayoutGroup(child) &&
-              child.userData.use === HouseLayoutGroupUse.Enum.RESET
-          ),
-          O.map((node) => void node.removeFromParent())
-        )
-
-        setInvisibleNoRaycast(houseLayoutGroup)
-        houseTransformsGroup.add(houseLayoutGroup)
-
-        resetLayoutGroupRef.current = houseLayoutGroup
-      })
-    }
-
-    initReset()
-
-    return () => {
-      if (
-        resetLayoutGroupRef.current &&
-        resetLayoutGroupRef.current.userData.use !==
-          HouseLayoutGroupUse.Enum.ACTIVE
-      ) {
-        houseTransformsGroup.remove(resetLayoutGroupRef.current)
-      }
-    }
-  }, [houseId, houseTransformsGroup, houseTypeId, systemId])
+    houseTransformsGroup.userData.refreshAltResetLayout()
+  }, [houseTransformsGroup.userData])
 
   const resetHouse = async () => {
-    if (resetLayoutGroupRef.current) {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        resetLayoutGroupRef.current
-      )
+    pipe(
+      houseTransformsGroup.userData.layouts.alts,
+      A.findFirst((x) => x.type === AltLayoutGroupType.Enum.ALT_RESET),
+      O.map((x) => {
+        houseTransformsGroup.userData.setActiveLayout(x)
+      })
+    )
 
-      houseTransformsGroup.userData.resetMaterials()
-
-      houseTransformsGroup.userData.updateDB()
-
-      houseTransformsGroup.userData.updateHandles()
-
-      close()
-    }
+    close()
   }
 
   return (

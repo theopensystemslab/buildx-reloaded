@@ -50,7 +50,7 @@ const useOnDragMove = () => {
               findFirstGuardUp(isHouseTransformsGroup),
               O.map((houseTransformsGroup) => {
                 const layoutGroup =
-                  houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
+                  houseTransformsGroup.userData.getActiveLayoutGroup()
 
                 point.setY(0)
 

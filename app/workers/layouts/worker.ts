@@ -27,13 +27,15 @@ import {
   O,
   T,
   TO,
+  pipeLog,
+  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
 } from "../../utils/functions"
 import { round, sign } from "../../utils/math"
 import { isSSR } from "../../utils/next"
-import { getModules, getWindowTypeAlternatives } from "./modules"
+import { getModules, getModuleWindowTypeAlts } from "./modules"
 import { getIndexedVanillaModule, postVanillaColumn } from "./vanilla"
 
 export const columnMatrixToDna = (columnMatrix: Module[][][]) =>
@@ -508,6 +510,7 @@ const getAltSectionTypeLayouts = async ({
               postVanillaColumn(layout[0])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+
               return {
                 layout,
                 sectionType,
@@ -522,7 +525,7 @@ const getAltSectionTypeLayouts = async ({
   )()
 }
 
-const getChangeLayoutTypeLayout = async ({
+const getChangeLevelTypeLayout = async ({
   systemId,
   layout,
   prevLevelType,
@@ -738,7 +741,7 @@ const getAltLevelTypeLayouts = async ({
           dnas: string[]
         }> =>
         () =>
-          getChangeLayoutTypeLayout({
+          getChangeLevelTypeLayout({
             systemId,
             layout: currentIndexedLayout.layout,
             nextLevelType: levelType,
@@ -749,6 +752,7 @@ const getAltLevelTypeLayouts = async ({
               postVanillaColumn(layout[0])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+
               return {
                 layout,
                 levelType,
@@ -876,7 +880,7 @@ const getAltWindowTypeLayouts = async ({
   const { dna } = thisModule.module
 
   return await pipe(
-    getWindowTypeAlternatives({ systemId, dna, side }),
+    getModuleWindowTypeAlts({ systemId, dna, side }),
     T.chain(
       A.traverse(T.ApplicativeSeq)((candidate) =>
         pipe(

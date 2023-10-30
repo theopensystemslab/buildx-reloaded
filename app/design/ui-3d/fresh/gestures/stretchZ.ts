@@ -136,7 +136,7 @@ const useOnDragStretchZ = () => {
     for (let neighbour of lengthWiseNeighbours) {
       if (
         neighbour.userData
-          .unsafeGetActiveLayoutGroup()
+          .getActiveLayoutGroup()
           .userData.obb.intersectsOBB(obb)
       ) {
         return true
@@ -171,10 +171,8 @@ const useOnDragStretchZ = () => {
     })
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
-    const activeLayoutGroup = pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
-      someOrError(`no active layout group in stretchZ`)
-    )
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
     const { side } = handleGroup.userData
     const targetColumnIndex =
