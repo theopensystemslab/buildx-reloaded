@@ -136,7 +136,7 @@ const useOnDragStretchZ = () => {
     for (let neighbour of lengthWiseNeighbours) {
       if (
         neighbour.userData
-          .unsafeGetActiveLayoutGroup()
+          .getActiveLayoutGroup()
           .userData.obb.intersectsOBB(obb)
       ) {
         return true

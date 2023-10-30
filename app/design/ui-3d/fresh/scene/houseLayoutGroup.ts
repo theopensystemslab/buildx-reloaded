@@ -29,7 +29,6 @@ import {
 } from "./columnGroup"
 import {
   HouseLayoutGroup,
-  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   isHouseTransformsGroup,
@@ -72,14 +71,12 @@ export const createHouseLayoutGroup = ({
   houseId,
   dnas,
   houseLayout,
-  use,
 }: {
   houseTransformsGroup: HouseTransformsGroup
   systemId: string
   houseId: string
   dnas: string[]
   houseLayout: ColumnLayout
-  use: HouseLayoutGroupUse
 }): T.Task<HouseLayoutGroup> =>
   pipe(
     createColumnGroups({
@@ -191,8 +188,7 @@ export const createHouseLayoutGroup = ({
               houseLayoutGroup.parent as HouseTransformsGroup
 
             if (
-              houseTransformsGroup.userData.use ===
-              HouseLayoutGroupUse.Enum.ACTIVE
+              houseTransformsGroup.userData.layouts.active === houseLayoutGroup
             ) {
               return houseTransformsGroup.userData.updateActiveLayoutDnas(
                 nextDnas
@@ -395,7 +391,6 @@ export const createHouseLayoutGroup = ({
             obb,
             aabb,
             vanillaColumn,
-            use,
             initStretchZHandles,
             updateLength,
             updateActiveColumnGroupCount,
