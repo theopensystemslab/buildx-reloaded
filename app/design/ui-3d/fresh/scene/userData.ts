@@ -16,6 +16,10 @@ import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import { EnrichedMaterial } from "../systems"
 import { HandleTypeEnum } from "./houseTransformsGroup"
+import { LevelType } from "../../../../../server/data/levelTypes"
+import { WindowType } from "../../../../../server/data/windowTypes"
+import { SectionType } from "../../../../../server/data/sectionTypes"
+import { HouseType } from "../../../../../server/data/houseTypes"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -51,6 +55,49 @@ export const UserDataTypeEnum = z.enum([
 
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
+export const LayoutGroupType = z.enum([
+  "ACTIVE",
+  "ALT_RESET",
+  "ALT_SECTION_TYPE",
+  "ALT_LEVEL_TYPE",
+  "ALT_WINDOW_TYPE",
+])
+
+type AltLevelTypeLayoutData = {
+  type: typeof LayoutGroupType.Enum.ALT_LEVEL_TYPE
+  target: ScopeElement
+  levelType: LevelType
+}
+
+type AltWindowTypeLayoutData = {
+  type: typeof LayoutGroupType.Enum.ALT_WINDOW_TYPE
+  target: ScopeElement
+  windowType: WindowType
+}
+
+type AltResetLayoutData = {
+  type: typeof LayoutGroupType.Enum.ALT_RESET
+  houseType: HouseType
+}
+
+type AltSectionTypeLayoutData = {
+  type: typeof LayoutGroupType.Enum.ALT_SECTION_TYPE
+  sectionType: SectionType
+}
+
+type AltLayout = (
+  | AltLevelTypeLayoutData
+  | AltWindowTypeLayoutData
+  | AltResetLayoutData
+  | AltSectionTypeLayoutData
+) & { houseLayoutGroup: HouseLayoutGroup }
+
+export type Layouts = {
+  active: HouseLayoutGroup
+  preview: HouseLayoutGroup | null
+  alts: AltLayout[]
+}
+
 export type HouseTransformsGroupUserData = {
   // props
   type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
@@ -70,11 +117,10 @@ export type HouseTransformsGroupUserData = {
   setVerticalCuts: () => void
   setLevelCut: (levelIndex: number | null) => void
   // layouts
+  layouts: Layouts
   activeLayoutDnas: string[]
   updateActiveLayoutDnas: (x: string[]) => void
-  getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
-  unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
-  setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
+  getActiveLayoutGroup: () => HouseLayoutGroup
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void

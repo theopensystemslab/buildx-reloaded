@@ -258,17 +258,12 @@ export const objectToIfcTagObjects = (object: Object3D) => {
   return pipe(
     object,
     findFirstGuardUp(isHouseTransformsGroup),
-    O.chain((htg) =>
+    O.map((htg) =>
       pipe(
         htg.userData.getActiveLayoutGroup(),
-        O.map((activeLayoutGroup) =>
-          pipe(
-            activeLayoutGroup,
-            findAllGuardDown(
-              (x): x is ElementMesh =>
-                isElementMesh(x) && x.userData.ifcTag === ifcTag
-            )
-          )
+        findAllGuardDown(
+          (x): x is ElementMesh =>
+            isElementMesh(x) && x.userData.ifcTag === ifcTag
         )
       )
     ),

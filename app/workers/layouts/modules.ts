@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { Module, parseDna } from "../../../server/data/modules"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, T, compareProps } from "../../utils/functions"
+import { A, T, compareProps, pipeLogWith } from "../../utils/functions"
 import { Side } from "../../design/state/camera"
 
 let modulesCache: LastFetchStamped<Module>[] = []
@@ -12,7 +12,7 @@ export const getModules = async () => {
   return modulesCache
 }
 
-export const getWindowTypeAlternatives = ({
+export const getModuleWindowTypeAlts = ({
   systemId,
   dna,
   side,
@@ -54,6 +54,7 @@ export const getWindowTypeAlternatives = ({
 
           return x.structuredDna[k] !== parsedStructuredDna[k]
         })
+        // pipeLogWith((alts) => ({ alts: alts.map((x) => x.dna), original: dna }))
       )
     )
   )

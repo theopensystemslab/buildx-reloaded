@@ -171,10 +171,8 @@ const useOnDragStretchZ = () => {
     })
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
-    const activeLayoutGroup = pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
-      someOrError(`no active layout group in stretchZ`)
-    )
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
     const { side } = handleGroup.userData
     const targetColumnIndex =
