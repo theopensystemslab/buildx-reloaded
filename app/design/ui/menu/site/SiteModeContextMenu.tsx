@@ -15,6 +15,7 @@ import ContextMenuButton from "../common/ContextMenuButton"
 import Exporters from "../common/Exporters"
 import { ModeContextMenuProps } from "../common/props"
 import ResetContextMenuButton from "./ResetContextMenuButton"
+import { dispatchOutline } from "../../../ui-3d/fresh/events/outlines"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const { object } = scopeElement
@@ -61,6 +62,9 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
               dispatchModeChange({
                 prev: SiteCtxModeEnum.Enum.SITE,
                 next: SiteCtxModeEnum.Enum.BUILDING,
+              })
+              dispatchOutline({
+                selectedObjects: [],
               })
               close()
             }}

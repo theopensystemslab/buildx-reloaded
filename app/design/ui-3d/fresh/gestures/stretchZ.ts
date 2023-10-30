@@ -2,17 +2,15 @@ import { pipe } from "fp-ts/lib/function"
 import { useRef } from "react"
 import { BoxGeometry, Matrix4, Mesh, Object3D, Scene, Vector3 } from "three"
 import { OBB } from "three-stdlib"
-import {
-  useAllSystemSettings,
-  useGetSystemSettings,
-} from "../../../../db/systems"
-import { A, O, someOrError, T } from "../../../../utils/functions"
+import { useGetSystemSettings } from "../../../../db/systems"
+import { A, O, T, someOrError } from "../../../../utils/functions"
 import { floor, sign } from "../../../../utils/math"
 import {
   setInvisibleNoRaycast,
   setVisibleAndRaycast,
   yAxis,
 } from "../../../../utils/three"
+import { DEBUG } from "../../../state/constants"
 import pointer from "../../../state/pointer"
 import { dispatchOutline } from "../events/outlines"
 import {
@@ -28,10 +26,9 @@ import {
   ColumnGroup,
   HouseLayoutGroup,
   HouseTransformsGroup,
-  isColumnGroup,
   StretchHandleGroup,
+  isColumnGroup,
 } from "../scene/userData"
-import { DEBUG } from "../../../state/constants"
 
 let lastOBBMesh: Mesh | null = null
 
@@ -136,7 +133,7 @@ const useOnDragStretchZ = () => {
     for (let neighbour of lengthWiseNeighbours) {
       if (
         neighbour.userData
-          .unsafeGetActiveLayoutGroup()
+          .getActiveLayoutGroup()
           .userData.obb.intersectsOBB(obb)
       ) {
         return true
@@ -171,10 +168,8 @@ const useOnDragStretchZ = () => {
     })
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
-    const activeLayoutGroup = pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
-      someOrError(`no active layout group in stretchZ`)
-    )
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
     const { side } = handleGroup.userData
     const targetColumnIndex =

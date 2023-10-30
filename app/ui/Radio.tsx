@@ -34,10 +34,6 @@ export default function Radio<T>(props: Props<T>) {
     { leading: true }
   )
 
-  useUnmountEffect(() => {
-    props.onHoverChange?.(null)
-  })
-
   return (
     <div>
       {props.label && (

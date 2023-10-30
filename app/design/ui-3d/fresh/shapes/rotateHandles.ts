@@ -8,7 +8,6 @@ import {
   RotateHandlesGroupUserData,
   UserDataTypeEnum,
 } from "../scene/userData"
-import { getActiveHouseUserData } from "../helpers/sceneQueries"
 
 const ROTATE_HANDLE_OFFSET = 5
 const ROTATE_HANDLE_SIZE = 0.3
@@ -53,7 +52,7 @@ const createRotateHandles = (
     type: UserDataTypeEnum.Enum.RotateHandlesGroup,
     update: () => {
       const { width, length } =
-        houseTransformsGroup.userData.unsafeGetActiveLayoutGroup().userData
+        houseTransformsGroup.userData.getActiveLayoutGroup().userData
 
       planeMesh2.position.set(-width / 1.05, 0, length / 2)
       circleMesh2.position.set(-ROTATE_HANDLE_OFFSET - width / 4, 0, length / 2)

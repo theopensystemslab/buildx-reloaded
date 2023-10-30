@@ -107,7 +107,7 @@ const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
               houseTransformsGroup.position.set(x, 0, z)
 
               houseTransformsGroup.userData
-                .unsafeGetActiveLayoutGroup()
+                .getActiveLayoutGroup()
                 .userData.updateBBs()
               t += 1 // Increment t by an amount to ensure the loop can exit
             } while (t < MAX_T && collisionsCheck())
@@ -119,7 +119,7 @@ const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
             worldGroup.add(houseTransformsGroup)
 
             houseTransformsGroup.userData
-              .unsafeGetActiveLayoutGroup()
+              .getActiveLayoutGroup()
               .userData.updateBBs()
 
             houseTransformsGroup.userData.friendlyName = getFriendlyName()

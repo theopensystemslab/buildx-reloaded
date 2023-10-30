@@ -28,16 +28,12 @@ import elementCategories, {
 import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
 import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
+import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
 import ObjectsSidebar from "./ObjectsSidebar"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
-import MetricsWidget from "./metrics/MetricsWidget"
-import Breadcrumbs from "./Breadcrumbs"
-import { useEvent } from "react-use"
-import { useSnapshot } from "valtio"
-import { useHtgFoo } from "../ui-3d/fresh/scene/houseTransformsGroup"
 
 type Props = {
   controlsEnabled: boolean
@@ -210,7 +206,7 @@ const HtmlUi = (props: Props) => {
         </IconMenu>
       </div>
 
-      <MetricsWidget />
+      {/* <MetricsWidget /> */}
 
       <ObjectsSidebar />
 
