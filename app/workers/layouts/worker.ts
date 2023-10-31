@@ -27,6 +27,8 @@ import {
   O,
   T,
   TO,
+  pipeLog,
+  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
@@ -508,6 +510,7 @@ const getAltSectionTypeLayouts = async ({
               postVanillaColumn(layout[0])()
               const dnas = columnLayoutToDnas(layout)
               layoutsDB.houseLayouts.put({ systemId, dnas, layout })
+
               return {
                 layout,
                 sectionType,

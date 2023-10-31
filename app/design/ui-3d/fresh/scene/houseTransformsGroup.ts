@@ -64,6 +64,7 @@ import {
 } from "./userData"
 import { proxy, ref, subscribe, useSnapshot } from "valtio"
 import systemsDB from "../../../../db/systems"
+import { subscribeKey } from "valtio/utils"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
@@ -405,6 +406,7 @@ export const createHouseTransformsGroup = ({
   const setPreviewLayout = (altLayout: AltLayout) => {}
 
   const pushAltLayout = (altLayout: AltLayout) => {
+    console.log(`pushing`, altLayout)
     houseTransformsGroup.userData.layouts.alts.push(ref(altLayout))
   }
 
@@ -856,24 +858,26 @@ export const createHouseTransformsGroup = ({
 
       houseTransformsGroup.userData.layouts = layouts
 
-      const relayout = () => {
-        if (layouts.preview) {
-          // show it
-          console.log(`preview`, layouts.preview)
-        } else {
-          console.log(`active`, layouts.active)
-          layouts.active.userData.updateBBs()
-          // show active
-        }
-        initRotateAndStretchXHandles()
-        updateHandles()
-        switchHandlesVisibility()
-        setVerticalCuts()
-      }
+      initRotateAndStretchXHandles()
+      updateHandles()
+      switchHandlesVisibility()
+      setVerticalCuts()
+      // const relayout = () => {
+      //   console.log(layouts)
+      //   if (layouts.preview) {
+      //   } else {
+      //     layouts.active.userData.updateBBs()
+      //   }
+      // }
 
-      subscribe(layouts, relayout)
+      // subscribe(layouts, relayout)
 
-      relayout()
+      subscribeKey(layouts, "alts", () => {
+        console.log(`new alts`)
+        console.log(layouts.alts)
+      })
+
+      // relayout()
 
       return houseTransformsGroup
     })
