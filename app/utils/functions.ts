@@ -143,11 +143,23 @@ export const combineGuards =
   (obj: any): obj is A | B =>
     guard1(obj) || guard2(obj)
 
-export const compareProps = <T>(
+export function compareProps<T extends Record<string, any>>(
+  obj1: T,
+  obj2: T
+): boolean
+export function compareProps<T extends Record<string, any>>(
   obj1: T,
   obj2: T,
   props: (keyof T)[]
-): boolean => props.every((prop) => obj1[prop] === obj2[prop])
+): boolean
+export function compareProps<T extends Record<string, any>>(
+  obj1: T,
+  obj2: T,
+  props?: (keyof T)[]
+): boolean {
+  const keysToCompare = props || (Object.keys(obj1) as (keyof T)[])
+  return keysToCompare.every((prop) => obj1[prop] === obj2[prop])
+}
 
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,

@@ -3,7 +3,7 @@ import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import { A, O } from "~/utils/functions"
+import { A, O, compareProps } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
 import { useAllLevelTypes } from "../../../../db/systems"
@@ -86,7 +86,16 @@ const ChangeLevelType = (props: Props) => {
 
         const newOptions = pipe(
           layouts.alts,
-          A.filter(isAltLevelTypeLayout),
+          A.filter(
+            (x): x is AltLevelTypeLayout =>
+              isAltLevelTypeLayout(x) &&
+              compareProps(scopeElement, x.target, [
+                "houseId",
+                "columnIndex",
+                "levelIndex",
+              ])
+          ),
+
           A.map(altLevelLayoutToOpt)
         )
 

@@ -31,6 +31,7 @@ import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
 import useOnDragStretchX from "./stretchX"
 import useOnDragStretchZ from "./stretchZ"
+import { compareProps } from "../../../../utils/functions"
 
 const useGestures = () => {
   const onDragMove = useOnDragMove()
@@ -127,6 +128,12 @@ const useGestures = () => {
 
             // if building/level and this some other house exit
             if (siteCtx.houseId && scopeItem.houseId !== siteCtx.houseId) return
+
+            if (scope.hovered) {
+              if (compareProps(scope.hovered, scopeItem)) {
+                return
+              }
+            }
 
             scope.hovered = scopeItem
 
