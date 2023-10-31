@@ -98,7 +98,7 @@ export type AltLayout =
 
 export type Layouts = {
   active: HouseLayoutGroup
-  preview: HouseLayoutGroup | null
+  preview: AltLayout | null
   alts: AltLayout[]
 }
 
@@ -129,7 +129,7 @@ export type HouseTransformsGroupUserData = {
   refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltResetLayout: () => Promise<void>
   setActiveLayout: (altLayout: AltLayout) => void
-  setPreviewLayout: (altLayout: AltLayout) => void
+  setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
   pushAltLayout: (altLayout: AltLayout) => void
   dropAltLayout: (altLayout: AltLayout) => void
   // refreshAltWindowTypeLayouts: () => void

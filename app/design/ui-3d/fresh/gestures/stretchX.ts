@@ -7,10 +7,12 @@ import { dispatchOutline } from "../events/outlines"
 import {
   findFirstGuardAcross,
   getHouseTransformsGroupUp,
-  sortLayoutGroupsByWidth,
+  sortAltLayoutsByWidth,
 } from "../helpers/sceneQueries"
 import {
+  AltLayout,
   AltLayoutGroupType,
+  AltSectionTypeLayout,
   HouseLayoutGroup,
   HouseTransformsGroup,
   isXStretchHandleGroup,
@@ -19,7 +21,7 @@ import {
 
 type FenceX = {
   x: number
-  layoutGroup: HouseLayoutGroup
+  layout: AltLayout | { type: "ACTIVE"; houseLayoutGroup: HouseLayoutGroup }
 }
 
 const useOnDragStretchX = () => {
@@ -54,13 +56,6 @@ const useOnDragStretchX = () => {
 
     const houseTransformsGroup = getHouseTransformsGroupUp(handleGroup)
 
-    // const { activeLayoutGroup, otherLayoutGroups } =
-    //   getPartitionedLayoutGroups(houseTransformsGroup)
-
-    // ;[activeLayoutGroup, ...otherLayoutGroups].forEach((x) => {
-    //   houseTransformsGroup.userData.setZStretchHandlesVisible(false)
-    // })
-
     const otherSideHandleGroup = pipe(
       houseTransformsGroup,
       findFirstGuardAcross(
@@ -75,24 +70,25 @@ const useOnDragStretchX = () => {
     const activeLayoutGroup =
       houseTransformsGroup.userData.getActiveLayoutGroup()
 
-    const otherSTLayoutGroups = pipe(
+    const altLayouts = pipe(
       houseTransformsGroup.userData.layouts.alts,
-      A.filterMap((x) =>
-        x.type !== AltLayoutGroupType.Enum.ALT_SECTION_TYPE
-          ? O.none
-          : O.some(x.houseLayoutGroup)
-      )
+      A.filter((x) => x.type === AltLayoutGroupType.Enum.ALT_SECTION_TYPE)
     )
 
     const fences = pipe(
-      [activeLayoutGroup, ...otherSTLayoutGroups],
-      sortLayoutGroupsByWidth,
-      A.mapWithIndex((i, layoutGroup): FenceX => {
-        if (layoutGroup.uuid === activeLayoutGroup.uuid) fenceIndex = i
+      [
+        { type: "ACTIVE" as const, houseLayoutGroup: activeLayoutGroup },
+        ...altLayouts,
+      ],
+      sortAltLayoutsByWidth,
+      A.mapWithIndex((i, layout): FenceX => {
+        if (houseTransformsGroup.uuid === activeLayoutGroup.uuid) fenceIndex = i
         return {
-          layoutGroup,
+          layout,
           x:
-            (layoutGroup.userData.width - activeLayoutGroup.userData.width) / 2,
+            (layout.houseLayoutGroup.userData.width -
+              activeLayoutGroup.userData.width) /
+            2,
         }
       })
     )
@@ -162,9 +158,14 @@ const useOnDragStretchX = () => {
         A.lookup(fenceIndex + 1),
         O.map(({ x }) => {
           if (adjustedDistance >= x) {
-            const layoutGroup = fences[fenceIndex + 1].layoutGroup
-            houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
-            houseTransformsGroup.userData.setZStretchHandlesVisible(false)
+            const { layout } = fences[fenceIndex + 1]
+            if (layout.type === "ACTIVE") {
+              houseTransformsGroup.userData.setPreviewLayout(null)
+            } else {
+              houseTransformsGroup.userData.setPreviewLayout(layout)
+            }
+            // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+            // houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex++
             stepHandle()
           }
@@ -176,8 +177,13 @@ const useOnDragStretchX = () => {
         A.lookup(fenceIndex - 1),
         O.map(({ x }) => {
           if (adjustedDistance <= x) {
-            const layoutGroup = fences[fenceIndex - 1].layoutGroup
-            houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+            const { layout } = fences[fenceIndex - 1]
+            if (layout.type === "ACTIVE") {
+              houseTransformsGroup.userData.setPreviewLayout(null)
+            } else {
+              houseTransformsGroup.userData.setPreviewLayout(layout)
+            }
+
             houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex--
             stepHandle()
@@ -188,13 +194,19 @@ const useOnDragStretchX = () => {
   }
 
   const last = () => {
-    const { fences, fenceIndex } = stretchXData.current!
-    const activeLayoutGroup = fences[fenceIndex].layoutGroup
-    const houseTransformsGroup =
-      activeLayoutGroup.parent as HouseTransformsGroup
-    houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
+    return
+    const { fences, fenceIndex, houseTransformsGroup } = stretchXData.current!
+    const { layout } = fences[fenceIndex]
+    if (layout.type === "ACTIVE") {
+      if (houseTransformsGroup.userData.layouts.preview !== null)
+        houseTransformsGroup.userData.setPreviewLayout(null)
+    } else {
+      // houseTransformsGroup.userData.setActiveLayout(layout)
+    }
+    // houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
     houseTransformsGroup.userData.updateHandles()
     houseTransformsGroup.userData.setZStretchHandlesVisible(true)
+
     houseTransformsGroup.userData.updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
     })

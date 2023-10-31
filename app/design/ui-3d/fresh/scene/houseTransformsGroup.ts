@@ -1,6 +1,8 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Plane, Vector3 } from "three"
+import { proxy, ref, useSnapshot } from "valtio"
+import { subscribeKey } from "valtio/utils"
 import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
 import { parseDna } from "../../../../../server/data/modules"
@@ -8,17 +10,14 @@ import layoutsDB, {
   ColumnLayout,
   getHouseLayoutsKey,
 } from "../../../../db/layouts"
+import systemsDB from "../../../../db/systems"
 import userDB, { House } from "../../../../db/user"
+import { A, O, R, S, T } from "../../../../utils/functions"
 import {
-  A,
-  O,
-  R,
-  S,
-  T,
-  debounce,
-  someOrError,
-} from "../../../../utils/functions"
-import { setInvisibleNoRaycast, setVisible } from "../../../../utils/three"
+  setInvisibleNoRaycast,
+  setVisible,
+  setVisibleAndRaycast,
+} from "../../../../utils/three"
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
@@ -41,7 +40,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
-  AltSectionTypeLayout,
+  AltLayout,
+  AltLayoutGroupType,
   ElementMesh,
   GridGroupUserData,
   HouseLayoutGroup,
@@ -49,22 +49,16 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
-  AltLayoutGroupType,
   Layouts,
   UserDataTypeEnum,
   isElementMesh,
-  isHouseLayoutGroup,
   isHouseTransformsGroup,
   isHouseTransformsHandlesGroup,
   isRotateHandlesGroup,
   isStretchHandleGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
-  AltLayout,
 } from "./userData"
-import { proxy, ref, subscribe, useSnapshot } from "valtio"
-import systemsDB from "../../../../db/systems"
-import { subscribeKey } from "valtio/utils"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
@@ -401,13 +395,46 @@ export const createHouseTransformsGroup = ({
     })
   }
 
-  const setActiveLayout = (altLayout: AltLayout) => {}
+  const setActiveLayout = (altLayout: AltLayout) => {
+    const { layouts } = houseTransformsGroup.userData
 
-  const setPreviewLayout = (altLayout: AltLayout) => {}
+    if (layouts.preview) layouts.preview = null
+
+    layouts.active = ref(altLayout.houseLayoutGroup)
+
+    layouts.alts = pipe(
+      layouts.alts,
+      A.filterMap((x) =>
+        x.houseLayoutGroup.uuid === layouts.active.uuid
+          ? O.none
+          : O.some(ref(x))
+      )
+    )
+  }
+
+  const setPreviewLayout = (altLayout: AltLayout | null) => {
+    const { layouts } = houseTransformsGroup.userData
+    if (altLayout) {
+      if (layouts.preview) {
+        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
+      } else {
+        setInvisibleNoRaycast(layouts.active)
+      }
+      layouts.preview = ref(altLayout)
+      setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
+    } else {
+      if (layouts.preview) {
+        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
+        houseTransformsGroup.userData.layouts.preview = null
+        setVisibleAndRaycast(layouts.active)
+      }
+    }
+  }
 
   const pushAltLayout = (altLayout: AltLayout) => {
-    console.log(`pushing`, altLayout)
     houseTransformsGroup.userData.layouts.alts.push(ref(altLayout))
+    setInvisibleNoRaycast(altLayout.houseLayoutGroup)
+    houseTransformsGroup.add(altLayout.houseLayoutGroup)
   }
 
   const dropAltLayout = ({ houseLayoutGroup }: AltLayout) => {

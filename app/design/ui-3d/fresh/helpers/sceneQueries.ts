@@ -4,6 +4,7 @@ import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, Num, O, Ord, someOrError } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import {
+  AltLayout,
   ColumnGroup,
   ElementMesh,
   HouseLayoutGroup,
@@ -24,10 +25,13 @@ export const sortColumnsByIndex = A.sort(
   )
 )
 
-export const sortLayoutGroupsByWidth = A.sort(
+export const sortAltLayoutsByWidth = A.sort(
   pipe(
     Num.Ord,
-    Ord.contramap((x: HouseLayoutGroup) => x.userData.width)
+    Ord.contramap(
+      (x: { houseLayoutGroup: HouseLayoutGroup }) =>
+        x.houseLayoutGroup.userData.width
+    )
   )
 )
 
