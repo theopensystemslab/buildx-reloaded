@@ -122,8 +122,8 @@ export type HouseTransformsGroupUserData = {
   setLevelCut: (levelIndex: number | null) => void
   // layouts
   layouts: Layouts
-  activeLayoutDnas: string[]
   getActiveLayoutGroup: () => HouseLayoutGroup
+  getVisibleLayoutGroup: () => HouseLayoutGroup
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void

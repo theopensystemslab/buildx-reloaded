@@ -225,6 +225,13 @@ export const createHouseTransformsGroup = ({
   const getActiveLayoutGroup = (): HouseLayoutGroup =>
     houseTransformsGroup.userData.layouts.active
 
+  const getVisibleLayoutGroup = (): HouseLayoutGroup => {
+    const { layouts } = houseTransformsGroup.userData
+
+    return layouts.preview !== null
+      ? layouts.preview.houseLayoutGroup
+      : layouts.active
+  }
   // pipe(
   //   houseTransformsGroup.children,
   //   A.findFirst(
@@ -338,8 +345,6 @@ export const createHouseTransformsGroup = ({
       const { columnIndex, levelIndex, moduleIndex } = target
 
       const side = getSide(houseTransformsGroup)
-
-      const { activeLayoutDnas: dnas } = houseTransformsGroup.userData
 
       const altWindowTypeLayouts =
         await getLayoutsWorker().getAltWindowTypeLayouts({
@@ -504,7 +509,7 @@ export const createHouseTransformsGroup = ({
 
   const setZStretchHandlesVisible = (bool: boolean = true) => {
     pipe(
-      houseTransformsGroup.userData.getActiveLayoutGroup(),
+      getVisibleLayoutGroup(),
       findAllGuardDown(isZStretchHandleGroup),
       A.map((x) => void setVisible(x, bool))
     )
@@ -818,7 +823,7 @@ export const createHouseTransformsGroup = ({
 
   const houseTransformsGroupUserData: Omit<
     HouseTransformsGroupUserData,
-    "activeLayoutDnas" | "layouts"
+    "layouts"
   > = {
     type: UserDataTypeEnum.Enum.HouseTransformsGroup,
     systemId,
@@ -836,6 +841,7 @@ export const createHouseTransformsGroup = ({
     initRotateAndStretchXHandles,
     updateHandles,
     getActiveLayoutGroup,
+    getVisibleLayoutGroup,
     setXStretchHandlesVisible,
     setZStretchHandlesVisible,
     setRotateHandlesVisible,

@@ -12,7 +12,6 @@ import {
 import {
   AltLayout,
   AltLayoutGroupType,
-  AltSectionTypeLayout,
   HouseLayoutGroup,
   HouseTransformsGroup,
   isXStretchHandleGroup,
@@ -165,7 +164,7 @@ const useOnDragStretchX = () => {
               houseTransformsGroup.userData.setPreviewLayout(layout)
             }
             // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
-            // houseTransformsGroup.userData.setZStretchHandlesVisible(false)
+            houseTransformsGroup.userData.setZStretchHandlesVisible(false)
             stretchXData.current!.fenceIndex++
             stepHandle()
           }
@@ -194,14 +193,13 @@ const useOnDragStretchX = () => {
   }
 
   const last = () => {
-    return
     const { fences, fenceIndex, houseTransformsGroup } = stretchXData.current!
     const { layout } = fences[fenceIndex]
     if (layout.type === "ACTIVE") {
       if (houseTransformsGroup.userData.layouts.preview !== null)
         houseTransformsGroup.userData.setPreviewLayout(null)
     } else {
-      // houseTransformsGroup.userData.setActiveLayout(layout)
+      houseTransformsGroup.userData.setActiveLayout(layout)
     }
     // houseTransformsGroup.userData.setActiveLayoutGroup(activeLayoutGroup)
     houseTransformsGroup.userData.updateHandles()

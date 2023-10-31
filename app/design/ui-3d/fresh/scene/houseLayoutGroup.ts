@@ -184,18 +184,18 @@ export const createHouseLayoutGroup = ({
 
             houseLayoutGroup.userData.dnas = nextDnas
 
-            const houseTransformsGroup =
-              houseLayoutGroup.parent as HouseTransformsGroup
+            // const houseTransformsGroup =
+            //   houseLayoutGroup.parent as HouseTransformsGroup
 
-            if (
-              houseTransformsGroup.userData.layouts.active === houseLayoutGroup
-            ) {
-              return houseTransformsGroup.userData.updateActiveLayoutDnas(
-                nextDnas
-              )
-            } else {
-              return Promise.resolve()
-            }
+            // if (
+            //   houseTransformsGroup.userData.layouts.active === houseLayoutGroup
+            // ) {
+            //   return houseTransformsGroup.userData.updateActiveLayoutDnas(
+            //     nextDnas
+            //   )
+            // } else {
+            //   return Promise.resolve()
+            // }
           }
 
           const initStretchZHandles = () => {
