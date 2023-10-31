@@ -54,7 +54,6 @@ export const getModuleWindowTypeAlts = ({
 
           return x.structuredDna[k] !== parsedStructuredDna[k]
         })
-        // pipeLogWith((alts) => ({ alts: alts.map((x) => x.dna), original: dna }))
       )
     )
   )

@@ -120,6 +120,7 @@ const ChangeLevelType = (props: Props) => {
     scopeElement,
     scopeElement: { dna },
     houseTransformsGroup,
+    close,
   } = props
 
   const levelTypes = useAllLevelTypes().filter(
@@ -208,19 +209,13 @@ const ChangeLevelType = (props: Props) => {
     )
   }, [houseTransformsGroup.userData, levelTypes, scopeElement])
 
-  // const locked = useRef(false)
-
-  // useEffect(() => {
-  //   locked.current = false
-  // }, [])
-
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    // if (locked.current) return
-
     const { setPreviewLayout } = houseTransformsGroup.userData
 
-    if (incoming && !isActiveLayout(incoming.layout)) {
-      setPreviewLayout(incoming.layout)
+    if (incoming) {
+      if (!isActiveLayout(incoming.layout)) {
+        setPreviewLayout(incoming.layout)
+      }
     } else {
       setPreviewLayout(null)
     }
@@ -229,12 +224,6 @@ const ChangeLevelType = (props: Props) => {
   }
 
   const changeLevelType = ({ layout }: LevelTypeOption["value"]) => {
-    // locked.current = true
-
-    // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
-
-    // close()
-
     const { setActiveLayout, setPreviewLayout, updateDB } =
       houseTransformsGroup.userData
 

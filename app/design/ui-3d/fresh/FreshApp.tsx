@@ -123,7 +123,7 @@ const FreshApp = () => {
         objectToHouse(object),
         O.map((houseTransformsGroup) => {
           if (refreshLevelAlts) {
-            // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
+            houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
           }
           if (refreshWindowAlts) {
             // houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)

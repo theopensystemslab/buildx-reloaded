@@ -239,7 +239,8 @@ export const createHouseTransformsGroup = ({
 
   const setPreviewLayout = (altLayout: AltLayout | null) => {
     const { layouts } = houseTransformsGroup.userData
-    if (altLayout) {
+
+    if (altLayout !== null) {
       if (layouts.preview) {
         setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
       } else {
@@ -247,7 +248,9 @@ export const createHouseTransformsGroup = ({
       }
       layouts.preview = ref(altLayout)
       setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
-    } else {
+    }
+
+    if (altLayout === null) {
       if (layouts.preview) {
         setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
         houseTransformsGroup.userData.layouts.preview = null
@@ -258,6 +261,7 @@ export const createHouseTransformsGroup = ({
 
   const setVisibleLayout = (layout: Layout) => {
     const { layouts } = houseTransformsGroup.userData
+
     if (isActiveLayout(layout)) {
       setVisibleAndRaycast(layout.houseLayoutGroup)
       if (layouts.preview) {
@@ -336,7 +340,7 @@ export const createHouseTransformsGroup = ({
         houseLayout: layout,
         houseTransformsGroup,
       })().then((houseLayoutGroup) => {
-        houseTransformsGroup.userData.layouts.alts.push({
+        pushAltLayout({
           type: LayoutType.Enum.ALT_LEVEL_TYPE,
           houseLayoutGroup,
           levelType,
@@ -892,22 +896,6 @@ export const createHouseTransformsGroup = ({
       updateHandles()
       switchHandlesVisibility()
       setVerticalCuts()
-      // const relayout = () => {
-      //   console.log(layouts)
-      //   if (layouts.preview) {
-      //   } else {
-      //     layouts.active.userData.updateBBs()
-      //   }
-      // }
-
-      // subscribe(layouts, relayout)
-
-      subscribeKey(layouts, "alts", () => {
-        console.log(`new alts`)
-        console.log(layouts.alts)
-      })
-
-      // relayout()
 
       return houseTransformsGroup
     })
