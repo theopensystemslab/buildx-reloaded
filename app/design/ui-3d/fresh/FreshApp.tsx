@@ -126,7 +126,7 @@ const FreshApp = () => {
             houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
           }
           if (refreshWindowAlts) {
-            // houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
+            houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
           }
         })
       )

@@ -1,27 +1,27 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useMemo, useRef } from "react"
+import { useMemo } from "react"
 import { WindowType } from "../../../../../server/data/windowTypes"
 import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
 import Radio from "../../../../ui/Radio"
 import { Opening } from "../../../../ui/icons"
-import { A, O, debounce } from "../../../../utils/functions"
+import { A, O, compareProps } from "../../../../utils/functions"
 import { getWindowType } from "../../../../workers/layouts/worker"
 import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
 import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
-  LayoutType,
   AltWindowTypeLayout,
-  HouseLayoutGroup,
   HouseTransformsGroup,
-  isHouseLayoutGroup,
+  Layout,
+  LayoutType,
+  isActiveLayout,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuNested from "./ContextMenuNested"
 
 type WindowTypeOption = {
   label: string
-  value: { windowType: WindowType; houseLayoutGroup: HouseLayoutGroup }
+  value: { windowType: WindowType; layout: Layout }
   thumbnail?: string
 }
 
@@ -56,8 +56,7 @@ const ChangeWindows = (props: Props) => {
             O.map((originalWindowType) => {
               const originalWindowTypeOption: WindowTypeOption | null = {
                 value: {
-                  houseLayoutGroup:
-                    houseTransformsGroup.userData.getActiveLayoutGroup(),
+                  layout: houseTransformsGroup.userData.getActiveLayout(),
                   windowType: originalWindowType,
                 },
                 label: originalWindowType.description,
@@ -67,12 +66,19 @@ const ChangeWindows = (props: Props) => {
                 houseTransformsGroup.userData.layouts.alts,
                 A.filter(
                   (x): x is AltWindowTypeLayout =>
-                    x.type === LayoutType.Enum.ALT_WINDOW_TYPE
+                    x.type === LayoutType.Enum.ALT_WINDOW_TYPE &&
+                    compareProps(scopeElement, x.target, [
+                      "houseId",
+                      "columnIndex",
+                      "levelIndex",
+                      "moduleIndex",
+                    ])
                 ),
-                A.map(({ windowType, houseLayoutGroup }) => {
+                A.map((layout) => {
+                  const { windowType } = layout
                   return {
                     value: {
-                      houseLayoutGroup,
+                      layout,
                       windowType,
                     },
                     label: windowType.description,
@@ -108,37 +114,40 @@ const ChangeWindows = (props: Props) => {
           windowTypeOptions: [] as WindowTypeOption[],
         }))
       ),
-    [allModules, houseTransformsGroup, scopeElement.dna, systemId, windowTypes]
+    [allModules, houseTransformsGroup, scopeElement, systemId, windowTypes]
   )
 
-  const locked = useRef(false)
-
-  useEffect(() => {
-    locked.current = false
-  }, [])
-
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    if (locked.current) return
+    const { setPreviewLayout } = houseTransformsGroup.userData
 
     if (incoming) {
-      houseTransformsGroup.userData.setActiveLayoutGroup(
-        incoming.houseLayoutGroup
-      )
-      houseTransformsGroup.userData.updateHandles()
+      if (!isActiveLayout(incoming.layout)) {
+        setPreviewLayout(incoming.layout)
+      }
+      // houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layout)
+      // houseTransformsGroup.userData.updateHandles()
     } else {
-      if (originalWindowTypeOption)
-        houseTransformsGroup.userData.setActiveLayoutGroup(
-          originalWindowTypeOption.value.houseLayoutGroup
-        )
+      setPreviewLayout(null)
+      // if (originalWindowTypeOption)
+      //   houseTransformsGroup.userData.setActiveLayoutGroup(
+      //     originalWindowTypeOption.value.layout
+      //   )
     }
 
     invalidate()
   }
 
-  const changeWindowType = () => {
-    locked.current = true
+  const changeWindowType = ({ layout }: WindowTypeOption["value"]) => {
+    const { setActiveLayout, setPreviewLayout, updateDB } =
+      houseTransformsGroup.userData
 
-    houseTransformsGroup.userData.updateDB().then(() => {
+    if (!isActiveLayout(layout)) {
+      setActiveLayout(layout)
+    }
+
+    setPreviewLayout(null)
+
+    updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
