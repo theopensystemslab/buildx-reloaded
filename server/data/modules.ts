@@ -2,10 +2,10 @@ import { QueryParams } from "airtable/lib/query_params"
 import { pipe } from "fp-ts/lib/function"
 import * as z from "zod"
 import { A, O, R, S } from "~/utils/functions"
-import { useWindowTypes } from "../../app/data/windowTypes"
 import { systemFromId } from "./system"
 import { QueryFn } from "./types"
 import { WindowType } from "./windowTypes"
+import { useAllWindowTypes } from "../../app/db/systems"
 
 export const moduleSelector: QueryParams<any> = {
   filterByFormula: 'speckle_branch_url!=""',
@@ -179,7 +179,7 @@ export const modulesQuery: QueryFn<Module> =
   }
 
 export const useGetModuleWindowTypes = () => {
-  const windowTypes = useWindowTypes()
+  const windowTypes = useAllWindowTypes()
 
   return (module: Module) =>
     pipe(

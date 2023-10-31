@@ -1,9 +1,14 @@
 import { liveQuery } from "dexie"
 import { flow, identity, pipe } from "fp-ts/lib/function"
 import { Module } from "../../../server/data/modules"
-import layoutsDB, { PositionedColumn, PositionedRow } from "../../db/layouts"
+import layoutsDB, {
+  IndexedVanillaModule,
+  PositionedColumn,
+  createRow,
+  positionRows,
+} from "../../db/layouts"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, all, O, Ord, S } from "../../utils/functions"
+import { A, O, Ord, S, T, all, someOrError } from "../../utils/functions"
 import { getModules } from "./modules"
 
 export const createVanillaModuleGetter =
@@ -87,38 +92,58 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
   }
 )
 
-export const getIndexedVanillaModule = ({
-  systemId,
-  sectionType,
-  positionType,
-  levelType,
-  gridType,
-}: {
-  systemId: string
-  sectionType: string
-  positionType: string
-  levelType: string
-  gridType: string
-}) =>
-  layoutsDB.vanillaModules.get([
+export const getIndexedVanillaModule =
+  ({
     systemId,
     sectionType,
     positionType,
     levelType,
     gridType,
-  ])
+  }: Omit<IndexedVanillaModule, "moduleDna">): T.Task<
+    IndexedVanillaModule | undefined
+  > =>
+  () =>
+    layoutsDB.vanillaModules.get([
+      systemId,
+      sectionType,
+      positionType,
+      levelType,
+      gridType,
+    ])
 
-export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
-  const modules = await getModules()
+export const getVanillaModule = flow(
+  getIndexedVanillaModule,
+  T.chain((indexedVanillaModule) => {
+    if (!indexedVanillaModule) {
+      throw new Error(`no vanilla`)
+    }
 
+    return pipe(
+      () => getModules(),
+      T.map((allModules) =>
+        pipe(
+          allModules,
+          A.findFirst(
+            ({ systemId, dna }) =>
+              systemId === indexedVanillaModule.systemId &&
+              indexedVanillaModule.moduleDna === dna
+          ),
+          someOrError(`no vanilla`)
+        )
+      )
+    )
+  })
+)
+
+export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
   pipe(
-    arbitraryColumn.gridGroups,
-    A.traverse(O.Applicative)(
+    arbitraryColumn.positionedRows,
+    A.traverse(T.ApplicativeSeq)(
       ({
         levelIndex,
         levelType,
         y,
-        modules: [
+        positionedModules: [
           {
             module,
             module: {
@@ -126,68 +151,68 @@ export const postVanillaColumn = async (arbitraryColumn: PositionedColumn) => {
             },
           },
         ],
-      }): O.Option<PositionedRow> => {
-        const getVanillaModule = createVanillaModuleGetter(modules)({
-          constrainGridType: false,
-          sectionType,
-          levelType,
-          positionType: "MID",
-        })
+      }) => {
+        const {
+          systemId,
+          structuredDna: { gridType, positionType },
+        } = module
+
         return pipe(
-          module,
-          getVanillaModule,
-          O.map((vanillaModule) => ({
-            modules: [
-              {
-                module: vanillaModule,
-                gridGroupIndex: 0,
-                // TODO: document me (quirk)
-                z: vanillaModule.length / 2,
-              },
-            ],
-            length: vanillaModule.length,
-            y,
-            levelIndex,
-            levelType,
-          }))
+          () => getModules(),
+          T.chain((modules) => {
+            const getVanillaModule = createVanillaModuleGetter(modules)({
+              constrainGridType: false,
+              sectionType,
+              levelType,
+              positionType: "MID",
+            })
+
+            return pipe(
+              getVanillaModule(module),
+              O.map((vanillaModule) => createRow([vanillaModule])),
+              someOrError(`no vanilla module for ${module.dna}`)
+              // T.map((vanillaModule) => createRow([vanillaModule]))
+            )
+          })
         )
+
+        // return pipe(
+        //   getVanillaModule({
+        //     systemId,
+        //     sectionType,
+        //     positionType,
+        //     levelType,
+        //     gridType,
+        //   }),
+        //   T.chain((vanillaModule) => createRow([vanillaModule]))
+        // )
       }
     ),
-    O.map((gridGroups) => {
+    T.map(positionRows),
+    T.map((positionedRows) => {
+      const columnLength = positionedRows.reduce(
+        (acc, { positionedModules }) =>
+          acc + positionedModules.reduce((bcc, w) => bcc + w.module.length, 0),
+        0
+      )
+      const {
+        systemId,
+        structuredDna: { sectionType },
+      } = positionedRows[0].positionedModules[0].module
+
       const levelTypes = pipe(
-        gridGroups,
-        A.map((gridGroup) => gridGroup.levelType)
+        positionedRows,
+        A.map((row) => row.levelType)
       )
 
-      pipe(
-        gridGroups,
-        A.head,
-        O.chain((gridGroup) =>
-          pipe(
-            gridGroup.modules,
-            A.head,
-            O.map((firstModule) => {
-              const {
-                module: {
-                  systemId,
-                  structuredDna: { sectionType },
-                  length,
-                },
-              } = firstModule
-
-              layoutsDB.vanillaColumns.put({
-                systemId,
-                levelTypes,
-                sectionType,
-                vanillaColumn: {
-                  gridGroups,
-                  length,
-                },
-              })
-            })
-          )
-        )
-      )
+      return layoutsDB.vanillaColumns.put({
+        systemId,
+        levelTypes,
+        sectionType,
+        vanillaColumn: {
+          positionedRows,
+          columnLength,
+        },
+      })
     })
   )
-}

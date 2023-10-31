@@ -10,7 +10,7 @@ import {
 import { OBB } from "three-stdlib"
 import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
-import { ColumnLayout, VanillaColumn } from "../../../../db/layouts"
+import { ColumnLayout, Column } from "../../../../db/layouts"
 import { O } from "../../../../utils/functions"
 import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
@@ -70,7 +70,6 @@ export type HouseTransformsGroupUserData = {
   setVerticalCuts: () => void
   setLevelCut: (levelIndex: number | null) => void
   // layouts
-  activeLayoutGroupUuid: string
   activeLayoutDnas: string[]
   updateActiveLayoutDnas: (x: string[]) => void
   getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
@@ -78,6 +77,7 @@ export type HouseTransformsGroupUserData = {
   setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
+  refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void
@@ -111,6 +111,7 @@ export const HouseLayoutGroupUse = z.enum([
   "RESET",
   "ALT_SECTION_TYPE",
   "ALT_LEVEL_TYPE",
+  "ALT_WINDOW_TYPE",
 ])
 
 export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>
@@ -120,7 +121,7 @@ export type HouseLayoutGroupUserData = {
   use: HouseLayoutGroupUse
   dnas: string[]
   houseLayout: ColumnLayout
-  vanillaColumn: VanillaColumn
+  vanillaColumn: Column
   levelTypes: string[]
   obb: OBB
   aabb: Box3
@@ -135,6 +136,7 @@ export type HouseLayoutGroupUserData = {
   updateDnas: () => void
   updateBBs: () => void
   renderBBs: () => void
+  updateZStretchHandles: () => void
 }
 
 export type ColumnGroupUserData = {
@@ -274,10 +276,19 @@ export const isColumnGroup = (node: Object3D): node is ColumnGroup =>
 export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
 
+export const isHiddenLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
+  isHouseLayoutGroup(node) &&
+  node.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE
+
+export const isWindowTypeAltLayoutGroup = (
+  node: Object3D
+): node is HouseLayoutGroup =>
+  isHouseLayoutGroup(node) &&
+  node.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+
 export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   isHouseLayoutGroup(node) &&
-  node.uuid ===
-    (node.parent as HouseTransformsGroup).userData.activeLayoutGroupUuid
+  node.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
 
 export const isHouseTransformsGroup = (
   node: Object3D
@@ -323,7 +334,7 @@ export const elementMeshToScopeItem = (object: Object3D): ScopeElement => {
 
   return {
     ifcTag,
-    gridGroupIndex,
+    moduleIndex: gridGroupIndex,
     levelIndex,
     columnIndex,
     houseId,

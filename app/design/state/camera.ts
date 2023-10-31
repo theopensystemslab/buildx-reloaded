@@ -3,7 +3,6 @@ import { useMemo } from "react"
 import { Matrix4, Raycaster, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
-import houses from "./houses"
 
 type CameraProxy = {
   controls: CameraControls | null
@@ -39,7 +38,7 @@ export const getSide = (houseTransformsGroup: HouseTransformsGroup) => {
   const v = new Vector3()
   v.crossVectors(houseDirection, cameraDirection)
 
-  return v.y < 0 ? "LEFT" : "RIGHT"
+  return v.y < 0 ? "RIGHT" : "LEFT"
 }
 
 // export const useCameraFocus = () => {

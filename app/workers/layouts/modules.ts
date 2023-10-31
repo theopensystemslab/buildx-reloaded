@@ -1,7 +1,8 @@
 import { pipe } from "fp-ts/lib/function"
 import { Module, parseDna } from "../../../server/data/modules"
 import systemsDB, { LastFetchStamped } from "../../db/systems"
-import { A, compareProps } from "../../utils/functions"
+import { A, T, compareProps } from "../../utils/functions"
+import { Side } from "../../design/state/camera"
 
 let modulesCache: LastFetchStamped<Module>[] = []
 
@@ -11,32 +12,49 @@ export const getModules = async () => {
   return modulesCache
 }
 
-export const getWindowTypeAlternatives = async ({
+export const getWindowTypeAlternatives = ({
   systemId,
   dna,
+  side,
 }: {
   systemId: string
   dna: string
-}) => {
-  const allModules = await getModules()
-
+  side: Side
+}): T.Task<LastFetchStamped<Module>[]> => {
   const parsedStructuredDna = parseDna(dna)
+  const { levelType, positionType, windowTypeTop, windowTypeEnd } =
+    parsedStructuredDna
 
   return pipe(
-    allModules,
-    A.filter(
-      (x) =>
-        x.systemId === systemId &&
-        x.dna !== dna &&
-        compareProps(x.structuredDna, parsedStructuredDna, [
-          "sectionType",
-          "positionType",
-          "levelType",
-          "gridType",
-          "gridUnits",
-          "stairsType",
-          "internalLayoutType",
-        ])
+    () => getModules(),
+    T.map((looseCandidates) =>
+      pipe(
+        looseCandidates,
+        A.filter((x) => {
+          let check =
+            x.systemId === systemId &&
+            x.dna !== dna &&
+            compareProps(x.structuredDna, parsedStructuredDna, [
+              "sectionType",
+              "positionType",
+              "levelType",
+              "gridType",
+            ])
+
+          if (!check) return false
+
+          if (positionType === "END")
+            return x.structuredDna.windowTypeEnd !== windowTypeEnd
+
+          if (levelType[0] === "R")
+            return x.structuredDna.windowTypeTop !== windowTypeTop
+
+          const k: keyof typeof parsedStructuredDna =
+            side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
+
+          return x.structuredDna[k] !== parsedStructuredDna[k]
+        })
+      )
     )
   )
 }

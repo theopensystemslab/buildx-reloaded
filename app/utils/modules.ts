@@ -1,30 +1,15 @@
 import { sum } from "fp-ts-std/Array"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
-import { trpc } from "@/client/trpc"
-import { Module, StructuredDna } from "../../server/data/modules"
-import { StairType } from "../../server/data/stairTypes"
-import { useGetVanillaModule } from "../design/state/vanilla"
 import { A, Num, O, Ord, R, SG } from "~/utils/functions"
 import { abs, hamming } from "~/utils/math"
-
-export const useModules = (): Module[] => {
-  const { data = [] } = trpc.modules.useQuery()
-
-  return data as Module[]
-}
-
-export const useSystemModules = ({
-  systemId,
-}: {
-  systemId: string
-}): Module[] => {
-  return useModules().filter((x) => x.systemId === systemId)
-}
+import { Module, StructuredDna } from "../../server/data/modules"
+import { StairType } from "../../server/data/stairTypes"
+import { useSystemModules } from "../db/systems"
 
 export const useGetStairsModule = (systemId: string) => {
   // const { modules: allModules } = useSystemsData()
-  const systemModules = useSystemModules({ systemId })
+  const systemModules = useSystemModules(systemId)
 
   return (
     oldModule: Module,
@@ -57,37 +42,6 @@ export const useGetStairsModule = (systemId: string) => {
         "windowTypeEnd",
         "windowTypeTop",
       ])
-    )
-  }
-}
-
-export const usePadColumn = (systemId: string) => {
-  const getVanillaModule = useGetVanillaModule(systemId)
-
-  return (levels: Module[][]) => {
-    const target = pipe(
-      levels,
-      A.reduce(0, (b, level) => {
-        const x = pipe(
-          level,
-          A.reduce(0, (c, m) => c + m.structuredDna.gridUnits)
-        )
-        return x > b ? x : b
-      })
-    )
-
-    return pipe(
-      levels,
-      A.map((level) => {
-        const levelLength = level.reduce(
-          (acc, v) => acc + v.structuredDna.gridUnits,
-          0
-        )
-        return [
-          ...level,
-          ...A.replicate(target - levelLength, getVanillaModule(level[0])),
-        ]
-      })
     )
   }
 }

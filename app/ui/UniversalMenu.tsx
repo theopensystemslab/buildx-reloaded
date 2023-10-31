@@ -1,11 +1,11 @@
 import Sidebar from "~/ui//Sidebar"
-import houses from "~/design/state/houses"
 // import map from "@/src/hooks/map"
-import React, { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
-import { usePathname, useRouter } from "next/navigation"
+import userDB, { useHouses } from "../db/user"
 
 type Props = {
   open: boolean
@@ -20,10 +20,8 @@ const UniversalMenu = ({ open, close }: Props) => {
 
   const reallyDelete = () => {
     setDeleting(true)
-    localStorage.clear()
-    Object.keys(houses).forEach((k) => {
-      delete houses[k]
-    })
+    userDB.houses.clear()
+
     // map.polygon = null
     // map.mode = "SEARCH"
     // if (path === "map") {

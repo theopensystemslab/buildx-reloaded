@@ -114,7 +114,7 @@ const useGestures = () => {
           hoveredObjects: [],
         })
         invalidate()
-        // scope.hovered = null
+        scope.hovered = null
         return
       }
 
@@ -209,6 +209,9 @@ const useGestures = () => {
                 prev: mode,
                 next: SiteCtxModeEnum.Enum.BUILDING,
                 houseId,
+              })
+              dispatchOutline({
+                selectedObjects: [],
               })
               break
             case SiteCtxModeEnum.Enum.BUILDING:

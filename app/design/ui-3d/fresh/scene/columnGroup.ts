@@ -2,10 +2,10 @@ import { liveQuery } from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { Group } from "three"
 import layoutsDB, {
+  Column,
   ColumnLayout,
   getVanillaColumnsKey,
-  GridGroup,
-  VanillaColumn,
+  PositionedRow,
   VanillaColumnsKey,
 } from "../../../../db/layouts"
 import { A, O, R, T } from "../../../../utils/functions"
@@ -21,7 +21,7 @@ import {
 } from "./userData"
 
 // serialized layout key : column
-export let vanillaColumns: Record<string, VanillaColumn> = {}
+export let vanillaColumns: Record<string, Column> = {}
 
 liveQuery(() => layoutsDB.vanillaColumns.toArray()).subscribe(
   (dbVanillaColumns) => {
@@ -39,7 +39,7 @@ export const getVanillaColumn = ({
   systemId,
   sectionType,
   levelTypes,
-}: VanillaColumnsKey): T.Task<VanillaColumn> => {
+}: VanillaColumnsKey): T.Task<Column> => {
   const key = getVanillaColumnsKey({ systemId, sectionType, levelTypes })
 
   return pipe(
@@ -79,7 +79,7 @@ export const createColumnGroup =
   ({
     systemId,
     houseId,
-    gridGroups,
+    positionedRows,
     columnIndex,
     startColumn = false,
     endColumn = false,
@@ -87,7 +87,7 @@ export const createColumnGroup =
   }: {
     systemId: string
     houseId: string
-    gridGroups: GridGroup[]
+    positionedRows: PositionedRow[]
     columnIndex: number
     startColumn?: boolean
     endColumn?: boolean
@@ -96,11 +96,15 @@ export const createColumnGroup =
   async () => {
     const columnGroup = new Group()
 
-    for (let { modules, y, levelIndex } of gridGroups) {
+    for (let { positionedModules, y, levelIndex } of positionedRows) {
       const gridGroup = new Group()
       let length = 0
 
-      for (let { z, module, gridGroupIndex } of modules) {
+      for (let {
+        z,
+        module,
+        moduleIndex: gridGroupIndex,
+      } of positionedModules) {
         const moduleGroup = await createModuleGroup({
           systemId,
           houseId,
@@ -123,7 +127,7 @@ export const createColumnGroup =
         type: UserDataTypeEnum.Enum.GridGroup,
         levelIndex,
         length,
-        height: modules[0].module.height,
+        height: positionedModules[0].module.height,
       }
       gridGroup.userData = gridGroupUserData
 
@@ -133,7 +137,7 @@ export const createColumnGroup =
     const columnGroupUserData: ColumnGroupUserData = {
       type: UserDataTypeEnum.Enum.ColumnGroup,
       columnIndex,
-      length: gridGroups[0].length,
+      length: positionedRows[0].rowLength,
       startColumn,
       endColumn,
     }
@@ -157,14 +161,14 @@ export const createColumnGroups = ({
   pipe(
     houseLayout,
     A.traverseWithIndex(T.ApplicativeSeq)(
-      (i, { gridGroups, z, columnIndex }) => {
+      (i, { positionedRows, z, columnIndex }) => {
         const startColumn = i === 0
         const endColumn = i === houseLayout.length - 1
 
         const task = createColumnGroup({
           systemId,
           houseId,
-          gridGroups,
+          positionedRows,
           startColumn,
           endColumn,
           columnIndex,

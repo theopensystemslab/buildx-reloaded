@@ -5,11 +5,14 @@ import { A, Num, O, Ord, someOrError } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import {
   ColumnGroup,
+  ElementMesh,
   HouseLayoutGroup,
+  HouseLayoutGroupUse,
   HouseLayoutGroupUserData,
   HouseTransformsGroup,
   HouseTransformsGroupUserData,
   isColumnGroup,
+  isElementMesh,
   isHouseLayoutGroup,
   isHouseTransformsGroup,
   UserDataTypeEnum,
@@ -152,10 +155,8 @@ export const getHouseGroupColumns = (houseGroup: Group) =>
 export const getActiveHouseUserData = (
   houseTransformsGroup: HouseTransformsGroup
 ) => {
-  const activeLayoutGroup = pipe(
-    houseTransformsGroup.userData.getActiveLayoutGroup(),
-    someOrError(`no active layout group in getActiveHouseUserData`)
-  )
+  const activeLayoutGroup =
+    houseTransformsGroup.userData.unsafeGetActiveLayoutGroup()
 
   return {
     ...houseTransformsGroup.userData,
@@ -174,9 +175,7 @@ export const getPartitionedLayoutGroups = (
   pipe(
     houseTransformsGroup,
     getLayoutGroups,
-    A.partition(
-      (x) => x.uuid === houseTransformsGroup.userData.activeLayoutGroupUuid
-    ),
+    A.partition((x) => x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE),
     ({ left: otherLayoutGroups, right: [activeLayoutGroup] }) => ({
       activeLayoutGroup,
       otherLayoutGroups,
@@ -256,12 +255,24 @@ export const objectToHouse = (object: Object3D) =>
 export const objectToIfcTagObjects = (object: Object3D) => {
   const ifcTag: string = object.userData.ifcTag
 
-  return object.parent!.parent!.parent!.parent!.children.flatMap((x) =>
-    x.children.flatMap((y) =>
-      y.children.flatMap((z) =>
-        z.children.filter((x) => x.userData.ifcTag === ifcTag)
+  return pipe(
+    object,
+    findFirstGuardUp(isHouseTransformsGroup),
+    O.chain((htg) =>
+      pipe(
+        htg.userData.getActiveLayoutGroup(),
+        O.map((activeLayoutGroup) =>
+          pipe(
+            activeLayoutGroup,
+            findAllGuardDown(
+              (x): x is ElementMesh =>
+                isElementMesh(x) && x.userData.ifcTag === ifcTag
+            )
+          )
+        )
       )
-    )
+    ),
+    O.getOrElse((): ElementMesh[] => [])
   )
 }
 

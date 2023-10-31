@@ -93,18 +93,20 @@ const MaterialsListTable = (props: Props) => {
         header: () => <span>Estimated cost per unit</span>,
       }),
       columnHelper.accessor("cost", {
-        cell: (info) => <span>{formatWithSymbol(info.getValue())}</span>,
+        cell: (info) => (
+          <span>{formatWithSymbol(info.getValue().toFixed(0))}</span>
+        ),
         header: () => <span>Estimated cost</span>,
         footer: () => <span>{formatWithSymbol(totalEstimatedCost)}</span>,
       }),
       columnHelper.accessor("embodiedCarbonCost", {
         cell: (info) => (
-          <span>{`${Number(info.getValue()).toFixed(1)}T CO₂`}</span>
+          <span>{`${Number(info.getValue()).toFixed(0)} T CO₂`}</span>
         ),
         header: () => <span>Carbon cost</span>,
         footer: () => (
           <span>
-            {totalCarbonCost}
+            {totalCarbonCost.toFixed(0)}
             {` T CO₂`}
           </span>
         ),

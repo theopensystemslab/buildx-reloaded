@@ -34,6 +34,7 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
   isModuleGroup,
+  isZStretchHandleGroup,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -56,9 +57,9 @@ export const houseLayoutToLevelTypes = (columnLayout: ColumnLayout) =>
   pipe(
     columnLayout,
     A.head,
-    O.map(({ gridGroups }) =>
+    O.map(({ positionedRows }) =>
       pipe(
-        gridGroups,
+        positionedRows,
         A.map(({ levelType }) => levelType)
       )
     ),
@@ -93,11 +94,13 @@ export const createHouseLayoutGroup = ({
       const activeColumnGroupCount = columnGroups.length
 
       const sectionType =
-        houseLayout[0].gridGroups[0].modules[0].module.structuredDna.sectionType
+        houseLayout[0].positionedRows[0].positionedModules[0].module
+          .structuredDna.sectionType
 
-      const width = houseLayout[0].gridGroups[0].modules[0].module.width
-      const height = houseLayout[0].gridGroups.reduce(
-        (acc, v) => acc + v.modules[0].module.height,
+      const width =
+        houseLayout[0].positionedRows[0].positionedModules[0].module.width
+      const height = houseLayout[0].positionedRows.reduce(
+        (acc, v) => acc + v.positionedModules[0].module.height,
         0
       )
       const length = columnGroups.reduce(
@@ -188,8 +191,8 @@ export const createHouseLayoutGroup = ({
               houseLayoutGroup.parent as HouseTransformsGroup
 
             if (
-              houseTransformsGroup.userData.activeLayoutGroupUuid ===
-              houseLayoutGroup.uuid
+              houseTransformsGroup.userData.use ===
+              HouseLayoutGroupUse.Enum.ACTIVE
             ) {
               return houseTransformsGroup.userData.updateActiveLayoutDnas(
                 nextDnas
@@ -371,6 +374,14 @@ export const createHouseLayoutGroup = ({
             renderAABB()
           }
 
+          const updateZStretchHandles = () => {
+            houseLayoutGroup.traverse((node) => {
+              if (isZStretchHandleGroup(node)) {
+                node.userData.update()
+              }
+            })
+          }
+
           const userData: HouseLayoutGroupUserData = {
             type: UserDataTypeEnum.Enum.HouseLayoutGroup,
             dnas,
@@ -391,6 +402,7 @@ export const createHouseLayoutGroup = ({
             updateDnas,
             updateBBs,
             renderBBs,
+            updateZStretchHandles,
           }
 
           houseLayoutGroup.userData = userData

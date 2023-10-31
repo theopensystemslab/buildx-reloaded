@@ -1,13 +1,13 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense, useRef } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { suspend } from "suspend-react"
 import Radio from "~/ui//Radio"
 import { ChangeLevel } from "~/ui/icons"
-import { A, someOrError } from "~/utils/functions"
+import { A, debounce, someOrError } from "~/utils/functions"
 import { LevelType } from "../../../../../server/data/levelTypes"
 import { parseDna } from "../../../../../server/data/modules"
-import systemsDB from "../../../../db/systems"
+import systemsDB, { useAllLevelTypes } from "../../../../db/systems"
 import { ScopeElement } from "../../../state/scope"
 import { findFirstGuardDown } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
@@ -32,20 +32,15 @@ type LevelTypeOption = {
   value: { levelType: LevelType; layoutGroup: HouseLayoutGroup }
 }
 
-const ChangeLevelTypeOptions = (props: Props) => {
-  const { houseTransformsGroup, scopeElement, close } = props
+const ChangeLevelTypeOptions = (props: Props & { levelTypes: LevelType[] }) => {
+  const { houseTransformsGroup, scopeElement, close, levelTypes } = props
 
-  const { levelTypeOptions, originalLevelTypeOption } = suspend(async () => {
-    const { systemId } = houseTransformsGroup.userData
+  const { levelTypeOptions, originalLevelTypeOption } = (() => {
     const { levelIndex } = scopeElement
-
-    const allLevelTypes = await systemsDB.levelTypes
-      .where({ systemId })
-      .toArray()
 
     const getLevelType = (code: string) =>
       pipe(
-        allLevelTypes,
+        levelTypes,
         A.findFirst((x) => x.code === code),
         someOrError(`level type ${code} not found`)
       )
@@ -82,8 +77,7 @@ const ChangeLevelTypeOptions = (props: Props) => {
       A.filter(
         (x): x is HouseLayoutGroup =>
           isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE &&
-          x.uuid !== houseTransformsGroup.userData.activeLayoutGroupUuid
+          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
       ),
       A.map(augmentLevelType)
     )
@@ -109,47 +103,52 @@ const ChangeLevelTypeOptions = (props: Props) => {
       levelTypeOptions: allOptions,
       originalLevelTypeOption: originalOption,
     }
-  }, [scopeElement])
+  })()
 
-  // const closing = useRef(false)
+  const locked = useRef(false)
+
+  useEffect(() => {
+    locked.current = false
+  }, [])
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    // if (closing.current) return
+    if (locked.current) return
 
     if (incoming) {
       houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layoutGroup)
     } else {
-      // houseTransformsGroup.userData.setActiveLayoutGroup(
-      //   originalLevelTypeOption.value.layoutGroup
-      // )
+      houseTransformsGroup.userData.setActiveLayoutGroup(
+        originalLevelTypeOption.value.layoutGroup
+      )
     }
 
     invalidate()
   }
 
   const changeLevelType = ({ layoutGroup }: LevelTypeOption["value"]) => {
-    // closing.current = true
+    locked.current = true
 
-    // houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
+    houseTransformsGroup.userData.setActiveLayoutGroup(layoutGroup)
 
-    close()
-
-    pipe(
-      houseTransformsGroup.children,
-      A.filter(
-        (x) =>
-          isHouseLayoutGroup(x) &&
-          x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
-      ),
-      A.map((x) => {
-        x.removeFromParent()
-      })
-    )
+    // close()
 
     houseTransformsGroup.userData.updateDB().then(() => {
+      pipe(
+        houseTransformsGroup.children,
+        A.filter(
+          (x) =>
+            isHouseLayoutGroup(x) &&
+            x.userData.use === HouseLayoutGroupUse.Enum.ALT_LEVEL_TYPE
+        ),
+        A.map((x) => {
+          x.removeFromParent()
+        })
+      )
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
+
+    close()
     // closing.current = false
   }
 
@@ -168,6 +167,10 @@ const ChangeLevelType = (props: Props) => {
     scopeElement: { dna, levelIndex },
     houseTransformsGroup,
   } = props
+
+  const levelTypes = useAllLevelTypes().filter(
+    (x) => x.systemId === houseTransformsGroup.userData.systemId
+  )
 
   const { levelType } = parseDna(dna)
 
@@ -193,9 +196,7 @@ const ChangeLevelType = (props: Props) => {
       icon={<ChangeLevel />}
       unpaddedSvg
     >
-      <Suspense fallback={null}>
-        <ChangeLevelTypeOptions {...props} />
-      </Suspense>
+      <ChangeLevelTypeOptions {...{ ...props, levelTypes }} />
     </ContextMenuNested>
   )
 }

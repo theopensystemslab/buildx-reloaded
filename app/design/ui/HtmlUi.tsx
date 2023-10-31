@@ -35,6 +35,9 @@ import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
 import Breadcrumbs from "./Breadcrumbs"
+import { useEvent } from "react-use"
+import { useSnapshot } from "valtio"
+import { useHtgFoo } from "../ui-3d/fresh/scene/houseTransformsGroup"
 
 type Props = {
   controlsEnabled: boolean
@@ -90,10 +93,12 @@ const HtmlUi = (props: Props) => {
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 
+  // const foo = useHtgFoo()
+
   return (
     <Fragment>
       <div className="absolute bottom-0 right-0 pointer-events-none">
-        {/* <pre>{JSON.stringify(mode, null, 2)}</pre> */}
+        {/* <pre>{JSON.stringify(foo, null, 2)}</pre> */}
       </div>
       <HeaderEndPortal>
         <div className="flex items-center justify-end">

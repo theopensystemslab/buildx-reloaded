@@ -1,13 +1,9 @@
-"use client"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import dynamic from "next/dynamic"
 
-const BuildIndex = () => {
-  const router = useRouter()
-  useEffect(() => {
-    router.push("/build/overview")
-  }, [router])
-  return null
+const App = dynamic(() => import("./app"), { ssr: false })
+
+const IndexPage = () => {
+  return <App />
 }
 
-export default BuildIndex
+export default IndexPage
