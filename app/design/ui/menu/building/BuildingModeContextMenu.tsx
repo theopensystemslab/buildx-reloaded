@@ -63,11 +63,11 @@ const BuildingModeContextMenu = ({
         close={close}
       />
 
-      <ChangeWindows
+      {/* <ChangeWindows
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
-      />
+      /> */}
 
       <ChangeLevelType
         close={close}

@@ -11,7 +11,7 @@ import { getSide } from "../../../state/camera"
 import { ScopeElement } from "../../../state/scope"
 import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import {
-  AltLayoutGroupType,
+  LayoutType,
   AltWindowTypeLayout,
   HouseLayoutGroup,
   HouseTransformsGroup,
@@ -67,7 +67,7 @@ const ChangeWindows = (props: Props) => {
                 houseTransformsGroup.userData.layouts.alts,
                 A.filter(
                   (x): x is AltWindowTypeLayout =>
-                    x.type === AltLayoutGroupType.Enum.ALT_WINDOW_TYPE
+                    x.type === LayoutType.Enum.ALT_WINDOW_TYPE
                 ),
                 A.map(({ windowType, houseLayoutGroup }) => {
                   return {

@@ -41,11 +41,11 @@ const LevelModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
         close={close}
       />
 
-      <ChangeWindows
+      {/* <ChangeWindows
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
-      />
+      /> */}
     </ContextMenu>
   )
 }

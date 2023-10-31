@@ -8,7 +8,6 @@ import {
   RotateHandlesGroupUserData,
   UserDataTypeEnum,
 } from "../scene/userData"
-import { getActiveHouseUserData } from "../helpers/sceneQueries"
 
 const ROTATE_HANDLE_OFFSET = 5
 const ROTATE_HANDLE_SIZE = 0.3

@@ -10,8 +10,8 @@ import {
   sortAltLayoutsByWidth,
 } from "../helpers/sceneQueries"
 import {
-  AltLayout,
-  AltLayoutGroupType,
+  Layout,
+  LayoutType,
   HouseLayoutGroup,
   HouseTransformsGroup,
   isXStretchHandleGroup,
@@ -20,7 +20,7 @@ import {
 
 type FenceX = {
   x: number
-  layout: AltLayout | { type: "ACTIVE"; houseLayoutGroup: HouseLayoutGroup }
+  layout: Layout | { type: "ACTIVE"; houseLayoutGroup: HouseLayoutGroup }
 }
 
 const useOnDragStretchX = () => {
@@ -71,7 +71,7 @@ const useOnDragStretchX = () => {
 
     const altLayouts = pipe(
       houseTransformsGroup.userData.layouts.alts,
-      A.filter((x) => x.type === AltLayoutGroupType.Enum.ALT_SECTION_TYPE)
+      A.filter((x) => x.type === LayoutType.Enum.ALT_SECTION_TYPE)
     )
 
     const fences = pipe(

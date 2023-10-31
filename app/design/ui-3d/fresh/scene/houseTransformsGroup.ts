@@ -40,8 +40,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
-  AltLayout,
-  AltLayoutGroupType,
+  Layout,
+  LayoutType,
   ElementMesh,
   GridGroupUserData,
   HouseLayoutGroup,
@@ -58,6 +58,9 @@ import {
   isStretchHandleGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
+  ActiveLayout,
+  AltLayout,
+  isActiveLayout,
 } from "./userData"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
@@ -222,42 +225,48 @@ export const createHouseTransformsGroup = ({
 
   // ##### LAYOUTS #####
 
-  const getActiveLayoutGroup = (): HouseLayoutGroup =>
+  const getActiveLayout = (): ActiveLayout =>
     houseTransformsGroup.userData.layouts.active
 
-  const getVisibleLayoutGroup = (): HouseLayoutGroup => {
+  const getActiveLayoutGroup = (): HouseLayoutGroup =>
+    getActiveLayout().houseLayoutGroup
+
+  const getVisibleLayout = (): Layout => {
     const { layouts } = houseTransformsGroup.userData
 
-    return layouts.preview !== null
-      ? layouts.preview.houseLayoutGroup
-      : layouts.active
+    return layouts.preview !== null ? layouts.preview : layouts.active
   }
-  // pipe(
-  //   houseTransformsGroup.children,
-  //   A.findFirst(
-  //     (x): x is HouseLayoutGroup =>
-  //       isHouseLayoutGroup(x) &&
-  //       x.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
-  //   )
-  // )
 
-  // const setActiveLayoutGroup = (nextLayoutGroup: HouseLayoutGroup) => {
-  //   pipe(
-  //     houseTransformsGroup.userData.getActiveLayoutGroup(),
-  //     O.map((lastLayoutGroup) => {
-  //       if (lastLayoutGroup === nextLayoutGroup) return
-  //       setVisible(nextLayoutGroup, true)
-  //       setVisible(lastLayoutGroup, false)
-  //       lastLayoutGroup.userData.use = nextLayoutGroup.userData.use
-  //     })
-  //   )
+  const setPreviewLayout = (altLayout: AltLayout | null) => {
+    const { layouts } = houseTransformsGroup.userData
+    if (altLayout) {
+      if (layouts.preview) {
+        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
+      } else {
+        setInvisibleNoRaycast(layouts.active.houseLayoutGroup)
+      }
+      layouts.preview = ref(altLayout)
+      setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
+    } else {
+      if (layouts.preview) {
+        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
+        houseTransformsGroup.userData.layouts.preview = null
+        setVisibleAndRaycast(layouts.active.houseLayoutGroup)
+      }
+    }
+  }
 
-  //   nextLayoutGroup.userData.use = HouseLayoutGroupUse.Enum.ACTIVE
-  //   houseTransformsGroup.userData.activeLayoutDnas =
-  //     nextLayoutGroup.userData.dnas
-  // }
+  const setVisibleLayout = (layout: Layout) => {
+    const { layouts } = houseTransformsGroup.userData
+    if (isActiveLayout(layout)) {
+      setVisibleAndRaycast(layout.houseLayoutGroup)
+      if (layouts.preview) {
+        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
+      }
+    }
+  }
 
-  const dropAltLayoutsByType = (type: AltLayoutGroupType) => {
+  const dropAltLayoutsByType = (type: LayoutType) => {
     houseTransformsGroup.userData.layouts.alts =
       houseTransformsGroup.userData.layouts.alts.filter((alt) => {
         if (alt.type !== type) return true
@@ -268,7 +277,7 @@ export const createHouseTransformsGroup = ({
   }
 
   const refreshAltSectionTypeLayouts = async () => {
-    dropAltLayoutsByType(AltLayoutGroupType.Enum.ALT_SECTION_TYPE)
+    dropAltLayoutsByType(LayoutType.Enum.ALT_SECTION_TYPE)
 
     const { dnas, sectionType: currentSectionType } =
       getActiveHouseUserData(houseTransformsGroup)
@@ -291,7 +300,7 @@ export const createHouseTransformsGroup = ({
         houseTransformsGroup,
       })().then((houseLayoutGroup) => {
         houseTransformsGroup.userData.pushAltLayout({
-          type: AltLayoutGroupType.Enum.ALT_SECTION_TYPE,
+          type: LayoutType.Enum.ALT_SECTION_TYPE,
           houseLayoutGroup,
           sectionType,
         })
@@ -300,7 +309,7 @@ export const createHouseTransformsGroup = ({
   }
 
   const refreshAltLevelTypeLayouts = async (target: ScopeElement) => {
-    dropAltLayoutsByType(AltLayoutGroupType.Enum.ALT_LEVEL_TYPE)
+    dropAltLayoutsByType(LayoutType.Enum.ALT_LEVEL_TYPE)
 
     const { dna, levelIndex } = target
 
@@ -328,7 +337,7 @@ export const createHouseTransformsGroup = ({
         houseTransformsGroup,
       })().then((houseLayoutGroup) => {
         houseTransformsGroup.userData.layouts.alts.push({
-          type: AltLayoutGroupType.Enum.ALT_LEVEL_TYPE,
+          type: LayoutType.Enum.ALT_LEVEL_TYPE,
           houseLayoutGroup,
           levelType,
           target,
@@ -340,7 +349,7 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async (target) => {
-      dropAltLayoutsByType(AltLayoutGroupType.Enum.ALT_WINDOW_TYPE)
+      dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
 
       const { columnIndex, levelIndex, moduleIndex } = target
 
@@ -365,7 +374,7 @@ export const createHouseTransformsGroup = ({
           houseTransformsGroup,
         })().then((houseLayoutGroup) => {
           houseTransformsGroup.userData.pushAltLayout({
-            type: AltLayoutGroupType.Enum.ALT_WINDOW_TYPE,
+            type: LayoutType.Enum.ALT_WINDOW_TYPE,
             houseLayoutGroup,
             windowType,
             target,
@@ -376,7 +385,7 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltResetLayout = async () => {
     systemsDB.houseTypes.get(houseTypeId).then((houseType) => {
-      dropAltLayoutsByType(AltLayoutGroupType.Enum.ALT_RESET)
+      dropAltLayoutsByType(LayoutType.Enum.ALT_RESET)
 
       if (!houseType) throw new Error(`no house type`)
 
@@ -392,7 +401,7 @@ export const createHouseTransformsGroup = ({
           })()
 
           houseTransformsGroup.userData.pushAltLayout({
-            type: AltLayoutGroupType.Enum.ALT_RESET,
+            type: LayoutType.Enum.ALT_RESET,
             houseLayoutGroup,
             houseType,
           })
@@ -400,40 +409,24 @@ export const createHouseTransformsGroup = ({
     })
   }
 
-  const setActiveLayout = (altLayout: AltLayout) => {
+  const setActiveLayout = (altLayout: Layout) => {
     const { layouts } = houseTransformsGroup.userData
 
     if (layouts.preview) layouts.preview = null
 
-    layouts.active = ref(altLayout.houseLayoutGroup)
+    layouts.active = ref({
+      type: LayoutType.Enum.ACTIVE,
+      houseLayoutGroup: altLayout.houseLayoutGroup,
+    })
 
     layouts.alts = pipe(
       layouts.alts,
       A.filterMap((x) =>
-        x.houseLayoutGroup.uuid === layouts.active.uuid
+        x.houseLayoutGroup.uuid === layouts.active.houseLayoutGroup.uuid
           ? O.none
           : O.some(ref(x))
       )
     )
-  }
-
-  const setPreviewLayout = (altLayout: AltLayout | null) => {
-    const { layouts } = houseTransformsGroup.userData
-    if (altLayout) {
-      if (layouts.preview) {
-        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
-      } else {
-        setInvisibleNoRaycast(layouts.active)
-      }
-      layouts.preview = ref(altLayout)
-      setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
-    } else {
-      if (layouts.preview) {
-        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
-        houseTransformsGroup.userData.layouts.preview = null
-        setVisibleAndRaycast(layouts.active)
-      }
-    }
   }
 
   const pushAltLayout = (altLayout: AltLayout) => {
@@ -442,7 +435,7 @@ export const createHouseTransformsGroup = ({
     houseTransformsGroup.add(altLayout.houseLayoutGroup)
   }
 
-  const dropAltLayout = ({ houseLayoutGroup }: AltLayout) => {
+  const dropAltLayout = ({ houseLayoutGroup }: Layout) => {
     houseTransformsGroup.userData.layouts.alts =
       houseTransformsGroup.userData.layouts.alts.filter((x) => {
         if (x.houseLayoutGroup !== houseLayoutGroup) {
@@ -509,7 +502,7 @@ export const createHouseTransformsGroup = ({
 
   const setZStretchHandlesVisible = (bool: boolean = true) => {
     pipe(
-      getVisibleLayoutGroup(),
+      getVisibleLayout().houseLayoutGroup,
       findAllGuardDown(isZStretchHandleGroup),
       A.map((x) => void setVisible(x, bool))
     )
@@ -662,12 +655,11 @@ export const createHouseTransformsGroup = ({
   const updateDB = async () => {
     const rotation = houseTransformsGroup.rotation.y
     const position = houseTransformsGroup.position
-    const dnas = houseTransformsGroup.userData.layouts.active.userData.dnas
+    const dnas = getActiveLayoutGroup().userData.dnas
     const activeElementMaterials =
       houseTransformsGroup.userData.activeElementMaterials
 
-    const { systemId, houseTypeId, houseId, friendlyName } =
-      houseTransformsGroup.userData
+    const { systemId, houseId } = houseTransformsGroup.userData
 
     await Promise.all([
       userDB.houses.update(houseId, {
@@ -685,7 +677,7 @@ export const createHouseTransformsGroup = ({
   const addToDB = async () => {
     const rotation = houseTransformsGroup.rotation.y
     const position = houseTransformsGroup.position
-    const dnas = houseTransformsGroup.userData.layouts.active.userData.dnas
+    const dnas = getActiveLayoutGroup().userData.dnas
     const activeElementMaterials =
       houseTransformsGroup.userData.activeElementMaterials
 
@@ -840,8 +832,10 @@ export const createHouseTransformsGroup = ({
     updateDB,
     initRotateAndStretchXHandles,
     updateHandles,
+    getActiveLayout,
     getActiveLayoutGroup,
-    getVisibleLayoutGroup,
+    setVisibleLayout,
+    getVisibleLayout,
     setXStretchHandlesVisible,
     setZStretchHandlesVisible,
     setRotateHandlesVisible,
@@ -882,7 +876,10 @@ export const createHouseTransformsGroup = ({
     ),
     T.map((houseLayoutGroup) => {
       const layouts = proxy<Layouts>({
-        active: ref(houseLayoutGroup),
+        active: ref({
+          type: LayoutType.Enum.ACTIVE,
+          houseLayoutGroup,
+        }),
         preview: null,
         alts: [],
       })

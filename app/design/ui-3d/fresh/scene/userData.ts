@@ -55,40 +55,61 @@ export const UserDataTypeEnum = z.enum([
 
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
-export const AltLayoutGroupType = z.enum([
+export const LayoutType = z.enum([
+  "ACTIVE",
   "ALT_RESET",
   "ALT_SECTION_TYPE",
   "ALT_LEVEL_TYPE",
   "ALT_WINDOW_TYPE",
 ])
 
-export type AltLayoutGroupType = z.infer<typeof AltLayoutGroupType>
+export type LayoutType = z.infer<typeof LayoutType>
+
+export type ActiveLayout = {
+  type: typeof LayoutType.Enum.ACTIVE
+  houseLayoutGroup: HouseLayoutGroup
+}
+
+export const isActiveLayout = (x: Layout): x is ActiveLayout =>
+  x.type === LayoutType.Enum.ACTIVE
 
 export type AltLevelTypeLayout = {
-  type: typeof AltLayoutGroupType.Enum.ALT_LEVEL_TYPE
+  type: typeof LayoutType.Enum.ALT_LEVEL_TYPE
   houseLayoutGroup: HouseLayoutGroup
   target: ScopeElement
   levelType: LevelType
 }
 
+export const isAltLevelTypeLayout = (x: Layout): x is AltLevelTypeLayout =>
+  x.type === LayoutType.Enum.ALT_LEVEL_TYPE
+
 export type AltWindowTypeLayout = {
-  type: typeof AltLayoutGroupType.Enum.ALT_WINDOW_TYPE
+  type: typeof LayoutType.Enum.ALT_WINDOW_TYPE
   houseLayoutGroup: HouseLayoutGroup
   target: ScopeElement
   windowType: WindowType
 }
 
+export const isAltWindowTypeLayout = (x: Layout): x is AltWindowTypeLayout =>
+  x.type === LayoutType.Enum.ALT_WINDOW_TYPE
+
 export type AltResetLayout = {
-  type: typeof AltLayoutGroupType.Enum.ALT_RESET
+  type: typeof LayoutType.Enum.ALT_RESET
   houseLayoutGroup: HouseLayoutGroup
   houseType: HouseType
 }
 
+export const isAltResetLayout = (x: Layout): x is AltResetLayout =>
+  x.type === LayoutType.Enum.ALT_RESET
+
 export type AltSectionTypeLayout = {
-  type: typeof AltLayoutGroupType.Enum.ALT_SECTION_TYPE
+  type: typeof LayoutType.Enum.ALT_SECTION_TYPE
   houseLayoutGroup: HouseLayoutGroup
   sectionType: SectionType
 }
+
+export const isAltSectionTypeLayout = (x: Layout): x is AltSectionTypeLayout =>
+  x.type === LayoutType.Enum.ALT_SECTION_TYPE
 
 export type AltLayout =
   | AltLevelTypeLayout
@@ -96,8 +117,10 @@ export type AltLayout =
   | AltResetLayout
   | AltSectionTypeLayout
 
+export type Layout = AltLayout | ActiveLayout
+
 export type Layouts = {
-  active: HouseLayoutGroup
+  active: ActiveLayout
   preview: AltLayout | null
   alts: AltLayout[]
 }
@@ -122,16 +145,18 @@ export type HouseTransformsGroupUserData = {
   setLevelCut: (levelIndex: number | null) => void
   // layouts
   layouts: Layouts
+  getActiveLayout: () => ActiveLayout
   getActiveLayoutGroup: () => HouseLayoutGroup
-  getVisibleLayoutGroup: () => HouseLayoutGroup
+  setActiveLayout: (altLayout: AltLayout) => void
+  getVisibleLayout: () => Layout
+  setVisibleLayout: (layout: Layout) => void
+  setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
+  pushAltLayout: (altLayout: AltLayout) => void
+  dropAltLayout: (altLayout: AltLayout) => void
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltResetLayout: () => Promise<void>
-  setActiveLayout: (altLayout: AltLayout) => void
-  setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
-  pushAltLayout: (altLayout: AltLayout) => void
-  dropAltLayout: (altLayout: AltLayout) => void
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void

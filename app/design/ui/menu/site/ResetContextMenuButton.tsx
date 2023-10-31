@@ -2,7 +2,7 @@ import { Reset } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { A, O } from "../../../../utils/functions"
 import {
-  AltLayoutGroupType,
+  LayoutType,
   HouseTransformsGroup,
 } from "../../../ui-3d/fresh/scene/userData"
 import ContextMenuButton from "../common/ContextMenuButton"
@@ -21,7 +21,7 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
   const resetHouse = async () => {
     pipe(
       houseTransformsGroup.userData.layouts.alts,
-      A.findFirst((x) => x.type === AltLayoutGroupType.Enum.ALT_RESET),
+      A.findFirst((x) => x.type === LayoutType.Enum.ALT_RESET),
       O.map((x) => {
         houseTransformsGroup.userData.setActiveLayout(x)
       })

@@ -4,7 +4,7 @@ import { Group, Intersection, Material, Mesh, Object3D, Plane } from "three"
 import { A, Num, O, Ord, someOrError } from "../../../../utils/functions"
 import { isMesh } from "../../../../utils/three"
 import {
-  AltLayout,
+  Layout,
   ColumnGroup,
   ElementMesh,
   HouseLayoutGroup,
