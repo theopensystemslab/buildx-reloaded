@@ -288,27 +288,27 @@ export const matchSpecialMaterials = (
   house: House,
   context: { elements: Element[]; materials: Material[] }
 ): { cladding?: Material; roofing?: Material; internalLining?: Material } => {
-  const claddingElementName = "Cladding"
+  const claddingIfcTag = "IFCCOVERING"
 
   const claddingElement = context.elements.find(
     (element) =>
-      element.systemId === house.systemId &&
-      element.name === claddingElementName
+      element.systemId === house.systemId && element.ifcTag === claddingIfcTag
   )
 
-  const internalLiningElementName = "Internal lining"
+  const internalLiningIfcTag = "IFCFURNITURE"
 
   const internalLiningElement = context.elements.find(
     (element) =>
       element.systemId === house.systemId &&
-      element.name === internalLiningElementName
+      element.ifcTag === internalLiningIfcTag
   )
 
-  const roofingElementName = "Roofing"
+  const roofingElementIfcTag = "IFCROOF"
 
   const roofingElement = context.elements.find(
     (element) =>
-      element.systemId === house.systemId && element.name === roofingElementName
+      element.systemId === house.systemId &&
+      element.ifcTag === roofingElementIfcTag
   )
 
   const claddingMaterial: Material | undefined =
@@ -317,7 +317,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.activeElementMaterials[claddingElementName] ||
+          (house.activeElementMaterials[claddingIfcTag] ||
             claddingElement.defaultMaterial)
     )
 
@@ -327,7 +327,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.activeElementMaterials[internalLiningElementName] ||
+          (house.activeElementMaterials[internalLiningIfcTag] ||
             internalLiningElement.defaultMaterial)
     )
 
@@ -337,7 +337,7 @@ export const matchSpecialMaterials = (
       (material) =>
         material.systemId === house.systemId &&
         material.specification ===
-          (house.activeElementMaterials[roofingElementName] ||
+          (house.activeElementMaterials[roofingElementIfcTag] ||
             roofingElement.defaultMaterial)
     )
 
