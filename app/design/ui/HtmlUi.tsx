@@ -34,6 +34,7 @@ import ObjectsSidebar from "./ObjectsSidebar"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
+import MetricsWidget from "./metrics/MetricsWidget"
 
 type Props = {
   controlsEnabled: boolean
@@ -206,7 +207,7 @@ const HtmlUi = (props: Props) => {
         </IconMenu>
       </div>
 
-      {/* <MetricsWidget /> */}
+      <MetricsWidget />
 
       <ObjectsSidebar />
 
