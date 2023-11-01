@@ -20,7 +20,7 @@ import {
   HouseTransformsGroup,
   isElementMesh,
   isHouseTransformsGroup,
-  isWindowTypeAltLayoutGroup,
+  // isWindowTypeAltLayoutGroup,
 } from "./scene/userData"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
@@ -77,29 +77,6 @@ const FreshApp = () => {
 
   const lastScopeElement = useRef<ScopeElement | null>(null)
 
-  const clearAltWindows = (houseId: string): void =>
-    void pipe(
-      rootRef.current?.children,
-      O.fromNullable,
-      O.chain((children) =>
-        pipe(
-          children,
-          A.findFirst(
-            (x): x is HouseTransformsGroup =>
-              isHouseTransformsGroup(x) && x.userData.houseId === houseId
-          )
-        )
-      ),
-      O.map((houseTransformsGroup) =>
-        pipe(
-          houseTransformsGroup.children,
-          A.filter(isWindowTypeAltLayoutGroup)
-        ).forEach((lg) => {
-          lg.removeFromParent()
-        })
-      )
-    )
-
   useSubscribe(scope, () => {
     const item = (menu.open ? scope.selected : null) ?? scope.hovered
 
@@ -107,7 +84,7 @@ const FreshApp = () => {
       if (lastScopeElement.current) {
         const { houseId } = lastScopeElement.current
 
-        clearAltWindows(houseId)
+        // clearAltWindows(houseId)
 
         lastScopeElement.current = null
       }

@@ -16,6 +16,10 @@ import { ThreeMaterial } from "../../../../utils/three"
 import { ScopeElement } from "../../../state/scope"
 import { EnrichedMaterial } from "../systems"
 import { HandleTypeEnum } from "./houseTransformsGroup"
+import { LevelType } from "../../../../../server/data/levelTypes"
+import { WindowType } from "../../../../../server/data/windowTypes"
+import { SectionType } from "../../../../../server/data/sectionTypes"
+import { HouseType } from "../../../../../server/data/houseTypes"
 
 // HouseTransformsGroup has
 // -> HouseTransformsHandlesGroup (rotate and X-Stretch handles)
@@ -51,6 +55,76 @@ export const UserDataTypeEnum = z.enum([
 
 export type UserDataTypeEnum = z.infer<typeof UserDataTypeEnum>
 
+export const LayoutType = z.enum([
+  "ACTIVE",
+  "ALT_RESET",
+  "ALT_SECTION_TYPE",
+  "ALT_LEVEL_TYPE",
+  "ALT_WINDOW_TYPE",
+])
+
+export type LayoutType = z.infer<typeof LayoutType>
+
+export type ActiveLayout = {
+  type: typeof LayoutType.Enum.ACTIVE
+  houseLayoutGroup: HouseLayoutGroup
+}
+
+export const isActiveLayout = (x: Layout): x is ActiveLayout =>
+  x.type === LayoutType.Enum.ACTIVE
+
+export type AltLevelTypeLayout = {
+  type: typeof LayoutType.Enum.ALT_LEVEL_TYPE
+  houseLayoutGroup: HouseLayoutGroup
+  target: ScopeElement
+  levelType: LevelType
+}
+
+export const isAltLevelTypeLayout = (x: Layout): x is AltLevelTypeLayout =>
+  x.type === LayoutType.Enum.ALT_LEVEL_TYPE
+
+export type AltWindowTypeLayout = {
+  type: typeof LayoutType.Enum.ALT_WINDOW_TYPE
+  houseLayoutGroup: HouseLayoutGroup
+  target: ScopeElement
+  windowType: WindowType
+}
+
+export const isAltWindowTypeLayout = (x: Layout): x is AltWindowTypeLayout =>
+  x.type === LayoutType.Enum.ALT_WINDOW_TYPE
+
+export type AltResetLayout = {
+  type: typeof LayoutType.Enum.ALT_RESET
+  houseLayoutGroup: HouseLayoutGroup
+  houseType: HouseType
+}
+
+export const isAltResetLayout = (x: Layout): x is AltResetLayout =>
+  x.type === LayoutType.Enum.ALT_RESET
+
+export type AltSectionTypeLayout = {
+  type: typeof LayoutType.Enum.ALT_SECTION_TYPE
+  houseLayoutGroup: HouseLayoutGroup
+  sectionType: SectionType
+}
+
+export const isAltSectionTypeLayout = (x: Layout): x is AltSectionTypeLayout =>
+  x.type === LayoutType.Enum.ALT_SECTION_TYPE
+
+export type AltLayout =
+  | AltLevelTypeLayout
+  | AltWindowTypeLayout
+  | AltResetLayout
+  | AltSectionTypeLayout
+
+export type Layout = AltLayout | ActiveLayout
+
+export type Layouts = {
+  active: ActiveLayout
+  preview: AltLayout | null
+  alts: AltLayout[]
+}
+
 export type HouseTransformsGroupUserData = {
   // props
   type: typeof UserDataTypeEnum.Enum.HouseTransformsGroup
@@ -70,14 +144,19 @@ export type HouseTransformsGroupUserData = {
   setVerticalCuts: () => void
   setLevelCut: (levelIndex: number | null) => void
   // layouts
-  activeLayoutDnas: string[]
-  updateActiveLayoutDnas: (x: string[]) => void
-  getActiveLayoutGroup: () => O.Option<HouseLayoutGroup>
-  unsafeGetActiveLayoutGroup: () => HouseLayoutGroup
-  setActiveLayoutGroup: (layoutGroup: HouseLayoutGroup) => void
+  layouts: Layouts
+  getActiveLayout: () => ActiveLayout
+  getActiveLayoutGroup: () => HouseLayoutGroup
+  setActiveLayout: (altLayout: AltLayout) => void
+  getVisibleLayout: () => Layout
+  setVisibleLayout: (layout: Layout) => void
+  setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
+  pushAltLayout: (altLayout: AltLayout) => void
+  dropAltLayout: (altLayout: AltLayout) => void
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
   refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
+  refreshAltResetLayout: () => Promise<void>
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void
@@ -106,19 +185,8 @@ export type HouseTransformsHandlesGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseTransformsHandlesGroup
 }
 
-export const HouseLayoutGroupUse = z.enum([
-  "ACTIVE",
-  "RESET",
-  "ALT_SECTION_TYPE",
-  "ALT_LEVEL_TYPE",
-  "ALT_WINDOW_TYPE",
-])
-
-export type HouseLayoutGroupUse = z.infer<typeof HouseLayoutGroupUse>
-
 export type HouseLayoutGroupUserData = {
   type: typeof UserDataTypeEnum.Enum.HouseLayoutGroup
-  use: HouseLayoutGroupUse
   dnas: string[]
   houseLayout: ColumnLayout
   vanillaColumn: Column
@@ -276,19 +344,19 @@ export const isColumnGroup = (node: Object3D): node is ColumnGroup =>
 export const isHouseLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
   node.userData?.type === UserDataTypeEnum.Enum.HouseLayoutGroup
 
-export const isHiddenLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
-  isHouseLayoutGroup(node) &&
-  node.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE
+// export const isHiddenLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
+//   isHouseLayoutGroup(node) &&
+//   node.userData.use !== HouseLayoutGroupUse.Enum.ACTIVE
 
-export const isWindowTypeAltLayoutGroup = (
-  node: Object3D
-): node is HouseLayoutGroup =>
-  isHouseLayoutGroup(node) &&
-  node.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
+// export const isWindowTypeAltLayoutGroup = (
+//   node: Object3D
+// ): node is HouseLayoutGroup =>
+//   isHouseLayoutGroup(node) &&
+//   node.userData.use === HouseLayoutGroupUse.Enum.ALT_WINDOW_TYPE
 
-export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
-  isHouseLayoutGroup(node) &&
-  node.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
+// export const isActiveLayoutGroup = (node: Object3D): node is HouseLayoutGroup =>
+//   isHouseLayoutGroup(node) &&
+//   node.userData.use === HouseLayoutGroupUse.Enum.ACTIVE
 
 export const isHouseTransformsGroup = (
   node: Object3D
