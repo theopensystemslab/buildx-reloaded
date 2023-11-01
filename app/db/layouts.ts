@@ -1,7 +1,7 @@
 import Dexie from "dexie"
 import { pipe } from "fp-ts/lib/function"
 import { Module } from "../../server/data/modules"
-import { A, O, T } from "../utils/functions"
+import { A, T } from "../utils/functions"
 import { sign } from "../utils/math"
 import { getVanillaModule } from "../workers/layouts/vanilla"
 import { LastFetchStamped } from "./systems"
@@ -112,11 +112,10 @@ export const modifyRowAt = (
   )
 
 export const vanillaPadRow = (row: Row, n: number) =>
-  createRow(
-    pipe(
-      row.positionedModules.map((x) => x.module),
-      A.concat(A.replicate(n, row.vanillaModule))
-    )
+  pipe(
+    row.positionedModules.map((x) => x.module),
+    A.concat(A.replicate(n, row.vanillaModule)),
+    createRow
   )
 
 export type PositionedRow = Row & {
@@ -185,6 +184,7 @@ export const modifyColumnAt = (
     A.sequence(T.ApplicativeSeq),
     T.chain((rows): T.Task<Row[]> => {
       const delta = rows[levelIndex].gridUnits - initialGridUnits
+
       switch (sign(delta)) {
         // this row now bigger
         case 1:
@@ -197,10 +197,10 @@ export const modifyColumnAt = (
           )
         // this row now smaller
         case -1:
-          pipe(
+          return pipe(
             rows,
             A.mapWithIndex((i, row) =>
-              i === levelIndex ? vanillaPadRow(row, delta) : T.of(row)
+              i === levelIndex ? vanillaPadRow(row, -delta) : T.of(row)
             ),
             A.sequence(T.ApplicativeSeq)
           )
