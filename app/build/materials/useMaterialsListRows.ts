@@ -7,14 +7,13 @@ import {
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
 import { A, O } from "~/utils/functions"
-import { useGetHouseModules, useHouses } from "../../db/user"
+import { MaterialsListRow, useGetHouseModules, useHouses } from "../../db/user"
 import {
   ElementNotFoundError,
   MaterialNotFoundError,
   useGetElementMaterial,
 } from "../../design/ui-3d/fresh/systems"
 import { useOrderListData } from "../order/useOrderListData"
-import { MaterialsListRow } from "./MaterialsListTable"
 import { useAllElements } from "../../db/systems"
 
 export const useMaterialsListRows = () => {

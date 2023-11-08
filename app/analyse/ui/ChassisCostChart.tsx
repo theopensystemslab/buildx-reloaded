@@ -2,10 +2,6 @@
 import { ArrowUp } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import {
-  OrderListRow,
-  useOrderListData,
-} from "../../build/order/useOrderListData"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import ChartBar from "./ChartBar"
 import {
@@ -16,6 +12,7 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
+import { OrderListRow } from "../../db/user"
 
 const ChassisCostChart = ({
   orderListRows,

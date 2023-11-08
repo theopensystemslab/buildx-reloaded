@@ -7,22 +7,7 @@ import { A, capitalizeFirstLetters } from "~/utils/functions"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
 import { useMaterialsListRows } from "./useMaterialsListRows"
-
-export type MaterialsListRow = {
-  buildingName: string
-  item: string
-  category: string
-  unit: string | null
-  quantity: number
-  specification: string
-  costPerUnit: number
-  cost: number
-  embodiedCarbonPerUnit: number
-  embodiedCarbonCost: number
-  linkUrl?: string
-  colorClass: string
-  categoryColorClass: string
-}
+import { MaterialsListRow } from "../../db/user"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
