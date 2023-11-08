@@ -12,23 +12,8 @@ import {
   useAllBlocks,
   useAllModules,
 } from "../../db/systems"
-import { House } from "../../db/user"
+import { House, OrderListRow } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
-
-export type OrderListRow = {
-  buildingName: string
-  houseId: string
-  blockName: string
-  sheetsPerBlock: number
-  count: number
-  materialsCost: number // connect  to element Structure's material cost
-  manufacturingCost: number
-  costPerBlock: number
-  colorClass: string
-  staleColorClass: string
-  cuttingFileUrl: string
-  totalCost: number
-}
 
 export const useOrderListData = (selectedHouses: House[]) => {
   const getColorClass = useGetColorClass()

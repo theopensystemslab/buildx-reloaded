@@ -5,7 +5,8 @@ import { memo, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
 import PaginatedTable from "../PaginatedTable"
-import { OrderListRow, useOrderListData } from "./useOrderListData"
+import { useOrderListData } from "./useOrderListData"
+import { OrderListRow } from "../../db/user"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
