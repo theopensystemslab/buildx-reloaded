@@ -1,11 +1,13 @@
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useAnalyseData } from "../../../analyse/state/data"
+import { useOrderListData } from "../../../build/order/useOrderListData"
 import {
+  House,
   OrderListRow,
-  useOrderListData,
-} from "../../../build/order/useOrderListData"
-import { House, housesToRecord, useHouses } from "../../../db/user"
+  housesToRecord,
+  useHouses,
+} from "../../../db/user"
 import IconButton from "../../../ui/IconButton"
 import { Analyse, Close } from "../../../ui/icons"
 import { A, NEA, R, S } from "../../../utils/functions"
