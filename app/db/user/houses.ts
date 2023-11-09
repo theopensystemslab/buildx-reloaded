@@ -1,10 +1,11 @@
 import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { z } from "zod"
 import { A, O, R } from "../../utils/functions"
 import { useAllModules } from "../systems"
 import userDB from "."
+import { useSiteCtx } from "../../design/state/siteCtx"
 
 export const houseParser = z.object({
   houseId: z.string().min(1),
@@ -91,3 +92,15 @@ export const useGetFriendlyName = () => {
     return nextName
   }, [existingNames, houses.length])
 }
+
+export const useBuildingHouse = (): House | null => {
+  const houses = useHousesRecord()
+  const { houseId } = useSiteCtx()
+
+  return useMemo(() => {
+    if (!houseId) return null
+    return houses[houseId]
+  }, [houseId, houses])
+}
+
+export const useBuildingHouseId = () => useBuildingHouse()?.houseId ?? null

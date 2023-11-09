@@ -1,20 +1,21 @@
 import { Module, useGetModuleWindowTypes } from "@/server/data/modules"
 import { pipe } from "fp-ts/lib/function"
 import { useCallback, useMemo, useRef } from "react"
-import {
-  buildingColorVariants,
-  useGetColorClass,
-  useSelectedHouseIds,
-} from "~/analyse/ui/HousesPillsSelector"
+import { useSelectedHouseIds } from "~/analyse/ui/HousesPillsSelector"
 import { A, O } from "~/utils/functions"
 import { useAllElements } from "../../db/systems"
-import { MaterialsListRow, useGetHouseModules, useHouses } from "../../db/user"
+import {
+  MaterialsListRow,
+  buildingColorVariants,
+  useGetHouseModules,
+  useHouses,
+  useOrderListData,
+} from "../../db/user"
 import {
   ElementNotFoundError,
   MaterialNotFoundError,
   useGetElementMaterial,
 } from "../../design/ui-3d/fresh/systems"
-import { useOrderListData } from "../order/useOrderListData"
 
 export const useMaterialsListRows = () => {
   const selectedHouseIds = useSelectedHouseIds()
@@ -122,7 +123,7 @@ export const useMaterialsListRows = () => {
     [getModuleWindowTypes]
   )
 
-  const { blockCountsByHouse } = useOrderListData(selectedHouses)
+  const { blockCountsByHouse } = useOrderListData()
 
   let categories = useRef<string[]>([])
 
