@@ -1,15 +1,13 @@
 "use client"
-import { useOrderListData } from "../build/order/useOrderListData"
+import { useOrderListData } from "../db/user"
 import css from "./app.module.css"
 import { useAnalyseData } from "./state/data"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
-import { useSelectedHouses } from "./ui/HousesPillsSelector"
 
 const AnalyseIndex = () => {
-  const selectedHouses = useSelectedHouses()
-  const { orderListRows } = useOrderListData(selectedHouses)
+  const { orderListRows } = useOrderListData()
   const analyseData = useAnalyseData()
 
   return (

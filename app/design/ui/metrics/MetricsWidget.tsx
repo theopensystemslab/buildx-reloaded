@@ -1,12 +1,10 @@
 import { pipe } from "fp-ts/lib/function"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAnalyseData } from "../../../analyse/state/data"
-import { useOrderListData } from "../../../build/order/useOrderListData"
 import {
-  House,
   OrderListRow,
-  housesToRecord,
   useHouses,
+  useMetricsOrderListRows,
 } from "../../../db/user"
 import IconButton from "../../../ui/IconButton"
 import { Analyse, Close } from "../../../ui/icons"
@@ -23,14 +21,7 @@ const MetricsWidget = () => {
 
   const houses = useHouses()
 
-  const buildingHouse: House | null = useMemo(() => {
-    if (!houseId) return null
-    return housesToRecord(houses)[houseId]
-  }, [houseId, houses])
-
-  const { orderListRows } = useOrderListData(
-    buildingHouse ? [buildingHouse] : houses
-  )
+  const orderListRows = useMetricsOrderListRows()
 
   const orderListRowsByHouse: Record<string, OrderListRow[]> = A.isNonEmpty(
     orderListRows

@@ -2,7 +2,7 @@
 import { ArrowUp } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { OrderListRow } from "../../db/user"
+import { OrderListRow, useGetColorClass } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import ChartBar from "./ChartBar"
 import {
@@ -13,7 +13,6 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { useGetColorClass } from "./HousesPillsSelector"
 
 const ChassisCostChart = ({
   orderListRows,

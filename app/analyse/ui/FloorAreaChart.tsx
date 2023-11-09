@@ -2,6 +2,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import { floor } from "~/utils/math"
+import { useGetColorClass } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"
@@ -13,7 +14,7 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { useGetColorClass, useSelectedHouses } from "./HousesPillsSelector"
+import { useSelectedHouses } from "./HousesPillsSelector"
 
 const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
   const selectedHouses = useSelectedHouses()
