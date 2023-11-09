@@ -7,6 +7,7 @@ import {
   useSelectedHouseIds,
 } from "~/analyse/ui/HousesPillsSelector"
 import { A, O } from "~/utils/functions"
+import { useAllElements } from "../../db/systems"
 import { MaterialsListRow, useGetHouseModules, useHouses } from "../../db/user"
 import {
   ElementNotFoundError,
@@ -14,11 +15,10 @@ import {
   useGetElementMaterial,
 } from "../../design/ui-3d/fresh/systems"
 import { useOrderListData } from "../order/useOrderListData"
-import { useAllElements } from "../../db/systems"
 
 export const useMaterialsListRows = () => {
   const selectedHouseIds = useSelectedHouseIds()
-  const getColorClass = useGetColorClass()
+
   const getModuleWindowTypes = useGetModuleWindowTypes()
   const elements = useAllElements()
   const getElementMaterial = useGetElementMaterial()
@@ -184,8 +184,6 @@ export const useMaterialsListRows = () => {
               embodiedCarbonPerUnit,
               embodiedCarbonCost,
               linkUrl,
-              colorClass: getColorClass(houseId),
-              categoryColorClass: getCategoryColorClass(category),
             })
           } catch (e) {
             if (e instanceof MaterialNotFoundError) {
@@ -214,8 +212,6 @@ export const useMaterialsListRows = () => {
           embodiedCarbonPerUnit: 0,
           embodiedCarbonCost: 0,
           linkUrl: "",
-          colorClass: getColorClass(houseId),
-          categoryColorClass: getCategoryColorClass("Structure"),
         },
       ]
 
@@ -226,8 +222,6 @@ export const useMaterialsListRows = () => {
     [
       blockCountsByHouse,
       elements,
-      getCategoryColorClass,
-      getColorClass,
       getElementMaterial,
       getHouse,
       getHouseModules,
