@@ -7,7 +7,10 @@ import userDB, { House } from "../../../../db/user"
 import { A, O } from "../../../../utils/functions"
 import { setRaycasting } from "../../../../utils/three"
 import { setSidebar } from "../../../state/settings"
-import siteCtx, { dispatchModeChange } from "../../../state/siteCtx"
+import {
+  SiteCtxModeEnum,
+  dispatchModeChange,
+} from "../../../../db/user/siteCtx"
 import { createHouseTransformsGroup } from "../scene/houseTransformsGroup"
 
 const REQUEST_SCENE_EVENT = "RequestSceneEvent"
@@ -45,9 +48,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     userDB.houses.put(house)
 
-    dispatchModeChange({ next: siteCtx.mode })
-
-    // initClippingPlanes(houseId)
+    dispatchModeChange({ next: SiteCtxModeEnum.Enum.SITE })
   }
 
   const initHouses = () => {

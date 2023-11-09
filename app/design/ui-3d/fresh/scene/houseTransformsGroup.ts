@@ -2,33 +2,29 @@ import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Plane, Vector3 } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
 import { z } from "zod"
-import { Element } from "../../../../../server/data/elements"
-import { parseDna } from "../../../../../server/data/modules"
-import layoutsDB, {
-  ColumnLayout,
-  getHouseLayoutsKey,
-} from "../../../../db/layouts"
-import systemsDB from "../../../../db/systems"
-import userDB, { House } from "../../../../db/user"
-import { A, O, R, S, T } from "../../../../utils/functions"
+import { Element } from "~/../server/data/elements"
+import { parseDna } from "~/../server/data/modules"
+import layoutsDB, { ColumnLayout, getHouseLayoutsKey } from "~/db/layouts"
+import systemsDB from "~/db/systems"
+import userDB, { House } from "~/db/user"
+import {
+  SiteCtxMode,
+  SiteCtxModeEnum,
+  dispatchModeChange,
+  getSiteCtx,
+} from "~/db/user/siteCtx"
+import { A, O, R, S, T } from "~/utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisible,
   setVisibleAndRaycast,
-} from "../../../../utils/three"
-import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
+} from "~/utils/three"
+import { getExportersWorker, getLayoutsWorker } from "~/workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
 import scope, { ScopeElement } from "../../../state/scope"
 import settings from "../../../state/settings"
-import siteCtx, {
-  SiteCtxMode,
-  SiteCtxModeEnum,
-  dispatchModeChange,
-  getModeBools,
-} from "../../../state/siteCtx"
 import {
   findAllGuardDown,
   findFirstGuardAcross,
@@ -40,8 +36,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
-  Layout,
-  LayoutType,
+  ActiveLayout,
+  AltLayout,
   ElementMesh,
   GridGroupUserData,
   HouseLayoutGroup,
@@ -49,8 +45,11 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
+  Layout,
+  LayoutType,
   Layouts,
   UserDataTypeEnum,
+  isActiveLayout,
   isElementMesh,
   isHouseTransformsGroup,
   isHouseTransformsHandlesGroup,
@@ -58,9 +57,6 @@ import {
   isStretchHandleGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
-  ActiveLayout,
-  AltLayout,
-  isActiveLayout,
 } from "./userData"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
@@ -455,38 +451,40 @@ export const createHouseTransformsGroup = ({
 
   // init
   const initRotateAndStretchXHandles = () => {
-    const { siteMode } = getModeBools()
+    getSiteCtx().then((siteCtx) => {
+      const siteMode = siteCtx.mode === SiteCtxModeEnum.Enum.SITE
 
-    const rotateHandles = createRotateHandles(houseTransformsGroup)
-    rotateHandles.userData.update()
+      const rotateHandles = createRotateHandles(houseTransformsGroup)
+      rotateHandles.userData.update()
 
-    setVisible(rotateHandles, siteMode)
+      setVisible(rotateHandles, siteMode)
 
-    handlesGroup.add(rotateHandles)
+      handlesGroup.add(rotateHandles)
 
-    const stretchXUpHandleGroup = createStretchHandle({
-      axis: "x",
-      side: 1,
-      houseTransformsGroup,
+      const stretchXUpHandleGroup = createStretchHandle({
+        axis: "x",
+        side: 1,
+        houseTransformsGroup,
+      })
+
+      const stretchXDownHandleGroup = createStretchHandle({
+        axis: "x",
+        side: -1,
+        houseTransformsGroup,
+      })
+
+      ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
+        handlesGroup.add(handle)
+      })
+
+      const handlesGroupUserData: HouseTransformsHandlesGroupUserData = {
+        type: UserDataTypeEnum.Enum.HouseTransformsHandlesGroup,
+      }
+
+      handlesGroup.userData = handlesGroupUserData
+
+      houseTransformsGroup.add(handlesGroup)
     })
-
-    const stretchXDownHandleGroup = createStretchHandle({
-      axis: "x",
-      side: -1,
-      houseTransformsGroup,
-    })
-
-    ;[stretchXUpHandleGroup, stretchXDownHandleGroup].forEach((handle) => {
-      handlesGroup.add(handle)
-    })
-
-    const handlesGroupUserData: HouseTransformsHandlesGroupUserData = {
-      type: UserDataTypeEnum.Enum.HouseTransformsHandlesGroup,
-    }
-
-    handlesGroup.userData = handlesGroupUserData
-
-    houseTransformsGroup.add(handlesGroup)
   }
 
   // visibility
@@ -706,19 +704,21 @@ export const createHouseTransformsGroup = ({
   }
 
   const deleteHouse = () => {
-    pipe(
-      houseTransformsGroup.parent,
-      O.fromNullable,
-      O.map((worldGroup) => {
-        worldGroup.remove(houseTransformsGroup)
-        userDB.houses.delete(houseId)
-        scope.selected = null
-        dispatchModeChange({
-          prev: siteCtx.mode,
-          next: SiteCtxModeEnum.Enum.SITE,
+    getSiteCtx().then((siteCtx) => {
+      pipe(
+        houseTransformsGroup.parent,
+        O.fromNullable,
+        O.map((worldGroup) => {
+          worldGroup.remove(houseTransformsGroup)
+          userDB.houses.delete(houseId)
+          scope.selected = null
+          dispatchModeChange({
+            prev: siteCtx.mode,
+            next: SiteCtxModeEnum.Enum.SITE,
+          })
         })
-      })
-    )
+      )
+    })
   }
 
   const setVerticalCuts: typeof houseTransformsGroupUserData.setVerticalCuts =
@@ -778,43 +778,45 @@ export const createHouseTransformsGroup = ({
   const setLevelCut: typeof houseTransformsGroupUserData.setLevelCut = (
     levelIndex
   ) => {
-    const { levelMode } = getModeBools()
+    getSiteCtx().then((siteCtx) => {
+      const levelMode = siteCtx.mode === SiteCtxModeEnum.Enum.LEVEL
 
-    const maybeLevelHeight: O.Option<number> =
-      !levelMode || siteCtx.houseId !== houseTransformsGroup.userData.houseId
-        ? O.none
-        : pipe(
-            getActiveLayoutGroup(),
-            getLayoutGroupColumnGroups,
-            A.head,
-            O.chain((columnGroup) => {
-              const positionedRows = columnGroup.children
-              return pipe(
-                positionedRows,
-                A.findFirst((positionedRow) => {
-                  const gridGroupUserData =
-                    positionedRow.userData as GridGroupUserData
+      const maybeLevelHeight: O.Option<number> =
+        !levelMode || siteCtx.houseId !== houseTransformsGroup.userData.houseId
+          ? O.none
+          : pipe(
+              getActiveLayoutGroup(),
+              getLayoutGroupColumnGroups,
+              A.head,
+              O.chain((columnGroup) => {
+                const positionedRows = columnGroup.children
+                return pipe(
+                  positionedRows,
+                  A.findFirst((positionedRow) => {
+                    const gridGroupUserData =
+                      positionedRow.userData as GridGroupUserData
 
-                  return gridGroupUserData.levelIndex === levelIndex
-                }),
-                O.map((gridGroup) => {
-                  const { height } = gridGroup.userData as GridGroupUserData
-                  return gridGroup.position.y + height / 2
-                })
-              )
-            })
-          )
+                    return gridGroupUserData.levelIndex === levelIndex
+                  }),
+                  O.map((gridGroup) => {
+                    const { height } = gridGroup.userData as GridGroupUserData
+                    return gridGroup.position.y + height / 2
+                  })
+                )
+              })
+            )
 
-    pipe(
-      maybeLevelHeight,
-      O.getOrElse(() => BIG_CLIP_NUMBER),
-      (levelHeight) => {
-        const {
-          clippingPlanes: [, cpy],
-        } = getActiveHouseUserData(houseTransformsGroup)
-        cpy.constant = levelHeight
-      }
-    )
+      pipe(
+        maybeLevelHeight,
+        O.getOrElse(() => BIG_CLIP_NUMBER),
+        (levelHeight) => {
+          const {
+            clippingPlanes: [, cpy],
+          } = getActiveHouseUserData(houseTransformsGroup)
+          cpy.constant = levelHeight
+        }
+      )
+    })
   }
 
   const houseTransformsGroupUserData: Omit<

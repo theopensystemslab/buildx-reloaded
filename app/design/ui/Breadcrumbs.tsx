@@ -3,12 +3,13 @@ import { Fragment, useState } from "react"
 import { useRoute } from "~/utils/wouter"
 import userDB, { House, housesToRecord, useHouses } from "../../db/user"
 import { O, R } from "../../utils/functions"
-import siteContext, {
+import {
   SiteCtxModeEnum,
   dispatchModeChange,
+  getSiteCtx,
   useProjectName,
   useSiteCtx,
-} from "../state/siteCtx"
+} from "../../db/user/siteCtx"
 import Breadcrumb from "./Breadcrumb"
 import RenameForm from "./RenameForm"
 
@@ -131,8 +132,10 @@ const Breadcrumbs = () => {
         <RenameForm
           currentName={projectName}
           onNewName={(newName) => {
-            if (newName.length > 0) siteContext.projectName = newName
-            setRenamingProject(false)
+            getSiteCtx().then(({ projectName }) => {
+              if (newName.length > 0) projectName = newName
+              setRenamingProject(false)
+            })
           }}
         />
       )}

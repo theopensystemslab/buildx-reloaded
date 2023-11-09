@@ -12,7 +12,10 @@ import { ModeContextMenuProps } from "../common/props"
 import ChangeLevelType from "./ChangeLevelType"
 import ChangeWindows from "../common/ChangeWindows"
 import ChangeMaterial from "../common/ChangeMaterial"
-import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
+import {
+  SiteCtxModeEnum,
+  dispatchModeChange,
+} from "../../../../db/user/siteCtx"
 
 const BuildingModeContextMenu = ({
   x,

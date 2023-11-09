@@ -3,25 +3,20 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
+import { getSiteCtx } from "../../../db/user"
 import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import { useExportersWorker } from "../../../workers/exporters/hook"
 import elementCategories from "../../state/elementCategories"
 import menu from "../../state/menu"
 import scope, { ScopeElement } from "../../state/scope"
-import siteCtx from "../../state/siteCtx"
 import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import { objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
-import {
-  HouseTransformsGroup,
-  isElementMesh,
-  isHouseTransformsGroup,
-  // isWindowTypeAltLayoutGroup,
-} from "./scene/userData"
+import { isElementMesh } from "./scene/userData"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
@@ -100,39 +95,41 @@ const FreshApp = () => {
       object,
     } = item
 
-    if (houseId !== siteCtx.houseId) return
+    getSiteCtx().then((siteCtx) => {
+      if (houseId !== siteCtx.houseId) return
 
-    let refreshLevelAlts = true,
-      refreshWindowAlts = true
+      let refreshLevelAlts = true,
+        refreshWindowAlts = true
 
-    const last = lastScopeElement.current
+      const last = lastScopeElement.current
 
-    if (last && last.houseId === houseId && last.levelIndex === levelIndex) {
-      refreshLevelAlts = false
+      if (last && last.houseId === houseId && last.levelIndex === levelIndex) {
+        refreshLevelAlts = false
 
-      if (
-        last.columnIndex === columnIndex &&
-        last.moduleIndex === gridGroupIndex
-      ) {
-        refreshWindowAlts = false
+        if (
+          last.columnIndex === columnIndex &&
+          last.moduleIndex === gridGroupIndex
+        ) {
+          refreshWindowAlts = false
+        }
       }
-    }
 
-    if (refreshWindowAlts || refreshLevelAlts) {
-      pipe(
-        objectToHouse(object),
-        O.map((houseTransformsGroup) => {
-          if (refreshLevelAlts) {
-            houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
-          }
-          if (refreshWindowAlts) {
-            houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
-          }
-        })
-      )
-    }
+      if (refreshWindowAlts || refreshLevelAlts) {
+        pipe(
+          objectToHouse(object),
+          O.map((houseTransformsGroup) => {
+            if (refreshLevelAlts) {
+              houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
+            }
+            if (refreshWindowAlts) {
+              houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
+            }
+          })
+        )
+      }
 
-    lastScopeElement.current = scope.hovered
+      lastScopeElement.current = scope.hovered
+    })
   })
 
   return (

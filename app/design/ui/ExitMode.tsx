@@ -4,7 +4,7 @@ import {
   SiteCtxModeEnum,
   dispatchModeChange,
   useSiteCtx,
-} from "../state/siteCtx"
+} from "../../db/user/siteCtx"
 
 const ExitMode = () => {
   const { mode } = useSiteCtx()

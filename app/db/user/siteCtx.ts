@@ -1,10 +1,10 @@
+import { useLiveQuery } from "dexie-react-hooks"
 import { useEvent } from "react-use"
-import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
+import userDB from "."
 import { formatWithUnit } from "../../analyse/state/data"
-import userDB from "../../db/user"
-import { useSubscribe } from "../../utils/hooks"
-import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
+import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "../../design/state/constants"
+import { liveQuery } from "dexie"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
@@ -25,32 +25,24 @@ const defaults: SiteCtx = {
   region: "UK",
 }
 
-const siteCtx = proxy<SiteCtx>(defaults)
-
-userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
-  if (x) {
-    Object.assign(siteCtx, x)
-  }
-})
-
-export const useSiteCtx = () => useSnapshot(siteCtx)
-
-export const useIndexedSiteCtx = () =>
-  useSubscribe(siteCtx, () => {
-    // Save state asynchronously using Dexie
-    userDB.siteCtx
-      .put({
-        key: BUILDX_LOCAL_STORAGE_CONTEXT_KEY,
-        ...siteCtx,
-      })
-      .catch((err) => {
-        console.error("Failed to save site context:", err)
-      })
+export const getSiteCtx = () =>
+  userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((result) => {
+    if (result) {
+      const { key, ...rest } = result
+      return rest
+    } else {
+      return defaults
+    }
   })
 
+export const useSiteCtx = (): SiteCtx => useLiveQuery(getSiteCtx, [], defaults)
+
+export const useSubscribeSiteCtx = (f: (siteCtx: SiteCtx) => void) => {
+  liveQuery(getSiteCtx).subscribe(f)
+}
+
 export const useProjectName = () => {
-  const ctx = useSnapshot(siteCtx)
-  const { projectName } = ctx
+  const { projectName } = useSiteCtx()
   if (projectName === null || projectName.length <= 0) return "New project"
   else return projectName
 }
@@ -84,20 +76,22 @@ export const useSiteCurrency = () => {
   }
 }
 
-export const getModeBools = (_mode?: SiteCtxMode) => {
-  const mode = _mode ?? siteCtx.mode
+// export const getModeBools = (_mode?: SiteCtxMode) => {
+//   const siteCtx = getSiteCtx()
 
-  const siteMode = mode === SiteCtxModeEnum.Enum.SITE
+//   const mode = _mode ?? siteCtx.mode
 
-  const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+//   const siteMode = mode === SiteCtxModeEnum.Enum.SITE
 
-  const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
+//   const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
 
-  return {
-    siteMode,
-    buildingMode,
-    levelMode,
-  }
-}
+//   const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
 
-export default siteCtx
+//   return {
+//     siteMode,
+//     buildingMode,
+//     levelMode,
+//   }
+// }
+
+// export default siteCtx

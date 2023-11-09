@@ -2,14 +2,15 @@ import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { useRef } from "react"
 import { ref } from "valtio"
+import {
+  dispatchModeChange,
+  SiteCtxModeEnum,
+  useSiteCtx,
+} from "~/db/user/siteCtx"
+import { compareProps } from "../../../../utils/functions"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import menu, { openMenu } from "../../../state/menu"
 import scope from "../../../state/scope"
-import siteCtx, {
-  dispatchModeChange,
-  getModeBools,
-  SiteCtxModeEnum,
-} from "../../../state/siteCtx"
 import { dispatchOutline } from "../events/outlines"
 import {
   mapNearestCutIntersection,
@@ -31,7 +32,6 @@ import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
 import useOnDragStretchX from "./stretchX"
 import useOnDragStretchZ from "./stretchZ"
-import { compareProps } from "../../../../utils/functions"
 
 const useGestures = () => {
   const onDragMove = useOnDragMove()
@@ -39,6 +39,8 @@ const useGestures = () => {
 
   const onDragStretchZ = useOnDragStretchZ()
   const onDragStretchX = useOnDragStretchX()
+
+  const siteCtx = useSiteCtx()
 
   const firstDragEventRef = useRef<ThreeEvent<PointerEvent> | null>(null)
 
@@ -65,7 +67,7 @@ const useGestures = () => {
 
       const { object, point } = firstDragEventRef.current!
 
-      const { siteMode } = getModeBools()
+      const siteMode = siteCtx.mode === SiteCtxModeEnum.Enum.SITE
 
       // stretch
       if (!siteMode && isStretchHandleMesh(object)) {

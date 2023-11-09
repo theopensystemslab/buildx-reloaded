@@ -9,13 +9,18 @@ import {
 import IconButton from "../../../ui/IconButton"
 import { Analyse, Close } from "../../../ui/icons"
 import { A, NEA, R, S } from "../../../utils/functions"
-import { getModeBools, useSiteCtx, useSiteCurrency } from "../../state/siteCtx"
+import {
+  SiteCtxModeEnum,
+  useSiteCtx,
+  useSiteCurrency,
+} from "../../../db/user/siteCtx"
 import MetricsCarousel, { Metric } from "./MetricsCarousel"
 import css from "./MetricsWidget.module.css"
 
 const MetricsWidget = () => {
   const { mode, houseId } = useSiteCtx()
-  const { buildingMode } = getModeBools(mode)
+  const buildingMode = mode === SiteCtxModeEnum.Enum.BUILDING
+
   const { costs, embodiedCo2, byHouse, areas } = useAnalyseData()
   const currency = useSiteCurrency()
 

@@ -2,12 +2,15 @@
 import { useRoute } from "~/utils/wouter"
 import { useEffect, useRef } from "react"
 import { useLocation } from "wouter"
-import siteCtx, {
+import userDB, {
   SiteCtxModeEnum,
   dispatchModeChange,
-  getModeBools,
-} from "~/design/state/siteCtx"
+  getSiteCtx,
+  useSiteCtx,
+  useSubscribeSiteCtx,
+} from "~/db/user"
 import { useSubscribe } from "~/utils/hooks"
+import { liveQuery } from "dexie"
 
 export const useRouting = () => {
   const [location, setLocation] = useLocation()
@@ -17,11 +20,13 @@ export const useRouting = () => {
 
   const urlChangingLock = useRef(false)
 
-  useSubscribe(siteCtx, () => {
+  useSubscribeSiteCtx((siteCtx) => {
     if (urlChangingLock.current) return
     if (!location.startsWith("/design")) return
 
-    const { siteMode, levelMode } = getModeBools(siteCtx.mode)
+    const { mode } = siteCtx
+    const siteMode = mode === SiteCtxModeEnum.Enum.SITE
+    const levelMode = mode === SiteCtxModeEnum.Enum.LEVEL
 
     let path = "/design"
 
@@ -38,49 +43,50 @@ export const useRouting = () => {
   })
 
   useEffect(() => {
-    urlChangingLock.current = true
+    getSiteCtx().then((siteCtx) => {
+      urlChangingLock.current = true
+      const { mode: prev } = siteCtx
 
-    const { mode: prev } = siteCtx
+      if (params === null || typeof params === "boolean") return
 
-    if (params === null || typeof params === "boolean") return
+      switch (true) {
+        // LEVEL
+        case "levelIndex" in params && "houseId" in params: {
+          const levelIndex = Number(params.levelIndex)
+          const houseId = String(params.houseId)
 
-    switch (true) {
-      // LEVEL
-      case "levelIndex" in params && "houseId" in params: {
-        const levelIndex = Number(params.levelIndex)
-        const houseId = String(params.houseId)
+          if (isNaN(levelIndex)) break
 
-        if (isNaN(levelIndex)) break
-
-        dispatchModeChange({
-          prev,
-          next: SiteCtxModeEnum.Enum.LEVEL,
-          houseId,
-          levelIndex,
-        })
-        break
+          dispatchModeChange({
+            prev,
+            next: SiteCtxModeEnum.Enum.LEVEL,
+            houseId,
+            levelIndex,
+          })
+          break
+        }
+        // BUILDING
+        case "houseId" in params: {
+          const houseId = String(params.houseId)
+          dispatchModeChange({
+            prev,
+            next: SiteCtxModeEnum.Enum.BUILDING,
+            houseId,
+          })
+          break
+        }
+        // SITE
+        case !("houseId" in params): {
+          dispatchModeChange({
+            prev,
+            next: SiteCtxModeEnum.Enum.SITE,
+          })
+          break
+        }
       }
-      // BUILDING
-      case "houseId" in params: {
-        const houseId = String(params.houseId)
-        dispatchModeChange({
-          prev,
-          next: SiteCtxModeEnum.Enum.BUILDING,
-          houseId,
-        })
-        break
-      }
-      // SITE
-      case !("houseId" in params): {
-        dispatchModeChange({
-          prev,
-          next: SiteCtxModeEnum.Enum.SITE,
-        })
-        break
-      }
-    }
 
-    urlChangingLock.current = false
+      urlChangingLock.current = false
+    })
   }, [params])
 }
 

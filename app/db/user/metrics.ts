@@ -1,19 +1,13 @@
 import { liveQuery } from "dexie"
-import userDB, { House, useBuildingHouseId, useHousesRecord } from "."
-import systemsDB from "../systems"
+import { useLiveQuery } from "dexie-react-hooks"
 import { values } from "fp-ts-std/Record"
 import { pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import { A, O, R, S } from "../../utils/functions"
+import userDB, { useBuildingHouseId } from "."
 import { useSelectedHouseIds } from "../../analyse/ui/HousesPillsSelector"
-import { useLiveQuery } from "dexie-react-hooks"
-import {
-  SiteCtxModeEnum,
-  getModeBools,
-  useSiteCtx,
-  useSiteCurrency,
-} from "../../design/state/siteCtx"
-import { useMemo } from "react"
+import { useSiteCurrency } from "./siteCtx"
+import { A, O, R, S } from "../../utils/functions"
+import systemsDB from "../systems"
 
 export type OrderListRow = {
   buildingName: string
@@ -24,8 +18,6 @@ export type OrderListRow = {
   materialsCost: number // connect  to element Structure's material cost
   manufacturingCost: number
   costPerBlock: number
-  // colorClass: string
-  // staleColorClass: string
   cuttingFileUrl: string
   totalCost: number
 }
@@ -42,8 +34,6 @@ export type MaterialsListRow = {
   embodiedCarbonPerUnit: number
   embodiedCarbonCost: number
   linkUrl?: string
-  // colorClass: string
-  // categoryColorClass: string
 }
 
 export const useAllOrderListRows = (): OrderListRow[] =>
@@ -169,21 +159,12 @@ userDataObserver.subscribe(
                   block.systemId === house.systemId && block.id === blockId
               ),
               count,
-              // colorClass: getColorClass(houseId),
-              // staleColorClass: getColorClass(houseId, { stale: true }),
             }
           })
         )
       ),
       A.filterMap(
-        ({
-          houseId,
-          buildingName,
-          block,
-          count,
-          // colorClass,
-          // staleColorClass,
-        }): O.Option<OrderListRow> =>
+        ({ houseId, buildingName, block, count }): O.Option<OrderListRow> =>
           block
             ? O.some({
                 houseId,
@@ -253,130 +234,6 @@ export const useGetColorClass = () => {
 
 export const useOrderListData = () => {
   const orderListRows = useSelectedHouseOrderListRows()
-
-  // const getColorClass = useGetColorClass()
-
-  // const modules = useAllModules()
-
-  // const blocks = useAllBlocks()
-
-  // const blockModulesEntries = useAllBlockModulesEntries()
-
-  // const orderListRows = useMemo(() => {
-  //   const accum: Record<string, number> = {}
-
-  //   for (const blockModuleEntry of blockModulesEntries) {
-  //     const { systemId, blockId, moduleIds } = blockModuleEntry
-
-  //     for (let moduleId of moduleIds) {
-  //       const key = `${systemId}:${moduleId}:${blockId}`
-
-  //       if (key in accum) {
-  //         accum[key] += 1
-  //       } else {
-  //         accum[key] = 1
-  //       }
-  //     }
-  //   }
-
-  //   return pipe(
-  //     selectedHouses,
-  //     A.chain(({ houseId: houseId, dnas: dnas, ...house }) =>
-  //       pipe(
-  //         dnas,
-  //         A.map((dna) => ({
-  //           ...pipe(
-  //             modules,
-  //             A.findFirstMap((module) =>
-  //               module.systemId === house.systemId && module.dna === dna
-  //                 ? O.some({
-  //                     module,
-  //                     blocks: pipe(
-  //                       accum,
-  //                       R.filterMapWithIndex((key, count) => {
-  //                         const [systemId, moduleId, blockId] = key.split(":")
-  //                         return systemId === house.systemId &&
-  //                           moduleId === module.id
-  //                           ? O.some(
-  //                               pipe(
-  //                                 blocks,
-  //                                 A.filterMap((block) =>
-  //                                   block.systemId === house.systemId &&
-  //                                   block.id === blockId
-  //                                     ? O.some({
-  //                                         blockId,
-  //                                         count,
-  //                                       })
-  //                                     : O.none
-  //                                 )
-  //                               )
-  //                             )
-  //                           : O.none
-  //                       }),
-  //                       values,
-  //                       A.flatten
-  //                     ),
-  //                   })
-  //                 : O.none
-  //             ),
-  //             O.toNullable
-  //           ),
-  //         })),
-  //         A.reduce({}, (target: Record<string, number>, { blocks }) => {
-  //           return produce(target, (draft) => {
-  //             blocks?.forEach(({ blockId, count }) => {
-  //               if (blockId in draft) {
-  //                 draft[blockId] += count
-  //               } else {
-  //                 draft[blockId] = count
-  //               }
-  //             })
-  //           })
-  //         }),
-  //         (x) => x,
-  //         R.collect(S.Ord)((blockId, count) => {
-  //           return {
-  //             buildingName: house.friendlyName,
-  //             houseId,
-  //             block: blocks.find(
-  //               (block) =>
-  //                 block.systemId === house.systemId && block.id === blockId
-  //             ),
-  //             count,
-  //             colorClass: getColorClass(houseId),
-  //             staleColorClass: getColorClass(houseId, { stale: true }),
-  //           }
-  //         })
-  //       )
-  //     ),
-  //     A.filterMap(
-  //       ({
-  //         houseId,
-  //         buildingName,
-  //         block,
-  //         count,
-  //         colorClass,
-  //         staleColorClass,
-  //       }): O.Option<OrderListRow> =>
-  //         block
-  //           ? O.some({
-  //               houseId,
-  //               blockName: block.name,
-  //               buildingName,
-  //               count,
-  //               sheetsPerBlock: block.sheetQuantity,
-  //               materialsCost: block.materialsCost * count,
-  //               colorClass,
-  //               staleColorClass,
-  //               costPerBlock: block.totalCost,
-  //               manufacturingCost: block.manufacturingCost * count,
-  //               cuttingFileUrl: block.cuttingFileUrl,
-  //               totalCost: block.totalCost * count,
-  //             })
-  //           : O.none
-  //     )
-  //   )
-  // }, [blockModulesEntries, blocks, getColorClass, modules, selectedHouses])
 
   const blockCountsByHouse = pipe(
     orderListRows,

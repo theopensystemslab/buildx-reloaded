@@ -6,7 +6,10 @@ import userDB from "../../../../db/user"
 import { Pencil, TextCursor } from "../../../../ui/icons"
 import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
-import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
+import {
+  SiteCtxModeEnum,
+  dispatchModeChange,
+} from "../../../../db/user/siteCtx"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
 import RenameForm from "../../RenameForm"

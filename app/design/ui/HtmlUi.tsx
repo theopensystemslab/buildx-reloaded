@@ -27,7 +27,7 @@ import elementCategories, {
 } from "../state/elementCategories"
 import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
-import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
+import { SiteCtxModeEnum, useSiteCtx } from "../../db/user/siteCtx"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
 import ObjectsSidebar from "./ObjectsSidebar"

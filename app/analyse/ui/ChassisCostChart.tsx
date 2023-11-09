@@ -3,7 +3,7 @@ import { ArrowUp } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import { OrderListRow, useGetColorClass } from "../../db/user"
-import { useSiteCurrency } from "../../design/state/siteCtx"
+import { useSiteCurrency } from "../../db/user/siteCtx"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,

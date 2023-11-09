@@ -16,7 +16,6 @@ import { ColumnLayout } from "../../../../db/layouts"
 import { A, O, T } from "../../../../utils/functions"
 import { setVisible, yAxis } from "../../../../utils/three"
 import { DEBUG } from "../../../state/constants"
-import siteCtx, { getModeBools } from "../../../state/siteCtx"
 import {
   getLayoutGroupColumnGroups,
   getSortedVisibleColumnGroups,
@@ -37,6 +36,7 @@ import {
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
+import { SiteCtxModeEnum, getSiteCtx } from "../../../../db/user"
 
 export const AABB_OFFSET = 10
 
@@ -199,26 +199,28 @@ export const createHouseLayoutGroup = ({
           }
 
           const initStretchZHandles = () => {
-            const { startColumnGroup, endColumnGroup } =
-              splitColumnGroups(columnGroups)
+            getSiteCtx().then((siteCtx) => {
+              const { startColumnGroup, endColumnGroup } =
+                splitColumnGroups(columnGroups)
 
-            const { siteMode } = getModeBools(siteCtx.mode)
+              const siteMode = siteCtx.mode === SiteCtxModeEnum.Enum.SITE
 
-            const backStretchZHandleGroup = createStretchHandle({
-              axis: "z",
-              side: 1,
-              houseTransformsGroup,
+              const backStretchZHandleGroup = createStretchHandle({
+                axis: "z",
+                side: 1,
+                houseTransformsGroup,
+              })
+              endColumnGroup.add(backStretchZHandleGroup)
+              setVisible(backStretchZHandleGroup, !siteMode)
+
+              const frontStretchZHandleGroup = createStretchHandle({
+                axis: "z",
+                side: -1,
+                houseTransformsGroup,
+              })
+              startColumnGroup.add(frontStretchZHandleGroup)
+              setVisible(frontStretchZHandleGroup, !siteMode)
             })
-            endColumnGroup.add(backStretchZHandleGroup)
-            setVisible(backStretchZHandleGroup, !siteMode)
-
-            const frontStretchZHandleGroup = createStretchHandle({
-              axis: "z",
-              side: -1,
-              houseTransformsGroup,
-            })
-            startColumnGroup.add(frontStretchZHandleGroup)
-            setVisible(frontStretchZHandleGroup, !siteMode)
           }
 
           const updateBBs = () => {
