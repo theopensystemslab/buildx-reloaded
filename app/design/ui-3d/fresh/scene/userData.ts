@@ -149,7 +149,6 @@ export type HouseTransformsGroupUserData = {
   getActiveLayoutGroup: () => HouseLayoutGroup
   setActiveLayout: (altLayout: AltLayout) => void
   getVisibleLayout: () => Layout
-  setVisibleLayout: (layout: Layout) => void
   setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
   pushAltLayout: (altLayout: AltLayout) => void
   dropAltLayout: (altLayout: AltLayout) => void

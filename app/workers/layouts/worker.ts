@@ -772,9 +772,10 @@ export const getWindowType = (
     windowTypes,
     A.findFirst((windowType) => {
       switch (true) {
-        // special case end modules
         case candidate.structuredDna.positionType === "END":
           return windowType.code === candidate.structuredDna.windowTypeEnd
+        case candidate.structuredDna.levelType[0] === "R":
+          return windowType.code === candidate.structuredDna.windowTypeTop
         // left = windowTypeSide2
         case side === "LEFT":
           return windowType.code === candidate.structuredDna.windowTypeSide1
