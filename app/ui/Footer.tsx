@@ -18,20 +18,18 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
   return (
     <div className={css.bar} data-expanded={expanded}>
       <div className={css.left}>
-        {[
-          {
-            label: "About",
-            href: "#about",
-          },
-          {
-            label: "Feedback",
-            href: "#feedback",
-          },
-        ].map((link) => (
-          <div key={link.href} className={css.linkWrapper}>
-            <Link href={link.href}>{link.label}</Link>
-          </div>
-        ))}
+        <div className={css.linkWrapper}>
+          <Link href="#about">About</Link>
+        </div>
+        <div className={css.linkWrapper}>
+          <a
+            href="https://form.typeform.com/to/inbsKUl2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Feedback
+          </a>
+        </div>
       </div>
       <div className={css.right}>
         <Link href="#">© Open Systems Lab</Link>
