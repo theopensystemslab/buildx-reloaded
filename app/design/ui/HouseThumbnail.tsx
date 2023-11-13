@@ -65,7 +65,7 @@ const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
       setRaycasting(houseTransformsGroup, true)
 
       return O.some(houseTransformsGroup)
-    }, [houseType, scene, houses.length])
+    }, [houseType, scene, JSON.stringify(houses)])
 
   const addHouse = () => {
     if (!scene) return
