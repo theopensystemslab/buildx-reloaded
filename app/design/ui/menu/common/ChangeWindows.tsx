@@ -149,6 +149,8 @@ const ChangeWindows = (props: Props) => {
 
     updateDB().then(() => {
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+      houseTransformsGroup.userData.refreshAltResetLayout()
+      houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
 
@@ -167,6 +169,7 @@ const ChangeWindows = (props: Props) => {
         selected={originalWindowTypeOption.value}
         onChange={changeWindowType}
         onHoverChange={previewWindowType}
+        compare={(a, b) => a.windowType.code === b.windowType.code}
       />
     </ContextMenuNested>
   ) : null

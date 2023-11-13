@@ -259,17 +259,6 @@ export const createHouseTransformsGroup = ({
     }
   }
 
-  const setVisibleLayout = (layout: Layout) => {
-    const { layouts } = houseTransformsGroup.userData
-
-    if (isActiveLayout(layout)) {
-      setVisibleAndRaycast(layout.houseLayoutGroup)
-      if (layouts.preview) {
-        setInvisibleNoRaycast(layouts.preview.houseLayoutGroup)
-      }
-    }
-  }
-
   const dropAltLayoutsByType = (type: LayoutType) => {
     houseTransformsGroup.userData.layouts.alts =
       houseTransformsGroup.userData.layouts.alts.filter((alt) => {
@@ -359,6 +348,10 @@ export const createHouseTransformsGroup = ({
 
       const side = getSide(houseTransformsGroup)
 
+      const activeLayout = getActiveLayout()
+
+      const { dnas } = activeLayout.houseLayoutGroup.userData
+
       const altWindowTypeLayouts =
         await getLayoutsWorker().getAltWindowTypeLayouts({
           systemId,
@@ -399,7 +392,7 @@ export const createHouseTransformsGroup = ({
           const houseLayoutGroup = await createHouseLayoutGroup({
             systemId,
             houseId,
-            dnas,
+            dnas: houseType.dnas,
             houseLayout,
             houseTransformsGroup,
           })()
@@ -838,7 +831,6 @@ export const createHouseTransformsGroup = ({
     updateHandles,
     getActiveLayout,
     getActiveLayoutGroup,
-    setVisibleLayout,
     getVisibleLayout,
     setXStretchHandlesVisible,
     setZStretchHandlesVisible,
