@@ -36,6 +36,8 @@ const BuildingModeContextMenu = ({
     )
   )
 
+  const { levelIndex } = scopeElement
+
   return (
     <ContextMenu
       {...{
@@ -52,6 +54,7 @@ const BuildingModeContextMenu = ({
           dispatchModeChange({
             prev: SiteCtxModeEnum.Enum.BUILDING,
             next: SiteCtxModeEnum.Enum.LEVEL,
+            levelIndex,
           })
           close()
         }}
