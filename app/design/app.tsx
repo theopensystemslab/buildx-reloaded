@@ -1,4 +1,5 @@
 "use client"
+import { useKey } from "react-use"
 import { useAllHouseTypes } from "../db/systems"
 import Loader from "../ui/Loader"
 import {
@@ -21,6 +22,10 @@ const App = () => {
   useIndexedSiteCtx()
 
   const houseTypes = useAllHouseTypes()
+
+  useKey("e", () => {
+    throw new Error("test error")
+  })
 
   return houseTypes.length > 0 ? (
     <AppInit controlsEnabled={true} mapEnabled={false}>
