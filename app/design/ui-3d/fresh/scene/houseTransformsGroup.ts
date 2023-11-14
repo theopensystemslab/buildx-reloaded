@@ -186,8 +186,7 @@ export const createHouseTransformsGroup = ({
       activeElementMaterials[ifcTag] = element.defaultMaterial
     }
 
-    const { threeMaterial, material } =
-      materials[activeElementMaterials[ifcTag]]
+    const { threeMaterial } = materials[activeElementMaterials[ifcTag]]
 
     return threeMaterial
   }
