@@ -171,8 +171,7 @@ export const createModuleGroup = async ({
     speckleBranchUrl,
   })()
 
-  const { activeElementMaterials, elements, pushElement, materials } =
-    houseTransformsGroup.userData
+  const { elements, pushElement } = houseTransformsGroup.userData
 
   for (let ifcTag of Object.keys(modelGeometries)) {
     const geometry = getGeometry({

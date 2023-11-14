@@ -2,7 +2,7 @@ import type { HouseType } from "@/server/data/houseTypes"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
 import { nanoid } from "nanoid"
-import { Suspense, memo, useMemo } from "react"
+import { Suspense, memo, useEffect, useMemo, useState } from "react"
 import { suspend } from "suspend-react"
 import { Group } from "three"
 import { useGetFriendlyName, useHouses } from "../../db/user"
@@ -45,27 +45,30 @@ const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
 
   const houses = useHouses()
 
-  const maybeHouseTransformsGroup: O.Option<HouseTransformsGroup> =
-    suspend(async () => {
-      if (!scene) return O.none
+  const [maybeHouseTransformsGroup, setHouseTransformsGroup] = useState<
+    O.Option<HouseTransformsGroup>
+  >(O.none)
 
-      const { dnas, id: houseTypeId, systemId } = houseType
+  useEffect(() => {
+    if (!scene) return
 
-      const houseTransformsGroup = await createHouseTransformsGroup({
-        friendlyName: "", // getFriendlyName(),
-        activeElementMaterials: {},
-        position: { x: 0, y: 0, z: 0 },
-        dnas,
-        houseId: nanoid(),
-        houseTypeId,
-        rotation: 0,
-        systemId,
-      })()
+    const { dnas, id: houseTypeId, systemId } = houseType
 
+    createHouseTransformsGroup({
+      friendlyName: "", // getFriendlyName(),
+      activeElementMaterials: {},
+      position: { x: 0, y: 0, z: 0 },
+      dnas,
+      houseId: nanoid(),
+      houseTypeId,
+      rotation: 0,
+      systemId,
+    })().then((houseTransformsGroup) => {
       setRaycasting(houseTransformsGroup, true)
 
-      return O.some(houseTransformsGroup)
-    }, [houseType, scene, JSON.stringify(houses)])
+      setHouseTransformsGroup(O.some(houseTransformsGroup))
+    })
+  }, [houseType, houses, scene])
 
   const addHouse = () => {
     if (!scene) return
