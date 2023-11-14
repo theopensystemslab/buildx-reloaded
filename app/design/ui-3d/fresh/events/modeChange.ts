@@ -22,11 +22,12 @@ const useModeChange = (rootRef: RefObject<Group>) => {
     const { mode } = siteCtx
     const { selected } = scope
 
+    const houseId = siteCtx.houseId ?? selected?.houseId ?? null
+
     pipe(
       rootRef.current.children,
-
       A.filter(isHouseTransformsGroup),
-      A.partition((x) => x.userData.houseId === selected?.houseId),
+      A.partition((x) => x.userData.houseId === houseId),
       ({ left: otherHouses, right: thisHouses }) => {
         pipe(
           thisHouses,

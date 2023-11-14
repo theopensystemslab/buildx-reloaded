@@ -109,11 +109,12 @@ export type HandleTypeEnum = z.infer<typeof HandleTypeEnum>
 
 export const modeToHandleTypeEnum = (mode: SiteCtxMode): HandleTypeEnum => {
   switch (mode) {
-    case SiteCtxModeEnum.Enum.SITE:
-      return HandleTypeEnum.Enum.ROTATE
     case SiteCtxModeEnum.Enum.BUILDING:
     case SiteCtxModeEnum.Enum.LEVEL:
       return HandleTypeEnum.Enum.STRETCH
+    case SiteCtxModeEnum.Enum.SITE:
+    default:
+      return HandleTypeEnum.Enum.ROTATE
   }
 }
 
