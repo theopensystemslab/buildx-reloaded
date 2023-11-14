@@ -31,9 +31,9 @@ const CarbonEmissionsChart = ({
         <div
           className={clsx(
             "grid grid-cols-3 border-black h-full",
-            analyseData.operationalCo2.annualTotal === 0
+            analyseData.embodiedCo2.total === 0
               ? "hidden"
-              : analyseData.operationalCo2.annualTotal > 0
+              : analyseData.embodiedCo2.total > 0
               ? "border-b"
               : "border-t"
           )}
@@ -44,9 +44,9 @@ const CarbonEmissionsChart = ({
             <ChartBar
               items={pipe(
                 analyseData.byHouse,
-                R.collect(S.Ord)((houseId, { operationalCo2 }) => ({
+                R.collect(S.Ord)((houseId, { embodiedCo2 }) => ({
                   houseId,
-                  value: operationalCo2.annualTotal,
+                  value: embodiedCo2.total,
                   buildingName: houses[houseId].friendlyName,
                 }))
               )}
@@ -73,7 +73,7 @@ const CarbonEmissionsChart = ({
       </ChartContainer>
       <ChartMetrics>
         <div className="text-5xl font-normal">
-          {formatWithUnit(analyseData.operationalCo2.annualTotal, "T")}
+          {formatWithUnit(analyseData.embodiedCo2.total, "T")}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics>
@@ -98,8 +98,7 @@ Any stored carbon will be released if
       <HowIsItCalculated>
         <p>
           {`
-        We use generic data from [database]. You can replace these values with a
-        more specific, accurate estimate if you have one.
+We use generic embodied carbon data of lifecycle stages A1-A3 from product EPDs and the Inventory of Carbon & Energy (ICE) database. You can replace these values with a more specific, accurate estimate if you have one.
         `}
         </p>
       </HowIsItCalculated>
