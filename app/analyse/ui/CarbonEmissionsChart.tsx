@@ -62,7 +62,7 @@ const CarbonEmissionsChart = ({
               renderItem={(item) => (
                 <div className="flex flex-col justify-center items-center flex-shrink">
                   <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                  <div>{formatWithUnit(item.value, "T")}</div>
+                  <div>{`${(item.value / 1000).toFixed(2)}kT`}</div>
                 </div>
               )}
               reverse
@@ -73,7 +73,7 @@ const CarbonEmissionsChart = ({
       </ChartContainer>
       <ChartMetrics>
         <div className="text-5xl font-normal">
-          {formatWithUnit(analyseData.embodiedCo2.total, "T")}
+          {`${(analyseData.embodiedCo2.total / 1000).toFixed(2)}kT`}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics>
