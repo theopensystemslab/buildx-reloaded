@@ -24,6 +24,7 @@ const App = () => {
   const houseTypes = useAllHouseTypes()
 
   useKey("e", () => {
+    console.log("e")
     throw new Error("test error")
   })
 
