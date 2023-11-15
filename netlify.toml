@@ -1,5 +1,4 @@
 [[redirects]]
 from = "/monitoring"
 to = "https://o4506200553422848.ingest.sentry.io/4506223573204992"
-status = 200
-force = true
+status = 301
