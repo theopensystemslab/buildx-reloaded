@@ -82,6 +82,7 @@ const ChangeWindows = (props: Props) => {
                       windowType,
                     },
                     label: windowType.description,
+                    thumbnail: windowType.imageUrl,
                   }
                 })
               )

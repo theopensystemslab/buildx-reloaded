@@ -1,3 +1,4 @@
+"use client"
 import { Block } from "@/server/data/blocks"
 import { Module } from "@/server/data/modules"
 import Dexie from "dexie"
@@ -14,6 +15,7 @@ import { SystemSettings } from "../../server/data/settings"
 import { SpaceType } from "../../server/data/spaceTypes"
 import { WindowType } from "../../server/data/windowTypes"
 import { A } from "../utils/functions"
+import { useEffect } from "react"
 
 export type LastFetchStamped<T> = T & {
   lastFetched: number
@@ -67,8 +69,20 @@ class SystemsDatabase extends Dexie {
 // Create Dexie database
 const systemsDB = new SystemsDatabase()
 
-export const useAllHouseTypes = (): LastFetchStamped<HouseType>[] =>
-  useLiveQuery(() => systemsDB.houseTypes.toArray(), [], [])
+export const useAllHouseTypes = (): LastFetchStamped<HouseType>[] => {
+  const houseTypes = useLiveQuery(() => systemsDB.houseTypes.toArray(), [], [])
+
+  useEffect(() => {
+    houseTypes.forEach((houseType) => {
+      if (houseType.imageUrl) {
+        const img = new Image()
+        img.src = houseType.imageUrl
+      }
+    })
+  }, [houseTypes])
+
+  return houseTypes
+}
 
 export const useAllModules = (): LastFetchStamped<Module>[] =>
   useLiveQuery(() => systemsDB.modules.toArray(), [], [])
@@ -87,14 +101,42 @@ export const useSystemModules = (
 export const useAllSpaceTypes = (): SpaceType[] =>
   useLiveQuery(() => systemsDB.spaceTypes.toArray(), [], [])
 
-export const useAllWindowTypes = (): WindowType[] =>
-  useLiveQuery(() => systemsDB.windowTypes.toArray(), [], [])
+export const useAllWindowTypes = (): WindowType[] => {
+  const windowTypes = useLiveQuery(
+    () => systemsDB.windowTypes.toArray(),
+    [],
+    []
+  )
+
+  useEffect(() => {
+    windowTypes.forEach((windowType) => {
+      if (windowType.imageUrl) {
+        const img = new Image()
+        img.src = windowType.imageUrl
+      }
+    })
+  }, [windowTypes])
+
+  return windowTypes
+}
 
 export const useAllLevelTypes = (): LevelType[] =>
   useLiveQuery(() => systemsDB.levelTypes.toArray(), [], [])
 
-export const useAllMaterials = (): Material[] =>
-  useLiveQuery(() => systemsDB.materials.toArray(), [], [])
+export const useAllMaterials = (): Material[] => {
+  const materials = useLiveQuery(() => systemsDB.materials.toArray(), [], [])
+
+  useEffect(() => {
+    materials.forEach((material) => {
+      if (material.imageUrl) {
+        const img = new Image()
+        img.src = material.imageUrl
+      }
+    })
+  }, [materials])
+
+  return materials
+}
 
 export const useAllElements = (): Element[] =>
   useLiveQuery(() => systemsDB.elements.toArray(), [], [])
