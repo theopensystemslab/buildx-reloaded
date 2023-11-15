@@ -1,5 +1,5 @@
 [[redirects]]
 from = "/monitoring/*"
-to = "https://sentry.io/api/4506223573204992/store/"
+to = "https://o4506200553422848.ingest.sentry.io/4506223573204992/:splat"
 status = 200
 force = true
