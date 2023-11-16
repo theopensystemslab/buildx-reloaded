@@ -10,6 +10,7 @@ import layoutsDB, {
 import systemsDB, { LastFetchStamped } from "../../db/systems"
 import { A, O, Ord, S, T, all, someOrError } from "../../utils/functions"
 import { getModules } from "./modules"
+import { retryTask } from "../../utils/async"
 
 export const createVanillaModuleGetter =
   (modules: LastFetchStamped<Module>[]) =>
@@ -132,7 +133,8 @@ export const getVanillaModule = flow(
         )
       )
     )
-  })
+  }),
+  retryTask
 )
 
 export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
@@ -188,6 +190,7 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
         // )
       }
     ),
+    retryTask,
     T.map(positionRows),
     T.map((positionedRows) => {
       const columnLength = positionedRows.reduce(
