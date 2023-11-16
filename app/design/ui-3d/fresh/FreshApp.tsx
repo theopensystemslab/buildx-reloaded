@@ -16,12 +16,7 @@ import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import { objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
-import {
-  HouseTransformsGroup,
-  isElementMesh,
-  isHouseTransformsGroup,
-  // isWindowTypeAltLayoutGroup,
-} from "./scene/userData"
+import { isElementMesh } from "./scene/userData"
 
 const sceneProxy = proxy<{ scene: Scene | null }>({
   scene: null,
