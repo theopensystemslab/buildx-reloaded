@@ -1,16 +1,6 @@
-"use client"
-import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
-import { useAllHouseTypes } from "../db/systems"
-import { useIndexedSiteCtx } from "../design/state/siteCtx"
-import Loader from "../ui/Loader"
-import {
-  initExportersWorker,
-  initLayoutsWorker,
-  initModelsWorker,
-  initSystemsWorker,
-} from "../workers"
 import BuildNav from "./common/BuildNav"
+import dynamic from "next/dynamic"
 
 const HousesPillsSelector = dynamic(
   () => import("../analyse/ui/HousesPillsSelector"),
@@ -19,7 +9,7 @@ const HousesPillsSelector = dynamic(
   }
 )
 
-const BuildLayoutMain = ({ children }: PropsWithChildren<{}>) => {
+const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <div className="flex-auto overflow-y-auto flex flex-col">
       <div className="flex-1 flex-grow-0">
@@ -35,21 +25,21 @@ const BuildLayoutMain = ({ children }: PropsWithChildren<{}>) => {
   )
 }
 
-const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
-  initSystemsWorker()
-  initModelsWorker()
-  initLayoutsWorker()
-  initExportersWorker()
+// const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
+//   initSystemsWorker()
+//   initModelsWorker()
+//   initLayoutsWorker()
+//   initExportersWorker()
 
-  useIndexedSiteCtx()
+//   useIndexedSiteCtx()
 
-  const houseTypes = useAllHouseTypes()
+//   const houseTypes = useAllHouseTypes()
 
-  return houseTypes.length > 0 ? (
-    <BuildLayoutMain>{children}</BuildLayoutMain>
-  ) : (
-    <Loader />
-  )
-}
+//   return houseTypes.length > 0 ? (
+//     <BuildLayoutMain>{children}</BuildLayoutMain>
+//   ) : (
+//     <Loader />
+//   )
+// }
 
 export default BuildLayout
