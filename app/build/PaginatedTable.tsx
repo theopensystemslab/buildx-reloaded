@@ -15,11 +15,10 @@ import css from "./PaginatedTable.module.css"
 type Props<T extends {}> = {
   data: T[]
   columns: ColumnDef<T>[]
-  setCsvDownloadUrl: (s: string) => void
 }
 
 const PaginatedTable = <T extends {}>(props: Props<T>) => {
-  const { data, columns, setCsvDownloadUrl } = props
+  const { data, columns } = props
 
   const table = useReactTable({
     data,
@@ -58,9 +57,7 @@ const PaginatedTable = <T extends {}>(props: Props<T>) => {
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
-
-    setCsvDownloadUrl(url)
-  }, [columns, data, setCsvDownloadUrl])
+  }, [columns, data])
 
   return (
     <div className={css.root}>

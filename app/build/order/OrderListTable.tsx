@@ -1,10 +1,11 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { memo, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
 import { OrderListRow, useGetColorClass, useOrderListData } from "../../db/user"
 import PaginatedTable from "../PaginatedTable"
+import { csvFormatRows } from "d3-dsv"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -20,6 +21,31 @@ const OrderListTable = (props: Props) => {
     totalTotalCost,
     fmt,
   } = useOrderListData()
+
+  useEffect(() => {
+    if (orderListRows.length > 0) {
+      // Create a header row
+      const headers = Object.keys(orderListRows[0]).filter(
+        (x) => !["houseId"].includes(x)
+      ) as Array<keyof OrderListRow>
+
+      // Map each object to an array of its values
+      const rows = orderListRows.map((row) =>
+        headers.map((header) => row[header].toString())
+      )
+
+      // Combine header and rows
+      const csvData = [headers, ...rows]
+
+      // Format the 2D array into a CSV string
+      const csvContent = csvFormatRows(csvData)
+
+      // Create a Blob and URL for the CSV
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const downloadUrl = URL.createObjectURL(blob)
+      setCsvDownloadUrl(downloadUrl)
+    }
+  }, [orderListRows, setCsvDownloadUrl])
 
   const getColorClass = useGetColorClass()
 
@@ -99,7 +125,6 @@ const OrderListTable = (props: Props) => {
         colorClass: getColorClass(x.houseId),
       }))}
       columns={columns}
-      setCsvDownloadUrl={setCsvDownloadUrl}
     />
   )
 }
