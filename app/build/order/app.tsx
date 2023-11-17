@@ -1,6 +1,6 @@
 "use client"
 import { Download } from "@carbon/icons-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import OrderListTable from "./OrderListTable"
 
 const OrderIndexPage = () => {

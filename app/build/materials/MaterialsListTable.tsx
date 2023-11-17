@@ -2,35 +2,65 @@
 import { ArrowUp } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
-import { memo, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
+import {
+  MaterialsListRow,
+  useGetColorClass,
+  useSelectedHouseMaterialsListRows,
+} from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
-import { useMaterialsListRows } from "./useMaterialsListRows"
-
-export type MaterialsListRow = {
-  buildingName: string
-  item: string
-  category: string
-  unit: string | null
-  quantity: number
-  specification: string
-  costPerUnit: number
-  cost: number
-  embodiedCarbonPerUnit: number
-  embodiedCarbonCost: number
-  linkUrl?: string
-  colorClass: string
-  categoryColorClass: string
-}
+import { csvFormatRows } from "d3-dsv"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
+export const useMaterialsListDownloadUrl = (
+  materialsListRows: MaterialsListRow[]
+) =>
+  useMemo(() => {
+    if (materialsListRows.length > 0) {
+      // Create a header row
+      const headers = Object.keys(materialsListRows[0]).filter(
+        (x) => !["houseId", "colorClass", "linkUrl"].includes(x)
+      ) as Array<keyof (typeof materialsListRows)[0]>
+
+      // Map each object to an array of its values
+      const rows = materialsListRows.map((row) =>
+        headers.map((header) => row[header]?.toString() ?? "")
+      )
+
+      // Combine header and rows
+      const csvData = [headers, ...rows]
+
+      // Format the 2D array into a CSV string
+      const csvContent = csvFormatRows(csvData)
+
+      // Create a Blob and URL for the CSV
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      return URL.createObjectURL(blob)
+    }
+  }, [materialsListRows])
+
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const materialsListRows = useMaterialsListRows()
+  const getColorClass = useGetColorClass()
+
+  const materialsListRows = pipe(
+    useSelectedHouseMaterialsListRows(),
+    A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
+  )
+
+  const materialsListDownloadUrl =
+    useMaterialsListDownloadUrl(materialsListRows)
+
+  useEffect(() => {
+    if (materialsListDownloadUrl) {
+      setCsvDownloadUrl(materialsListDownloadUrl)
+    }
+  }, [materialsListDownloadUrl, setCsvDownloadUrl])
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,
@@ -131,13 +161,7 @@ const MaterialsListTable = (props: Props) => {
     [columnHelper, formatWithSymbol, totalCarbonCost, totalEstimatedCost]
   )
 
-  return (
-    <PaginatedTable
-      data={materialsListRows}
-      columns={columns}
-      setCsvDownloadUrl={setCsvDownloadUrl}
-    />
-  )
+  return <PaginatedTable data={materialsListRows} columns={columns} />
 }
 
 export default memo(MaterialsListTable)

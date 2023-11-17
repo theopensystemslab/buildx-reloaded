@@ -7,6 +7,12 @@ import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import css from "./app.module.css"
+import { useOrderListDownloadUrl } from "../order/OrderListTable"
+import {
+  useOrderListData,
+  useSelectedHouseMaterialsListRows,
+} from "../../db/user"
+import { useMaterialsListDownloadUrl } from "../materials/MaterialsListTable"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
@@ -19,10 +25,19 @@ const OverviewIndex = () => {
     operationalCo2: { lifetime },
   } = useAnalyseData()
 
+  const { orderListRows } = useOrderListData()
+
+  const materialsListRows = useSelectedHouseMaterialsListRows()
+
+  const orderListDownloadUrl = useOrderListDownloadUrl(orderListRows)
+
+  const materialsListDownloadUrl =
+    useMaterialsListDownloadUrl(materialsListRows)
+
   const overviewFields = [
     {
       label: "Total floor area",
-      value: `${totalFloor}m²`,
+      value: `${totalFloor.toFixed(1)}m²`,
     },
     {
       label: (
@@ -41,14 +56,8 @@ const OverviewIndex = () => {
     },
     {
       label: "Total estimated carbon cost",
-      value: `${lifetime} CO₂`,
+      value: `${lifetime.toFixed(0)} tCO₂`,
     },
-  ]
-
-  const downloadLinks = [
-    { href: "/foo", label: "Download 3D models" },
-    { href: "/bar", label: "Download order list" },
-    { href: "/ding", label: "Download list of materials" },
   ]
 
   return (
@@ -83,22 +92,57 @@ const OverviewIndex = () => {
           <h2>Downloads</h2>
 
           <div className="flex flex-col space-y-4 mt-4">
-            {pipe(
-              downloadLinks,
-              A.mapWithIndex((i, { label, href }) => (
-                <a href={href} key={href}>
-                  <div className="flex font-semibold tracking-wide">
-                    <span>{label}</span>
-                    <span>
-                      <ArrowDown
-                        width="1em"
-                        height="1em"
-                        className="ml-2 translate-y-[15%]"
-                      />
-                    </span>
-                  </div>
-                </a>
-              ))
+            <a
+              href={`/3d-models`}
+              // download={`order-list.csv`}
+              // className="flex font-semibold items-center"
+            >
+              <div className="flex font-semibold tracking-wide">
+                <span>Download 3D models</span>
+                <span>
+                  <ArrowDown
+                    width="1em"
+                    height="1em"
+                    className="ml-2 translate-y-[15%]"
+                  />
+                </span>
+              </div>
+            </a>
+            {orderListDownloadUrl && (
+              <a
+                href={orderListDownloadUrl}
+                download={`order-list.csv`}
+                // className="flex font-semibold items-center"
+              >
+                <div className="flex font-semibold tracking-wide">
+                  <span>Download order list</span>
+                  <span>
+                    <ArrowDown
+                      width="1em"
+                      height="1em"
+                      className="ml-2 translate-y-[15%]"
+                    />
+                  </span>
+                </div>
+              </a>
+            )}
+            {materialsListDownloadUrl && (
+              <a
+                href={materialsListDownloadUrl}
+                download={`materials-list.csv`}
+                // className="flex font-semibold items-center"
+              >
+                <div className="flex font-semibold tracking-wide">
+                  <span>Download list of materials</span>
+                  <span>
+                    <ArrowDown
+                      width="1em"
+                      height="1em"
+                      className="ml-2 translate-y-[15%]"
+                    />
+                  </span>
+                </div>
+              </a>
             )}
           </div>
         </div>

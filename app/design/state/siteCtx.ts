@@ -5,6 +5,9 @@ import { formatWithUnit } from "../../analyse/state/data"
 import userDB from "../../db/user"
 import { useSubscribe } from "../../utils/hooks"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
+import { pipe } from "fp-ts/lib/function"
+import { retryTask } from "../../utils/async"
+import { pipeLog, pipeLogWith } from "../../utils/functions"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
@@ -27,11 +30,15 @@ const defaults: SiteCtx = {
 
 const siteCtx = proxy<SiteCtx>(defaults)
 
-userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
-  if (x) {
-    Object.assign(siteCtx, x)
-  }
-})
+pipe(
+  () =>
+    userDB.siteCtx.get(BUILDX_LOCAL_STORAGE_CONTEXT_KEY).then((x) => {
+      if (x) {
+        Object.assign(siteCtx, x)
+      }
+    }),
+  retryTask
+)()
 
 export const useSiteCtx = () => useSnapshot(siteCtx)
 

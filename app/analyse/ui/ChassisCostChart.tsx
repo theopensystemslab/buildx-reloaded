@@ -2,10 +2,7 @@
 import { ArrowUp } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import {
-  OrderListRow,
-  useOrderListData,
-} from "../../build/order/useOrderListData"
+import { OrderListRow, useGetColorClass } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import ChartBar from "./ChartBar"
 import {
@@ -22,6 +19,8 @@ const ChassisCostChart = ({
 }: {
   orderListRows: OrderListRow[]
 }) => {
+  const getColorClass = useGetColorClass()
+
   const orderListByBuilding = pipe(
     orderListRows,
     A.reduce({}, (acc: Record<string, OrderListRow>, x) =>
@@ -70,7 +69,7 @@ const ChassisCostChart = ({
           {Object.keys(orderListByBuilding).length > 0 && (
             <ChartBar
               items={Object.values(orderListByBuilding)}
-              itemToColorClass={(item) => item.colorClass}
+              itemToColorClass={(item) => getColorClass(item.houseId)}
               itemToValue={(item) => item.totalCost}
               itemToKey={(item) => item.houseId}
               renderItem={(item) => (

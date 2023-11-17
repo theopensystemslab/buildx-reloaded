@@ -1,13 +1,6 @@
-"use client"
-import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
-import { TrpcProvider } from "../ui/TrpcProvider"
-import {
-  initLayoutsWorker,
-  initModelsWorker,
-  initSystemsWorker,
-} from "../workers"
 import BuildNav from "./common/BuildNav"
+import dynamic from "next/dynamic"
 
 const HousesPillsSelector = dynamic(
   () => import("../analyse/ui/HousesPillsSelector"),
@@ -17,10 +10,6 @@ const HousesPillsSelector = dynamic(
 )
 
 const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
-  initSystemsWorker()
-  initModelsWorker()
-  initLayoutsWorker()
-
   return (
     <div className="flex-auto overflow-y-auto flex flex-col">
       <div className="flex-1 flex-grow-0">

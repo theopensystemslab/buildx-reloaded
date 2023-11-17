@@ -1,11 +1,12 @@
-import Dexie from "dexie"
+"use client"
 import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
+import { useCallback, useMemo } from "react"
 import { z } from "zod"
-import { A, O, R } from "../utils/functions"
-import { useAllModules } from "./systems"
-import { useCallback } from "react"
-import { SiteCtx } from "../design/state/siteCtx"
+import { A, O, R } from "../../utils/functions"
+import { useAllModules } from "../systems"
+import userDB from "."
+import { useSiteCtx } from "../../design/state/siteCtx"
 
 export const houseParser = z.object({
   houseId: z.string().min(1),
@@ -24,10 +25,12 @@ export const houseParser = z.object({
 
 export type House = z.infer<typeof houseParser>
 
-export const housesToRecord = (housesArray: House[]): Record<string, House> => {
+export const housesToRecord = <T extends House>(
+  housesArray: T[]
+): Record<string, T> => {
   return pipe(
     housesArray,
-    A.reduce({} as Record<string, House>, (acc, house) => ({
+    A.reduce({} as Record<string, T>, (acc, house) => ({
       ...acc,
       [house.houseId]: house,
     }))
@@ -42,8 +45,8 @@ export const housesToArray = (housesRecord: Record<string, House>): House[] => {
   )
 }
 
-export const useHouses = () => {
-  const houses: House[] = useLiveQuery(() => userDB.houses.toArray(), [], [])
+export const useHouses = (): House[] => {
+  const houses = useLiveQuery(() => userDB.houses.toArray(), [], [])
 
   return houses
 }
@@ -93,21 +96,14 @@ export const useGetFriendlyName = () => {
   }, [existingNames, houses.length])
 }
 
-class UserDatabase extends Dexie {
-  houses: Dexie.Table<House, string>
-  siteCtx: Dexie.Table<SiteCtx & { key: string }, string>
+export const useBuildingHouse = (): House | null => {
+  const houses = useHousesRecord()
+  const { houseId } = useSiteCtx()
 
-  constructor() {
-    super("UserDatabase")
-    this.version(1).stores({
-      houses: "houseId,&friendlyName",
-      siteCtx: "&key, mode, houseId, levelIndex, projectName, region",
-    })
-    this.houses = this.table("houses")
-    this.siteCtx = this.table("siteCtx")
-  }
+  return useMemo(() => {
+    if (!houseId) return null
+    return houses[houseId]
+  }, [houseId, houses])
 }
 
-const userDB = new UserDatabase()
-
-export default userDB
+export const useBuildingHouseId = () => useBuildingHouse()?.houseId ?? null

@@ -1,20 +1,43 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { memo, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
-import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
+import { OrderListRow, useGetColorClass, useOrderListData } from "../../db/user"
 import PaginatedTable from "../PaginatedTable"
-import { OrderListRow, useOrderListData } from "./useOrderListData"
+import { csvFormatRows } from "d3-dsv"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
 
+export const useOrderListDownloadUrl = (orderListRows: OrderListRow[]) =>
+  useMemo(() => {
+    if (orderListRows.length > 0) {
+      // Create a header row
+      const headers = Object.keys(orderListRows[0]).filter(
+        (x) => !["houseId"].includes(x)
+      ) as Array<keyof OrderListRow>
+
+      // Map each object to an array of its values
+      const rows = orderListRows.map((row) =>
+        headers.map((header) => row[header].toString())
+      )
+
+      // Combine header and rows
+      const csvData = [headers, ...rows]
+
+      // Format the 2D array into a CSV string
+      const csvContent = csvFormatRows(csvData)
+
+      // Create a Blob and URL for the CSV
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      return URL.createObjectURL(blob)
+    }
+  }, [orderListRows])
+
 const OrderListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
-
-  const selectedHouses = useSelectedHouses()
 
   const {
     orderListRows,
@@ -22,7 +45,15 @@ const OrderListTable = (props: Props) => {
     totalManufacturingCost,
     totalTotalCost,
     fmt,
-  } = useOrderListData(selectedHouses)
+  } = useOrderListData()
+
+  const orderListDownloadUrl = useOrderListDownloadUrl(orderListRows)
+
+  useEffect(() => {
+    if (orderListDownloadUrl) setCsvDownloadUrl(orderListDownloadUrl)
+  }, [orderListDownloadUrl, setCsvDownloadUrl])
+
+  const getColorClass = useGetColorClass()
 
   const columnHelper = createColumnHelper<OrderListRow>()
 
@@ -95,9 +126,11 @@ const OrderListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={orderListRows}
+      data={orderListRows.map((x) => ({
+        ...x,
+        colorClass: getColorClass(x.houseId),
+      }))}
       columns={columns}
-      setCsvDownloadUrl={setCsvDownloadUrl}
     />
   )
 }
