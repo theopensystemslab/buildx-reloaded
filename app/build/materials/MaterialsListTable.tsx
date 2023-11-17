@@ -16,17 +16,10 @@ import { csvFormatRows } from "d3-dsv"
 type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
-const MaterialsListTable = (props: Props) => {
-  const { setCsvDownloadUrl } = props
-
-  const getColorClass = useGetColorClass()
-
-  const materialsListRows = pipe(
-    useSelectedHouseMaterialsListRows(),
-    A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
-  )
-
-  useEffect(() => {
+export const useMaterialsListDownloadUrl = (
+  materialsListRows: MaterialsListRow[]
+) =>
+  useMemo(() => {
     if (materialsListRows.length > 0) {
       // Create a header row
       const headers = Object.keys(materialsListRows[0]).filter(
@@ -46,10 +39,28 @@ const MaterialsListTable = (props: Props) => {
 
       // Create a Blob and URL for the CSV
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-      const downloadUrl = URL.createObjectURL(blob)
-      setCsvDownloadUrl(downloadUrl)
+      return URL.createObjectURL(blob)
     }
-  }, [materialsListRows, setCsvDownloadUrl])
+  }, [materialsListRows])
+
+const MaterialsListTable = (props: Props) => {
+  const { setCsvDownloadUrl } = props
+
+  const getColorClass = useGetColorClass()
+
+  const materialsListRows = pipe(
+    useSelectedHouseMaterialsListRows(),
+    A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
+  )
+
+  const materialsListDownloadUrl =
+    useMaterialsListDownloadUrl(materialsListRows)
+
+  useEffect(() => {
+    if (materialsListDownloadUrl) {
+      setCsvDownloadUrl(materialsListDownloadUrl)
+    }
+  }, [materialsListDownloadUrl, setCsvDownloadUrl])
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,

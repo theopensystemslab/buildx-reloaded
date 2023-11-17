@@ -1,22 +1,11 @@
 "use client"
-import dynamic from "next/dynamic"
-import { PropsWithChildren } from "react"
-import { useAllHouseTypes } from "../db/systems"
-import { useIndexedSiteCtx } from "../design/state/siteCtx"
-import Loader from "../ui/Loader"
-import {
-  initExportersWorker,
-  initLayoutsWorker,
-  initModelsWorker,
-  initSystemsWorker,
-} from "../workers"
 import { useOrderListData } from "../db/user"
+import css from "./app.module.css"
 import { useAnalyseData } from "./state/data"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
 import HousesPillsSelector from "./ui/HousesPillsSelector"
-import css from "./app.module.css"
 
 const AnalyseIndex = () => {
   const { orderListRows } = useOrderListData()
@@ -37,17 +26,5 @@ const AnalyseIndex = () => {
     </div>
   )
 }
-const AnalyseApp = () => {
-  initSystemsWorker()
-  initModelsWorker()
-  initLayoutsWorker()
-  initExportersWorker()
 
-  useIndexedSiteCtx()
-
-  const houseTypes = useAllHouseTypes()
-
-  return houseTypes.length > 0 ? <AnalyseIndex /> : <Loader />
-}
-
-export default AnalyseApp
+export default AnalyseIndex

@@ -25,21 +25,4 @@ const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
   )
 }
 
-// const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
-//   initSystemsWorker()
-//   initModelsWorker()
-//   initLayoutsWorker()
-//   initExportersWorker()
-
-//   useIndexedSiteCtx()
-
-//   const houseTypes = useAllHouseTypes()
-
-//   return houseTypes.length > 0 ? (
-//     <BuildLayoutMain>{children}</BuildLayoutMain>
-//   ) : (
-//     <Loader />
-//   )
-// }
-
 export default BuildLayout

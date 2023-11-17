@@ -11,18 +11,8 @@ type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
 
-const OrderListTable = (props: Props) => {
-  const { setCsvDownloadUrl } = props
-
-  const {
-    orderListRows,
-    totalMaterialCost,
-    totalManufacturingCost,
-    totalTotalCost,
-    fmt,
-  } = useOrderListData()
-
-  useEffect(() => {
+export const useOrderListDownloadUrl = (orderListRows: OrderListRow[]) =>
+  useMemo(() => {
     if (orderListRows.length > 0) {
       // Create a header row
       const headers = Object.keys(orderListRows[0]).filter(
@@ -42,10 +32,26 @@ const OrderListTable = (props: Props) => {
 
       // Create a Blob and URL for the CSV
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-      const downloadUrl = URL.createObjectURL(blob)
-      setCsvDownloadUrl(downloadUrl)
+      return URL.createObjectURL(blob)
     }
-  }, [orderListRows, setCsvDownloadUrl])
+  }, [orderListRows])
+
+const OrderListTable = (props: Props) => {
+  const { setCsvDownloadUrl } = props
+
+  const {
+    orderListRows,
+    totalMaterialCost,
+    totalManufacturingCost,
+    totalTotalCost,
+    fmt,
+  } = useOrderListData()
+
+  const orderListDownloadUrl = useOrderListDownloadUrl(orderListRows)
+
+  useEffect(() => {
+    if (orderListDownloadUrl) setCsvDownloadUrl(orderListDownloadUrl)
+  }, [orderListDownloadUrl, setCsvDownloadUrl])
 
   const getColorClass = useGetColorClass()
 
