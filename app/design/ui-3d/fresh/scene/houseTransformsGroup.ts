@@ -360,6 +360,10 @@ export const createHouseTransformsGroup = ({
           side,
         })
 
+      if (altWindowTypeLayouts.length > 0) {
+        dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
+      }
+
       for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
         await createHouseLayoutGroup({
           systemId: houseTransformsGroup.userData.systemId,

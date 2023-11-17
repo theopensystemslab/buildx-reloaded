@@ -30,8 +30,8 @@ export default function Radio<T>(props: Props<T>) {
       lastT.current = maybeT
       props.onHoverChange?.(maybeT)
     },
-    30,
-    { leading: true }
+    100,
+    { leading: true, trailing: true }
   )
 
   return (

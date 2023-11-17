@@ -149,9 +149,10 @@ const ChangeWindows = (props: Props) => {
     setPreviewLayout(null)
 
     updateDB().then(() => {
-      houseTransformsGroup.userData.dropAltLayoutsByType(
-        LayoutType.Enum.ALT_WINDOW_TYPE
-      )
+      // houseTransformsGroup.userData.dropAltLayoutsByType(
+      //   LayoutType.Enum.ALT_WINDOW_TYPE
+      // )
+      houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
       houseTransformsGroup.userData.refreshAltResetLayout()
       houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
