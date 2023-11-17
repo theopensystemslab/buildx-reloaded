@@ -60,12 +60,6 @@ const OverviewIndex = () => {
     },
   ]
 
-  const downloadLinks = [
-    { href: "/foo", label: "Download 3D models" },
-    { href: "/order-list", label: "Download order list" },
-    { href: "/ding", label: "Download list of materials" },
-  ]
-
   return (
     <Fragment>
       {/* <div className="w-full h-full"> */}
@@ -139,7 +133,7 @@ const OverviewIndex = () => {
                 // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
-                  <span>Download materials list</span>
+                  <span>Download list of materials</span>
                   <span>
                     <ArrowDown
                       width="1em"
