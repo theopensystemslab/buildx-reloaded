@@ -342,8 +342,6 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async (target) => {
-      dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
-
       const { columnIndex, levelIndex, moduleIndex } = target
 
       const side = getSide(houseTransformsGroup)
@@ -843,6 +841,7 @@ export const createHouseTransformsGroup = ({
     refreshAltResetLayout,
     pushAltLayout,
     dropAltLayout,
+    dropAltLayoutsByType,
     setActiveLayout,
     setPreviewLayout,
     resetMaterials,
