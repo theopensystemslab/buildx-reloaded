@@ -6,6 +6,7 @@ import { memo, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
 import {
   MaterialsListRow,
+  useGetColorClass,
   useSelectedHouseMaterialsListRows,
 } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
@@ -17,7 +18,12 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const materialsListRows = useSelectedHouseMaterialsListRows()
+  const getColorClass = useGetColorClass()
+
+  const materialsListRows = pipe(
+    useSelectedHouseMaterialsListRows(),
+    A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
+  )
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,

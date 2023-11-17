@@ -1,3 +1,4 @@
+"use client"
 import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
 import { useCallback, useMemo } from "react"
@@ -44,8 +45,8 @@ export const housesToArray = (housesRecord: Record<string, House>): House[] => {
   )
 }
 
-export const useHouses = () => {
-  const houses: House[] = useLiveQuery(() => userDB.houses.toArray(), [], [])
+export const useHouses = (): House[] => {
+  const houses = useLiveQuery(() => userDB.houses.toArray(), [], [])
 
   return houses
 }

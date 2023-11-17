@@ -1,8 +1,11 @@
 "use client"
 import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
-import { TrpcProvider } from "../ui/TrpcProvider"
+import { useAllHouseTypes } from "../db/systems"
+import { useIndexedSiteCtx } from "../design/state/siteCtx"
+import Loader from "../ui/Loader"
 import {
+  initExportersWorker,
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
@@ -16,11 +19,7 @@ const HousesPillsSelector = dynamic(
   }
 )
 
-const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
-  initSystemsWorker()
-  initModelsWorker()
-  initLayoutsWorker()
-
+const BuildLayoutMain = ({ children }: PropsWithChildren<{}>) => {
   return (
     <div className="flex-auto overflow-y-auto flex flex-col">
       <div className="flex-1 flex-grow-0">
@@ -33,6 +32,23 @@ const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
         <div className="flex-auto border-l border-grey-20">{children}</div>
       </div>
     </div>
+  )
+}
+
+const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
+  initSystemsWorker()
+  initModelsWorker()
+  initLayoutsWorker()
+  initExportersWorker()
+
+  useIndexedSiteCtx()
+
+  const houseTypes = useAllHouseTypes()
+
+  return houseTypes.length > 0 ? (
+    <BuildLayoutMain>{children}</BuildLayoutMain>
+  ) : (
+    <Loader />
   )
 }
 
