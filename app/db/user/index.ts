@@ -1,7 +1,11 @@
 import Dexie from "dexie"
 import { SiteCtx } from "../../design/state/siteCtx"
 import { House } from "./houses"
-import { MaterialsListRow, OrderListRow } from "./metrics"
+import {
+  metricsSubscriber,
+  type MaterialsListRow,
+  type OrderListRow,
+} from "./metrics"
 
 class UserDatabase extends Dexie {
   houses: Dexie.Table<House, string>
@@ -30,3 +34,5 @@ export default userDB
 
 export * from "./houses"
 export * from "./metrics"
+
+metricsSubscriber()

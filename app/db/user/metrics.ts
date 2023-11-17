@@ -64,13 +64,16 @@ export const useMetricsOrderListRows = (): OrderListRow[] => {
   const buildingHouseId = useBuildingHouseId()
 
   return useLiveQuery(
-    () =>
-      buildingHouseId
-        ? userDB.orderListRows
-            .where("houseId")
-            .equals(buildingHouseId)
-            .toArray()
-        : userDB.orderListRows.toArray(),
+    () => {
+      if (buildingHouseId) {
+        return userDB.orderListRows
+          .where("houseId")
+          .equals(buildingHouseId)
+          .toArray()
+      } else {
+        return userDB.orderListRows.toArray()
+      }
+    },
     [buildingHouseId],
     []
   )
@@ -86,128 +89,126 @@ const userDataObserver = liveQuery(async () => {
   return { houses, modules, blocks, blockModulesEntries }
 })
 
-userDataObserver.subscribe(
-  ({ houses, modules, blocks, blockModulesEntries }) => {
-    console.log("subscriber")
-    const accum: Record<string, number> = {}
+export const metricsSubscriber = () =>
+  userDataObserver.subscribe(
+    ({ houses, modules, blocks, blockModulesEntries }) => {
+      const accum: Record<string, number> = {}
 
-    for (const blockModuleEntry of blockModulesEntries) {
-      const { systemId, blockId, moduleIds } = blockModuleEntry
+      for (const blockModuleEntry of blockModulesEntries) {
+        const { systemId, blockId, moduleIds } = blockModuleEntry
 
-      for (let moduleId of moduleIds) {
-        const key = `${systemId}:${moduleId}:${blockId}`
+        for (let moduleId of moduleIds) {
+          const key = `${systemId}:${moduleId}:${blockId}`
 
-        if (key in accum) {
-          accum[key] += 1
-        } else {
-          accum[key] = 1
+          if (key in accum) {
+            accum[key] += 1
+          } else {
+            accum[key] = 1
+          }
         }
       }
-    }
 
-    const orderListRows = pipe(
-      houses,
-      A.chain(({ houseId: houseId, dnas: dnas, ...house }) =>
-        pipe(
-          dnas,
-          A.map((dna) => ({
-            ...pipe(
-              modules,
-              A.findFirstMap((module) =>
-                module.systemId === house.systemId && module.dna === dna
-                  ? O.some({
-                      module,
-                      blocks: pipe(
-                        accum,
-                        R.filterMapWithIndex((key, count) => {
-                          const [systemId, moduleId, blockId] = key.split(":")
-                          return systemId === house.systemId &&
-                            moduleId === module.id
-                            ? O.some(
-                                pipe(
-                                  blocks,
-                                  A.filterMap((block) =>
-                                    block.systemId === house.systemId &&
-                                    block.id === blockId
-                                      ? O.some({
-                                          blockId,
-                                          count,
-                                        })
-                                      : O.none
+      const orderListRows = pipe(
+        houses,
+        A.chain(({ houseId: houseId, dnas: dnas, ...house }) =>
+          pipe(
+            dnas,
+            A.map((dna) => ({
+              ...pipe(
+                modules,
+                A.findFirstMap((module) =>
+                  module.systemId === house.systemId && module.dna === dna
+                    ? O.some({
+                        module,
+                        blocks: pipe(
+                          accum,
+                          R.filterMapWithIndex((key, count) => {
+                            const [systemId, moduleId, blockId] = key.split(":")
+                            return systemId === house.systemId &&
+                              moduleId === module.id
+                              ? O.some(
+                                  pipe(
+                                    blocks,
+                                    A.filterMap((block) =>
+                                      block.systemId === house.systemId &&
+                                      block.id === blockId
+                                        ? O.some({
+                                            blockId,
+                                            count,
+                                          })
+                                        : O.none
+                                    )
                                   )
                                 )
-                              )
-                            : O.none
-                        }),
-                        values,
-                        A.flatten
-                      ),
-                    })
-                  : O.none
+                              : O.none
+                          }),
+                          values,
+                          A.flatten
+                        ),
+                      })
+                    : O.none
+                ),
+                O.toNullable
               ),
-              O.toNullable
-            ),
-          })),
-          A.reduce({}, (target: Record<string, number>, { blocks }) => {
-            return produce(target, (draft) => {
-              blocks?.forEach(({ blockId, count }) => {
-                if (blockId in draft) {
-                  draft[blockId] += count
-                } else {
-                  draft[blockId] = count
-                }
+            })),
+            A.reduce({}, (target: Record<string, number>, { blocks }) => {
+              return produce(target, (draft) => {
+                blocks?.forEach(({ blockId, count }) => {
+                  if (blockId in draft) {
+                    draft[blockId] += count
+                  } else {
+                    draft[blockId] = count
+                  }
+                })
               })
-            })
-          }),
-          (x) => x,
-          R.collect(S.Ord)((blockId, count) => {
-            return {
-              buildingName: house.friendlyName,
-              houseId,
-              block: blocks.find(
-                (block) =>
-                  block.systemId === house.systemId && block.id === blockId
-              ),
-              count,
-              // colorClass: getColorClass(houseId),
-              // staleColorClass: getColorClass(houseId, { stale: true }),
-            }
-          })
-        )
-      ),
-      A.filterMap(
-        ({
-          houseId,
-          buildingName,
-          block,
-          count,
-          // colorClass,
-          // staleColorClass,
-        }): O.Option<OrderListRow> =>
-          block
-            ? O.some({
+            }),
+            (x) => x,
+            R.collect(S.Ord)((blockId, count) => {
+              return {
+                buildingName: house.friendlyName,
                 houseId,
-                blockName: block.name,
-                buildingName,
+                block: blocks.find(
+                  (block) =>
+                    block.systemId === house.systemId && block.id === blockId
+                ),
                 count,
-                sheetsPerBlock: block.sheetQuantity,
-                materialsCost: block.materialsCost * count,
-                // colorClass,
-                // staleColorClass,
-                costPerBlock: block.totalCost,
-                manufacturingCost: block.manufacturingCost * count,
-                cuttingFileUrl: block.cuttingFileUrl,
-                totalCost: block.totalCost * count,
-              })
-            : O.none
+                // colorClass: getColorClass(houseId),
+                // staleColorClass: getColorClass(houseId, { stale: true }),
+              }
+            })
+          )
+        ),
+        A.filterMap(
+          ({
+            houseId,
+            buildingName,
+            block,
+            count,
+            // colorClass,
+            // staleColorClass,
+          }): O.Option<OrderListRow> =>
+            block
+              ? O.some({
+                  houseId,
+                  blockName: block.name,
+                  buildingName,
+                  count,
+                  sheetsPerBlock: block.sheetQuantity,
+                  materialsCost: block.materialsCost * count,
+                  // colorClass,
+                  // staleColorClass,
+                  costPerBlock: block.totalCost,
+                  manufacturingCost: block.manufacturingCost * count,
+                  cuttingFileUrl: block.cuttingFileUrl,
+                  totalCost: block.totalCost * count,
+                })
+              : O.none
+        )
       )
-    )
 
-    console.log({ orderListRows })
-
-    userDB.orderListRows.bulkPut(orderListRows)
-  }
-)
+      userDB.orderListRows.bulkPut(orderListRows)
+    }
+  )
 
 export const buildingColorVariants: Record<number, string> = {
   0: "bg-building-1",
