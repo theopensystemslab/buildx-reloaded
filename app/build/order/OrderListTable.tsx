@@ -3,7 +3,7 @@ import { ArrowDown } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { memo, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
-import { OrderListRow, useOrderListData } from "../../db/user"
+import { OrderListRow, useGetColorClass, useOrderListData } from "../../db/user"
 import PaginatedTable from "../PaginatedTable"
 
 type Props = {
@@ -20,6 +20,8 @@ const OrderListTable = (props: Props) => {
     totalTotalCost,
     fmt,
   } = useOrderListData()
+
+  const getColorClass = useGetColorClass()
 
   const columnHelper = createColumnHelper<OrderListRow>()
 
@@ -92,7 +94,10 @@ const OrderListTable = (props: Props) => {
 
   return (
     <PaginatedTable
-      data={orderListRows}
+      data={orderListRows.map((x) => ({
+        ...x,
+        colorClass: getColorClass(x.houseId),
+      }))}
       columns={columns}
       setCsvDownloadUrl={setCsvDownloadUrl}
     />

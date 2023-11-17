@@ -22,7 +22,7 @@ const OverviewIndex = () => {
   const overviewFields = [
     {
       label: "Total floor area",
-      value: `${totalFloor}m²`,
+      value: `${totalFloor.toFixed(1)}m²`,
     },
     {
       label: (
