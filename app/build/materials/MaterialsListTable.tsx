@@ -4,10 +4,12 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
+import {
+  MaterialsListRow,
+  useSelectedHouseMaterialsListRows,
+} from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
-import { useMaterialsListRows } from "./useMaterialsListRows"
-import { MaterialsListRow } from "../../db/user"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -15,7 +17,7 @@ type Props = {
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const materialsListRows = useMaterialsListRows()
+  const materialsListRows = useSelectedHouseMaterialsListRows()
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,

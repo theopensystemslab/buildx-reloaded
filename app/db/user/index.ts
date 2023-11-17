@@ -2,9 +2,10 @@ import Dexie from "dexie"
 import { SiteCtx } from "../../design/state/siteCtx"
 import { House } from "./houses"
 import {
-  metricsSubscriber,
   type MaterialsListRow,
   type OrderListRow,
+  orderListSub,
+  materialsListSub,
 } from "./metrics"
 
 class UserDatabase extends Dexie {
@@ -19,7 +20,7 @@ class UserDatabase extends Dexie {
       houses: "houseId,&friendlyName",
       siteCtx: "&key, mode, houseId, levelIndex, projectName, region",
       orderListRows: "[houseId+blockName]",
-      materialsListRows: "",
+      materialsListRows: "[houseId+item]",
     })
     this.houses = this.table("houses")
     this.siteCtx = this.table("siteCtx")
@@ -35,4 +36,5 @@ export default userDB
 export * from "./houses"
 export * from "./metrics"
 
-metricsSubscriber()
+orderListSub()
+materialsListSub()

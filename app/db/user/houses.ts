@@ -24,10 +24,12 @@ export const houseParser = z.object({
 
 export type House = z.infer<typeof houseParser>
 
-export const housesToRecord = (housesArray: House[]): Record<string, House> => {
+export const housesToRecord = <T extends House>(
+  housesArray: T[]
+): Record<string, T> => {
   return pipe(
     housesArray,
-    A.reduce({} as Record<string, House>, (acc, house) => ({
+    A.reduce({} as Record<string, T>, (acc, house) => ({
       ...acc,
       [house.houseId]: house,
     }))

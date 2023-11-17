@@ -1,24 +1,24 @@
 import { liveQuery } from "dexie"
-import userDB, { House, useBuildingHouseId, useHousesRecord } from "."
-import systemsDB from "../systems"
-import { values } from "fp-ts-std/Record"
-import { pipe } from "fp-ts/lib/function"
-import produce from "immer"
-import { A, O, R, S } from "../../utils/functions"
-import { useSelectedHouseIds } from "../../analyse/ui/HousesPillsSelector"
 import { useLiveQuery } from "dexie-react-hooks"
+import { values } from "fp-ts-std/Record"
+import { identity, pipe } from "fp-ts/lib/function"
+import produce from "immer"
+import userDB, { House, housesToRecord, useBuildingHouseId } from "."
+import { Module } from "../../../server/data/modules"
+import { WindowType } from "../../../server/data/windowTypes"
+import { useSelectedHouseIds } from "../../analyse/ui/HousesPillsSelector"
+import { useSiteCurrency } from "../../design/state/siteCtx"
 import {
-  SiteCtxModeEnum,
-  getModeBools,
-  useSiteCtx,
-  useSiteCurrency,
-} from "../../design/state/siteCtx"
-import { useMemo } from "react"
+  ElementNotFoundError,
+  MaterialNotFoundError,
+} from "../../design/ui-3d/fresh/systems"
+import { A, O, R, S } from "../../utils/functions"
+import systemsDB from "../systems"
 
 export type OrderListRow = {
-  buildingName: string
   houseId: string
   blockName: string
+  buildingName: string
   sheetsPerBlock: number
   count: number
   materialsCost: number // connect  to element Structure's material cost
@@ -31,8 +31,9 @@ export type OrderListRow = {
 }
 
 export type MaterialsListRow = {
-  buildingName: string
+  houseId: string
   item: string
+  buildingName: string
   category: string
   unit: string | null
   quantity: number
@@ -49,12 +50,29 @@ export type MaterialsListRow = {
 export const useAllOrderListRows = (): OrderListRow[] =>
   useLiveQuery(() => userDB.orderListRows.toArray(), [], [])
 
+export const useAllMaterialsListRows = (): MaterialsListRow[] =>
+  useLiveQuery(() => userDB.materialsListRows.toArray(), [], [])
+
 export const useSelectedHouseOrderListRows = (): OrderListRow[] => {
   const selectedHouseIds = useSelectedHouseIds()
 
   return useLiveQuery(
     () =>
       userDB.orderListRows.where("houseId").anyOf(selectedHouseIds).toArray(),
+    [selectedHouseIds],
+    []
+  )
+}
+
+export const useSelectedHouseMaterialsListRows = (): MaterialsListRow[] => {
+  const selectedHouseIds = useSelectedHouseIds()
+
+  return useLiveQuery(
+    () =>
+      userDB.materialsListRows
+        .where("houseId")
+        .anyOf(selectedHouseIds)
+        .toArray(),
     [selectedHouseIds],
     []
   )
@@ -79,7 +97,7 @@ export const useMetricsOrderListRows = (): OrderListRow[] => {
   )
 }
 
-const userDataObserver = liveQuery(async () => {
+const orderListDeps = liveQuery(async () => {
   const [houses, modules, blocks, blockModulesEntries] = await Promise.all([
     userDB.houses.toArray(),
     systemsDB.modules.toArray(),
@@ -89,8 +107,291 @@ const userDataObserver = liveQuery(async () => {
   return { houses, modules, blocks, blockModulesEntries }
 })
 
-export const metricsSubscriber = () =>
-  userDataObserver.subscribe(
+const materialsListDeps = liveQuery(async () => {
+  const [
+    modules,
+    elements,
+    materials,
+    windowTypes,
+    houses,
+    orderListRows,
+
+    // blocks,
+    // blockModulesEntries
+  ] = await Promise.all([
+    systemsDB.modules.toArray(),
+    systemsDB.elements.toArray(),
+    systemsDB.materials.toArray(),
+    systemsDB.windowTypes.toArray(),
+    userDB.houses.toArray(),
+    userDB.orderListRows.toArray(),
+    // systemsDB.blocks.toArray(),
+    // systemsDB.blockModuleEntries.toArray(),
+  ])
+  return {
+    modules,
+    elements,
+    materials,
+    windowTypes,
+    houses,
+    orderListRows,
+    // blocks,
+    // blockModulesEntries
+  }
+})
+
+export const materialsListSub = () =>
+  materialsListDeps.subscribe(
+    ({ modules, elements, materials, windowTypes, houses, orderListRows }) => {
+      const housesRecord = housesToRecord(houses)
+
+      const getElementMaterial = (houseId: string, elementName: string) => {
+        const house = housesRecord[houseId]
+
+        const materialName =
+          elementName in house.activeElementMaterials
+            ? house.activeElementMaterials[elementName]
+            : pipe(
+                elements,
+                A.findFirstMap((el) =>
+                  el.name === elementName ? O.some(el.defaultMaterial) : O.none
+                ),
+                O.fold(() => {
+                  throw new ElementNotFoundError(elementName, house.systemId)
+                }, identity)
+              )
+
+        return pipe(
+          materials,
+          A.findFirst((x) => x.specification === materialName),
+          O.fold(() => {
+            throw new MaterialNotFoundError(elementName, house.systemId)
+          }, identity)
+        )
+      }
+
+      const getHouseModules = (houseId: string) =>
+        pipe(
+          houses,
+          A.findFirst((x) => x.houseId === houseId),
+          O.chain((house) =>
+            pipe(
+              house.dnas,
+              A.traverse(O.Applicative)((dna) =>
+                pipe(
+                  modules,
+                  A.findFirst(
+                    (x) => x.systemId === house.systemId && x.dna === dna
+                  )
+                )
+              )
+            )
+          )
+        )
+      const getModuleWindowTypes = (module: Module) =>
+        pipe(
+          module.structuredDna,
+          R.reduceWithIndex(S.Ord)([], (key, acc: WindowType[], value) => {
+            switch (key) {
+              case "windowTypeEnd":
+              case "windowTypeSide1":
+              case "windowTypeSide2":
+              case "windowTypeTop":
+                return pipe(
+                  windowTypes,
+                  A.findFirstMap((wt) =>
+                    wt.code === value ? O.some([...acc, wt]) : O.none
+                  ),
+                  O.getOrElse(() => acc)
+                )
+              default:
+                return acc
+            }
+          })
+        )
+      const getQuantityReducer = (
+        item: string
+      ): ((acc: number, module: Module) => number) => {
+        switch (item) {
+          case "Pile footings":
+            return (acc, module) => acc + module.footingsCount
+
+          case "In-situ concrete":
+            return (acc, module) => acc + module.concreteVolume
+
+          case "Ridge beam":
+            return (acc, { lengthDims }) => acc + lengthDims
+
+          case "External breather membrane":
+            return (acc, { claddingArea, roofingArea, floorArea }) =>
+              acc + claddingArea + roofingArea + floorArea
+
+          case "Cladding":
+          case "Battens":
+            return (acc, { claddingArea }) => acc + claddingArea
+
+          case "Roofing":
+            return (acc, { roofingArea }) => acc + roofingArea
+
+          case "Window trim":
+            return (acc, module) => {
+              const moduleWindowTypes = getModuleWindowTypes(module)
+              return (
+                acc +
+                moduleWindowTypes.reduce(
+                  (acc, v) => acc + v.openingPerimeter,
+                  0
+                )
+              )
+            }
+
+          case "Windows":
+            return (acc, module) => {
+              const moduleWindowTypes = getModuleWindowTypes(module)
+              return (
+                acc +
+                moduleWindowTypes.reduce((acc, v) => acc + v.glazingArea, 0)
+              )
+            }
+
+          case "Doors":
+            return (acc, module) => {
+              const moduleWindowTypes = getModuleWindowTypes(module)
+              return (
+                acc + moduleWindowTypes.reduce((acc, v) => acc + v.doorArea, 0)
+              )
+            }
+
+          case "Flashings":
+            return (acc, module) => acc + module.flashingArea
+
+          case "Gutters and downpipes":
+            return (acc, module) =>
+              acc + module.gutterLength + module.downpipeLength
+
+          case "Flooring":
+            return (acc, module) => acc + module.floorArea
+
+          case "Internal lining":
+            return (acc, module) => acc + module.liningArea
+
+          case "Decking":
+            return (acc, module) => acc + module.deckingArea
+
+          case "Sole plate":
+            return (acc, module) => acc + module.soleplateLength
+
+          case "Space heating":
+          case "Mechanical ventilation":
+          case "Electrical and lighting":
+          default:
+            return (acc, module) => 0
+        }
+      }
+
+      const blockCountsByHouse = getBlockCountsByHouse(orderListRows)
+
+      // let categories: string[] = []
+
+      // const getCategoryColorClass = (category: string): string => {
+      //   const index = categories.indexOf(category)
+      //   const maxIndex = Object.keys(buildingColorVariants).length
+      //   const reversedIndex = (maxIndex - 2 - index + maxIndex) % maxIndex
+      //   return buildingColorVariants[reversedIndex]
+      // }
+
+      const houseMaterialCalculator = (house: House): MaterialsListRow[] => {
+        const { houseId } = house
+        const houseModules = getHouseModules(houseId)
+
+        const elementRows: MaterialsListRow[] = pipe(
+          elements,
+          A.filterMap(({ category, name: item }) => {
+            if (["Insulation"].includes(item)) return O.none
+
+            // if (!categories.includes(category)) categories.push(category)
+
+            const reducer = getQuantityReducer(item)
+
+            try {
+              const material = getElementMaterial(houseId, item)
+
+              const {
+                specification,
+                costPerUnit,
+                embodiedCarbonPerUnit,
+                linkUrl,
+                unit,
+              } = material
+
+              const quantity = pipe(
+                houseModules,
+                O.map(A.reduce(0, reducer)),
+                O.getOrElse(() => 0)
+              )
+
+              const cost = costPerUnit * quantity
+
+              const embodiedCarbonCost = embodiedCarbonPerUnit * quantity
+
+              return O.some<MaterialsListRow>({
+                houseId,
+                buildingName: house.friendlyName,
+                item,
+                category,
+                unit,
+                quantity,
+                specification,
+                costPerUnit,
+                cost,
+                embodiedCarbonPerUnit,
+                embodiedCarbonCost,
+                linkUrl,
+              })
+            } catch (e) {
+              if (e instanceof MaterialNotFoundError) {
+                console.log(`MaterialNotFoundError: ${e.message}`)
+                return O.none
+              } else if (e instanceof ElementNotFoundError) {
+                console.error(`ElementNotFoundError: ${e.message}`)
+                throw e
+              } else {
+                throw e
+              }
+            }
+          })
+        )
+
+        const augmentedRows: MaterialsListRow[] = [
+          {
+            houseId,
+            buildingName: house.friendlyName,
+            item: "WikiHouse blocks",
+            category: "Structure",
+            unit: null,
+            quantity: blockCountsByHouse[houseId],
+            specification: "Insulated WikiHouse blocks",
+            costPerUnit: 0,
+            cost: 0,
+            embodiedCarbonPerUnit: 0,
+            embodiedCarbonCost: 0,
+            linkUrl: "",
+          },
+        ]
+
+        return [...elementRows, ...augmentedRows].sort((a, b) =>
+          a.category.localeCompare(b.category)
+        )
+      }
+
+      const materialsListRows = houses.flatMap(houseMaterialCalculator)
+
+      userDB.materialsListRows.bulkPut(materialsListRows)
+    }
+  )
+
+export const orderListSub = () =>
+  orderListDeps.subscribe(
     ({ houses, modules, blocks, blockModulesEntries }) => {
       const accum: Record<string, number> = {}
 
@@ -252,6 +553,18 @@ export const useGetColorClass = () => {
   }
 }
 
+const getBlockCountsByHouse = A.reduce(
+  {},
+  (acc: Record<string, number>, row: OrderListRow) => {
+    if (row.houseId in acc) {
+      acc[row.houseId] += row.count
+    } else {
+      acc[row.houseId] = row.count
+    }
+    return acc
+  }
+)
+
 export const useOrderListData = () => {
   const orderListRows = useSelectedHouseOrderListRows()
 
@@ -379,18 +692,6 @@ export const useOrderListData = () => {
   //   )
   // }, [blockModulesEntries, blocks, getColorClass, modules, selectedHouses])
 
-  const blockCountsByHouse = pipe(
-    orderListRows,
-    A.reduce({}, (acc: Record<string, number>, row: OrderListRow) => {
-      if (row.houseId in acc) {
-        acc[row.houseId] += row.count
-      } else {
-        acc[row.houseId] = row.count
-      }
-      return acc
-    })
-  )
-
   const { code: currencyCode } = useSiteCurrency()
 
   const fmt = (value: number) =>
@@ -417,7 +718,7 @@ export const useOrderListData = () => {
     totalManufacturingCost,
     totalTotalCost,
     orderListRows,
-    blockCountsByHouse,
+    blockCountsByHouse: getBlockCountsByHouse(orderListRows),
     fmt,
   }
 }
