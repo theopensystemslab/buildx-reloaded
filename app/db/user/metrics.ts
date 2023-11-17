@@ -539,6 +539,7 @@ export const useOrderListData = () => {
     new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currencyCode,
+      maximumFractionDigits: 0,
     }).format(value)
 
   const { totalMaterialCost, totalManufacturingCost, totalTotalCost } = pipe(

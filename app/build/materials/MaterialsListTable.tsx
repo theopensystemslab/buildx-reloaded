@@ -2,7 +2,7 @@
 import { ArrowUp } from "@carbon/icons-react"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
-import { memo, useMemo } from "react"
+import { memo, useEffect, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
 import {
   MaterialsListRow,
@@ -11,6 +11,7 @@ import {
 } from "../../db/user"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
+import { csvFormatRows } from "d3-dsv"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -24,6 +25,31 @@ const MaterialsListTable = (props: Props) => {
     useSelectedHouseMaterialsListRows(),
     A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
   )
+
+  useEffect(() => {
+    if (materialsListRows.length > 0) {
+      // Create a header row
+      const headers = Object.keys(materialsListRows[0]).filter(
+        (x) => !["houseId", "colorClass", "linkUrl"].includes(x)
+      ) as Array<keyof (typeof materialsListRows)[0]>
+
+      // Map each object to an array of its values
+      const rows = materialsListRows.map((row) =>
+        headers.map((header) => row[header]?.toString() ?? "")
+      )
+
+      // Combine header and rows
+      const csvData = [headers, ...rows]
+
+      // Format the 2D array into a CSV string
+      const csvContent = csvFormatRows(csvData)
+
+      // Create a Blob and URL for the CSV
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const downloadUrl = URL.createObjectURL(blob)
+      setCsvDownloadUrl(downloadUrl)
+    }
+  }, [materialsListRows, setCsvDownloadUrl])
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,
@@ -124,13 +150,7 @@ const MaterialsListTable = (props: Props) => {
     [columnHelper, formatWithSymbol, totalCarbonCost, totalEstimatedCost]
   )
 
-  return (
-    <PaginatedTable
-      data={materialsListRows}
-      columns={columns}
-      setCsvDownloadUrl={setCsvDownloadUrl}
-    />
-  )
+  return <PaginatedTable data={materialsListRows} columns={columns} />
 }
 
 export default memo(MaterialsListTable)
