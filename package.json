@@ -59,6 +59,7 @@
     "three": "^0.153.0",
     "three-mesh-bvh": "^0.5.16",
     "three-stdlib": "^2.23.9",
+    "typeit-react": "^2.6.4",
     "use-debounce": "^9.0.3",
     "usehooks-ts": "^2.9.1",
     "valtio": "^1.7.0",

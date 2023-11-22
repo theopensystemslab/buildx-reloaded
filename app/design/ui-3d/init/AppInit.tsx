@@ -13,6 +13,7 @@ import { Fragment, PropsWithChildren } from "react"
 import SiteCamControls from "../camera/SiteCamControls"
 import HtmlUi from "../../ui/HtmlUi"
 import { useDesignSettings } from "../../state/settings"
+import Foo from "../foo"
 
 const SiteBoundary = dynamic(() => import("../SiteBoundary"), {
   ssr: false,
@@ -67,7 +68,8 @@ const AppInit = (props: Props) => {
           </MapboxR3FCanvasProjector>
         </MapboxR3FCanvas>
       )}
-      {controlsEnabled && <HtmlUi controlsEnabled={controlsEnabled} />}
+      {/* {controlsEnabled && <HtmlUi controlsEnabled={controlsEnabled} />} */}
+      <Foo />
     </FullScreenContainer>
   )
 }
