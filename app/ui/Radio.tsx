@@ -24,15 +24,21 @@ export default function Radio<T>(props: Props<T>) {
 
   const lastT = useRef<T | null>(null)
 
-  const newT = useDebouncedCallback(
-    (maybeT: T | null) => {
-      if (maybeT === lastT.current) return
-      lastT.current = maybeT
-      props.onHoverChange?.(maybeT)
-    },
-    100,
-    { leading: true, trailing: true }
-  )
+  const newT = (maybeT: T | null) => {
+    if (maybeT === lastT.current) return
+    lastT.current = maybeT
+    props.onHoverChange?.(maybeT)
+  }
+
+  // const newT = useDebouncedCallback(
+  //   (maybeT: T | null) => {
+  //     if (maybeT === lastT.current) return
+  //     lastT.current = maybeT
+  //     props.onHoverChange?.(maybeT)
+  //   },
+  //   100,
+  //   { leading: true, trailing: false }
+  // )
 
   return (
     <div>

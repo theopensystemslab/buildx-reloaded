@@ -127,7 +127,7 @@ const FreshApp = () => {
       )
     }
 
-    lastScopeElement.current = scope.hovered
+    lastScopeElement.current = item
   })
 
   return (
