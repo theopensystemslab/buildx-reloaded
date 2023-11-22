@@ -16,12 +16,13 @@ import {
   HouseTransformsGroup,
   isHouseTransformsGroup,
 } from "../ui-3d/fresh/scene/userData"
+import clsx from "clsx"
 
 type Props = {
   houseType: HouseType
 }
 
-const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
+const HouseThumbnailButton = memo(({ houseType }: Props) => {
   const scene = useScene()
 
   const maybeWorldGroup = useMemo(
@@ -142,10 +143,18 @@ const SuspendingHouseThumbnailButton = memo(({ houseType }: Props) => {
     )
   }
 
+  const illuminate = O.isSome(maybeHouseTransformsGroup)
+
   return (
     <button
       onClick={addHouse}
-      className="rounded bg-grey-80 px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black"
+      className={clsx(
+        "rounded px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black",
+        {
+          ["bg-grey-80"]: illuminate,
+          ["bg-grey-30"]: !illuminate,
+        }
+      )}
     >
       Add to site
     </button>
@@ -173,15 +182,7 @@ const HouseThumbnail = ({ houseType }: Props) => {
             </span>
           ))}
         </div>
-        <Suspense
-          fallback={
-            <button className="rounded bg-grey-30 px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black">
-              Add to site
-            </button>
-          }
-        >
-          <SuspendingHouseThumbnailButton houseType={houseType} />
-        </Suspense>
+        <HouseThumbnailButton houseType={houseType} />
       </div>
     </div>
   )
