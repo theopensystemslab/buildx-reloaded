@@ -5,18 +5,22 @@ import dynamic from "next/dynamic"
 import { Fragment } from "react"
 import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
-import { useSiteCurrency } from "../../design/state/siteCtx"
-import css from "./app.module.css"
-import { useOrderListDownloadUrl } from "../order/OrderListTable"
 import {
   useOrderListData,
   useSelectedHouseMaterialsListRows,
-} from "../../db/user"
+} from "../../db/exports"
+import { useSiteCurrency } from "../../design/state/siteCtx"
+import { initExportersWorker } from "../../workers"
+import { useModelsDownloadUrl } from "../../workers/exporters/hook"
 import { useMaterialsListDownloadUrl } from "../materials/MaterialsListTable"
+import { useOrderListDownloadUrl } from "../order/OrderListTable"
+import css from "./app.module.css"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
+  initExportersWorker()
+
   const { formatWithSymbol } = useSiteCurrency()
 
   const {
@@ -33,6 +37,8 @@ const OverviewIndex = () => {
 
   const materialsListDownloadUrl =
     useMaterialsListDownloadUrl(materialsListRows)
+
+  const modelsDownloadUrl = useModelsDownloadUrl()
 
   const overviewFields = [
     {
@@ -92,22 +98,24 @@ const OverviewIndex = () => {
           <h2>Downloads</h2>
 
           <div className="flex flex-col space-y-4 mt-4">
-            <a
-              href={`/3d-models`}
-              // download={`order-list.csv`}
-              // className="flex font-semibold items-center"
-            >
-              <div className="flex font-semibold tracking-wide">
-                <span>Download 3D models</span>
-                <span>
-                  <ArrowDown
-                    width="1em"
-                    height="1em"
-                    className="ml-2 translate-y-[15%]"
-                  />
-                </span>
-              </div>
-            </a>
+            {modelsDownloadUrl && (
+              <a
+                href={modelsDownloadUrl}
+                download={`3d-models.zip`}
+                // className="flex font-semibold items-center"
+              >
+                <div className="flex font-semibold tracking-wide">
+                  <span>Download 3D models</span>
+                  <span>
+                    <ArrowDown
+                      width="1em"
+                      height="1em"
+                      className="ml-2 translate-y-[15%]"
+                    />
+                  </span>
+                </div>
+              </a>
+            )}
             {orderListDownloadUrl && (
               <a
                 href={orderListDownloadUrl}

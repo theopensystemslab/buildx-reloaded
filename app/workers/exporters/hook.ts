@@ -1,24 +1,16 @@
+import { useEffect, useState } from "react"
 import { useEvent } from "react-use"
 import { getExportersWorker } from ".."
-import userDB from "../../db/user"
-import {
-  GET_EXPORT_MODEL_EVENT,
-  GetModelEvent,
-  UPDATE_EXPORT_MODELS_EVENT,
-  UpdateWorkerGroupEvent,
-} from "./events"
+import userDB, { useHouses } from "../../db/user"
+import { GET_EXPORT_MODEL_EVENT, GetModelEvent } from "./events"
+import { pipe } from "fp-ts/lib/function"
+import { A } from "../../utils/functions"
+import JSZip from "jszip"
+import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
+
+const fooToBar = (gltfData: any) => {}
 
 export const useExportersWorker = () => {
-  useEvent(
-    UPDATE_EXPORT_MODELS_EVENT,
-    ({ detail: { houseId, payload } }: UpdateWorkerGroupEvent) => {
-      getExportersWorker().updateModels({
-        houseId,
-        payload,
-      })
-    }
-  )
-
   useEvent(
     GET_EXPORT_MODEL_EVENT,
     async ({ detail: { houseId, format } }: GetModelEvent) => {
@@ -75,4 +67,48 @@ export const useExportersWorker = () => {
       })
     }
   )
+}
+
+export const useModelsDownloadUrl = () => {
+  const houses = useSelectedHouses()
+
+  const [modelsDownloadUrl, setModelsDownloadUrl] = useState<
+    string | undefined
+  >(undefined)
+
+  useEffect(() => {
+    const zip = new JSZip()
+
+    ;(async () => {
+      for (let house of houses) {
+        // Promise.all()
+        const glbData = await getExportersWorker().getGLB(house.houseId)
+        if (glbData) {
+          const blob = new Blob([glbData], { type: "model/gltf-binary" })
+          zip.file(`${house.friendlyName}.glb`, blob)
+        }
+        const objData = await getExportersWorker().getOBJ(house.houseId)
+        if (objData) {
+          const blob = new Blob([objData], { type: "text/plain" })
+          zip.file(`${house.friendlyName}.obj`, blob)
+        }
+      }
+
+      zip.generateAsync({ type: "blob" }).then(function (content) {
+        // Create download link for the zip
+        setModelsDownloadUrl(URL.createObjectURL(content))
+
+        // const link = document.createElement("a")
+        // link.href = url
+        // link.download = "houses.zip"
+        // document.body.appendChild(link)
+        // link.click()
+
+        // // Cleanup
+        // document.body.removeChild(link)
+        // URL.revokeObjectURL(url)
+      })
+    })()
+  }, [houses])
+  return modelsDownloadUrl
 }

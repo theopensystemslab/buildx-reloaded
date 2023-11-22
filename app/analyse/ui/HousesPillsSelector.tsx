@@ -5,12 +5,8 @@ import { proxy, useSnapshot } from "valtio"
 import { Close } from "~/ui/icons"
 import { useClickAway } from "~/ui/utils"
 import { A } from "~/utils/functions"
-import {
-  House,
-  housesToRecord,
-  useGetColorClass,
-  useHouses,
-} from "../../db/user"
+import { useGetColorClass } from "../../db/exports"
+import { House, housesToRecord, useHouses } from "../../db/user"
 
 const store = proxy<{
   selectedHouses: string[]

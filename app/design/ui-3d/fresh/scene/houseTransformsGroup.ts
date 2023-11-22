@@ -738,6 +738,7 @@ export const createHouseTransformsGroup = ({
 
   const updateExportModels: typeof houseTransformsGroup.userData.updateExportModels =
     () => {
+      console.log(`htg updateExportModels`)
       const clone = houseTransformsGroup.clone()
 
       clone.traverse((node) => {

@@ -2,7 +2,7 @@
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import { floor } from "~/utils/math"
-import { useGetColorClass } from "../../db/user"
+import { useGetColorClass } from "../../db/exports"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"

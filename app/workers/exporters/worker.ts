@@ -17,7 +17,8 @@ function flattenObject(root: Object3D): Group {
 
   const skipObject = (object: Object3D): boolean =>
     !(object instanceof Mesh) ||
-    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh
+    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh ||
+    !object.visible
 
   root.traverse((child: Object3D) => {
     if (!skipObject(child)) {
@@ -73,6 +74,7 @@ const updateModels = async ({
   houseId,
   payload,
 }: UpdateWorkerGroupEventDetail) => {
+  console.log(`update models`)
   const loader = new ObjectLoader()
 
   const parsed = loader.parse(payload)
