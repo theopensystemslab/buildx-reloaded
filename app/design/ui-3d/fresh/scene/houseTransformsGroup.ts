@@ -125,7 +125,7 @@ export const createHouseTransformsGroup = ({
   friendlyName,
   houseTypeId,
   activeElementMaterials,
-}: House): T.Task<HouseTransformsGroup> => {
+}: Omit<House, "position" | "rotation">): T.Task<HouseTransformsGroup> => {
   const houseTransformsGroup = new Group() as HouseTransformsGroup
 
   const clippingPlanes: Plane[] = [

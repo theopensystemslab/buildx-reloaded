@@ -6,20 +6,27 @@ import {
   type OrderListRow,
 } from "./metrics"
 
+type HouseModelsRow = {
+  houseId: string
+  glbData: any
+  objData: any
+}
+
 class ExportsDatabase extends Dexie {
   orderListRows: Dexie.Table<OrderListRow, string>
   materialsListRows: Dexie.Table<MaterialsListRow, string>
+  houseModels: Dexie.Table<HouseModelsRow, string>
 
   constructor() {
     super("UserDatabase")
     this.version(1).stores({
-      houses: "houseId,&friendlyName",
-      siteCtx: "&key, mode, houseId, levelIndex, projectName, region",
       orderListRows: "[houseId+blockName]",
       materialsListRows: "[houseId+item]",
+      houseModels: "houseId",
     })
     this.orderListRows = this.table("orderListRows")
     this.materialsListRows = this.table("materialsListRows")
+    this.houseModels = this.table("houseModels")
   }
 }
 

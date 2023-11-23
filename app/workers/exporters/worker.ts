@@ -1,7 +1,6 @@
 import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
-import { UpdateWorkerGroupEventDetail } from "./events"
 import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
 
 function flattenObject(root: Object3D): Group {
@@ -73,7 +72,10 @@ const parseAndSetOBJ = (houseId: string, object: Object3D) => {
 const updateModels = async ({
   houseId,
   payload,
-}: UpdateWorkerGroupEventDetail) => {
+}: {
+  houseId: string
+  payload: any
+}) => {
   console.log(`update models`)
   const loader = new ObjectLoader()
 
