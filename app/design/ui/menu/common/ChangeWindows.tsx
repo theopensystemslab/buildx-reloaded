@@ -118,9 +118,9 @@ const ChangeWindows = (props: Props) => {
     [allModules, houseTransformsGroup, scopeElement, systemId, windowTypes]
   )
 
-  const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    const { setPreviewLayout } = houseTransformsGroup.userData
+  const { setPreviewLayout } = houseTransformsGroup.userData
 
+  const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
     if (incoming) {
       if (!isActiveLayout(incoming.layout)) {
         setPreviewLayout(incoming.layout)

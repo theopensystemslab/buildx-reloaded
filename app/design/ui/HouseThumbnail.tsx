@@ -58,11 +58,9 @@ const HouseThumbnailButton = memo(({ houseType }: Props) => {
     createHouseTransformsGroup({
       friendlyName: "", // getFriendlyName(),
       activeElementMaterials: {},
-      position: { x: 0, y: 0, z: 0 },
       dnas,
       houseId: nanoid(),
       houseTypeId,
-      rotation: 0,
       systemId,
     })().then((houseTransformsGroup) => {
       setRaycasting(houseTransformsGroup, true)

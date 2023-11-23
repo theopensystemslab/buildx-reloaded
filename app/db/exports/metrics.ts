@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks"
 import { values } from "fp-ts-std/Record"
 import { identity, pipe } from "fp-ts/lib/function"
 import produce from "immer"
-import userDB, { House, housesToRecord, useBuildingHouseId } from "."
+import userDB, { House, housesToRecord, useBuildingHouseId } from "../user"
 import { Module } from "../../../server/data/modules"
 import { WindowType } from "../../../server/data/windowTypes"
 import { useSelectedHouseIds } from "../../analyse/ui/HousesPillsSelector"
@@ -14,6 +14,7 @@ import {
 } from "../../design/ui-3d/fresh/systems"
 import { A, O, R, S } from "../../utils/functions"
 import systemsDB from "../systems"
+import exportsDB from "."
 
 export type OrderListRow = {
   houseId: string
@@ -44,17 +45,20 @@ export type MaterialsListRow = {
 }
 
 export const useAllOrderListRows = (): OrderListRow[] =>
-  useLiveQuery(() => userDB.orderListRows.toArray(), [], [])
+  useLiveQuery(() => exportsDB.orderListRows.toArray(), [], [])
 
 export const useAllMaterialsListRows = (): MaterialsListRow[] =>
-  useLiveQuery(() => userDB.materialsListRows.toArray(), [], [])
+  useLiveQuery(() => exportsDB.materialsListRows.toArray(), [], [])
 
 export const useSelectedHouseOrderListRows = (): OrderListRow[] => {
   const selectedHouseIds = useSelectedHouseIds()
 
   return useLiveQuery(
     () =>
-      userDB.orderListRows.where("houseId").anyOf(selectedHouseIds).toArray(),
+      exportsDB.orderListRows
+        .where("houseId")
+        .anyOf(selectedHouseIds)
+        .toArray(),
     [selectedHouseIds],
     []
   )
@@ -65,7 +69,7 @@ export const useSelectedHouseMaterialsListRows = (): MaterialsListRow[] => {
 
   return useLiveQuery(
     () =>
-      userDB.materialsListRows
+      exportsDB.materialsListRows
         .where("houseId")
         .anyOf(selectedHouseIds)
         .toArray(),
@@ -82,12 +86,12 @@ export const useMetricsOrderListRows = (): OrderListRow[] => {
   return useLiveQuery(
     () => {
       if (buildingHouseId) {
-        return userDB.orderListRows
+        return exportsDB.orderListRows
           .where("houseId")
           .equals(buildingHouseId)
           .toArray()
       } else {
-        return userDB.orderListRows.toArray()
+        return exportsDB.orderListRows.toArray()
       }
     },
     [buildingHouseId],
@@ -113,7 +117,7 @@ const materialsListDeps = liveQuery(async () => {
       systemsDB.materials.toArray(),
       systemsDB.windowTypes.toArray(),
       userDB.houses.toArray(),
-      userDB.orderListRows.toArray(),
+      exportsDB.orderListRows.toArray(),
     ])
   return {
     modules,
@@ -326,7 +330,7 @@ export const materialsListSub = () =>
               })
             } catch (e) {
               if (e instanceof MaterialNotFoundError) {
-                console.log(`MaterialNotFoundError: ${e.message}`)
+                // console.log(`MaterialNotFoundError: ${e.message}`)
                 return O.none
               } else if (e instanceof ElementNotFoundError) {
                 console.error(`ElementNotFoundError: ${e.message}`)
@@ -362,7 +366,7 @@ export const materialsListSub = () =>
 
       const materialsListRows = houses.flatMap(houseMaterialCalculator)
 
-      userDB.materialsListRows.bulkPut(materialsListRows)
+      exportsDB.materialsListRows.bulkPut(materialsListRows)
     }
   )
 
@@ -472,7 +476,7 @@ export const orderListSub = () =>
         )
       )
 
-      userDB.orderListRows.bulkPut(orderListRows)
+      exportsDB.orderListRows.bulkPut(orderListRows)
     }
   )
 

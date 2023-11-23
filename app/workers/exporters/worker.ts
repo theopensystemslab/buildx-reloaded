@@ -1,8 +1,8 @@
 import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
-import { UpdateWorkerGroupEventDetail } from "./events"
 import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
+import exportsDB from "../../db/exports"
 
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
@@ -17,7 +17,8 @@ function flattenObject(root: Object3D): Group {
 
   const skipObject = (object: Object3D): boolean =>
     !(object instanceof Mesh) ||
-    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh
+    object.userData?.type !== UserDataTypeEnum.Enum.ElementMesh ||
+    !object.visible
 
   root.traverse((child: Object3D) => {
     if (!skipObject(child)) {
@@ -45,16 +46,33 @@ function flattenObject(root: Object3D): Group {
   return flatGroup
 }
 
-const OBJMap = new Map<string, string>()
-const GLBMap = new Map<string, any>()
+const updateModels = async ({
+  houseId,
+  payload,
+}: {
+  houseId: string
+  payload: any
+}) => {
+  const loader = new ObjectLoader()
 
-const parseAndSetGLB = (houseId: string, object: Object3D) => {
+  const parsed1 = loader.parse(payload)
+
+  parsed1.updateMatrixWorld(true)
+
+  const parsed2 = parsed1.clone()
+
   const gltfExporter = new GLTFExporter() as any
 
+  const flattened1 = flattenObject(parsed1)
+
   gltfExporter.parse(
-    object,
-    function (glb: any) {
-      GLBMap.set(houseId, glb)
+    flattened1,
+    function (glbData: any) {
+      const objExporter = new OBJExporter()
+      const flattened2 = flattenObject(parsed2)
+
+      const objData = objExporter.parse(flattened2)
+      exportsDB.houseModels.put({ houseId, glbData, objData })
     },
     function (e: any) {
       console.error(e)
@@ -63,40 +81,18 @@ const parseAndSetGLB = (houseId: string, object: Object3D) => {
   )
 }
 
-const parseAndSetOBJ = (houseId: string, object: Object3D) => {
-  const objExporter = new OBJExporter()
-  const parsedObj = objExporter.parse(object)
-  OBJMap.set(houseId, parsedObj)
-}
+// const getOBJ = (houseId: string) => {
+//   return OBJMap.get(houseId)
+// }
 
-const updateModels = async ({
-  houseId,
-  payload,
-}: UpdateWorkerGroupEventDetail) => {
-  const loader = new ObjectLoader()
-
-  const parsed = loader.parse(payload)
-
-  parsed.updateMatrixWorld(true)
-
-  const flattened = flattenObject(parsed)
-
-  parseAndSetGLB(houseId, flattened)
-  parseAndSetOBJ(houseId, flattened)
-}
-
-const getOBJ = (houseId: string) => {
-  return OBJMap.get(houseId)
-}
-
-const getGLB = (houseId: string) => {
-  return GLBMap.get(houseId)
-}
+// const getGLB = (houseId: string) => {
+//   return GLBMap.get(houseId)
+// }
 
 const api = {
   updateModels,
-  getOBJ,
-  getGLB,
+  // getOBJ,
+  // getGLB,
 }
 
 export type ExportersAPI = typeof api

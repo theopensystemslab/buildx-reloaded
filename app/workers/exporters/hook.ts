@@ -1,78 +1,114 @@
+import JSZip from "jszip"
+import { useEffect, useState } from "react"
 import { useEvent } from "react-use"
 import { getExportersWorker } from ".."
-import userDB from "../../db/user"
-import {
-  GET_EXPORT_MODEL_EVENT,
-  GetModelEvent,
-  UPDATE_EXPORT_MODELS_EVENT,
-  UpdateWorkerGroupEvent,
-} from "./events"
+import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
+import userDB, { useHouse } from "../../db/user"
+import exportsDB, { HouseModelsRow } from "../../db/exports"
+import { pipe } from "fp-ts/lib/function"
+import { O } from "../../utils/functions"
+import { useLiveQuery } from "dexie-react-hooks"
 
 export const useExportersWorker = () => {
-  useEvent(
-    UPDATE_EXPORT_MODELS_EVENT,
-    ({ detail: { houseId, payload } }: UpdateWorkerGroupEvent) => {
-      getExportersWorker().updateModels({
-        houseId,
-        payload,
-      })
-    }
+  // useEvent(
+  //   GET_EXPORT_MODEL_EVENT,
+  //   async ({ detail: { houseId, format } }: GetModelEvent) => {
+  //     userDB.houses.get(houseId).then(async (house) => {
+  //       if (!house) return
+  //       switch (format) {
+  //         case "GLB": {
+  //           const gltfData = await getExportersWorker().getGLB(houseId)
+  //           if (!gltfData) return
+  //           const blob = new Blob([gltfData], {
+  //             type: "model/gltf-binary",
+  //           })
+  //           const url = URL.createObjectURL(blob)
+  //           const link = document.createElement("a")
+  //           link.href = url
+  //           link.download = `${house.friendlyName}.glb`
+  //           link.style.display = "none"
+  //           document.body.appendChild(link)
+  //           link.click()
+  //           // Cleanup
+  //           document.body.removeChild(link)
+  //           URL.revokeObjectURL(url)
+  //           return
+  //         }
+  //         case "OBJ": {
+  //           const objData = await getExportersWorker().getOBJ(houseId)
+  //           if (!objData) return
+  //           const blob = new Blob([objData], { type: "text/plain" })
+  //           const url = URL.createObjectURL(blob)
+  //           const link = document.createElement("a")
+  //           link.href = url
+  //           link.download = `${house.friendlyName}.obj`
+  //           link.style.display = "none"
+  //           document.body.appendChild(link)
+  //           link.click()
+  //           // Cleanup
+  //           document.body.removeChild(link)
+  //           URL.revokeObjectURL(url)
+  //           return
+  //         }
+  //         default:
+  //           return
+  //       }
+  //     })
+  //   }
+  // )
+}
+
+export const useHousesModelRows = (houseIds: string[]) =>
+  useLiveQuery(
+    () => exportsDB.houseModels.where("houseId").anyOf(houseIds).toArray(),
+    [houseIds],
+    []
   )
 
-  useEvent(
-    GET_EXPORT_MODEL_EVENT,
-    async ({ detail: { houseId, format } }: GetModelEvent) => {
-      userDB.houses.get(houseId).then(async (house) => {
-        if (!house) return
+export const useModelsZipURL = () => {
+  const houses = useSelectedHouses()
 
-        switch (format) {
-          case "GLB": {
-            const gltfData = await getExportersWorker().getGLB(houseId)
+  const [modelsDownloadUrl, setModelsDownloadUrl] = useState<
+    string | undefined
+  >(undefined)
 
-            if (!gltfData) return
+  useEffect(() => {
+    const zip = new JSZip()
 
-            const blob = new Blob([gltfData], {
-              type: "model/gltf-binary",
-            })
+    ;(async () => {
+      if (houses.length < 1) return
 
-            const url = URL.createObjectURL(blob)
+      for (let { houseId, friendlyName } of houses) {
+        const dbData = await exportsDB.houseModels.get(houseId)
 
-            const link = document.createElement("a")
-            link.href = url
-            link.download = `${house.friendlyName}.glb`
-            link.style.display = "none"
-            document.body.appendChild(link)
-            link.click()
+        if (!dbData) continue
 
-            // Cleanup
-            document.body.removeChild(link)
-            URL.revokeObjectURL(url)
-            return
-          }
-          case "OBJ": {
-            const objData = await getExportersWorker().getOBJ(houseId)
+        const { glbData, objData } = dbData
+        zip.file(
+          `${friendlyName}.glb`,
+          new Blob([glbData], { type: "model/gltf-binary" })
+        )
+        zip.file(
+          `${friendlyName}.obj`,
+          new Blob([objData], { type: "text/plain" })
+        )
+      }
 
-            if (!objData) return
+      zip.generateAsync({ type: "blob" }).then(function (content) {
+        // Create download link for the zip
+        setModelsDownloadUrl(URL.createObjectURL(content))
 
-            const blob = new Blob([objData], { type: "text/plain" })
-            const url = URL.createObjectURL(blob)
+        // const link = document.createElement("a")
+        // link.href = url
+        // link.download = "houses.zip"
+        // document.body.appendChild(link)
+        // link.click()
 
-            const link = document.createElement("a")
-            link.href = url
-            link.download = `${house.friendlyName}.obj`
-            link.style.display = "none"
-            document.body.appendChild(link)
-            link.click()
-
-            // Cleanup
-            document.body.removeChild(link)
-            URL.revokeObjectURL(url)
-            return
-          }
-          default:
-            return
-        }
+        // // Cleanup
+        // document.body.removeChild(link)
+        // URL.revokeObjectURL(url)
       })
-    }
-  )
+    })()
+  }, [houses])
+  return modelsDownloadUrl
 }

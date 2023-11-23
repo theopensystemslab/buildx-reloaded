@@ -2,7 +2,7 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
-import { useGetColorClass, useHousesRecord } from "../../db/user"
+import { useHousesRecord } from "../../db/user"
 import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
@@ -13,6 +13,7 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
+import { useGetColorClass } from "../../db/exports"
 
 const CarbonEmissionsChart = ({
   analyseData,

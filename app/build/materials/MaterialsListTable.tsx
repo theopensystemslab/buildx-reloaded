@@ -4,14 +4,14 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useEffect, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
+import { useSiteCurrency } from "../../design/state/siteCtx"
+import PaginatedTable from "../PaginatedTable"
+import { csvFormatRows } from "d3-dsv"
 import {
   MaterialsListRow,
   useGetColorClass,
   useSelectedHouseMaterialsListRows,
-} from "../../db/user"
-import { useSiteCurrency } from "../../design/state/siteCtx"
-import PaginatedTable from "../PaginatedTable"
-import { csvFormatRows } from "d3-dsv"
+} from "../../db/exports"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
