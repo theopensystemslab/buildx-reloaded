@@ -99,7 +99,10 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             />
           </Fragment>
         )}
-        <Exporters houseId={houseTransformsGroup.userData.houseId} />
+        <Exporters
+          houseId={houseTransformsGroup.userData.houseId}
+          close={close}
+        />
       </Fragment>
     </ContextMenu>
   )

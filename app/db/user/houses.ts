@@ -53,6 +53,12 @@ export const useHouses = (): House[] => {
 
 export const useHousesRecord = () => pipe(useHouses(), housesToRecord)
 
+export const useHouse = (houseId: string): O.Option<House> =>
+  pipe(
+    useLiveQuery(() => userDB.houses.get(houseId)),
+    O.fromNullable
+  )
+
 export const useGetHouseModules = () => {
   const houses = useHouses()
   const allSystemsModules = useAllModules()

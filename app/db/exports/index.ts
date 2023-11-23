@@ -6,7 +6,7 @@ import {
   type OrderListRow,
 } from "./metrics"
 
-type HouseModelsRow = {
+export type HouseModelsRow = {
   houseId: string
   glbData: any
   objData: any

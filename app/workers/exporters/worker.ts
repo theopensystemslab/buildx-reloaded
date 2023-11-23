@@ -53,22 +53,25 @@ const updateModels = async ({
   houseId: string
   payload: any
 }) => {
-  console.log(`update models`)
   const loader = new ObjectLoader()
 
-  const parsed = loader.parse(payload)
+  const parsed1 = loader.parse(payload)
 
-  parsed.updateMatrixWorld(true)
+  parsed1.updateMatrixWorld(true)
+
+  const parsed2 = parsed1.clone()
 
   const gltfExporter = new GLTFExporter() as any
 
+  const flattened1 = flattenObject(parsed1)
+
   gltfExporter.parse(
-    parsed,
+    flattened1,
     function (glbData: any) {
-      const flattened = flattenObject(parsed)
       const objExporter = new OBJExporter()
-      const objData = objExporter.parse(flattened)
-      console.log(`putting`)
+      const flattened2 = flattenObject(parsed2)
+
+      const objData = objExporter.parse(flattened2)
       exportsDB.houseModels.put({ houseId, glbData, objData })
     },
     function (e: any) {

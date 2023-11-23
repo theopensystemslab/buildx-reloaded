@@ -3,8 +3,11 @@ import { useEffect, useState } from "react"
 import { useEvent } from "react-use"
 import { getExportersWorker } from ".."
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
-import userDB from "../../db/user"
-import exportsDB from "../../db/exports"
+import userDB, { useHouse } from "../../db/user"
+import exportsDB, { HouseModelsRow } from "../../db/exports"
+import { pipe } from "fp-ts/lib/function"
+import { O } from "../../utils/functions"
+import { useLiveQuery } from "dexie-react-hooks"
 
 export const useExportersWorker = () => {
   // useEvent(
@@ -55,7 +58,14 @@ export const useExportersWorker = () => {
   // )
 }
 
-export const useModelsDownloadUrl = () => {
+export const useHousesModelRows = (houseIds: string[]) =>
+  useLiveQuery(
+    () => exportsDB.houseModels.where("houseId").anyOf(houseIds).toArray(),
+    [houseIds],
+    []
+  )
+
+export const useModelsZipURL = () => {
   const houses = useSelectedHouses()
 
   const [modelsDownloadUrl, setModelsDownloadUrl] = useState<

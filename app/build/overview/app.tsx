@@ -11,7 +11,7 @@ import {
 } from "../../db/exports"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import { initExportersWorker } from "../../workers"
-import { useModelsDownloadUrl } from "../../workers/exporters/hook"
+import { useModelsZipURL } from "../../workers/exporters/hook"
 import { useMaterialsListDownloadUrl } from "../materials/MaterialsListTable"
 import { useOrderListDownloadUrl } from "../order/OrderListTable"
 import css from "./app.module.css"
@@ -19,8 +19,6 @@ import css from "./app.module.css"
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
-  initExportersWorker()
-
   const { formatWithSymbol } = useSiteCurrency()
 
   const {
@@ -38,7 +36,7 @@ const OverviewIndex = () => {
   const materialsListDownloadUrl =
     useMaterialsListDownloadUrl(materialsListRows)
 
-  const modelsDownloadUrl = useModelsDownloadUrl()
+  const modelsDownloadUrl = useModelsZipURL()
 
   const overviewFields = [
     {
