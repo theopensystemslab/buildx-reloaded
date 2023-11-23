@@ -4,9 +4,6 @@ import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
 import exportsDB from "../../db/exports"
 
-const objExporter = new OBJExporter()
-const gltfExporter = new GLTFExporter() as any
-
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
 
@@ -63,11 +60,13 @@ const updateModels = async ({
 
   parsed.updateMatrixWorld(true)
 
-  const flattened = flattenObject(parsed)
+  const gltfExporter = new GLTFExporter() as any
 
   gltfExporter.parse(
-    flattened,
+    parsed,
     function (glbData: any) {
+      const flattened = flattenObject(parsed)
+      const objExporter = new OBJExporter()
       const objData = objExporter.parse(flattened)
       console.log(`putting`)
       exportsDB.houseModels.put({ houseId, glbData, objData })
