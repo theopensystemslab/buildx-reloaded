@@ -5,7 +5,6 @@ import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
-import { useExportersWorker } from "../../../workers/exporters/hook"
 import elementCategories from "../../state/elementCategories"
 import menu from "../../state/menu"
 import scope, { ScopeElement } from "../../state/scope"
@@ -61,7 +60,7 @@ const FreshApp = () => {
     false
   )
 
-  useExportersWorker()
+  // useExportersWorker()
 
   const scene = useThree((t) => t.scene)
 

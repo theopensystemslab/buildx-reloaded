@@ -2,6 +2,10 @@ import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
+import exportsDB from "../../db/exports"
+
+const objExporter = new OBJExporter()
+const gltfExporter = new GLTFExporter() as any
 
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
@@ -45,30 +49,6 @@ function flattenObject(root: Object3D): Group {
   return flatGroup
 }
 
-const OBJMap = new Map<string, string>()
-const GLBMap = new Map<string, any>()
-
-const parseAndSetGLB = (houseId: string, object: Object3D) => {
-  const gltfExporter = new GLTFExporter() as any
-
-  gltfExporter.parse(
-    object,
-    function (glb: any) {
-      GLBMap.set(houseId, glb)
-    },
-    function (e: any) {
-      console.error(e)
-    },
-    { binary: true, onlyVisible: true }
-  )
-}
-
-const parseAndSetOBJ = (houseId: string, object: Object3D) => {
-  const objExporter = new OBJExporter()
-  const parsedObj = objExporter.parse(object)
-  OBJMap.set(houseId, parsedObj)
-}
-
 const updateModels = async ({
   houseId,
   payload,
@@ -85,22 +65,32 @@ const updateModels = async ({
 
   const flattened = flattenObject(parsed)
 
-  parseAndSetGLB(houseId, flattened)
-  parseAndSetOBJ(houseId, flattened)
+  gltfExporter.parse(
+    flattened,
+    function (glbData: any) {
+      const objData = objExporter.parse(flattened)
+      console.log(`putting`)
+      exportsDB.houseModels.put({ houseId, glbData, objData })
+    },
+    function (e: any) {
+      console.error(e)
+    },
+    { binary: true, onlyVisible: true }
+  )
 }
 
-const getOBJ = (houseId: string) => {
-  return OBJMap.get(houseId)
-}
+// const getOBJ = (houseId: string) => {
+//   return OBJMap.get(houseId)
+// }
 
-const getGLB = (houseId: string) => {
-  return GLBMap.get(houseId)
-}
+// const getGLB = (houseId: string) => {
+//   return GLBMap.get(houseId)
+// }
 
 const api = {
   updateModels,
-  getOBJ,
-  getGLB,
+  // getOBJ,
+  // getGLB,
 }
 
 export type ExportersAPI = typeof api

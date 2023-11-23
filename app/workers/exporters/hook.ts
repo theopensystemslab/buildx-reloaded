@@ -4,6 +4,7 @@ import { useEvent } from "react-use"
 import { getExportersWorker } from ".."
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
 import userDB from "../../db/user"
+import exportsDB from "../../db/exports"
 
 export const useExportersWorker = () => {
   // useEvent(
@@ -65,18 +66,22 @@ export const useModelsDownloadUrl = () => {
     const zip = new JSZip()
 
     ;(async () => {
-      for (let house of houses) {
-        // Promise.all()
-        const glbData = await getExportersWorker().getGLB(house.houseId)
-        if (glbData) {
-          const blob = new Blob([glbData], { type: "model/gltf-binary" })
-          zip.file(`${house.friendlyName}.glb`, blob)
-        }
-        const objData = await getExportersWorker().getOBJ(house.houseId)
-        if (objData) {
-          const blob = new Blob([objData], { type: "text/plain" })
-          zip.file(`${house.friendlyName}.obj`, blob)
-        }
+      if (houses.length < 1) return
+
+      for (let { houseId, friendlyName } of houses) {
+        const dbData = await exportsDB.houseModels.get(houseId)
+
+        if (!dbData) continue
+
+        const { glbData, objData } = dbData
+        zip.file(
+          `${friendlyName}.glb`,
+          new Blob([glbData], { type: "model/gltf-binary" })
+        )
+        zip.file(
+          `${friendlyName}.obj`,
+          new Blob([objData], { type: "text/plain" })
+        )
       }
 
       zip.generateAsync({ type: "blob" }).then(function (content) {

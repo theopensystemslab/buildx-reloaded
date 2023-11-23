@@ -18,7 +18,7 @@ class ExportsDatabase extends Dexie {
   houseModels: Dexie.Table<HouseModelsRow, string>
 
   constructor() {
-    super("UserDatabase")
+    super("ExportsDatabase")
     this.version(1).stores({
       orderListRows: "[houseId+blockName]",
       materialsListRows: "[houseId+item]",
