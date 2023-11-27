@@ -342,6 +342,9 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async (target) => {
+      console.log(`dropping`)
+      dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
+
       const { columnIndex, levelIndex, moduleIndex } = target
 
       const side = getSide(houseTransformsGroup)
@@ -360,11 +363,14 @@ export const createHouseTransformsGroup = ({
           side,
         })
 
-      if (altWindowTypeLayouts.length > 0) {
-        dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
-      }
+      for (let {
+        windowType,
+        layout,
+        dnas,
+        candidate,
+      } of altWindowTypeLayouts) {
+        console.log({ candidate: candidate.dna, windowType: windowType.code })
 
-      for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
         await createHouseLayoutGroup({
           systemId: houseTransformsGroup.userData.systemId,
           dnas,
@@ -372,6 +378,7 @@ export const createHouseTransformsGroup = ({
           houseLayout: layout,
           houseTransformsGroup,
         })().then((houseLayoutGroup) => {
+          console.log(`pushing`)
           houseTransformsGroup.userData.pushAltLayout({
             type: LayoutType.Enum.ALT_WINDOW_TYPE,
             houseLayoutGroup,

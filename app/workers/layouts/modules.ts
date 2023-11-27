@@ -43,33 +43,41 @@ export const getModuleWindowTypeAlts = ({
 
           if (!check) return false
 
-          if (positionType === "END")
-            return x.structuredDna.windowTypeEnd !== windowTypeEnd
+          if (positionType === "END") {
+            return false
+            // return x.structuredDna.windowTypeEnd !== windowTypeEnd
+          }
 
           if (levelType[0] === "R") {
-            return x.structuredDna.windowTypeTop !== windowTypeTop
+            return false
+            // return x.structuredDna.windowTypeTop !== windowTypeTop
           }
 
           const k: keyof typeof parsedStructuredDna =
             side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
 
-          return x.structuredDna[k] !== parsedStructuredDna[k]
+          // return x.structuredDna[k] !== parsedStructuredDna[k]
 
-          // return side === "LEFT"
-          //   ? compareProps(x.structuredDna, parsedStructuredDna, [
-          //       "windowTypeEnd",
-          //       "windowTypeTop",
-          //       "windowTypeSide1",
-          //     ]) &&
-          //       x.structuredDna.windowTypeSide2 !==
-          //         parsedStructuredDna.windowTypeSide2
-          //   : compareProps(x.structuredDna, parsedStructuredDna, [
-          //       "windowTypeEnd",
-          //       "windowTypeTop",
-          //       "windowTypeSide2",
-          //     ]) &&
-          //       x.structuredDna.windowTypeSide1 !==
-          //         parsedStructuredDna.windowTypeSide1
+          const finalBoss =
+            side === "LEFT"
+              ? compareProps(x.structuredDna, parsedStructuredDna, [
+                  "windowTypeEnd",
+                  "windowTypeTop",
+                  "windowTypeSide1",
+                ]) &&
+                x.structuredDna.windowTypeSide2 !==
+                  parsedStructuredDna.windowTypeSide2
+              : compareProps(x.structuredDna, parsedStructuredDna, [
+                  "windowTypeEnd",
+                  "windowTypeTop",
+                  "windowTypeSide2",
+                ]) &&
+                x.structuredDna.windowTypeSide1 !==
+                  parsedStructuredDna.windowTypeSide1
+
+          console.log({ finalBoss, a: x.structuredDna, b: parsedStructuredDna })
+
+          return finalBoss
         })
       )
     )

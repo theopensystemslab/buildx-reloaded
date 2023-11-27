@@ -25,6 +25,7 @@ import {
   O,
   T,
   TO,
+  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
@@ -888,6 +889,7 @@ const getAltWindowTypeLayouts = async ({
             moduleIndex,
             candidate
           ),
+          pipeLogWith(() => ({ candidate: candidate.dna, dna })),
           T.map((layout) => {
             const dnas = columnLayoutToDnas(layout)
             const windowType = pipe(
