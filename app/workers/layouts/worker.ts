@@ -25,6 +25,7 @@ import {
   O,
   T,
   TO,
+  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,
@@ -778,10 +779,10 @@ export const getWindowType = (
           return windowType.code === candidate.structuredDna.windowTypeTop
         // left = windowTypeSide2
         case side === "LEFT":
-          return windowType.code === candidate.structuredDna.windowTypeSide1
+          return windowType.code === candidate.structuredDna.windowTypeSide2
         // right = windowTypeSide1
         case side === "RIGHT":
-          return windowType.code === candidate.structuredDna.windowTypeSide2
+          return windowType.code === candidate.structuredDna.windowTypeSide1
         default:
           return false
       }
@@ -888,6 +889,7 @@ const getAltWindowTypeLayouts = async ({
             moduleIndex,
             candidate
           ),
+          pipeLogWith(() => ({ candidate: candidate.dna, dna })),
           T.map((layout) => {
             const dnas = columnLayoutToDnas(layout)
             const windowType = pipe(

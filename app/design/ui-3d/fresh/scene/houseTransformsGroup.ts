@@ -12,7 +12,7 @@ import layoutsDB, {
 } from "../../../../db/layouts"
 import systemsDB from "../../../../db/systems"
 import userDB, { House } from "../../../../db/user"
-import { A, O, R, S, T } from "../../../../utils/functions"
+import { A, O, R, S, T, compareProps } from "../../../../utils/functions"
 import {
   setInvisibleNoRaycast,
   setVisible,
@@ -342,6 +342,31 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async (target) => {
+      // see if we already have alt wins for this target
+      const exit = pipe(
+        houseTransformsGroup.userData.layouts.alts,
+        A.findFirst(
+          (x) =>
+            x.type === LayoutType.Enum.ALT_WINDOW_TYPE &&
+            compareProps(x.target, target, [
+              "houseId",
+              "columnIndex",
+              "levelIndex",
+              "moduleIndex",
+            ])
+        ),
+        O.match(
+          () => false,
+          () => true
+        )
+      )
+
+      // if so then exit
+      if (exit) return
+
+      // otherwise continue
+      dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
+
       const { columnIndex, levelIndex, moduleIndex } = target
 
       const side = getSide(houseTransformsGroup)
@@ -360,11 +385,12 @@ export const createHouseTransformsGroup = ({
           side,
         })
 
-      if (altWindowTypeLayouts.length > 0) {
-        dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
-      }
-
-      for (let { windowType, layout, dnas } of altWindowTypeLayouts) {
+      for (let {
+        windowType,
+        layout,
+        dnas,
+        candidate,
+      } of altWindowTypeLayouts) {
         await createHouseLayoutGroup({
           systemId: houseTransformsGroup.userData.systemId,
           dnas,

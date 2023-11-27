@@ -1,13 +1,12 @@
+import { pipe } from "fp-ts/lib/function"
 import { useEvent } from "react-use"
 import { proxy, useSnapshot } from "valtio"
 import * as z from "zod"
 import { formatWithUnit } from "../../analyse/state/data"
 import userDB from "../../db/user"
+import { retryTask } from "../../utils/async"
 import { useSubscribe } from "../../utils/hooks"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
-import { pipe } from "fp-ts/lib/function"
-import { retryTask } from "../../utils/async"
-import { pipeLog, pipeLogWith } from "../../utils/functions"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>

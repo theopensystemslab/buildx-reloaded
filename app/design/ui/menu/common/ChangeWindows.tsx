@@ -102,8 +102,9 @@ const ChangeWindows = (props: Props) => {
                     )
                   ),
                   A.uniq({
-                    equals: (x, y) =>
-                      x.value.windowType.code === y.value.windowType.code,
+                    equals: (x, y) => {
+                      return x.value.windowType.code === y.value.windowType.code
+                    },
                   })
                 ),
               }
