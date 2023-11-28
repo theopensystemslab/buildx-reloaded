@@ -35,6 +35,7 @@ import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
+import PersistentMenu from "./menu/persistent"
 
 type Props = {
   controlsEnabled: boolean
@@ -66,27 +67,27 @@ const HtmlUi = (props: Props) => {
     internalShowHide: false,
   })
 
-  const { mode } = useSiteCtx()
-  const { hovered, selected } = useScope()
+  // const { mode } = useSiteCtx()
+  // const { hovered, selected } = useScope()
 
-  const menu = useMenu()
+  // const menu = useMenu()
 
-  const ContextMenu = useMemo((): (() => JSX.Element | null) => {
-    if (!menu.open || selected === null) return () => null
+  // const ContextMenu = useMemo((): (() => JSX.Element | null) => {
+  //   if (!menu.open || selected === null) return () => null
 
-    const scopeElement = selected
+  //   const scopeElement = selected
 
-    const { x, y } = menu
+  //   const { x, y } = menu
 
-    switch (mode) {
-      case SiteCtxModeEnum.Enum.SITE:
-        return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
-      case SiteCtxModeEnum.Enum.BUILDING:
-        return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
-      default:
-        return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
-    }
-  }, [menu, selected, mode])
+  //   switch (mode) {
+  //     case SiteCtxModeEnum.Enum.SITE:
+  //       return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
+  //     case SiteCtxModeEnum.Enum.BUILDING:
+  //       return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
+  //     default:
+  //       return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
+  //   }
+  // }, [menu, selected, mode])
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 
@@ -220,7 +221,7 @@ const HtmlUi = (props: Props) => {
         <Breadcrumbs />
       </HeaderStartPortal>
 
-      <ContextMenu />
+      <PersistentMenu />
 
       <ExitMode />
     </Fragment>

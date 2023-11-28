@@ -1,10 +1,11 @@
+import clsx from "clsx"
 import type { ReactNode } from "react"
 import { useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
-import { ScopeElement } from "~/design/state/scope"
 import { useClickAway, useEscape } from "~/ui/utils"
+import { useMenu } from "../../../state/menu"
 
 export type ContextMenuProps = {
   pageX: number
@@ -38,9 +39,11 @@ export default function ContextMenu(props: ContextMenuProps) {
       ? -(bottom - windowSize.height - y0)
       : y0
 
+  const { open } = useMenu()
+
   return (
     <div
-      className="absolute h-[1px] w-[1px]"
+      className={clsx("absolute h-[1px] w-[1px]", { hidden: !open })}
       style={{
         top: props.pageY,
         left: props.pageX,
