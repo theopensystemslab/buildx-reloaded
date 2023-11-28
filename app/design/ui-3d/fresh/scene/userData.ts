@@ -151,7 +151,6 @@ export type HouseTransformsGroupUserData = {
   getVisibleLayout: () => Layout
   setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
   pushAltLayout: (altLayout: AltLayout) => void
-  dropAltLayout: (altLayout: AltLayout) => void
   dropAltLayoutsByType: (type: LayoutType) => void
   refreshAltSectionTypeLayouts: () => void
   refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void

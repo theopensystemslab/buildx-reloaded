@@ -51,9 +51,6 @@ export const getModuleWindowTypeAlts = ({
             return x.structuredDna.windowTypeTop !== windowTypeTop
           }
 
-          const k: keyof typeof parsedStructuredDna =
-            side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
-
           return side === "LEFT"
             ? compareProps(x.structuredDna, parsedStructuredDna, [
                 "windowTypeEnd",

@@ -246,7 +246,7 @@ export const createHouseTransformsGroup = ({
       } else {
         setInvisibleNoRaycast(layouts.active.houseLayoutGroup)
       }
-      layouts.preview = ref(altLayout)
+      layouts.preview = altLayout
       setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
     }
 
@@ -260,6 +260,7 @@ export const createHouseTransformsGroup = ({
   }
 
   const dropAltLayoutsByType = (type: LayoutType) => {
+    console.log(`dropping ${type}`)
     houseTransformsGroup.userData.layouts.alts =
       houseTransformsGroup.userData.layouts.alts.filter((alt) => {
         if (alt.type !== type) return true
@@ -342,6 +343,7 @@ export const createHouseTransformsGroup = ({
 
   const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
     async (target) => {
+      return
       // see if we already have alt wins for this target
       const exit = pipe(
         houseTransformsGroup.userData.layouts.alts,
@@ -439,23 +441,25 @@ export const createHouseTransformsGroup = ({
 
     if (layouts.preview) layouts.preview = null
 
-    layouts.active = ref({
+    layouts.active = {
       type: LayoutType.Enum.ACTIVE,
       houseLayoutGroup: altLayout.houseLayoutGroup,
-    })
+    }
 
     layouts.alts = pipe(
       layouts.alts,
       A.filterMap((x) =>
         x.houseLayoutGroup.uuid === layouts.active.houseLayoutGroup.uuid
           ? O.none
-          : O.some(ref(x))
+          : O.some(x)
       )
     )
   }
 
   const pushAltLayout = (altLayout: AltLayout) => {
-    houseTransformsGroup.userData.layouts.alts.push(ref(altLayout))
+    console.log(`pushing ${altLayout.type}`)
+    houseTransformsGroup.userData.layouts.alts.push(altLayout)
+    console.log(`check 1`, houseTransformsGroup.userData.layouts.alts)
     setInvisibleNoRaycast(altLayout.houseLayoutGroup)
     houseTransformsGroup.add(altLayout.houseLayoutGroup)
   }
@@ -870,7 +874,6 @@ export const createHouseTransformsGroup = ({
     refreshAltWindowTypeLayouts,
     refreshAltResetLayout,
     pushAltLayout,
-    dropAltLayout,
     dropAltLayoutsByType,
     setActiveLayout,
     setPreviewLayout,
@@ -900,14 +903,14 @@ export const createHouseTransformsGroup = ({
       })
     ),
     T.map((houseLayoutGroup) => {
-      const layouts = proxy<Layouts>({
-        active: ref({
+      const layouts: Layouts = {
+        active: {
           type: LayoutType.Enum.ACTIVE,
           houseLayoutGroup,
-        }),
+        },
         preview: null,
         alts: [],
-      })
+      }
 
       houseTransformsGroup.add(houseLayoutGroup)
 

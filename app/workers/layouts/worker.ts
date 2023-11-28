@@ -889,7 +889,7 @@ const getAltWindowTypeLayouts = async ({
             moduleIndex,
             candidate
           ),
-          pipeLogWith(() => ({ candidate: candidate.dna, dna })),
+          // pipeLogWith(() => ({ candidate: candidate.dna, dna })),
           T.map((layout) => {
             const dnas = columnLayoutToDnas(layout)
             const windowType = pipe(

@@ -135,7 +135,7 @@ const useGestures = () => {
               }
             }
 
-            scope.hovered = scopeItem
+            scope.hovered = ref(scopeItem)
 
             switch (siteCtx.mode) {
               case SiteCtxModeEnum.Enum.SITE:
