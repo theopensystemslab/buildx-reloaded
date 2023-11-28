@@ -6,7 +6,7 @@ import { Vector3 } from "three"
 import { ref } from "valtio"
 import { A, O } from "../../../../utils/functions"
 import pointer from "../../../state/pointer"
-import scope from "../../../state/scope"
+import scope, { setSelected } from "../../../state/scope"
 import { dispatchOutline } from "../events/outlines"
 import { findFirstGuardUp, objectToHouseObjects } from "../helpers/sceneQueries"
 import { AABB_OFFSET } from "../scene/houseLayoutGroup"
@@ -65,7 +65,7 @@ const useOnDragMove = () => {
                 }
 
                 const scopeItem = elementMeshToScopeItem(object)
-                scope.selected = ref(scopeItem)
+                setSelected(scopeItem)
 
                 dispatchOutline({
                   selectedObjects: objectToHouseObjects(object),

@@ -1,4 +1,4 @@
-import { proxy, useSnapshot } from "valtio"
+import { proxy, ref, useSnapshot } from "valtio"
 import { ElementMesh } from "../ui-3d/fresh/scene/userData"
 
 export type ScopeElement = {
@@ -22,5 +22,21 @@ const scope = proxy<Scope>({
 })
 
 export const useScope = () => useSnapshot(scope) as typeof scope
+
+export const setHovered = (scopeElement: ScopeElement) => {
+  scope.hovered = ref(scopeElement)
+}
+
+export const clearHovered = () => {
+  scope.hovered = null
+}
+
+export const clearSelected = () => {
+  scope.selected = null
+}
+
+export const setSelected = (scopeElement: ScopeElement) => {
+  scope.selected = ref(scopeElement)
+}
 
 export default scope

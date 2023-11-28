@@ -21,7 +21,7 @@ import {
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
-import scope, { ScopeElement } from "../../../state/scope"
+import scope, { ScopeElement, clearSelected } from "../../../state/scope"
 import settings from "../../../state/settings"
 import siteCtx, {
   SiteCtxMode,
@@ -246,7 +246,7 @@ export const createHouseTransformsGroup = ({
       } else {
         setInvisibleNoRaycast(layouts.active.houseLayoutGroup)
       }
-      layouts.preview = ref(altLayout)
+      layouts.preview = altLayout
       setVisibleAndRaycast(layouts.preview.houseLayoutGroup)
     }
 
@@ -439,23 +439,23 @@ export const createHouseTransformsGroup = ({
 
     if (layouts.preview) layouts.preview = null
 
-    layouts.active = ref({
+    layouts.active = {
       type: LayoutType.Enum.ACTIVE,
       houseLayoutGroup: altLayout.houseLayoutGroup,
-    })
+    }
 
     layouts.alts = pipe(
       layouts.alts,
       A.filterMap((x) =>
         x.houseLayoutGroup.uuid === layouts.active.houseLayoutGroup.uuid
           ? O.none
-          : O.some(ref(x))
+          : O.some(x)
       )
     )
   }
 
   const pushAltLayout = (altLayout: AltLayout) => {
-    houseTransformsGroup.userData.layouts.alts.push(ref(altLayout))
+    houseTransformsGroup.userData.layouts.alts.push(altLayout)
     setInvisibleNoRaycast(altLayout.houseLayoutGroup)
     houseTransformsGroup.add(altLayout.houseLayoutGroup)
   }
@@ -733,7 +733,7 @@ export const createHouseTransformsGroup = ({
       O.map((worldGroup) => {
         worldGroup.remove(houseTransformsGroup)
         userDB.houses.delete(houseId)
-        scope.selected = null
+        clearSelected()
         dispatchModeChange({
           prev: siteCtx.mode,
           next: SiteCtxModeEnum.Enum.SITE,
@@ -900,14 +900,14 @@ export const createHouseTransformsGroup = ({
       })
     ),
     T.map((houseLayoutGroup) => {
-      const layouts = proxy<Layouts>({
-        active: ref({
+      const layouts = {
+        active: {
           type: LayoutType.Enum.ACTIVE,
           houseLayoutGroup,
-        }),
+        },
         preview: null,
         alts: [],
-      })
+      }
 
       houseTransformsGroup.add(houseLayoutGroup)
 

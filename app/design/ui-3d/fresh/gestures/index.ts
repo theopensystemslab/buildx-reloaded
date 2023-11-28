@@ -4,7 +4,11 @@ import { useRef } from "react"
 import { ref } from "valtio"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import menu, { openMenu } from "../../../state/menu"
-import scope from "../../../state/scope"
+import scope, {
+  clearHovered,
+  setHovered,
+  setSelected,
+} from "../../../state/scope"
 import siteCtx, {
   dispatchModeChange,
   getModeBools,
@@ -115,7 +119,7 @@ const useGestures = () => {
           hoveredObjects: [],
         })
         invalidate()
-        scope.hovered = null
+        clearHovered()
         return
       }
 
@@ -135,7 +139,7 @@ const useGestures = () => {
               }
             }
 
-            scope.hovered = scopeItem
+            setHovered(scopeItem)
 
             switch (siteCtx.mode) {
               case SiteCtxModeEnum.Enum.SITE:
@@ -185,7 +189,7 @@ const useGestures = () => {
       event.stopPropagation()
       mapNearestCutIntersection(intersections, ({ object }) => {
         const scopeItem = elementMeshToScopeItem(object)
-        scope.selected = ref(scopeItem)
+        setSelected(scopeItem)
         openMenu(pageX, pageY)
       })
     },
