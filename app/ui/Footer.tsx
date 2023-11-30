@@ -5,6 +5,7 @@ import { Fragment, useState } from "react"
 import ExternalTextLink from "./ExternalTextLink"
 import css from "./Footer.module.css"
 import IconButton from "./IconButton"
+import AlphaBanner from "./AlphaBanner"
 
 const mainLinks = [
   { href: "#feedback", label: "Feedback" },
@@ -79,6 +80,7 @@ const Footer = () => {
 
   return (
     <Fragment>
+      <AlphaBanner />
       <FooterBar expanded={expanded} />
       <FooterContent expanded={expanded} />
       <div className={css.arrow}>
