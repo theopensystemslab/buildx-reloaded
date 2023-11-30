@@ -353,6 +353,7 @@ export const createHouseTransformsGroup = ({
               "columnIndex",
               "levelIndex",
               "moduleIndex",
+              "dna",
             ])
         ),
         O.match(
