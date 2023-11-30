@@ -92,7 +92,7 @@ const OverviewIndex = () => {
           </div>
         </div>
 
-        <div>
+        <div className="relative">
           <h2>Downloads</h2>
 
           <div className="flex flex-col space-y-4 mt-4">
@@ -151,6 +151,12 @@ const OverviewIndex = () => {
               </a>
             )}
           </div>
+          <a href="">
+            <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
+              <div>Download all project files</div>
+              <ArrowDown size="20" className="ml-8" />
+            </div>
+          </a>
         </div>
         <div className="relative">
           <h2>{`Want some help?`}</h2>
