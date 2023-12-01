@@ -5,8 +5,8 @@ import { getExportersWorker } from ".."
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
 import userDB, { useHouse } from "../../db/user"
 import exportsDB, { HouseModelsRow } from "../../db/exports"
-import { pipe } from "fp-ts/lib/function"
-import { O } from "../../utils/functions"
+import { flow, pipe } from "fp-ts/lib/function"
+import { A, O, T, TO } from "../../utils/functions"
 import { useLiveQuery } from "dexie-react-hooks"
 
 export const useExportersWorker = () => {
@@ -65,8 +65,45 @@ export const useHousesModelRows = (houseIds: string[]) =>
     []
   )
 
-export const useModelsZipURL = () => {
+export const useSelectedHouseModelBlobs = () => {
   const houses = useSelectedHouses()
+
+  const [blobs, setBlobs] = useState<[string, Blob][]>([])
+
+  useEffect(() => {
+    pipe(
+      houses,
+      A.traverse(TO.ApplicativePar)(({ houseId, friendlyName }) =>
+        pipe(
+          () => exportsDB.houseModels.get(houseId),
+          TO.fromTask,
+          TO.chain(
+            flow(
+              TO.fromNullable,
+              TO.map(({ glbData, objData }): [string, Blob][] => [
+                [
+                  `${friendlyName}.glb`,
+                  new Blob([glbData], { type: "model/gltf-binary" }),
+                ],
+
+                [
+                  `${friendlyName}.obj`,
+                  new Blob([objData], { type: "text/plain" }),
+                ],
+              ])
+            )
+          )
+        )
+      ),
+      TO.map(flow(A.flatten, setBlobs))
+    )()
+  }, [houses])
+
+  return blobs
+}
+
+export const useModelsZipURL = () => {
+  const modelBlobs = useSelectedHouseModelBlobs()
 
   const [modelsDownloadUrl, setModelsDownloadUrl] = useState<
     string | undefined
@@ -75,40 +112,14 @@ export const useModelsZipURL = () => {
   useEffect(() => {
     const zip = new JSZip()
 
-    ;(async () => {
-      if (houses.length < 1) return
+    for (let [filename, blob] of modelBlobs) {
+      zip.file(filename, blob)
+    }
 
-      for (let { houseId, friendlyName } of houses) {
-        const dbData = await exportsDB.houseModels.get(houseId)
+    zip.generateAsync({ type: "blob" }).then(function (content) {
+      setModelsDownloadUrl(URL.createObjectURL(content))
+    })
+  }, [modelBlobs])
 
-        if (!dbData) continue
-
-        const { glbData, objData } = dbData
-        zip.file(
-          `${friendlyName}.glb`,
-          new Blob([glbData], { type: "model/gltf-binary" })
-        )
-        zip.file(
-          `${friendlyName}.obj`,
-          new Blob([objData], { type: "text/plain" })
-        )
-      }
-
-      zip.generateAsync({ type: "blob" }).then(function (content) {
-        // Create download link for the zip
-        setModelsDownloadUrl(URL.createObjectURL(content))
-
-        // const link = document.createElement("a")
-        // link.href = url
-        // link.download = "houses.zip"
-        // document.body.appendChild(link)
-        // link.click()
-
-        // // Cleanup
-        // document.body.removeChild(link)
-        // URL.revokeObjectURL(url)
-      })
-    })()
-  }, [houses])
   return modelsDownloadUrl
 }
