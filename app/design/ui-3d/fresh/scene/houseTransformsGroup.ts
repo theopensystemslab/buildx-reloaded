@@ -851,7 +851,7 @@ export const createHouseTransformsGroup = ({
     refreshAltSectionTypeLayouts,
     // refreshAltLevelTypeLayouts,
     // refreshAltWindowTypeLayouts,
-    // refreshAltResetLayout,
+    refreshAltResetLayout,
     pushAltLayout,
     dropAltLayoutsByType,
     setActiveLayout,

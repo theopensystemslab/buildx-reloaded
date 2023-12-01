@@ -155,7 +155,7 @@ export type HouseTransformsGroupUserData = {
   refreshAltSectionTypeLayouts: () => void
   // refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
   // refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
-  // refreshAltResetLayout: () => Promise<void>
+  refreshAltResetLayout: () => Promise<void>
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void

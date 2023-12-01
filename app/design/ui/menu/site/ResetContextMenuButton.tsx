@@ -25,7 +25,9 @@ const ResetContextMenuButton = ({ houseTransformsGroup, close }: Props) => {
       O.map((x) => {
         houseTransformsGroup.userData.setPreviewLayout(x)
         houseTransformsGroup.userData.setActiveLayout(x)
-        houseTransformsGroup.userData.updateDB()
+        houseTransformsGroup.userData.updateDB().then(() => {
+          houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
+        })
       })
     )
 
