@@ -50,7 +50,7 @@ const ChangeWindows = (props: Props) => {
           pipe(
             getWindowType(
               windowTypes,
-              thisModule,
+              thisModule.structuredDna,
               getSide(houseTransformsGroup)
             ),
             O.map((originalWindowType) => {

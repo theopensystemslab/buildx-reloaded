@@ -8,6 +8,7 @@ import ChangeMaterial from "../common/ChangeMaterial"
 import ChangeWindows from "../common/ChangeWindows"
 import ContextMenu from "../common/ContextMenu"
 import { ModeContextMenuProps } from "../common/props"
+import ChangeWindowsFresh from "../common/ChangeWindowsFresh"
 
 const LevelModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const close = () => {
@@ -41,7 +42,7 @@ const LevelModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
         close={close}
       />
 
-      <ChangeWindows
+      <ChangeWindowsFresh
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
