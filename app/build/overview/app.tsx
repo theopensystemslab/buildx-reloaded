@@ -10,7 +10,7 @@ import {
   useOrderListData,
   useSelectedHouseMaterialsListRows,
 } from "../../db/exports"
-import { useSiteCurrency } from "../../design/state/siteCtx"
+import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
 import {
   useModelsZipURL,
   useSelectedHouseModelBlobs,
@@ -23,6 +23,8 @@ const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
   const { formatWithSymbol } = useSiteCurrency()
+
+  const { projectName } = useSiteCtx()
 
   const {
     areas: { totalFloor },
@@ -173,7 +175,10 @@ const OverviewIndex = () => {
             )}
           </div>
           {allFilesUrl && (
-            <a href={allFilesUrl}>
+            <a
+              href={allFilesUrl}
+              download={`${projectName ?? "all-files"}.zip`}
+            >
               <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
                 <div>Download all project files</div>
                 <ArrowDown size="20" className="ml-8" />
