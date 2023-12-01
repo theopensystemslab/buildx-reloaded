@@ -38,7 +38,7 @@ export const getSide = (houseTransformsGroup: HouseTransformsGroup) => {
   const v = new Vector3()
   v.crossVectors(houseDirection, cameraDirection)
 
-  return v.y < 0 ? "RIGHT" : "LEFT"
+  return v.y < 0 ? "LEFT" : "RIGHT"
 }
 
 // export const useCameraFocus = () => {

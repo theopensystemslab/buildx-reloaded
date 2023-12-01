@@ -778,10 +778,10 @@ export const getWindowType = (
         case structuredDna.levelType[0] === "R":
           return windowType.code === structuredDna.windowTypeTop
         // left = windowTypeSide2
-        case side === "LEFT":
+        case side === "RIGHT":
           return windowType.code === structuredDna.windowTypeSide2
         // right = windowTypeSide1
-        case side === "RIGHT":
+        case side === "LEFT":
           return windowType.code === structuredDna.windowTypeSide1
         default:
           return false

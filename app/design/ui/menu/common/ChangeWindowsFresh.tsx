@@ -19,13 +19,13 @@ import { A, O, T, pipeLog } from "../../../../utils/functions"
 import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
 import { getWindowType } from "../../../../workers/layouts/worker"
 import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
-import { parseDna } from "../../../../../server/data/modules"
+import { Module, parseDna } from "../../../../../server/data/modules"
 import Radio from "../../../../ui/Radio"
 import { invalidate } from "@react-three/fiber"
 
 type WindowTypeOption = {
   label: string
-  value: { windowType: WindowType; layout: Layout }
+  value: { windowType: WindowType; layout: Layout; candidate?: Module }
   thumbnail?: string
 }
 
@@ -72,13 +72,13 @@ const ChangeWindowsFresh = (props: Props) => {
     [allWindowTypes, dna, houseTransformsGroup]
   )
 
-  console.log({
-    origWinTypeOpt,
-    altWinTypeOpts,
-    side,
-    indices: [columnIndex, levelIndex, moduleIndex],
-    dna,
-  })
+  // console.log({
+  //   origWinTypeOpt,
+  //   altWinTypeOpts,
+  //   side,
+  //   indices: [columnIndex, levelIndex, moduleIndex],
+  //   dna,
+  // })
 
   useEffect(() => {
     pipe(
@@ -95,7 +95,7 @@ const ChangeWindowsFresh = (props: Props) => {
         pipe(
           altWindowTypeLayouts,
           A.traverse(T.ApplicativeSeq)(
-            ({ dnas, layout: houseLayout, windowType }) =>
+            ({ candidate, dnas, layout: houseLayout, windowType }) =>
               pipe(
                 createHouseLayoutGroup({
                   systemId,
@@ -120,6 +120,7 @@ const ChangeWindowsFresh = (props: Props) => {
                     value: {
                       layout,
                       windowType,
+                      candidate,
                     },
                   }
                 })
@@ -128,7 +129,7 @@ const ChangeWindowsFresh = (props: Props) => {
         )
       )
     )().then((altWinTypeOpts) => {
-      console.log({ altWinTypeOpts })
+      // console.log({ altWinTypeOpts })
       setAltWinTypeOpts(altWinTypeOpts)
     })
 
@@ -154,6 +155,17 @@ const ChangeWindowsFresh = (props: Props) => {
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
     if (incoming) {
       if (!isActiveLayout(incoming.layout)) {
+        // console.log(
+        //   `currently active layout dnas`,
+        //   houseTransformsGroup.userData.layouts.active.houseLayoutGroup.userData
+        //     .dnas
+        // )
+        if (incoming.candidate) {
+          const { windowTypeSide1, windowTypeSide2 } =
+            incoming.candidate.structuredDna
+          console.log(`PREVIEW: ${windowTypeSide1}-${windowTypeSide2}`)
+        }
+
         setPreviewLayout(incoming.layout)
       }
       // houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layout)
