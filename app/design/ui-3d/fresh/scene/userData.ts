@@ -151,12 +151,11 @@ export type HouseTransformsGroupUserData = {
   getVisibleLayout: () => Layout
   setPreviewLayout: (maybeAltLayout: AltLayout | null) => void
   pushAltLayout: (altLayout: AltLayout) => void
-  dropAltLayout: (altLayout: AltLayout) => void
   dropAltLayoutsByType: (type: LayoutType) => void
   refreshAltSectionTypeLayouts: () => void
-  refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
-  refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
-  refreshAltResetLayout: () => Promise<void>
+  // refreshAltLevelTypeLayouts: (scopeElement: ScopeElement) => void
+  // refreshAltWindowTypeLayouts: (scopeElement: ScopeElement) => void
+  // refreshAltResetLayout: () => Promise<void>
   // refreshAltWindowTypeLayouts: () => void
   // handle init
   initRotateAndStretchXHandles: () => void

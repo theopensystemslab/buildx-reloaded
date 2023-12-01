@@ -195,10 +195,10 @@ const ChangeWindowsFresh = (props: Props) => {
       // houseTransformsGroup.userData.dropAltLayoutsByType(
       //   LayoutType.Enum.ALT_WINDOW_TYPE
       // )
-      houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
+      // houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-      houseTransformsGroup.userData.refreshAltResetLayout()
-      houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
+      // houseTransformsGroup.userData.refreshAltResetLayout()
+      // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
 

@@ -340,74 +340,68 @@ export const createHouseTransformsGroup = ({
     }
   }
 
-  const refreshAltWindowTypeLayouts: typeof houseTransformsGroup.userData.refreshAltWindowTypeLayouts =
-    async (target) => {
-      // see if we already have alt wins for this target
-      const exit = pipe(
-        houseTransformsGroup.userData.layouts.alts,
-        A.findFirst(
-          (x) =>
-            x.type === LayoutType.Enum.ALT_WINDOW_TYPE &&
-            compareProps(x.target, target, [
-              "houseId",
-              "columnIndex",
-              "levelIndex",
-              "moduleIndex",
-              "dna",
-            ])
-        ),
-        O.match(
-          () => false,
-          () => true
-        )
+  const refreshAltWindowTypeLayouts = async (target: ScopeElement) => {
+    // see if we already have alt wins for this target
+    const exit = pipe(
+      houseTransformsGroup.userData.layouts.alts,
+      A.findFirst(
+        (x) =>
+          x.type === LayoutType.Enum.ALT_WINDOW_TYPE &&
+          compareProps(x.target, target, [
+            "houseId",
+            "columnIndex",
+            "levelIndex",
+            "moduleIndex",
+            "dna",
+          ])
+      ),
+      O.match(
+        () => false,
+        () => true
       )
+    )
 
-      // if so then exit
-      if (exit) return
+    // if so then exit
+    if (exit) return
 
-      // otherwise continue
-      dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
+    // otherwise continue
+    dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
 
-      const { columnIndex, levelIndex, moduleIndex } = target
+    const { columnIndex, levelIndex, moduleIndex } = target
 
-      const side = getSide(houseTransformsGroup)
+    const side = getSide(houseTransformsGroup)
 
-      const activeLayout = getActiveLayout()
+    const activeLayout = getActiveLayout()
 
-      const { dnas } = activeLayout.houseLayoutGroup.userData
+    const { dnas } = activeLayout.houseLayoutGroup.userData
 
-      const altWindowTypeLayouts =
-        await getLayoutsWorker().getAltWindowTypeLayouts({
-          systemId,
-          columnIndex,
-          levelIndex,
-          moduleIndex,
-          dnas,
-          side,
-        })
-
-      for (let {
-        windowType,
-        layout,
+    const altWindowTypeLayouts =
+      await getLayoutsWorker().getAltWindowTypeLayouts({
+        systemId,
+        columnIndex,
+        levelIndex,
+        moduleIndex,
         dnas,
-        candidate,
-      } of altWindowTypeLayouts) {
-        await createHouseLayoutGroup({
-          systemId: houseTransformsGroup.userData.systemId,
-          dnas,
-          houseId,
-          houseLayout: layout,
-          houseTransformsGroup,
-        })().then((houseLayoutGroup) => {
-          houseTransformsGroup.userData.pushAltLayout({
-            type: LayoutType.Enum.ALT_WINDOW_TYPE,
-            houseLayoutGroup,
-            windowType,
-            target,
-          })
+        side,
+      })
+
+    for (let { windowType, layout, dnas, candidate } of altWindowTypeLayouts) {
+      await createHouseLayoutGroup({
+        systemId: houseTransformsGroup.userData.systemId,
+        dnas,
+        houseId,
+        houseLayout: layout,
+        houseTransformsGroup,
+      })().then((houseLayoutGroup) => {
+        houseTransformsGroup.userData.pushAltLayout({
+          type: LayoutType.Enum.ALT_WINDOW_TYPE,
+          houseLayoutGroup,
+          windowType,
+          target,
         })
-      }
+      })
     }
+  }
 
   const refreshAltResetLayout = async () => {
     systemsDB.houseTypes.get(houseTypeId).then((houseType) => {
@@ -459,18 +453,6 @@ export const createHouseTransformsGroup = ({
     houseTransformsGroup.userData.layouts.alts.push(altLayout)
     setInvisibleNoRaycast(altLayout.houseLayoutGroup)
     houseTransformsGroup.add(altLayout.houseLayoutGroup)
-  }
-
-  const dropAltLayout = ({ houseLayoutGroup }: Layout) => {
-    houseTransformsGroup.userData.layouts.alts =
-      houseTransformsGroup.userData.layouts.alts.filter((x) => {
-        if (x.houseLayoutGroup !== houseLayoutGroup) {
-          return true
-        }
-
-        houseLayoutGroup.removeFromParent()
-        return false
-      })
   }
 
   // ##### HANDLES ######
@@ -867,11 +849,10 @@ export const createHouseTransformsGroup = ({
     updateTransforms,
     // layouts
     refreshAltSectionTypeLayouts,
-    refreshAltLevelTypeLayouts,
-    refreshAltWindowTypeLayouts,
-    refreshAltResetLayout,
+    // refreshAltLevelTypeLayouts,
+    // refreshAltWindowTypeLayouts,
+    // refreshAltResetLayout,
     pushAltLayout,
-    dropAltLayout,
     dropAltLayoutsByType,
     setActiveLayout,
     setPreviewLayout,
