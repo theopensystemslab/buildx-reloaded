@@ -15,7 +15,7 @@ type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
 
-export const useOrderListDownloadUrl = (orderListRows: OrderListRow[]) =>
+export const useOrderListDownload = (orderListRows: OrderListRow[]) =>
   useMemo(() => {
     if (orderListRows.length > 0) {
       // Create a header row
@@ -36,7 +36,7 @@ export const useOrderListDownloadUrl = (orderListRows: OrderListRow[]) =>
 
       // Create a Blob and URL for the CSV
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-      return URL.createObjectURL(blob)
+      return { url: URL.createObjectURL(blob), blob }
     }
   }, [orderListRows])
 
@@ -51,11 +51,11 @@ const OrderListTable = (props: Props) => {
     fmt,
   } = useOrderListData()
 
-  const orderListDownloadUrl = useOrderListDownloadUrl(orderListRows)
+  const orderListDownload = useOrderListDownload(orderListRows)
 
   useEffect(() => {
-    if (orderListDownloadUrl) setCsvDownloadUrl(orderListDownloadUrl)
-  }, [orderListDownloadUrl, setCsvDownloadUrl])
+    if (orderListDownload) setCsvDownloadUrl(orderListDownload.url)
+  }, [orderListDownload, setCsvDownloadUrl])
 
   const getColorClass = useGetColorClass()
 

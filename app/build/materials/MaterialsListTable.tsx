@@ -16,7 +16,7 @@ import {
 type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
-export const useMaterialsListDownloadUrl = (
+export const useMaterialsListDownload = (
   materialsListRows: MaterialsListRow[]
 ) =>
   useMemo(() => {
@@ -39,7 +39,7 @@ export const useMaterialsListDownloadUrl = (
 
       // Create a Blob and URL for the CSV
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-      return URL.createObjectURL(blob)
+      return { url: URL.createObjectURL(blob), blob }
     }
   }, [materialsListRows])
 
@@ -53,14 +53,13 @@ const MaterialsListTable = (props: Props) => {
     A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
   )
 
-  const materialsListDownloadUrl =
-    useMaterialsListDownloadUrl(materialsListRows)
+  const materialsListDownload = useMaterialsListDownload(materialsListRows)
 
   useEffect(() => {
-    if (materialsListDownloadUrl) {
-      setCsvDownloadUrl(materialsListDownloadUrl)
+    if (materialsListDownload) {
+      setCsvDownloadUrl(materialsListDownload.url)
     }
-  }, [materialsListDownloadUrl, setCsvDownloadUrl])
+  }, [materialsListDownload, setCsvDownloadUrl])
 
   const { totalEstimatedCost, totalCarbonCost } = pipe(
     materialsListRows,

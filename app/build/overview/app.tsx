@@ -1,25 +1,30 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
+import JSZip from "jszip"
 import dynamic from "next/dynamic"
-import { Fragment } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import {
   useOrderListData,
   useSelectedHouseMaterialsListRows,
 } from "../../db/exports"
-import { useSiteCurrency } from "../../design/state/siteCtx"
-import { initExportersWorker } from "../../workers"
-import { useModelsZipURL } from "../../workers/exporters/hook"
-import { useMaterialsListDownloadUrl } from "../materials/MaterialsListTable"
-import { useOrderListDownloadUrl } from "../order/OrderListTable"
+import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
+import {
+  useModelsZipURL,
+  useSelectedHouseModelBlobs,
+} from "../../workers/exporters/hook"
+import { useMaterialsListDownload } from "../materials/MaterialsListTable"
+import { useOrderListDownload } from "../order/OrderListTable"
 import css from "./app.module.css"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
   const { formatWithSymbol } = useSiteCurrency()
+
+  const { projectName } = useSiteCtx()
 
   const {
     areas: { totalFloor },
@@ -31,12 +36,30 @@ const OverviewIndex = () => {
 
   const materialsListRows = useSelectedHouseMaterialsListRows()
 
-  const orderListDownloadUrl = useOrderListDownloadUrl(orderListRows)
+  const orderListDownload = useOrderListDownload(orderListRows)
 
-  const materialsListDownloadUrl =
-    useMaterialsListDownloadUrl(materialsListRows)
+  const materialsListDownload = useMaterialsListDownload(materialsListRows)
 
   const modelsDownloadUrl = useModelsZipURL()
+
+  const selectedHouseBlobs = useSelectedHouseModelBlobs()
+
+  const [allFilesUrl, setAllFilesUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const zip = new JSZip()
+
+    if (orderListDownload) zip.file(`order-list.csv`, orderListDownload.blob)
+    if (materialsListDownload)
+      zip.file(`materials-list.csv`, materialsListDownload.blob)
+    for (let [filename, blob] of selectedHouseBlobs) {
+      zip.file(filename, blob)
+    }
+
+    zip.generateAsync({ type: "blob" }).then(function (content) {
+      setAllFilesUrl(URL.createObjectURL(content))
+    })
+  }, [orderListDownload, materialsListDownload, selectedHouseBlobs])
 
   const overviewFields = [
     {
@@ -92,7 +115,7 @@ const OverviewIndex = () => {
           </div>
         </div>
 
-        <div>
+        <div className="relative">
           <h2>Downloads</h2>
 
           <div className="flex flex-col space-y-4 mt-4">
@@ -114,9 +137,9 @@ const OverviewIndex = () => {
                 </div>
               </a>
             )}
-            {orderListDownloadUrl && (
+            {orderListDownload && (
               <a
-                href={orderListDownloadUrl}
+                href={orderListDownload.url}
                 download={`order-list.csv`}
                 // className="flex font-semibold items-center"
               >
@@ -132,9 +155,9 @@ const OverviewIndex = () => {
                 </div>
               </a>
             )}
-            {materialsListDownloadUrl && (
+            {materialsListDownload && (
               <a
-                href={materialsListDownloadUrl}
+                href={materialsListDownload.url}
                 download={`materials-list.csv`}
                 // className="flex font-semibold items-center"
               >
@@ -151,6 +174,17 @@ const OverviewIndex = () => {
               </a>
             )}
           </div>
+          {allFilesUrl && (
+            <a
+              href={allFilesUrl}
+              download={`${projectName ?? "all-files"}.zip`}
+            >
+              <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
+                <div>Download all project files</div>
+                <ArrowDown size="20" className="ml-8" />
+              </div>
+            </a>
+          )}
         </div>
         <div className="relative">
           <h2>{`Want some help?`}</h2>
