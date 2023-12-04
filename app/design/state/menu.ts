@@ -1,5 +1,5 @@
 import { proxy, useSnapshot } from "valtio"
-import scope from "./scope"
+import scope, { clearHovered, clearSelected } from "./scope"
 
 const menu = proxy({
   open: false,
@@ -15,8 +15,8 @@ export const openMenu = (x: number, y: number) => {
 
 export const closeMenu = () => {
   menu.open = false
-  scope.selected = null
-  scope.hovered = null
+  // clearSelected()
+  // clearHovered()
 }
 
 export const useMenu = () => useSnapshot(menu)

@@ -13,6 +13,8 @@ import ChangeLevelType from "./ChangeLevelType"
 import ChangeWindows from "../common/ChangeWindows"
 import ChangeMaterial from "../common/ChangeMaterial"
 import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
+import ChangeWindowsFresh from "../common/ChangeWindowsFresh"
+import ChangeLevelTypeFresh from "./ChangeLevelTypeFresh"
 
 const BuildingModeContextMenu = ({
   x,
@@ -66,13 +68,13 @@ const BuildingModeContextMenu = ({
         close={close}
       />
 
-      <ChangeWindows
+      <ChangeWindowsFresh
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
       />
 
-      <ChangeLevelType
+      <ChangeLevelTypeFresh
         close={close}
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}

@@ -5,7 +5,7 @@ import { flow, pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import { filterCompatibleModules, topCandidateByHamming } from "~/utils/modules"
 import { LevelType } from "../../../server/data/levelTypes"
-import { Module } from "../../../server/data/modules"
+import { Module, StructuredDna } from "../../../server/data/modules"
 import { SectionType } from "../../../server/data/sectionTypes"
 import { WindowType } from "../../../server/data/windowTypes"
 import layoutsDB, {
@@ -766,23 +766,23 @@ const getAltLevelTypeLayouts = async ({
 
 export const getWindowType = (
   windowTypes: WindowType[],
-  candidate: Module,
+  structuredDna: StructuredDna,
   side: Side
 ) =>
   pipe(
     windowTypes,
     A.findFirst((windowType) => {
       switch (true) {
-        case candidate.structuredDna.positionType === "END":
-          return windowType.code === candidate.structuredDna.windowTypeEnd
-        case candidate.structuredDna.levelType[0] === "R":
-          return windowType.code === candidate.structuredDna.windowTypeTop
+        case structuredDna.positionType === "END":
+          return windowType.code === structuredDna.windowTypeEnd
+        case structuredDna.levelType[0] === "R":
+          return windowType.code === structuredDna.windowTypeTop
         // left = windowTypeSide2
-        case side === "LEFT":
-          return windowType.code === candidate.structuredDna.windowTypeSide2
-        // right = windowTypeSide1
         case side === "RIGHT":
-          return windowType.code === candidate.structuredDna.windowTypeSide1
+          return windowType.code === structuredDna.windowTypeSide2
+        // right = windowTypeSide1
+        case side === "LEFT":
+          return windowType.code === structuredDna.windowTypeSide1
         default:
           return false
       }
@@ -889,11 +889,10 @@ const getAltWindowTypeLayouts = async ({
             moduleIndex,
             candidate
           ),
-          pipeLogWith(() => ({ candidate: candidate.dna, dna })),
           T.map((layout) => {
             const dnas = columnLayoutToDnas(layout)
             const windowType = pipe(
-              getWindowType(windowTypes, candidate, side),
+              getWindowType(windowTypes, candidate.structuredDna, side),
               someOrError(`no window type`)
             )
 

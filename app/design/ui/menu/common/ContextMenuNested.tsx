@@ -3,6 +3,7 @@ import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { useWindowSize } from "usehooks-ts"
 import css from "./ContextMenuNested.module.css"
+import clsx from "clsx"
 
 export interface Props {
   icon: ReactNode
@@ -33,7 +34,7 @@ export default function ContextMenuNested(props: Props) {
 
   return (
     <div
-      className={css.root}
+      className={clsx(css.root, { ["text-grey-40"]: !props.children })}
       onMouseEnter={() => {
         setHovered(true)
       }}

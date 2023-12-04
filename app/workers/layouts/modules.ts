@@ -21,20 +21,38 @@ export const getModuleWindowTypeAlts = ({
   dna: string
   side: Side
 }): T.Task<LastFetchStamped<Module>[]> => {
-  const parsedStructuredDna = parseDna(dna)
-  const { levelType, positionType, windowTypeTop, windowTypeEnd } =
-    parsedStructuredDna
+  const currentDna = parseDna(dna)
+
+  const dnaSide = side === "LEFT" ? "windowTypeSide1" : "windowTypeSide2"
+
+  console.log(`INVOKED ON SIDE: ${side}; ${dnaSide}`)
+
+  const {
+    levelType,
+    positionType,
+    gridType,
+    gridUnits,
+    windowTypeSide1,
+    windowTypeSide2,
+    windowTypeTop,
+    windowTypeEnd,
+  } = currentDna
+
+  console.log(
+    `CURRENT: ${dna}`
+    // `CURRENT: ${gridType}-${gridUnits}-${windowTypeSide1}-${windowTypeSide2}`
+  )
 
   return pipe(
     () => getModules(),
     T.map((looseCandidates) =>
       pipe(
         looseCandidates,
-        A.filter((x) => {
+        A.filter((candidate) => {
           let check =
-            x.systemId === systemId &&
-            x.dna !== dna &&
-            compareProps(x.structuredDna, parsedStructuredDna, [
+            candidate.systemId === systemId &&
+            candidate.dna !== dna &&
+            compareProps(candidate.structuredDna, currentDna, [
               "sectionType",
               "positionType",
               "levelType",
@@ -44,31 +62,47 @@ export const getModuleWindowTypeAlts = ({
           if (!check) return false
 
           if (positionType === "END") {
-            return x.structuredDna.windowTypeEnd !== windowTypeEnd
+            return candidate.structuredDna.windowTypeEnd !== windowTypeEnd
           }
 
           if (levelType[0] === "R") {
-            return x.structuredDna.windowTypeTop !== windowTypeTop
+            const bool = candidate.structuredDna.windowTypeTop !== windowTypeTop
+            if (bool) {
+              console.log(`CANDIDATE: ${candidate.dna}`)
+            }
+            return bool
           }
 
-          const k: keyof typeof parsedStructuredDna =
-            side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
+          // const k: keyof typeof parsedStructuredDna =
+          //   side === "LEFT" ? "windowTypeSide2" : "windowTypeSide1"
 
-          return side === "LEFT"
-            ? compareProps(x.structuredDna, parsedStructuredDna, [
-                "windowTypeEnd",
-                "windowTypeTop",
-                "windowTypeSide1",
-              ]) &&
-                x.structuredDna.windowTypeSide2 !==
-                  parsedStructuredDna.windowTypeSide2
-            : compareProps(x.structuredDna, parsedStructuredDna, [
-                "windowTypeEnd",
-                "windowTypeTop",
-                "windowTypeSide2",
-              ]) &&
-                x.structuredDna.windowTypeSide1 !==
-                  parsedStructuredDna.windowTypeSide1
+          const bool =
+            side === "RIGHT"
+              ? compareProps(candidate.structuredDna, currentDna, [
+                  "windowTypeEnd",
+                  "windowTypeTop",
+                  "windowTypeSide1",
+                ]) &&
+                candidate.structuredDna.windowTypeSide2 !==
+                  currentDna.windowTypeSide2
+              : compareProps(candidate.structuredDna, currentDna, [
+                  "windowTypeEnd",
+                  "windowTypeTop",
+                  "windowTypeSide2",
+                ]) &&
+                candidate.structuredDna.windowTypeSide1 !==
+                  currentDna.windowTypeSide1
+
+          if (bool) {
+            const { gridType, gridUnits, windowTypeSide1, windowTypeSide2 } =
+              candidate.structuredDna
+            console.log(
+              `CANDIDATE: ${candidate.dna}`
+              // `CANDIDATE: ${gridType}-${gridUnits}-${windowTypeSide1}-${windowTypeSide2}`
+            )
+          }
+
+          return bool
         })
       )
     )

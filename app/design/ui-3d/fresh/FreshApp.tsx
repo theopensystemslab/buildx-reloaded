@@ -69,65 +69,65 @@ const FreshApp = () => {
     else sceneProxy.scene = null
   }, [scene])
 
-  const lastScopeElement = useRef<ScopeElement | null>(null)
+  // const lastScopeElement = useRef<ScopeElement | null>(null)
 
-  useSubscribe(scope, () => {
-    const item = (menu.open ? scope.selected : null) ?? scope.hovered
+  // useSubscribe(scope, () => {
+  //   const item = (menu.open ? scope.selected : null) ?? scope.hovered
 
-    if (!item) {
-      if (lastScopeElement.current) {
-        const { houseId } = lastScopeElement.current
+  //   if (!item) {
+  //     if (lastScopeElement.current) {
+  //       const { houseId } = lastScopeElement.current
 
-        // clearAltWindows(houseId)
+  //       // clearAltWindows(houseId)
 
-        lastScopeElement.current = null
-      }
+  //       lastScopeElement.current = null
+  //     }
 
-      return
-    }
+  //     return
+  //   }
 
-    const {
-      houseId,
-      columnIndex,
-      levelIndex,
-      moduleIndex: gridGroupIndex,
-      object,
-    } = item
+  //   const {
+  //     houseId,
+  //     columnIndex,
+  //     levelIndex,
+  //     moduleIndex: gridGroupIndex,
+  //     object,
+  //   } = item
 
-    if (houseId !== siteCtx.houseId) return
+  //   if (houseId !== siteCtx.houseId) return
 
-    let refreshLevelAlts = true,
-      refreshWindowAlts = true
+  //   let refreshLevelAlts = true,
+  //     refreshWindowAlts = true
 
-    const last = lastScopeElement.current
+  //   const last = lastScopeElement.current
 
-    if (last && last.houseId === houseId && last.levelIndex === levelIndex) {
-      refreshLevelAlts = false
+  //   if (last && last.houseId === houseId && last.levelIndex === levelIndex) {
+  //     refreshLevelAlts = false
 
-      if (
-        last.columnIndex === columnIndex &&
-        last.moduleIndex === gridGroupIndex
-      ) {
-        refreshWindowAlts = false
-      }
-    }
+  //     if (
+  //       last.columnIndex === columnIndex &&
+  //       last.moduleIndex === gridGroupIndex
+  //     ) {
+  //       refreshWindowAlts = false
+  //     }
+  //   }
 
-    if (refreshWindowAlts || refreshLevelAlts) {
-      pipe(
-        objectToHouse(object),
-        O.map((houseTransformsGroup) => {
-          if (refreshLevelAlts) {
-            houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
-          }
-          if (refreshWindowAlts) {
-            houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
-          }
-        })
-      )
-    }
+  //   if (refreshWindowAlts || refreshLevelAlts) {
+  //     pipe(
+  //       objectToHouse(object),
+  //       O.map((houseTransformsGroup) => {
+  //         if (refreshLevelAlts) {
+  //           houseTransformsGroup.userData.refreshAltLevelTypeLayouts(item)
+  //         }
+  //         if (refreshWindowAlts) {
+  //           houseTransformsGroup.userData.refreshAltWindowTypeLayouts(item)
+  //         }
+  //       })
+  //     )
+  //   }
 
-    lastScopeElement.current = item
-  })
+  //   lastScopeElement.current = item
+  // })
 
   return (
     <Fragment>
