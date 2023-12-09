@@ -9,19 +9,19 @@ import AlphaBanner from "./AlphaBanner"
 
 const mainLinks = [
   { href: "#feedback", label: "Feedback" },
-  { href: "#tos", label: "Terms of use" },
-  { href: "#privacy", label: "Privacy" },
-  { href: "#cookies", label: "Cookies" },
-  { href: "#accessibility", label: "Accessibility" },
+  { href: "/terms", label: "Terms of use" },
+  // { href: "#privacy", label: "Privacy" },
+  // { href: "#cookies", label: "Cookies" },
+  { href: "/accessibility", label: "Accessibility" },
 ]
 
 const FooterBar = ({ expanded }: { expanded: boolean }) => {
   return (
     <div className={css.bar} data-expanded={expanded}>
       <div className={css.left}>
-        <div className={css.linkWrapper}>
+        {/* <div className={css.linkWrapper}>
           <Link href="#about">About</Link>
-        </div>
+        </div> */}
         <div className={css.linkWrapper}>
           <a
             href="https://form.typeform.com/to/inbsKUl2"
@@ -77,6 +77,8 @@ const Footer = () => {
   const [expanded, setExpanded] = useState(false)
 
   const size = "24"
+
+  console.log("footer")
 
   return (
     <Fragment>
