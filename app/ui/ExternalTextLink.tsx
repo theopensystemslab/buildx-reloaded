@@ -14,7 +14,7 @@ const ExternalTextLink = (props: Props) => {
         <div className="flex font-semibold items-center ">
           <span>{label}</span>
           <span>
-            <ArrowDown size="20" className="ml-1 rotate-[135deg]" />
+            <ArrowDown size="20" className="ml-1 rotate-[225deg]" />
           </span>
         </div>
       </div>

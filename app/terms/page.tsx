@@ -1,5 +1,6 @@
 import React from 'react';
 import css from "./page.module.css";
+import ExternalTextLink from '~/ui/ExternalTextLink';
 
 const TermsPage = () => {
   return (
@@ -42,7 +43,7 @@ const TermsPage = () => {
 
       <div>
         <h3>7. Privacy Policy:</h3>
-        <p>Your use of build.wikihouse.cc is also governed by our Privacy Policy, which can be found <a href='[Link to Privacy Policy]'>here</a>. By using the website, you consent to the terms outlined in the Privacy Policy.</p>
+        <p>Your use of build.wikihouse.cc is also governed by our Privacy Policy, which can be found  <ExternalTextLink label="here" href="/privacy" /> </p>
       </div>
 
       <div>

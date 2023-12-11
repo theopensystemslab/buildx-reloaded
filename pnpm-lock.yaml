@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@carbon/icons-react':
-    specifier: ^11.14.0
-    version: 11.31.0(react@18.2.0)
+    specifier: 11.12.0
+    version: 11.12.0(react@18.2.0)
   '@mapbox/mapbox-gl-draw':
     specifier: ^1.4.1
     version: 1.4.3
@@ -170,8 +170,8 @@ dependencies:
 
 devDependencies:
   '@types/carbon__icons-react':
-    specifier: ^11.12.0
-    version: 11.29.0(react@18.2.0)
+    specifier: 11.12.0
+    version: 11.12.0
   '@types/crypto-js':
     specifier: ^4.1.1
     version: 4.2.1
@@ -440,9 +440,10 @@ packages:
 
   /@carbon/icon-helpers@10.45.0:
     resolution: {integrity: sha512-HP92JjZoccDXwucstEJ9Cx8jq2HHJM/U/vPmgfeXYIaegIGfu2zQkL+MDn/fSzIKvQ+ckK/GCrm89K/S8fbtBA==}
+    dev: false
 
-  /@carbon/icons-react@11.31.0(react@18.2.0):
-    resolution: {integrity: sha512-hGrxoH7Kt94WDVB/lNExUKzgNLcvvt2bH8Lxb894rgwNKbvxPgoJb7tncMJFz+tZwnDPwKvRdMX8kDFukA+rww==}
+  /@carbon/icons-react@11.12.0(react@18.2.0):
+    resolution: {integrity: sha512-7P/RBEq10vi5pb0pfETWsQrMfcLEd9PxXcpQtncCZjGvsC123mNTCFu84Ecqikg3ELA5MTkjFI95SBY4ZJbGSg==}
     requiresBuild: true
     peerDependencies:
       react: '>=16'
@@ -451,10 +452,12 @@ packages:
       '@carbon/telemetry': 0.1.0
       prop-types: 15.8.1
       react: 18.2.0
+    dev: false
 
   /@carbon/telemetry@0.1.0:
     resolution: {integrity: sha512-kNWt0bkgPwGW0i5h7HFuljbKRXPvIhsKbB+1tEURAYLXoJg9iJLF1eGvWN5iVoFCS2zje4GR3OGOsvvKVe7Hlg==}
     hasBin: true
+    dev: false
 
   /@eslint/eslintrc@1.4.1:
     resolution: {integrity: sha512-XXrH9Uarn0stsyldqDYq8r++mROmWRI1xKMXa640Bb//SY1+ECYX6VzT6Lcx5frD0V30XieqJ0oX9I2Xj5aoMA==}
@@ -2750,13 +2753,8 @@ packages:
       '@types/responselike': 1.0.3
     dev: false
 
-  /@types/carbon__icons-react@11.29.0(react@18.2.0):
-    resolution: {integrity: sha512-flTM1afzTPyZRhcRBcHEGqlpYquhnokptdJvyUnWr8Qe9Ma1/FwS4VWyYs67Rc3qfBs+KqAQYAI66OsCswwXvQ==}
-    deprecated: This is a stub types definition. @carbon/icons-react provides its own type definitions, so you do not need this installed.
-    dependencies:
-      '@carbon/icons-react': 11.31.0(react@18.2.0)
-    transitivePeerDependencies:
-      - react
+  /@types/carbon__icons-react@11.12.0:
+    resolution: {integrity: sha512-uAOsYyHWkytAQF3FyJp6TgI9pOlaxlOnBLCYpVnQwJE6G7XY4dkdstxQgdBPrR4ktX76ye0X8GmYCfzBkjOeOw==}
     dev: true
 
   /@types/crypto-js@4.2.1:
@@ -6396,6 +6394,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+    dev: false
 
   /read-cache@1.0.0:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
