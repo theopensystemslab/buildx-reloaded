@@ -1,5 +1,6 @@
 declare module "*.yaml"
 declare module "*.yml"
+declare module "nanoid"
 
 type V2 = [number, number]
 type V6 = [number, number, number, number, number, number]

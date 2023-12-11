@@ -7,7 +7,7 @@ import { centerOfMass, distance, Feature, Geometry } from "@turf/turf"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useState } from "react"
 import usePortal from "react-cool-portal"
-import { Layer, MapRef, Source, useControl } from "react-map-gl"
+import { Layer, Source, useControl } from "react-map-gl"
 import { useEvent } from "react-use"
 import { A, O } from "~/utils/functions"
 import useFlyTo, { flyToDefaultOpts } from "../hooks/useFlyTo"
@@ -91,14 +91,14 @@ const PolygonControl = (props: Props) => {
         displayControlsDefault: false,
       }),
     // onCreate
-    ({ map }: { map: MapRef }) => {
+    ({ map }) => {
       map.on("draw.create", drawCreateHandler)
       map.on("draw.update", drawUpdateHandler)
       map.on("draw.delete", updateLabels)
       map.on("mousemove", updateLabels)
     },
     // onRemove
-    ({ map }: { map: MapRef }) => {
+    ({ map }) => {
       map.off("draw.create", drawCreateHandler)
       map.off("draw.update", drawUpdateHandler)
       map.off("draw.delete", updateLabels)

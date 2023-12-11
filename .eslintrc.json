@@ -2,6 +2,7 @@
   "extends": "next/core-web-vitals",
   "rules": {
     "react/display-name": "off",
-    "react/jsx-key": "off"
+    "react/jsx-key": "off",
+    "react/no-unknown-property": "off"
   }
 }
