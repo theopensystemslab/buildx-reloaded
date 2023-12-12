@@ -96,8 +96,6 @@ const Footer = () => {
 
   const size = "24"
 
-  console.log("footer")
-
   return (
     <Fragment>
       <AlphaBanner />
