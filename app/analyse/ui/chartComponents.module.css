@@ -13,6 +13,10 @@
   @apply mt-5;
 }
 
+.chartMetrics2 {
+  @apply grid grid-rows-2 gap-2;
+}
+
 .whatIsThis {
   @apply mt-16;
 }
@@ -26,6 +30,7 @@
 .howIsItCalculated p {
   @apply mt-1;
 }
+
 .whatIsThis h4,
 .howIsItCalculated h4 {
   @apply font-semibold text-grey-80;

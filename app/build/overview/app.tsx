@@ -29,7 +29,7 @@ const OverviewIndex = () => {
   const {
     areas: { totalFloor },
     costs: { superstructure, total },
-    operationalCo2: { lifetime },
+    embodiedCo2
   } = useAnalyseData()
 
   const { orderListRows } = useOrderListData()
@@ -83,7 +83,7 @@ const OverviewIndex = () => {
     },
     {
       label: "Total estimated carbon cost",
-      value: `${lifetime.toFixed(0)} tCO₂`,
+      value: `${embodiedCo2.total.toFixed(0)} tCO₂`,
     },
   ]
 
@@ -123,7 +123,7 @@ const OverviewIndex = () => {
               <a
                 href={modelsDownloadUrl}
                 download={`3d-models.zip`}
-                // className="flex font-semibold items-center"
+              // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download 3D models</span>
@@ -141,7 +141,7 @@ const OverviewIndex = () => {
               <a
                 href={orderListDownload.url}
                 download={`order-list.csv`}
-                // className="flex font-semibold items-center"
+              // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download order list</span>
@@ -159,7 +159,7 @@ const OverviewIndex = () => {
               <a
                 href={materialsListDownload.url}
                 download={`materials-list.csv`}
-                // className="flex font-semibold items-center"
+              // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download list of materials</span>

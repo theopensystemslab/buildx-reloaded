@@ -9,6 +9,7 @@ import {
   ChartColumn,
   ChartContainer,
   ChartMetrics,
+  ChartMetrics2,
   ChartTitles,
   HowIsItCalculated,
   WhatIsThis,
@@ -34,8 +35,8 @@ const CarbonEmissionsChart = ({
             analyseData.embodiedCo2.total === 0
               ? "hidden"
               : analyseData.embodiedCo2.total > 0
-              ? "border-b"
-              : "border-t"
+                ? "border-b"
+                : "border-t"
           )}
         >
           <div />
@@ -71,12 +72,12 @@ const CarbonEmissionsChart = ({
           <div />
         </div>
       </ChartContainer>
-      <ChartMetrics>
+      <ChartMetrics2>
         <div className="text-5xl font-normal">
-          {`${(analyseData.embodiedCo2.total / 1000).toFixed(2)}kT`}
+          {`${(analyseData.embodiedCo2.total).toFixed(0)} tCO₂e`}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
-      </ChartMetrics>
+      </ChartMetrics2>
       <WhatIsThis>
         <p>
           {`

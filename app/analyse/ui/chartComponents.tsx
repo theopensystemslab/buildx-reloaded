@@ -26,6 +26,10 @@ export const ChartMetrics = ({ children }: PropsWithChildren<{}>) => (
   <div className={css.chartMetrics}>{children}</div>
 )
 
+export const ChartMetrics2 = ({ children }: PropsWithChildren<{}>) => (
+  <div className={css.chartMetrics2}>{children}</div>
+)
+
 export const WhatIsThis = ({ children }: PropsWithChildren<{}>) => (
   <div className={css.whatIsThis}>
     <h4>What is this?</h4>
