@@ -41,7 +41,7 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
         </div>
       </div>
       <div className={css.right}>
-        <Link href="#">© Open Systems Lab</Link>
+        <ExternalTextLink href="https://wikihouse.cc" label="WikiHouse.cc" />
       </div>
     </div>
   )

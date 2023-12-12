@@ -9,7 +9,11 @@ type Props = {
 const ExternalTextLink = (props: Props) => {
   const { href, label } = props
   return (
-    <a href={href}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <div className="inline-block border-b border-transparent hover:border-white">
         <div className="flex font-semibold items-center ">
           <span>{label}</span>
