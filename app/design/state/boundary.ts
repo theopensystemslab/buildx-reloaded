@@ -1,7 +1,7 @@
 "use client"
 import { toMercator, Polygon, Coord, Position } from "@turf/turf"
 import { useMapPolygon } from "../../locate/state/polygon"
-import centroid from "@turf/centroid"
+import { centroid } from "@turf/turf"
 
 export const useSiteBoundaryPoints = (): [number, number][] => {
   const polygon: Polygon | null = useMapPolygon()

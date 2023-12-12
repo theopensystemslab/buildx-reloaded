@@ -10,7 +10,7 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
-    "@carbon/icons-react": "^11.14.0",
+    "@carbon/icons-react": "11.12.0",
     "@mapbox/mapbox-gl-draw": "^1.4.1",
     "@mapbox/mapbox-gl-geocoder": "^5.0.1",
     "@oieduardorabelo/use-user-agent": "^5.0.1",
@@ -66,7 +66,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@types/carbon__icons-react": "^11.12.0",
+    "@types/carbon__icons-react": "11.12.0",
     "@types/crypto-js": "^4.1.1",
     "@types/d3-dsv": "^3.0.1",
     "@types/mapbox-gl": "^2.7.10",

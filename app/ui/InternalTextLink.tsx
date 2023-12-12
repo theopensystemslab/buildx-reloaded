@@ -1,4 +1,5 @@
 import { ArrowDown } from "@carbon/icons-react"
+import Link from "next/link"
 import React from "react"
 
 type Props = {
@@ -6,20 +7,20 @@ type Props = {
   label: string
 }
 
-const ExternalTextLink = (props: Props) => {
+const InternalTextLink = (props: Props) => {
   const { href, label } = props
   return (
-    <a href={href}>
+    <Link href={href}>
       <div className="inline-block border-b border-transparent hover:border-white">
         <div className="flex font-semibold items-center ">
           <span>{label}</span>
           <span>
-            <ArrowDown size="20" className="ml-1 rotate-[225deg]" />
+            <ArrowDown size="20" className="rotate-[225deg]" />
           </span>
         </div>
       </div>
-    </a>
+    </Link>
   )
 }
 
-export default ExternalTextLink
+export default InternalTextLink

@@ -2,17 +2,21 @@
 import { ArrowDown, ArrowUp } from "@carbon/icons-react"
 import Link from "next/link"
 import { Fragment, useState } from "react"
+import AlphaBanner from "./AlphaBanner"
 import ExternalTextLink from "./ExternalTextLink"
 import css from "./Footer.module.css"
 import IconButton from "./IconButton"
-import AlphaBanner from "./AlphaBanner"
+
+const FEEDBACK_LINK = "https://form.typeform.com/to/inbsKUl2"
+const ABOUT_LINK = "https://www.wikihouse.cc/product"
 
 const mainLinks = [
-  { href: "#feedback", label: "Feedback" },
-  { href: "#tos", label: "Terms of use" },
-  { href: "#privacy", label: "Privacy" },
-  { href: "#cookies", label: "Cookies" },
-  { href: "#accessibility", label: "Accessibility" },
+  { href: ABOUT_LINK, label: "About WikiHouse" },
+  { href: FEEDBACK_LINK, label: "Feedback" },
+  { href: "/terms", label: "Terms of use" },
+  { href: "/privacy", label: "Privacy" },
+  // { href: "#cookies", label: "Cookies" },
+  { href: "/accessibility", label: "Accessibility" },
 ]
 
 const FooterBar = ({ expanded }: { expanded: boolean }) => {
@@ -20,11 +24,15 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
     <div className={css.bar} data-expanded={expanded}>
       <div className={css.left}>
         <div className={css.linkWrapper}>
-          <Link href="#about">About</Link>
+          <a
+            href={ABOUT_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+          >About WikiHouse</a>
         </div>
         <div className={css.linkWrapper}>
           <a
-            href="https://form.typeform.com/to/inbsKUl2"
+            href={FEEDBACK_LINK}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -51,7 +59,17 @@ const FooterContent = ({ expanded }: { expanded: boolean }) => {
         </p>
       </div>
       <div className={`${css.column} ${css.column2}`}>
-        {mainLinks.map((link) => (
+        {mainLinks.map((link) => link.href.startsWith("http") ? (
+          <div className={css.linkWrapper}>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {link.label}
+            </a>
+          </div>
+        ) : (
           <div key={link.href} className={css.linkWrapper}>
             <Link href={link.href}>{link.label}</Link>
           </div>
@@ -59,13 +77,13 @@ const FooterContent = ({ expanded }: { expanded: boolean }) => {
       </div>
       <div className={`${css.column} ${css.column3}`}>
         <p className={`${css.text} text-sm`}>
-          Build✕ is being developed by Open Systems Lab, non-profit company
+          <strong>build.wikihouse.cc</strong> is being developed by Open Systems Lab, non-profit company
           9152368 registered in England & Wales
         </p>
         <div className="mt-4">
           <ExternalTextLink
-            href="https://opensystemslab.io"
-            label="Go to website"
+            href="https://wikihouse.cc"
+            label="Go to wikihouse.cc"
           />
         </div>
       </div>
