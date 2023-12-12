@@ -16,6 +16,7 @@ import {
 type Props = {
   setCsvDownloadUrl: (s: string) => void
 }
+
 export const useMaterialsListDownload = (
   materialsListRows: MaterialsListRow[]
 ) =>
@@ -50,6 +51,7 @@ const MaterialsListTable = (props: Props) => {
 
   const materialsListRows = pipe(
     useSelectedHouseMaterialsListRows(),
+    A.filter(x => x.quantity !== 0),
     A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
   )
 

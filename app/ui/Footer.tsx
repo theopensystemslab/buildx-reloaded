@@ -60,7 +60,7 @@ const FooterContent = ({ expanded }: { expanded: boolean }) => {
       </div>
       <div className={`${css.column} ${css.column2}`}>
         {mainLinks.map((link) => link.href.startsWith("http") ? (
-          <div className={css.linkWrapper}>
+          <div className={css.linkWrapper} key={link.href}>
             <a
               href={link.href}
               target="_blank"
@@ -70,7 +70,7 @@ const FooterContent = ({ expanded }: { expanded: boolean }) => {
             </a>
           </div>
         ) : (
-          <div key={link.href} className={css.linkWrapper}>
+          <div key={link.href} className={css.linkWrapper} >
             <Link href={link.href}>{link.label}</Link>
           </div>
         ))}
