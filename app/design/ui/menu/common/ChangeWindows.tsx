@@ -166,7 +166,7 @@ const ChangeWindows = (props: Props) => {
   return originalWindowTypeOption !== null && windowTypeOptions.length > 1 ? (
     <ContextMenuNested
       long
-      label={`Change windows`}
+      label={`Change windows/doors`}
       icon={<Opening />}
       unpaddedSvg
     >
