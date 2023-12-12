@@ -14,7 +14,7 @@ const mainLinks = [
   { href: ABOUT_LINK, label: "About WikiHouse" },
   { href: FEEDBACK_LINK, label: "Feedback" },
   { href: "/terms", label: "Terms of use" },
-  // { href: "#privacy", label: "Privacy" },
+  { href: "/privacy", label: "Privacy" },
   // { href: "#cookies", label: "Cookies" },
   { href: "/accessibility", label: "Accessibility" },
 ]
