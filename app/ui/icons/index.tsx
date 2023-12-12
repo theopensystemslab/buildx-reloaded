@@ -7,7 +7,7 @@ export const Pencil = () => (
     viewBox="0 0 13 13"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    // preserveAspectRatio="xMidYMid meet"
+  // preserveAspectRatio="xMidYMid meet"
   >
     <path
       d="M4.24254 10.8745L1.05588 11.921L2.13067 8.74373L9.94332 1.00019L12.0552 3.13092L4.24254 10.8745Z"
@@ -23,7 +23,7 @@ export const TextCursor = () => (
     viewBox="0 0 7 12"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    // preserveAspectRatio="xMidYMid meet"
+  // preserveAspectRatio="xMidYMid meet"
   >
     <g stroke="currentColor">
       <line x1="3.61108" y1="2.81002e-08" x2="3.61108" y2="12" />
@@ -112,20 +112,26 @@ export const Design = () => (
 )
 
 export const Analyse = () => (
-  <svg
-    width="21"
-    height="24"
-    viewBox="0 0 21 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M13.51 1.8L10.3923 0L7.27461 1.8L8.27461 3.53205L10.3923 2.3094L12.51 3.53205L13.51 1.8ZM0 14.4H2V16.8453L4.11769 18.0679L3.11769 19.8L0 18V14.4ZM7.27461 22.2L8.27461 20.4679L10.3923 21.6906L12.51 20.4679L13.51 22.2L10.3923 24L7.27461 22.2ZM20.7846 9.6H18.7846V7.1547L16.6669 5.93205L17.6669 4.2L20.7846 6V9.6ZM20.7846 14.4H18.7846V16.8453L16.6669 18.0679L17.6669 19.8L20.7846 18V14.4ZM0 9.6H2V7.1547L4.11769 5.93205L3.11769 4.2L0 6V9.6Z"
-      fill="black"
-    />
+  <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="1" y1="10.0586" x2="1" y2="17.8821" stroke="black" strokeWidth="2" />
+    <line x1="7" y1="4.37114e-08" x2="7" y2="15.6471" stroke="black" strokeWidth="2" />
+    <line x1="13" y1="3.35254" x2="13" y2="18.9996" stroke="black" strokeWidth="2" />
+    <path d="M19 5.58789L19 13.4114" stroke="black" strokeWidth="2" />
   </svg>
+  // <svg
+  //   width="21"
+  //   height="24"
+  //   viewBox="0 0 21 24"
+  //   fill="none"
+  //   xmlns="http://www.w3.org/2000/svg"
+  // >
+  //   <path
+  //     fillRule="evenodd"
+  //     clipRule="evenodd"
+  //     d="M13.51 1.8L10.3923 0L7.27461 1.8L8.27461 3.53205L10.3923 2.3094L12.51 3.53205L13.51 1.8ZM0 14.4H2V16.8453L4.11769 18.0679L3.11769 19.8L0 18V14.4ZM7.27461 22.2L8.27461 20.4679L10.3923 21.6906L12.51 20.4679L13.51 22.2L10.3923 24L7.27461 22.2ZM20.7846 9.6H18.7846V7.1547L16.6669 5.93205L17.6669 4.2L20.7846 6V9.6ZM20.7846 14.4H18.7846V16.8453L16.6669 18.0679L17.6669 19.8L20.7846 18V14.4ZM0 9.6H2V7.1547L4.11769 5.93205L3.11769 4.2L0 6V9.6Z"
+  //     fill="black"
+  //   />
+  // </svg>
 )
 
 // export const Analyse = () => (
