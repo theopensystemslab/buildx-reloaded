@@ -34,6 +34,7 @@
     "dexie": "^3.2.4",
     "dexie-react-hooks": "^1.1.7",
     "encoding": "^0.1.13",
+    "fathom-client": "^3.6.0",
     "fp-ts": "^2.12.3",
     "fp-ts-std": "^0.15.0",
     "graphql": "^16.6.0",

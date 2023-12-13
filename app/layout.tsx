@@ -1,14 +1,15 @@
-import clsx from "clsx"
-import { Inter } from "next/font/google"
-import { PropsWithChildren } from "react"
-import "~/styles/globals.css"
-import Footer from "./ui/Footer"
-import Nav from "./ui/Nav"
+import clsx from "clsx";
+import { Inter } from "next/font/google";
+import { PropsWithChildren } from "react";
+import "~/styles/globals.css";
+import Footer from "./ui/Footer";
+import Nav from "./ui/Nav";
+import Fathom from "./Fathom";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-})
+});
 
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
@@ -24,8 +25,9 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
           <Footer />
         </div>
       </body>
+      <Fathom />
     </html>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;
