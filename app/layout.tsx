@@ -15,6 +15,7 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <html lang="en" className={clsx(inter.className, "w-full h-full")}>
       <body className="w-full h-full flex flex-col overflow-hidden">
+        <Fathom />
         <div className="flex-1 flex-grow-0">
           <Nav />
         </div>
@@ -25,7 +26,6 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
           <Footer />
         </div>
       </body>
-      <Fathom />
     </html>
   );
 };
