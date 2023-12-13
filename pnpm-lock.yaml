@@ -77,6 +77,9 @@ dependencies:
   encoding:
     specifier: ^0.1.13
     version: 0.1.13
+  fathom-client:
+    specifier: ^3.6.0
+    version: 3.6.0
   fp-ts:
     specifier: ^2.12.3
     version: 2.16.1
@@ -4297,6 +4300,10 @@ packages:
     dependencies:
       reusify: 1.0.4
     dev: true
+
+  /fathom-client@3.6.0:
+    resolution: {integrity: sha512-/mrgmVvpw4HqDCcqUfPulERhONKgnJGL74RAxfqKDuRQ+7w9lKoTHMzqBWE7WNBvmsgZEthQWJFOWOEjv+T3gA==}
+    dev: false
 
   /fflate@0.6.10:
     resolution: {integrity: sha512-IQrh3lEPM93wVCEczc9SaAOvkmcoQn/G8Bo1e8ZPlY3X3bnAxWaBdvTdvM1hP62iZp0BXWDy4vTAy4fF0+Dlpg==}
