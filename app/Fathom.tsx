@@ -11,7 +11,7 @@ function TrackPageView() {
   // Load the Fathom script on mount
   useEffect(() => {
     load("FSLAOVYH", {
-      auto: false,
+      includedDomains: ["build.wikihouse.cc"],
     });
   }, []);
 
