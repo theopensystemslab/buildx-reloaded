@@ -97,97 +97,101 @@ const OverviewIndex = () => {
         // className="grid grid-cols-2"
         className={css.markupGrid}
       >
-        <div>
-          <h2 className="p-4">Overview</h2>
-          <div className="flex flex-col">
-            {pipe(
-              overviewFields,
-              A.mapWithIndex((i, { label, value }) => (
-                <div
-                  key={i}
-                  className="flex justify-between border-t border-grey-20 px-3 py-3"
+        <div className={css.markupGridFirstRow}>
+          <div>
+            <h2 className="px-3 pb-2">Overview</h2>
+            <div className="flex flex-col">
+              {pipe(
+                overviewFields,
+                A.mapWithIndex((i, { label, value }) => (
+                  <div
+                    key={i}
+                    className="flex justify-between border-t border-grey-20 px-3 py-3"
+                  >
+                    <div>{label}</div>
+                    <div>{value}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <div className="relative">
+            <h2>Downloads</h2>
+
+            <div className="flex flex-col space-y-4 mt-4">
+              {modelsDownloadUrl && (
+                <a
+                  href={modelsDownloadUrl}
+                  download={`3d-models.zip`}
+                // className="flex font-semibold items-center"
                 >
-                  <div>{label}</div>
-                  <div>{value}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="relative">
-          <h2>Downloads</h2>
-
-          <div className="flex flex-col space-y-4 mt-4">
-            {modelsDownloadUrl && (
+                  <div className="flex font-semibold tracking-wide">
+                    <span>Download 3D models</span>
+                    <span>
+                      <ArrowDown
+                        width="1em"
+                        height="1em"
+                        className="ml-2 translate-y-[15%]"
+                      />
+                    </span>
+                  </div>
+                </a>
+              )}
+              {orderListDownload && (
+                <a
+                  href={orderListDownload.url}
+                  download={`order-list.csv`}
+                // className="flex font-semibold items-center"
+                >
+                  <div className="flex font-semibold tracking-wide">
+                    <span>Download order list</span>
+                    <span>
+                      <ArrowDown
+                        width="1em"
+                        height="1em"
+                        className="ml-2 translate-y-[15%]"
+                      />
+                    </span>
+                  </div>
+                </a>
+              )}
+              {materialsListDownload && (
+                <a
+                  href={materialsListDownload.url}
+                  download={`materials-list.csv`}
+                // className="flex font-semibold items-center"
+                >
+                  <div className="flex font-semibold tracking-wide">
+                    <span>Download list of materials</span>
+                    <span>
+                      <ArrowDown
+                        width="1em"
+                        height="1em"
+                        className="ml-2 translate-y-[15%]"
+                      />
+                    </span>
+                  </div>
+                </a>
+              )}
+            </div>
+            {allFilesUrl && (
               <a
-                href={modelsDownloadUrl}
-                download={`3d-models.zip`}
-              // className="flex font-semibold items-center"
+                href={allFilesUrl}
+                download={`${projectName ?? "all-files"}.zip`}
               >
-                <div className="flex font-semibold tracking-wide">
-                  <span>Download 3D models</span>
-                  <span>
-                    <ArrowDown
-                      width="1em"
-                      height="1em"
-                      className="ml-2 translate-y-[15%]"
-                    />
-                  </span>
-                </div>
-              </a>
-            )}
-            {orderListDownload && (
-              <a
-                href={orderListDownload.url}
-                download={`order-list.csv`}
-              // className="flex font-semibold items-center"
-              >
-                <div className="flex font-semibold tracking-wide">
-                  <span>Download order list</span>
-                  <span>
-                    <ArrowDown
-                      width="1em"
-                      height="1em"
-                      className="ml-2 translate-y-[15%]"
-                    />
-                  </span>
-                </div>
-              </a>
-            )}
-            {materialsListDownload && (
-              <a
-                href={materialsListDownload.url}
-                download={`materials-list.csv`}
-              // className="flex font-semibold items-center"
-              >
-                <div className="flex font-semibold tracking-wide">
-                  <span>Download list of materials</span>
-                  <span>
-                    <ArrowDown
-                      width="1em"
-                      height="1em"
-                      className="ml-2 translate-y-[15%]"
-                    />
-                  </span>
+                <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
+                  <div>Download all project files</div>
+                  <ArrowDown size="20" className="ml-8" />
                 </div>
               </a>
             )}
           </div>
-          {allFilesUrl && (
-            <a
-              href={allFilesUrl}
-              download={`${projectName ?? "all-files"}.zip`}
-            >
-              <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
-                <div>Download all project files</div>
-                <ArrowDown size="20" className="ml-8" />
-              </div>
-            </a>
-          )}
         </div>
+
+
+
         <div className="relative">
-          <h2>{`Want some help?`}</h2>
+          <h2>{`Get started`}</h2>
           <p>
             If you want a more customised chassis design, or custom blocks, we
             offer a chassis design service.
@@ -197,13 +201,13 @@ const OverviewIndex = () => {
             and installers to help you realise your project.
           </p>
           <a href="">
-            <div className="absolute bottom-0 right-0 bg-grey-20 px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
-              <div>Get help with your project</div>
+            <div className="absolute bottom-0 right-0 bg-grey-80 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
+              <div>Start your project</div>
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
             </div>
           </a>
         </div>
-        <div className="relative">
+        {/* <div className="relative">
           <h2>Find a manufacturer</h2>
           <p>
             Search for WikiHouse manufacturer to fabricate your WikiHouse
@@ -215,7 +219,7 @@ const OverviewIndex = () => {
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
             </div>
           </a>
-        </div>
+        </div> */}
       </div>
       {/* </div> */}
     </Fragment>

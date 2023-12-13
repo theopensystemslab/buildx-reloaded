@@ -1,19 +1,37 @@
 .markupGrid {
   display: grid;
   grid-template-rows: 1fr 1fr;
-  grid-template-columns: 4fr 3fr;
   gap: 1px;
   @apply bg-grey-30;
   @apply text-sm;
   @apply border-t border-grey-20;
 }
 
-.markupGrid > div {
+.markupGridFirstRow {
+  display: grid;
+  grid-template-columns: 4fr 3fr;
+  @apply bg-grey-30;
+  @apply text-sm;
+}
+
+.markupGridFirstRow>div {
+  @apply py-4
+}
+
+.markupGridFirstRow>div:first-child {
+  @apply border-r border-grey-20;
+}
+
+.markupGridFirstRow>div:nth-child(2) {
+  @apply px-3;
+}
+
+.markupGrid>div {
   @apply bg-white;
 }
 
-.markupGrid > div:nth-child(n + 2) {
-  @apply py-5 px-3;
+.markupGrid>div:nth-child(2) {
+  @apply p-3;
 }
 
 .markupGrid p {
