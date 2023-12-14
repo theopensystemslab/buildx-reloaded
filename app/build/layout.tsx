@@ -1,6 +1,6 @@
+import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
 import BuildNav from "./common/BuildNav"
-import dynamic from "next/dynamic"
 
 const HousesPillsSelector = dynamic(
   () => import("../analyse/ui/HousesPillsSelector"),
