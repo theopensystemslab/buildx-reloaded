@@ -16,7 +16,7 @@ const store = proxy<{
   selectedHouseIds: [],
 })
 
-export const useSelectedHouseIds = () => {
+export const useSelectedHouseIds = (): string[] => {
   const houses = useHouses()
 
   const { selectedHouseIds } = useSnapshot(store) as typeof store
@@ -26,7 +26,7 @@ export const useSelectedHouseIds = () => {
   const { mode, houseId } = useSiteCtx()
 
   if (pathname === "/design") {
-    if (mode !== SiteCtxModeEnum.Enum.SITE) return [houseId]
+    if (mode !== SiteCtxModeEnum.Enum.SITE && houseId) return [houseId]
     else return houses.map((house) => house.houseId)
   }
 

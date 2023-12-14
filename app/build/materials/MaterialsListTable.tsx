@@ -51,7 +51,7 @@ const MaterialsListTable = (props: Props) => {
 
   const materialsListRows = pipe(
     useSelectedHouseMaterialsListRows(),
-    A.filter(x => x.quantity !== 0),
+    A.filter((x) => x.quantity !== 0),
     A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
   )
 
@@ -132,7 +132,7 @@ const MaterialsListTable = (props: Props) => {
       }),
       columnHelper.accessor("embodiedCarbonCost", {
         cell: (info) => (
-          <span>{`${Number(info.getValue()).toFixed(0)} T CO₂`}</span>
+          <span>{`${Number(info.getValue()).toFixed(0)} kgCO₂`}</span>
         ),
         header: () => <span>Carbon cost</span>,
         footer: () => (
