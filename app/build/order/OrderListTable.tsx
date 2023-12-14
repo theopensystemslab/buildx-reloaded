@@ -10,6 +10,7 @@ import {
   useOrderListData,
 } from "../../db/exports"
 import PaginatedTable from "../PaginatedTable"
+import { useSiteCurrency } from "~/design/state/siteCtx"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -53,6 +54,8 @@ const OrderListTable = (props: Props) => {
 
   const orderListDownload = useOrderListDownload(orderListRows)
 
+  const { formatWithSymbol } = useSiteCurrency()
+
   useEffect(() => {
     if (orderListDownload) setCsvDownloadUrl(orderListDownload.url)
   }, [orderListDownload, setCsvDownloadUrl])
@@ -90,13 +93,13 @@ const OrderListTable = (props: Props) => {
         id: "Materials Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Material Cost</span>,
-        footer: () => <span>{totalMaterialCost}</span>,
+        footer: () => <span>{formatWithSymbol(totalMaterialCost)}</span>,
       }),
       columnHelper.accessor("manufacturingCost", {
         id: "Manufacturing Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Manufacturing Cost</span>,
-        footer: () => <span>{totalManufacturingCost}</span>,
+        footer: () => <span>{formatWithSymbol(totalManufacturingCost)}</span>,
       }),
       columnHelper.accessor("cuttingFileUrl", {
         id: "Cutting File URL",
@@ -116,12 +119,15 @@ const OrderListTable = (props: Props) => {
         id: "Total Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Total cost</span>,
-        footer: () => <span>{`${totalTotalCost} + VAT`}</span>,
+        footer: () => (
+          <span>{`${formatWithSymbol(totalTotalCost)} + VAT`}</span>
+        ),
       }),
     ],
     [
       columnHelper,
       fmt,
+      formatWithSymbol,
       totalManufacturingCost,
       totalMaterialCost,
       totalTotalCost,
