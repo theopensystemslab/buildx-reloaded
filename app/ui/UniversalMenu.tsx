@@ -6,6 +6,8 @@ import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
 import userDB, { useHouses } from "../db/user"
+import exportsDB from "~/db/exports"
+import { PromiseExtended } from "dexie"
 
 type Props = {
   open: boolean
@@ -18,14 +20,35 @@ const UniversalMenu = ({ open, close }: Props) => {
   const [deleteProject, setDeleteProject] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const reallyDelete = () => {
+  const reallyDelete = async () => {
     setDeleting(true)
-    userDB.houses.clear()
+
+    const dbs = [userDB, exportsDB]
+
+    // Create an array to hold all the promises
+    const clearTablePromises: PromiseExtended<void>[] = []
+
+    dbs.forEach((database) => {
+      database.tables.forEach((table) => {
+        // Assume `clear()` returns a promise. Push each promise to the array.
+        clearTablePromises.push(table.clear())
+      })
+    })
+
+    // Wait for all the clear table promises to resolve
+    await Promise.all(clearTablePromises)
+
+    console.log("calling reload")
+
+    window.location.reload()
+
+    // window.refrouterouter.
+
+    // router.refresh()
 
     // map.polygon = null
     // map.mode = "SEARCH"
     // if (path === "map") {
-    router.refresh()
     // } else {
     //   router.push("/map")
     // }
