@@ -228,7 +228,11 @@ const OverviewIndex = () => {
           </p>
         </div>
         <div className="relative">
-          <a href="">
+          <a
+            href="https://form.typeform.com/to/SVFFF12s?typeform-source=www.wikihouse.cc#source=configurator"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <div className="absolute bottom-0 right-0 w-full bg-grey-90 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
               <div>Contact us about your project</div>
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
