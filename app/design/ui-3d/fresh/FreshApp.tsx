@@ -3,17 +3,13 @@ import { pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
 import { Group, Scene } from "three"
 import { proxy, ref, useSnapshot } from "valtio"
-import { A, O } from "../../../utils/functions"
+import { A } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import elementCategories from "../../state/elementCategories"
-import menu from "../../state/menu"
-import scope, { ScopeElement } from "../../state/scope"
-import siteCtx from "../../state/siteCtx"
 import XZPlane from "../XZPlane"
 import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
-import { objectToHouse } from "./helpers/sceneQueries"
 import useVerticalCuts from "./helpers/useVerticalCuts"
 import { isElementMesh } from "./scene/userData"
 
@@ -26,14 +22,18 @@ export const useScene = () => {
   return scene
 }
 
-const FreshApp = () => {
+type Props = {
+  controlsEnabled: boolean
+}
+
+const FreshApp = ({ controlsEnabled }: Props) => {
   const rootRef = useRef<Group>(null)
 
   useHousesEvents(rootRef)
   useModeChange(rootRef)
   useVerticalCuts(rootRef)
 
-  const bindAll = useGestures()
+  const bindAll = useGestures(controlsEnabled)
 
   useSubscribe(
     elementCategories,

@@ -67,7 +67,7 @@ const AppInit = (props: Props) => {
           </MapboxR3FCanvasProjector>
         </MapboxR3FCanvas>
       )}
-      {controlsEnabled && <HtmlUi controlsEnabled={controlsEnabled} />}
+      {controlsEnabled && <HtmlUi />}
     </FullScreenContainer>
   )
 }
