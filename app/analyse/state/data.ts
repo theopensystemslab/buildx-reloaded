@@ -612,6 +612,8 @@ export const useAnalyseData = () => {
     houses,
     housesToRecord,
     R.filterMap((house) => {
+      if (!selectedHouseIds.includes(house.houseId)) return O.none
+
       const { systemId, houseId } = house
 
       const energyInfo = energyInfos.find((x) => x.systemId === systemId)

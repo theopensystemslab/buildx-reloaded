@@ -4,9 +4,10 @@ import { pipe } from "fp-ts/lib/function"
 import JSZip from "jszip"
 import dynamic from "next/dynamic"
 import { Fragment, useEffect, useState } from "react"
-import { A } from "~/utils/functions"
+import { A, O, R } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import {
+  OrderListRow,
   useOrderListData,
   useSelectedHouseMaterialsListRows,
 } from "../../db/exports"
@@ -28,11 +29,33 @@ const OverviewIndex = () => {
 
   const {
     areas: { totalFloor },
-    costs: { superstructure, total },
     embodiedCo2,
+    costs: { total },
   } = useAnalyseData()
 
-  const { orderListRows } = useOrderListData()
+  const { orderListRows, totalTotalCost } = useOrderListData()
+
+  // const orderListByBuilding = pipe(
+  //   orderListRows,
+  //   A.reduce({}, (acc: Record<string, OrderListRow>, x) =>
+  //     pipe(
+  //       acc,
+  //       R.modifyAt(
+  //         x.buildingName,
+  //         ({ totalCost, ...rest }: OrderListRow): OrderListRow => ({
+  //           ...rest,
+  //           totalCost: totalCost + x.totalCost,
+  //         })
+  //       ),
+  //       O.getOrElse(() => pipe(acc, R.upsertAt(x.buildingName, x)))
+  //     )
+  //   )
+  // )
+
+  // const totalChassisCost = Object.values(orderListByBuilding).reduce(
+  //   (acc, v) => acc + v.totalCost,
+  //   0
+  // )
 
   const materialsListRows = useSelectedHouseMaterialsListRows()
 
@@ -75,7 +98,7 @@ const OverviewIndex = () => {
           </div>
         </div>
       ),
-      value: formatWithSymbol(superstructure),
+      value: formatWithSymbol(totalTotalCost),
     },
     {
       label: "Total estimated build cost",

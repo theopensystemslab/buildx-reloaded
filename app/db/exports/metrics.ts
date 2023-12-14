@@ -6,7 +6,6 @@ import produce from "immer"
 import userDB, { House, housesToRecord, useBuildingHouseId } from "../user"
 import { Module } from "../../../server/data/modules"
 import { WindowType } from "../../../server/data/windowTypes"
-import { useSelectedHouseIds } from "../../analyse/ui/HousesPillsSelector"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import {
   ElementNotFoundError,
@@ -15,6 +14,7 @@ import {
 import { A, O, R, S } from "../../utils/functions"
 import systemsDB from "../systems"
 import exportsDB from "."
+import { useSelectedHouseIds } from "~/analyse/ui/HousesPillsSelector"
 
 export type OrderListRow = {
   houseId: string
@@ -78,7 +78,7 @@ export const useSelectedHouseMaterialsListRows = (): MaterialsListRow[] => {
   )
 }
 
-export const useMaterialsListData = () => { }
+export const useMaterialsListData = () => {}
 
 export const useMetricsOrderListRows = (): OrderListRow[] => {
   const buildingHouseId = useBuildingHouseId()
@@ -143,14 +143,14 @@ export const materialsListSub = () =>
           elementName in house.activeElementMaterials
             ? house.activeElementMaterials[elementName]
             : pipe(
-              elements,
-              A.findFirstMap((el) =>
-                el.name === elementName ? O.some(el.defaultMaterial) : O.none
-              ),
-              O.fold(() => {
-                throw new ElementNotFoundError(elementName, house.systemId)
-              }, identity)
-            )
+                elements,
+                A.findFirstMap((el) =>
+                  el.name === elementName ? O.some(el.defaultMaterial) : O.none
+                ),
+                O.fold(() => {
+                  throw new ElementNotFoundError(elementName, house.systemId)
+                }, identity)
+              )
 
         return pipe(
           materials,
@@ -404,33 +404,33 @@ export const orderListSub = () =>
                 A.findFirstMap((module) =>
                   module.systemId === house.systemId && module.dna === dna
                     ? O.some({
-                      module,
-                      blocks: pipe(
-                        accum,
-                        R.filterMapWithIndex((key, count) => {
-                          const [systemId, moduleId, blockId] = key.split(":")
-                          return systemId === house.systemId &&
-                            moduleId === module.id
-                            ? O.some(
-                              pipe(
-                                blocks,
-                                A.filterMap((block) =>
-                                  block.systemId === house.systemId &&
-                                    block.id === blockId
-                                    ? O.some({
-                                      blockId,
-                                      count,
-                                    })
-                                    : O.none
+                        module,
+                        blocks: pipe(
+                          accum,
+                          R.filterMapWithIndex((key, count) => {
+                            const [systemId, moduleId, blockId] = key.split(":")
+                            return systemId === house.systemId &&
+                              moduleId === module.id
+                              ? O.some(
+                                  pipe(
+                                    blocks,
+                                    A.filterMap((block) =>
+                                      block.systemId === house.systemId &&
+                                      block.id === blockId
+                                        ? O.some({
+                                            blockId,
+                                            count,
+                                          })
+                                        : O.none
+                                    )
+                                  )
                                 )
-                              )
-                            )
-                            : O.none
-                        }),
-                        values,
-                        A.flatten
-                      ),
-                    })
+                              : O.none
+                          }),
+                          values,
+                          A.flatten
+                        ),
+                      })
                     : O.none
                 ),
                 O.toNullable
@@ -465,17 +465,17 @@ export const orderListSub = () =>
           ({ houseId, buildingName, block, count }): O.Option<OrderListRow> =>
             block
               ? O.some({
-                houseId,
-                blockName: block.name,
-                buildingName,
-                count,
-                sheetsPerBlock: block.sheetQuantity,
-                materialsCost: block.materialsCost * count,
-                costPerBlock: block.totalCost,
-                manufacturingCost: block.manufacturingCost * count,
-                cuttingFileUrl: block.cuttingFileUrl,
-                totalCost: block.totalCost * count,
-              })
+                  houseId,
+                  blockName: block.name,
+                  buildingName,
+                  count,
+                  sheetsPerBlock: block.sheetQuantity,
+                  materialsCost: block.materialsCost * count,
+                  costPerBlock: block.totalCost,
+                  manufacturingCost: block.manufacturingCost * count,
+                  cuttingFileUrl: block.cuttingFileUrl,
+                  totalCost: block.totalCost * count,
+                })
               : O.none
         )
       )
@@ -559,8 +559,8 @@ export const useOrderListData = () => {
         totalManufacturingCost: totalManufacturingCost + row.manufacturingCost,
         totalTotalCost: totalTotalCost + row.totalCost,
       })
-    ),
-    R.map(fmt)
+    )
+    // R.map(fmt)
   )
 
   return {
