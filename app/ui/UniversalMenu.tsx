@@ -1,6 +1,6 @@
 import Sidebar from "~/ui//Sidebar"
 // import map from "@/src/hooks/map"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import usePortal from "react-cool-portal"
 import Loader from "./Loader"
@@ -16,6 +16,8 @@ type Props = {
 
 const UniversalMenu = ({ open, close }: Props) => {
   const router = useRouter()
+
+  const pathname = usePathname()
 
   const [deleteProject, setDeleteProject] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -38,20 +40,11 @@ const UniversalMenu = ({ open, close }: Props) => {
     // Wait for all the clear table promises to resolve
     await Promise.all(clearTablePromises)
 
-    console.log("calling reload")
-
-    window.location.reload()
-
-    // window.refrouterouter.
-
-    // router.refresh()
-
-    // map.polygon = null
-    // map.mode = "SEARCH"
-    // if (path === "map") {
-    // } else {
-    //   router.push("/map")
-    // }
+    if (pathname === "/locate") {
+      window.location.reload()
+    } else {
+      router.push("/locate")
+    }
   }
 
   const { Portal } = usePortal()
