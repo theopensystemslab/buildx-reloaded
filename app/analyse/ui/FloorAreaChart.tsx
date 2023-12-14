@@ -1,11 +1,10 @@
-"use client";
-import { pipe } from "fp-ts/lib/function";
-import { A, capitalizeFirstLetters, O, R } from "~/utils/functions";
-import { floor } from "~/utils/math";
-import { useGetColorClass } from "../../db/exports";
-import { useSiteCurrency } from "../../design/state/siteCtx";
-import { AnalyseData, formatWithUnit } from "../state/data";
-import ChartBar from "./ChartBar";
+"use client"
+import { pipe } from "fp-ts/lib/function"
+import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
+import { useGetColorClass } from "../../db/exports"
+import { useSiteCurrency } from "../../design/state/siteCtx"
+import { AnalyseData, formatWithUnit } from "../state/data"
+import ChartBar from "./ChartBar"
 import {
   ChartColumn,
   ChartContainer,
@@ -13,23 +12,23 @@ import {
   ChartTitles,
   HowIsItCalculated,
   WhatIsThis,
-} from "./chartComponents";
-import { useSelectedHouses } from "./HousesPillsSelector";
+} from "./chartComponents"
+import { useSelectedHouses } from "./HousesPillsSelector"
 
 const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
-  const selectedHouses = useSelectedHouses();
+  const selectedHouses = useSelectedHouses()
 
-  const getColorClass = useGetColorClass();
+  const getColorClass = useGetColorClass()
 
-  const { formatWithSymbol } = useSiteCurrency();
+  const { formatWithSymbol } = useSiteCurrency()
 
-  const { areas, costs } = analyseData;
+  const { areas, costs } = analyseData
 
   const houseFloorAreas = pipe(
     analyseData.byHouse,
 
     R.map((x) => pipe(x.areas.totalFloor))
-  );
+  )
 
   return (
     <ChartColumn>
@@ -104,7 +103,7 @@ const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
         </p>
       </HowIsItCalculated>
     </ChartColumn>
-  );
-};
+  )
+}
 
-export default FloorAreaChart;
+export default FloorAreaChart

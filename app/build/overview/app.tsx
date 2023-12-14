@@ -1,65 +1,65 @@
-"use client";
-import { ArrowDown } from "@carbon/icons-react";
-import { pipe } from "fp-ts/lib/function";
-import JSZip from "jszip";
-import dynamic from "next/dynamic";
-import { Fragment, useEffect, useState } from "react";
-import { A } from "~/utils/functions";
-import { useAnalyseData } from "../../analyse/state/data";
+"use client"
+import { ArrowDown } from "@carbon/icons-react"
+import { pipe } from "fp-ts/lib/function"
+import JSZip from "jszip"
+import dynamic from "next/dynamic"
+import { Fragment, useEffect, useState } from "react"
+import { A } from "~/utils/functions"
+import { useAnalyseData } from "../../analyse/state/data"
 import {
   useOrderListData,
   useSelectedHouseMaterialsListRows,
-} from "../../db/exports";
-import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx";
+} from "../../db/exports"
+import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
 import {
   useModelsZipURL,
   useSelectedHouseModelBlobs,
-} from "../../workers/exporters/hook";
-import { useMaterialsListDownload } from "../materials/MaterialsListTable";
-import { useOrderListDownload } from "../order/OrderListTable";
-import css from "./app.module.css";
+} from "../../workers/exporters/hook"
+import { useMaterialsListDownload } from "../materials/MaterialsListTable"
+import { useOrderListDownload } from "../order/OrderListTable"
+import css from "./app.module.css"
 
-const HousesView = dynamic(() => import("./HousesView"), { ssr: false });
+const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
-  const { formatWithSymbol } = useSiteCurrency();
+  const { formatWithSymbol } = useSiteCurrency()
 
-  const { projectName } = useSiteCtx();
+  const { projectName } = useSiteCtx()
 
   const {
     areas: { totalFloor },
     costs: { superstructure, total },
     embodiedCo2,
-  } = useAnalyseData();
+  } = useAnalyseData()
 
-  const { orderListRows } = useOrderListData();
+  const { orderListRows } = useOrderListData()
 
-  const materialsListRows = useSelectedHouseMaterialsListRows();
+  const materialsListRows = useSelectedHouseMaterialsListRows()
 
-  const orderListDownload = useOrderListDownload(orderListRows);
+  const orderListDownload = useOrderListDownload(orderListRows)
 
-  const materialsListDownload = useMaterialsListDownload(materialsListRows);
+  const materialsListDownload = useMaterialsListDownload(materialsListRows)
 
-  const modelsDownloadUrl = useModelsZipURL();
+  const modelsDownloadUrl = useModelsZipURL()
 
-  const selectedHouseBlobs = useSelectedHouseModelBlobs();
+  const selectedHouseBlobs = useSelectedHouseModelBlobs()
 
-  const [allFilesUrl, setAllFilesUrl] = useState<string | null>(null);
+  const [allFilesUrl, setAllFilesUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    const zip = new JSZip();
+    const zip = new JSZip()
 
-    if (orderListDownload) zip.file(`order-list.csv`, orderListDownload.blob);
+    if (orderListDownload) zip.file(`order-list.csv`, orderListDownload.blob)
     if (materialsListDownload)
-      zip.file(`materials-list.csv`, materialsListDownload.blob);
+      zip.file(`materials-list.csv`, materialsListDownload.blob)
     for (let [filename, blob] of selectedHouseBlobs) {
-      zip.file(filename, blob);
+      zip.file(filename, blob)
     }
 
     zip.generateAsync({ type: "blob" }).then(function (content) {
-      setAllFilesUrl(URL.createObjectURL(content));
-    });
-  }, [orderListDownload, materialsListDownload, selectedHouseBlobs]);
+      setAllFilesUrl(URL.createObjectURL(content))
+    })
+  }, [orderListDownload, materialsListDownload, selectedHouseBlobs])
 
   const overviewFields = [
     {
@@ -85,7 +85,7 @@ const OverviewIndex = () => {
       label: "Total estimated carbon cost",
       value: `${(embodiedCo2.total / 1000).toFixed(2)} tCO₂e`,
     },
-  ];
+  ]
 
   return (
     <Fragment>
@@ -226,7 +226,7 @@ const OverviewIndex = () => {
       </div>
       {/* </div> */}
     </Fragment>
-  );
-};
+  )
+}
 
-export default OverviewIndex;
+export default OverviewIndex
