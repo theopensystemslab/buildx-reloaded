@@ -136,6 +136,11 @@ export const materialsListSub = () =>
 
       const housesRecord = housesToRecord(houses)
 
+      const orderListRowsTotal = orderListRows.reduce(
+        (acc, v) => acc + v.totalCost,
+        0
+      )
+
       const getElementMaterial = (houseId: string, elementName: string) => {
         const house = housesRecord[houseId]
 
@@ -354,7 +359,7 @@ export const materialsListSub = () =>
             quantity: blockCountsByHouse[houseId],
             specification: "Insulated WikiHouse blocks",
             costPerUnit: 0,
-            cost: 0,
+            cost: orderListRowsTotal,
             embodiedCarbonPerUnit: 0,
             embodiedCarbonCost: 0,
             linkUrl: "",
