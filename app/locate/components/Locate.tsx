@@ -1,6 +1,5 @@
 "use client"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { Fragment } from "react"
 import ReactMapGLMap from "react-map-gl"
 import HtmlPortalContainer from "~/ui//HtmlPortalContainer"
 import GeocoderControl from "./GeocoderControl"

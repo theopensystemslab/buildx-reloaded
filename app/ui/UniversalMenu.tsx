@@ -8,6 +8,7 @@ import Modal from "./Modal"
 import userDB, { useHouses } from "../db/user"
 import exportsDB from "~/db/exports"
 import { PromiseExtended } from "dexie"
+import { trashMapPolygon } from "~/locate/state/polygon"
 
 type Props = {
   open: boolean
@@ -36,6 +37,8 @@ const UniversalMenu = ({ open, close }: Props) => {
         clearTablePromises.push(table.clear())
       })
     })
+
+    trashMapPolygon()
 
     // Wait for all the clear table promises to resolve
     await Promise.all(clearTablePromises)
