@@ -25,7 +25,7 @@ const App = () => {
   return houseTypes.length > 0 ? (
     <AppInit controlsEnabled={true} mapEnabled={false}>
       <Routing />
-      <FreshApp />
+      <FreshApp controlsEnabled />
     </AppInit>
   ) : (
     <Loader />
