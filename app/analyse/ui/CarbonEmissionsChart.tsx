@@ -1,29 +1,28 @@
-"use client";
-import clsx from "clsx";
-import { pipe } from "fp-ts/lib/function";
-import { capitalizeFirstLetters, R, S } from "~/utils/functions";
-import { useHousesRecord } from "../../db/user";
-import { AnalyseData, formatWithUnit } from "../state/data";
-import ChartBar from "./ChartBar";
+"use client"
+import clsx from "clsx"
+import { pipe } from "fp-ts/lib/function"
+import { capitalizeFirstLetters, R, S } from "~/utils/functions"
+import { useGetColorClass } from "../../db/exports"
+import { useHousesRecord } from "../../db/user"
+import { AnalyseData } from "../state/data"
+import ChartBar from "./ChartBar"
 import {
   ChartColumn,
   ChartContainer,
-  ChartMetrics,
   ChartMetrics2,
   ChartTitles,
   HowIsItCalculated,
   WhatIsThis,
-} from "./chartComponents";
-import { useGetColorClass } from "../../db/exports";
+} from "./chartComponents"
 
 const CarbonEmissionsChart = ({
   analyseData,
 }: {
-  analyseData: AnalyseData;
+  analyseData: AnalyseData
 }) => {
-  const getColorClass = useGetColorClass();
+  const getColorClass = useGetColorClass()
 
-  const houses = useHousesRecord();
+  const houses = useHousesRecord()
 
   return (
     <ChartColumn>
@@ -104,7 +103,7 @@ We use generic embodied carbon data of lifecycle stages A1-A3 from product EPDs 
         </p>
       </HowIsItCalculated>
     </ChartColumn>
-  );
-};
+  )
+}
 
-export default CarbonEmissionsChart;
+export default CarbonEmissionsChart
