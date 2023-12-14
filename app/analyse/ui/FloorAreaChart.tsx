@@ -1,7 +1,6 @@
 "use client"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { floor } from "~/utils/math"
 import { useGetColorClass } from "../../db/exports"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import { AnalyseData, formatWithUnit } from "../state/data"
@@ -66,7 +65,9 @@ const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
             renderItem={(item) => (
               <div className="flex flex-col justify-center  items-center">
                 <div>{item.displayName}</div>
-                <div>{formatWithUnit(floor(item.floorArea), "m²")}</div>
+                <div>
+                  {formatWithUnit(Number(item.floorArea.toFixed(1)), "m²")}
+                </div>
               </div>
             )}
           />
@@ -75,7 +76,7 @@ const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
       <ChartMetrics>
         <div className="flex">
           <div className="text-5xl font-normal">
-            {formatWithUnit(floor(areas.totalFloor), "m²")}
+            {formatWithUnit(Number(areas.totalFloor.toFixed(1)), "m²")}
           </div>
         </div>
         <div>

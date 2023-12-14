@@ -2,19 +2,18 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
+import { useGetColorClass } from "../../db/exports"
 import { useHousesRecord } from "../../db/user"
-import { AnalyseData, formatWithUnit } from "../state/data"
+import { AnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
   ChartContainer,
-  ChartMetrics,
   ChartMetrics2,
   ChartTitles,
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { useGetColorClass } from "../../db/exports"
 
 const CarbonEmissionsChart = ({
   analyseData,
@@ -35,8 +34,8 @@ const CarbonEmissionsChart = ({
             analyseData.embodiedCo2.total === 0
               ? "hidden"
               : analyseData.embodiedCo2.total > 0
-                ? "border-b"
-                : "border-t"
+              ? "border-b"
+              : "border-t"
           )}
         >
           <div />
@@ -63,7 +62,7 @@ const CarbonEmissionsChart = ({
               renderItem={(item) => (
                 <div className="flex flex-col justify-center items-center flex-shrink">
                   <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                  <div>{`${(item.value / 1000).toFixed(2)}kT`}</div>
+                  <div>{`${(item.value / 1000).toFixed(2)}t`}</div>
                 </div>
               )}
               reverse
@@ -74,7 +73,7 @@ const CarbonEmissionsChart = ({
       </ChartContainer>
       <ChartMetrics2>
         <div className="text-5xl font-normal">
-          {`${(analyseData.embodiedCo2.total).toFixed(0)} tCO₂e`}
+          {`${(analyseData.embodiedCo2.total / 1000).toFixed(2)} tCO₂e`}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics2>

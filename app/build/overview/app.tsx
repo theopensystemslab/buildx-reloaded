@@ -29,7 +29,7 @@ const OverviewIndex = () => {
   const {
     areas: { totalFloor },
     costs: { superstructure, total },
-    embodiedCo2
+    embodiedCo2,
   } = useAnalyseData()
 
   const { orderListRows } = useOrderListData()
@@ -83,7 +83,7 @@ const OverviewIndex = () => {
     },
     {
       label: "Total estimated carbon cost",
-      value: `${embodiedCo2.total.toFixed(0)} tCO₂`,
+      value: `${(embodiedCo2.total / 1000).toFixed(2)} tCO₂e`,
     },
   ]
 
@@ -97,7 +97,7 @@ const OverviewIndex = () => {
         // className="grid grid-cols-2"
         className={css.markupGrid}
       >
-        <div>
+        <div className="border-r border-grey-20">
           <h2 className="p-4">Overview</h2>
           <div className="flex flex-col">
             {pipe(
@@ -123,7 +123,7 @@ const OverviewIndex = () => {
               <a
                 href={modelsDownloadUrl}
                 download={`3d-models.zip`}
-              // className="flex font-semibold items-center"
+                // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download 3D models</span>
@@ -141,7 +141,7 @@ const OverviewIndex = () => {
               <a
                 href={orderListDownload.url}
                 download={`order-list.csv`}
-              // className="flex font-semibold items-center"
+                // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download order list</span>
@@ -159,7 +159,7 @@ const OverviewIndex = () => {
               <a
                 href={materialsListDownload.url}
                 download={`materials-list.csv`}
-              // className="flex font-semibold items-center"
+                // className="flex font-semibold items-center"
               >
                 <div className="flex font-semibold tracking-wide">
                   <span>Download list of materials</span>
@@ -187,34 +187,41 @@ const OverviewIndex = () => {
           )}
         </div>
         <div className="relative">
-          <h2>{`Want some help?`}</h2>
+          <h2>{`Get started`}</h2>
           <p>
-            If you want a more customised chassis design, or custom blocks, we
-            offer a chassis design service.
+            Download your project files. You will want these to share with
+            others later.
           </p>
+
           <p>
-            You can also connect with project designers, structural engineers
-            and installers to help you realise your project.
+            Then tap ‘start your project’. We will ask you a series of questions
+            about how you want to deliver your project.
           </p>
+
+          <p>
+            If we can, we will help connect you with designers, engineers,
+            manufacturers or installers who will be able to give you exact
+            quotes, and help make your project happen.
+          </p>
+        </div>
+        <div className="relative">
           <a href="">
-            <div className="absolute bottom-0 right-0 bg-grey-20 px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
-              <div>Get help with your project</div>
+            <div className="absolute bottom-0 right-0 w-full bg-grey-90 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
+              <div>Contact us about your project</div>
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
             </div>
           </a>
-        </div>
-        <div className="relative">
-          <h2>Find a manufacturer</h2>
+          {/* <h2>Find a manufacturer</h2>
           <p>
             Search for WikiHouse manufacturer to fabricate your WikiHouse
             blocks. Send them your order list to request a quote.
-          </p>
-          <a href="">
+          </p> */}
+          {/* <a href="">
             <div className="absolute bottom-0 right-0 bg-grey-90 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
               <div>Get a quote</div>
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
             </div>
-          </a>
+          </a> */}
         </div>
       </div>
       {/* </div> */}
