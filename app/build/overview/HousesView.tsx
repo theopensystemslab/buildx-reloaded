@@ -24,7 +24,7 @@ const HousesView = () => {
   return houseTypes.length > 0 ? (
     <AppInit controlsEnabled={false} mapEnabled={false}>
       {/* <Routing /> */}
-      <FreshApp />
+      <FreshApp controlsEnabled={false} />
     </AppInit>
   ) : (
     <Loader />

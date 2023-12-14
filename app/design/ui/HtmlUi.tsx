@@ -36,11 +36,7 @@ import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 import MetricsWidget from "./metrics/MetricsWidget"
 
-type Props = {
-  controlsEnabled: boolean
-}
-
-const HtmlUi = (props: Props) => {
+const HtmlUi = () => {
   const { groundPlaneEnabled: groundPlane } = useDesignSettings()
   const orthographic = useOrthographic()
 

@@ -37,7 +37,7 @@ import useOnDragStretchX from "./stretchX"
 import useOnDragStretchZ from "./stretchZ"
 import { compareProps } from "../../../../utils/functions"
 
-const useGestures = () => {
+const useGestures = (controlsEnabled: boolean) => {
   const onDragMove = useOnDragMove()
   const onDragRotate = useOnDragRotate()
 
@@ -57,6 +57,8 @@ const useGestures = () => {
       React.MouseEvent<EventTarget, MouseEvent>
   }>({
     onDrag: (state) => {
+      if (!controlsEnabled) return
+
       const { first, last } = state
 
       if (first) {
@@ -111,6 +113,8 @@ const useGestures = () => {
       invalidate()
     },
     onHover: ({ event: { intersections }, hovering }) => {
+      if (!controlsEnabled) return
+
       if (firstDragEventRef.current || menu.open) return
 
       if (intersections.length === 0) {
@@ -181,12 +185,17 @@ const useGestures = () => {
       invalidate()
     },
     onClick: ({ event: { intersections } }) => {
+      if (!controlsEnabled) return
+
       mapNearestCutIntersection(intersections, (intersection) => {
         const { object } = intersection
       })
     },
     onContextMenu: ({ event, event: { intersections, pageX, pageY } }) => {
       event.stopPropagation()
+
+      if (!controlsEnabled) return
+
       mapNearestCutIntersection(intersections, ({ object }) => {
         const scopeItem = elementMeshToScopeItem(object)
         setSelected(scopeItem)
@@ -195,6 +204,8 @@ const useGestures = () => {
     },
     onDoubleClick: ({ event, event: { intersections } }) => {
       event.stopPropagation()
+
+      if (!controlsEnabled) return
 
       if (intersections.length === 0) return
 
