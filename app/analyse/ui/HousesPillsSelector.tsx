@@ -1,9 +1,11 @@
 "use client"
 import { pipe } from "fp-ts/lib/function"
+import { usePathname } from "next/navigation"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { proxy, useSnapshot } from "valtio"
 import { buildingColorVariants, staleColorVariants } from "~/db/exports"
 import { House, useHouses, useHousesRecord } from "~/db/user"
+import { SiteCtxModeEnum, useSiteCtx } from "~/design/state/siteCtx"
 import { Close } from "~/ui/icons"
 import { useClickAway } from "~/ui/utils"
 import { A, Ord, R, S } from "~/utils/functions"
@@ -15,7 +17,19 @@ const store = proxy<{
 })
 
 export const useSelectedHouseIds = () => {
+  const houses = useHouses()
+
   const { selectedHouseIds } = useSnapshot(store) as typeof store
+
+  const pathname = usePathname()
+
+  const { mode, houseId } = useSiteCtx()
+
+  if (pathname === "/design") {
+    if (mode !== SiteCtxModeEnum.Enum.SITE) return [houseId]
+    else return houses.map((house) => house.houseId)
+  }
+
   return selectedHouseIds
 }
 
