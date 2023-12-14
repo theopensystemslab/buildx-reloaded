@@ -2,7 +2,7 @@
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 4fr 3fr;
-  gap: 1px;
+  @apply gap-y-0.5;
   @apply bg-grey-30;
   @apply text-sm;
   @apply border-t border-grey-20;
