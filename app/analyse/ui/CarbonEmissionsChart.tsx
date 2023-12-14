@@ -1,10 +1,10 @@
-"use client"
-import clsx from "clsx"
-import { pipe } from "fp-ts/lib/function"
-import { capitalizeFirstLetters, R, S } from "~/utils/functions"
-import { useHousesRecord } from "../../db/user"
-import { AnalyseData, formatWithUnit } from "../state/data"
-import ChartBar from "./ChartBar"
+"use client";
+import clsx from "clsx";
+import { pipe } from "fp-ts/lib/function";
+import { capitalizeFirstLetters, R, S } from "~/utils/functions";
+import { useHousesRecord } from "../../db/user";
+import { AnalyseData, formatWithUnit } from "../state/data";
+import ChartBar from "./ChartBar";
 import {
   ChartColumn,
   ChartContainer,
@@ -13,17 +13,17 @@ import {
   ChartTitles,
   HowIsItCalculated,
   WhatIsThis,
-} from "./chartComponents"
-import { useGetColorClass } from "../../db/exports"
+} from "./chartComponents";
+import { useGetColorClass } from "../../db/exports";
 
 const CarbonEmissionsChart = ({
   analyseData,
 }: {
-  analyseData: AnalyseData
+  analyseData: AnalyseData;
 }) => {
-  const getColorClass = useGetColorClass()
+  const getColorClass = useGetColorClass();
 
-  const houses = useHousesRecord()
+  const houses = useHousesRecord();
 
   return (
     <ChartColumn>
@@ -35,8 +35,8 @@ const CarbonEmissionsChart = ({
             analyseData.embodiedCo2.total === 0
               ? "hidden"
               : analyseData.embodiedCo2.total > 0
-                ? "border-b"
-                : "border-t"
+              ? "border-b"
+              : "border-t"
           )}
         >
           <div />
@@ -63,7 +63,7 @@ const CarbonEmissionsChart = ({
               renderItem={(item) => (
                 <div className="flex flex-col justify-center items-center flex-shrink">
                   <div>{capitalizeFirstLetters(item.buildingName)}</div>
-                  <div>{`${(item.value / 1000).toFixed(2)}kT`}</div>
+                  <div>{`${(item.value / 1000).toFixed(2)}t`}</div>
                 </div>
               )}
               reverse
@@ -74,7 +74,7 @@ const CarbonEmissionsChart = ({
       </ChartContainer>
       <ChartMetrics2>
         <div className="text-5xl font-normal">
-          {`${(analyseData.embodiedCo2.total).toFixed(0)} tCO₂e`}
+          {`${(analyseData.embodiedCo2.total / 1000).toFixed(2)} tCO₂e`}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics2>
@@ -104,7 +104,7 @@ We use generic embodied carbon data of lifecycle stages A1-A3 from product EPDs 
         </p>
       </HowIsItCalculated>
     </ChartColumn>
-  )
-}
+  );
+};
 
-export default CarbonEmissionsChart
+export default CarbonEmissionsChart;
