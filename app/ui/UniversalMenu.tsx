@@ -1,11 +1,14 @@
 import Sidebar from "~/ui//Sidebar"
 // import map from "@/src/hooks/map"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
 import userDB, { useHouses } from "../db/user"
+import exportsDB from "~/db/exports"
+import { PromiseExtended } from "dexie"
+import { trashMapPolygon } from "~/locate/state/polygon"
 
 type Props = {
   open: boolean
@@ -15,20 +18,36 @@ type Props = {
 const UniversalMenu = ({ open, close }: Props) => {
   const router = useRouter()
 
+  const pathname = usePathname()
+
   const [deleteProject, setDeleteProject] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const reallyDelete = () => {
+  const reallyDelete = async () => {
     setDeleting(true)
-    userDB.houses.clear()
 
-    // map.polygon = null
-    // map.mode = "SEARCH"
-    // if (path === "map") {
-    router.refresh()
-    // } else {
-    //   router.push("/map")
-    // }
+    const dbs = [userDB, exportsDB]
+
+    // Create an array to hold all the promises
+    const clearTablePromises: PromiseExtended<void>[] = []
+
+    dbs.forEach((database) => {
+      database.tables.forEach((table) => {
+        // Assume `clear()` returns a promise. Push each promise to the array.
+        clearTablePromises.push(table.clear())
+      })
+    })
+
+    trashMapPolygon()
+
+    // Wait for all the clear table promises to resolve
+    await Promise.all(clearTablePromises)
+
+    if (pathname === "/locate") {
+      window.location.reload()
+    } else {
+      router.push("/locate")
+    }
   }
 
   const { Portal } = usePortal()
