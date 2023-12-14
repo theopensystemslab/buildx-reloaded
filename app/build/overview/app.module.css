@@ -2,7 +2,6 @@
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 4fr 3fr;
-  @apply gap-y-0.5;
   @apply bg-grey-30;
   @apply text-sm;
   @apply border-t border-grey-20;
@@ -13,6 +12,7 @@
 }
 
 .markupGrid > div:nth-child(n + 2) {
+  @apply border-t border-grey-20;
   @apply py-5 px-3;
 }
 
