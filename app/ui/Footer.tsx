@@ -14,8 +14,7 @@ const mainLinks = [
   { href: ABOUT_LINK, label: "About WikiHouse" },
   { href: FEEDBACK_LINK, label: "Feedback" },
   { href: "/terms", label: "Terms of use" },
-  { href: "/privacy", label: "Privacy" },
-  // { href: "#cookies", label: "Cookies" },
+  { href: "https://www.wikihouse.cc/privacy", label: "Privacy" },
   { href: "/accessibility", label: "Accessibility" },
 ]
 
@@ -24,18 +23,12 @@ const FooterBar = ({ expanded }: { expanded: boolean }) => {
     <div className={css.bar} data-expanded={expanded}>
       <div className={css.left}>
         <div className={css.linkWrapper}>
-          <a
-            href={ABOUT_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-          >About WikiHouse</a>
+          <a href={ABOUT_LINK} target="_blank" rel="noopener noreferrer">
+            About WikiHouse
+          </a>
         </div>
         <div className={css.linkWrapper}>
-          <a
-            href={FEEDBACK_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={FEEDBACK_LINK} target="_blank" rel="noopener noreferrer">
             Feedback
           </a>
         </div>
@@ -59,26 +52,24 @@ const FooterContent = ({ expanded }: { expanded: boolean }) => {
         </p>
       </div>
       <div className={`${css.column} ${css.column2}`}>
-        {mainLinks.map((link) => link.href.startsWith("http") ? (
-          <div className={css.linkWrapper} key={link.href}>
-            <a
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {link.label}
-            </a>
-          </div>
-        ) : (
-          <div key={link.href} className={css.linkWrapper} >
-            <Link href={link.href}>{link.label}</Link>
-          </div>
-        ))}
+        {mainLinks.map((link) =>
+          link.href.startsWith("http") ? (
+            <div className={css.linkWrapper} key={link.href}>
+              <a href={link.href} target="_blank" rel="noopener noreferrer">
+                {link.label}
+              </a>
+            </div>
+          ) : (
+            <div key={link.href} className={css.linkWrapper}>
+              <Link href={link.href}>{link.label}</Link>
+            </div>
+          )
+        )}
       </div>
       <div className={`${css.column} ${css.column3}`}>
         <p className={`${css.text} text-sm`}>
-          <strong>build.wikihouse.cc</strong> is being developed by Open Systems Lab, non-profit company
-          9152368 registered in England & Wales
+          <strong>build.wikihouse.cc</strong> is being developed by Open Systems
+          Lab, non-profit company 9152368 registered in England & Wales
         </p>
         <div className="mt-4">
           <ExternalTextLink

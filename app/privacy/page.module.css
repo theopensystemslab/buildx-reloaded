@@ -1,7 +1,0 @@
-.root {
-  @apply max-w-4xl mx-auto my-8
-}
-
-.root>div h3 {
-  @apply mt-4;
-}
