@@ -1,15 +1,16 @@
-import clsx from "clsx";
-import { Inter } from "next/font/google";
-import { PropsWithChildren } from "react";
-import "~/styles/globals.css";
-import Footer from "./ui/Footer";
-import Nav from "./ui/Nav";
-import Fathom from "./Fathom";
+import clsx from "clsx"
+import { Inter } from "next/font/google"
+import { PropsWithChildren } from "react"
+import "~/styles/globals.css"
+import Footer from "./ui/Footer"
+import Nav from "./ui/Nav"
+import Fathom from "./Fathom"
+import { Metadata } from "next"
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-});
+})
 
 const Layout = ({ children }: PropsWithChildren<{}>) => {
   return (
@@ -27,7 +28,13 @@ const Layout = ({ children }: PropsWithChildren<{}>) => {
         </div>
       </body>
     </html>
-  );
-};
+  )
+}
 
-export default Layout;
+export const metadata: Metadata = {
+  title: "Design your WikiHouse",
+  description:
+    "Explore the prototype WikiHouse design tool, and share your suggestions or ideas for how we can improve it using the ‘feedback’ link. You can find the password at community.wikihouse.cc",
+}
+
+export default Layout
