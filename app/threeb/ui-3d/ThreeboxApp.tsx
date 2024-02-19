@@ -35,11 +35,70 @@ const ThreeboxApp = () => {
       center: origin,
       zoom: 14,
       pitch: 60,
-      style: "mapbox://styles/mapbox/streets-v9",
+      // style: "mapbox://styles/mapbox/streets-v9",
+      style: "mapbox://styles/mapbox/outdoors-v11",
       antialias: true,
     })
 
     map.on("style.load", () => {
+      let minZoom = 12
+      let mapConfig = {
+        ALL: {
+          center: [-73.985699, 40.750042, 0],
+          zoom: 16.25,
+          pitch: 45,
+          bearing: 0,
+        },
+        names: {
+          compositeSource: "composite",
+          compositeSourceLayer: "building",
+          compositeLayer: "3d-buildings",
+        },
+      }
+      function createCompositeLayer() {
+        let layer = {
+          id: mapConfig.names.compositeLayer,
+          source: mapConfig.names.compositeSource,
+          "source-layer": mapConfig.names.compositeSourceLayer,
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: minZoom,
+          paint: {
+            "fill-extrusion-color": [
+              "case",
+              ["boolean", ["feature-state", "select"], false],
+              "lightgreen",
+              ["boolean", ["feature-state", "hover"], false],
+              "lightblue",
+              "#aaa",
+            ],
+
+            // use an 'interpolate' expression to add a smooth transition effect to the
+            // buildings as the user zooms in
+            "fill-extrusion-height": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              minZoom,
+              0,
+              minZoom + 0.05,
+              ["get", "height"],
+            ],
+            "fill-extrusion-base": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              minZoom,
+              0,
+              minZoom + 0.05,
+              ["get", "min_height"],
+            ],
+            "fill-extrusion-opacity": 0.9,
+          },
+        }
+        return layer
+      }
+      map.addLayer(createCompositeLayer())
       map.addLayer({
         id: "custom_layer",
         type: "custom",
