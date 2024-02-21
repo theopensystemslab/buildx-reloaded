@@ -4,6 +4,11 @@ import { DEFAULT_ORIGIN } from "~/locate/state/constants"
 
 type Threebox = any
 
+export const getThreebox = () => {
+  // @ts-ignore
+  return window?.tb as Threebox | undefined
+}
+
 type Args = {
   onInit: (tb: Threebox) => void
   containerRef: RefObject<HTMLDivElement>
@@ -23,7 +28,7 @@ const useThreebox = ({ containerRef, onInit }: Args) => {
       accessToken: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN!,
       container,
       center: DEFAULT_ORIGIN,
-      zoom: 14,
+      zoom: 20,
       pitch: 60,
       // style: "mapbox://styles/mapbox/streets-v9",
       style: "mapbox://styles/mapbox/outdoors-v11",
