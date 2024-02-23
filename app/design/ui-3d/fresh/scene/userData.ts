@@ -174,6 +174,7 @@ export type HouseTransformsGroupUserData = {
   updateTransforms: () => void
   // exports
   updateExportModels: () => void
+  updatePNG: () => void
   // database
   updateDB: () => Promise<void>
   addToDB: () => Promise<void>
