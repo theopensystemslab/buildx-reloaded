@@ -16,7 +16,11 @@ const ThreeboxApp = () => {
 
   useThreebox({
     containerRef,
-    onInit: (tb) => {},
+    onInit: function (tb) {
+      tb.map.on("click", function (e: any) {
+        console.log({ e })
+      })
+    },
   })
 
   const houseTypes = useAllHouseTypes()
@@ -55,8 +59,8 @@ const ThreeboxApp = () => {
           }
 
           addMe.addEventListener("ObjectMouseOver", onObjectMouseOver, false)
+          addMe.addEventListener("ObjectChanged", onObjectMouseOver, false)
 
-          console.log({ addMe })
           tb.add(addMe)
         })
       )()

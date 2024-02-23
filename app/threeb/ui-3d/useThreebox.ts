@@ -102,9 +102,9 @@ const useThreebox = ({ containerRef, onInit }: Args) => {
           // @ts-ignore
           window.tb = new Threebox(map, mbxContext, {
             defaultLights: true,
-            enableSelectingObjects: true, //change this to false to disable 3D objects selection
-            enableDraggingObjects: true, //change this to false to disable 3D objects drag & move once selected
-            enableRotatingObjects: false, //change this to false to disable 3D objects rotation once selected
+            enableSelectingObjects: true, // change this to false to disable 3D objects selection
+            enableDraggingObjects: true, // change this to false to disable 3D objects drag & move once selected
+            enableRotatingObjects: false, // change this to false to disable 3D objects rotation once selected
             enableTooltips: false, // change this to false to disable default tooltips on fill-extrusion and 3D models
             enableHelpTooltips: false, // remove this to disable default help tooltips for draggin, rotating and measure
           })
