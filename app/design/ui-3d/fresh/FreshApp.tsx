@@ -1,9 +1,9 @@
 import { invalidate, useThree } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
+import { flow, pipe } from "fp-ts/lib/function"
 import { Fragment, useEffect, useRef } from "react"
 import { Group, Scene, WebGLRenderer } from "three"
 import { proxy, ref, snapshot, useSnapshot } from "valtio"
-import { A } from "../../../utils/functions"
+import { A, O } from "../../../utils/functions"
 import { useSubscribe } from "../../../utils/hooks"
 import elementCategories from "../../state/elementCategories"
 import XZPlane from "../XZPlane"
@@ -11,7 +11,9 @@ import { useHousesEvents } from "./events/houses"
 import useModeChange from "./events/modeChange"
 import useGestures from "./gestures"
 import useVerticalCuts from "./helpers/useVerticalCuts"
-import { isElementMesh } from "./scene/userData"
+import { isElementMesh, isHouseTransformsGroup } from "./scene/userData"
+import { useKey } from "react-use"
+import { findFirstGuardDown } from "./helpers/sceneQueries"
 
 const freshAppGlobalsProxy = proxy<{
   scene: Scene | null
@@ -144,6 +146,21 @@ const FreshApp = ({ controlsEnabled }: Props) => {
 
   //   lastScopeElement.current = item
   // })
+
+  useKey("s", () => {
+    pipe(
+      rootRef.current,
+      O.fromNullable,
+      O.map(
+        flow(
+          findFirstGuardDown(isHouseTransformsGroup),
+          O.map((htg) => {
+            htg.userData.updatePNG()
+          })
+        )
+      )
+    )
+  })
 
   return (
     <Fragment>

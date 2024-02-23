@@ -689,7 +689,7 @@ export const createHouseTransformsGroup = ({
     ])
 
     updateExportModels()
-    updatePNG()
+    // updatePNG()
   }
 
   const addToDB = async () => {
