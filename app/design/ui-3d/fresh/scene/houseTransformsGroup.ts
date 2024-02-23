@@ -1,6 +1,13 @@
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
-import { Group, Object3D, Plane, Vector3 } from "three"
+import {
+  Group,
+  Object3D,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Plane,
+  Vector3,
+} from "three"
 import { proxy, ref, useSnapshot } from "valtio"
 import { subscribeKey } from "valtio/utils"
 import { z } from "zod"
@@ -14,6 +21,7 @@ import systemsDB from "../../../../db/systems"
 import userDB, { House } from "../../../../db/user"
 import { A, O, R, S, T, compareProps } from "../../../../utils/functions"
 import {
+  isMesh,
   setInvisibleNoRaycast,
   setVisible,
   setVisibleAndRaycast,
@@ -62,6 +70,7 @@ import {
   AltLayout,
   isActiveLayout,
 } from "./userData"
+import { getRenderer, getScene } from "../FreshApp"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
@@ -680,6 +689,7 @@ export const createHouseTransformsGroup = ({
     ])
 
     updateExportModels()
+    updatePNG()
   }
 
   const addToDB = async () => {
@@ -779,6 +789,86 @@ export const createHouseTransformsGroup = ({
       // }
     }
 
+  const updatePNG: typeof houseTransformsGroupUserData.updatePNG = () => {
+    const renderer = getRenderer()
+    const scene = getScene()
+    if (!renderer || !scene) return
+
+    const { center, halfSize } =
+      houseTransformsGroup.userData.getActiveLayoutGroup().userData.obb
+
+    const dimensions = halfSize.clone().multiplyScalar(2) // Assuming halfSize is available and represents half the dimensions of the OBB
+
+    // Assuming dimensions and center are defined as before
+    const aspectRatio = window.innerWidth / window.innerHeight
+
+    // Calculate the frustum size based on the OBB dimensions
+    const frustumSize = Math.max(dimensions.x, dimensions.y, dimensions.z)
+    const distanceMultiplier = 5 // Adjust based on your needs
+    const cameraZ = frustumSize * distanceMultiplier
+
+    // Define the frustum boundaries
+    const halfFrustumSize = frustumSize / 2
+    const frustumHeight = halfFrustumSize
+    const frustumWidth = frustumHeight * aspectRatio
+
+    // Create an Orthographic camera
+    const camera = new OrthographicCamera(
+      -frustumWidth,
+      frustumWidth,
+      frustumHeight,
+      -frustumHeight,
+      1,
+      cameraZ * 2
+    )
+
+    // Elevated and side positioning
+    const verticalOffset = frustumSize // Position the camera above the OBB
+    const sideOffset = frustumSize * 2 // Position the camera to the side of the OBB
+
+    // Position camera and point it towards the center of the OBB
+    camera.position.set(
+      center.x + sideOffset,
+      center.y + verticalOffset,
+      center.z + cameraZ / 2
+    )
+    camera.lookAt(center.x, center.y, center.z)
+
+    // Restore shadows for all objects if needed
+    houseTransformsGroup.traverse(function (object: Object3D) {
+      if (isMesh(object)) {
+        object.castShadow = false // or your original setting
+        object.receiveShadow = false // or your original setting
+      }
+    })
+    // Adjust near and far planes if needed (already set in camera constructor)
+    camera.updateProjectionMatrix()
+
+    houseTransformsGroup.userData.switchHandlesVisibility(null)
+
+    // Render and capture the image as before
+    renderer.render(scene, camera)
+
+    const dataURL = renderer.domElement.toDataURL("image/png")
+
+    // Restore shadows for all objects if needed
+    houseTransformsGroup.traverse(function (object: Object3D) {
+      if (isMesh(object)) {
+        object.castShadow = true // or your original setting
+        object.receiveShadow = true // or your original setting
+      }
+    })
+
+    // Use the dataURL as needed
+    console.log({ dataURL })
+    const link = document.createElement("a")
+    link.href = dataURL
+    link.download = "image.png" // Specify the download filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const setLevelCut: typeof houseTransformsGroupUserData.setLevelCut = (
     levelIndex
   ) => {
@@ -865,6 +955,7 @@ export const createHouseTransformsGroup = ({
     deleteHouse,
     switchHandlesVisibility,
     updateExportModels,
+    updatePNG,
   }
 
   houseTransformsGroup.userData =
