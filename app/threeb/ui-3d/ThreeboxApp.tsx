@@ -34,6 +34,7 @@ const ThreeboxApp = () => {
 
       pipe(
         houseTypes,
+        A.dropLeft(1),
         A.head,
         TO.fromOption,
         TO.chain(({ systemId, id: houseTypeId, dnas }) =>
@@ -51,15 +52,20 @@ const ThreeboxApp = () => {
         TO.map((htg) => {
           const [longitude, latitude] = DEFAULT_ORIGIN
           const origin: [number, number] = [longitude, latitude]
-          const addMe = tb.Object3D({ obj: htg, units: "meters" })
+          const addMe = tb.Object3D({
+            obj: htg,
+            units: "meters",
+            rotation: { x: 90, y: 0, z: 0 }, //default rotation
+          })
           addMe.setCoords(origin)
 
           function onObjectMouseOver(e: any) {
             console.log(e)
           }
 
-          addMe.addEventListener("ObjectMouseOver", onObjectMouseOver, false)
-          addMe.addEventListener("ObjectChanged", onObjectMouseOver, false)
+          // addMe.addEventListener("ObjectMouseOver", onObjectMouseOver, false)
+          // addMe.addEventListener("ObjectChanged", onObjectMouseOver, false)
+          addMe.addEventListener("ObjectDragged", onObjectMouseOver, false)
 
           tb.add(addMe)
         })
