@@ -16,7 +16,6 @@ import {
   ColumnGroupUserData,
   GridGroupUserData,
   HouseTransformsGroup,
-  ModuleGroupUse,
   UserDataTypeEnum,
 } from "./userData"
 
@@ -106,13 +105,10 @@ export const createColumnGroup =
         moduleIndex: gridGroupIndex,
       } of positionedModules) {
         const moduleGroup = await createModuleGroup({
-          systemId,
-          houseId,
           module,
           gridGroupIndex,
           z,
           flip: endColumn,
-          use: ModuleGroupUse.Enum.INITIAL,
           visible: true,
           houseTransformsGroup,
         })
