@@ -15,7 +15,6 @@ import {
   HouseTransformsGroup,
   isModuleGroup,
   ModuleGroup,
-  ModuleGroupUse,
   ModuleGroupUserData,
   UserDataTypeEnum,
 } from "./userData"
@@ -141,21 +140,15 @@ liveQuery(() => layoutsDB.models.toArray()).subscribe((dbModels) => {
 })
 
 export const createModuleGroup = async ({
-  systemId,
-  houseId,
   gridGroupIndex,
-  module: { speckleBranchUrl, length, dna },
-  use,
+  module: { systemId, speckleBranchUrl, length, dna },
   visible,
   flip,
   z,
   houseTransformsGroup,
 }: {
-  systemId: string
-  houseId: string
   gridGroupIndex: number
   module: Module
-  use: ModuleGroupUse
   visible: boolean
   flip: boolean
   z: number
@@ -224,7 +217,6 @@ export const createModuleGroup = async ({
     gridGroupIndex,
     dna,
     length,
-    use,
     z,
     setThisModuleGroupVisible,
   }
