@@ -9,6 +9,7 @@ const ShadowPlane = () => {
       rotation={[-Math.PI / 2, 0, 0]}
       receiveShadow
       args={[100, 100]}
+      name="ShadowPlane"
     >
       <shadowMaterial color="#898989" side={DoubleSide} />
       {/* <meshBasicMaterial side={DoubleSide} color="red" /> */}

@@ -17,6 +17,7 @@ const SiteBoundary = () => {
       lineWidth={2}
       // @ts-ignore
       color="#9D9D9D"
+      name="SiteBoundary"
     />
   ) : null
 }

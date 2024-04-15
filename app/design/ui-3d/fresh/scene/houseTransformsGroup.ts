@@ -1,15 +1,8 @@
+import { adjustCameraToAndFrameOBB } from "@opensystemslab/buildx-core"
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
-import {
-  Group,
-  Object3D,
-  OrthographicCamera,
-  PerspectiveCamera,
-  Plane,
-  Vector3,
-} from "three"
-import { proxy, ref, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
+import { Group, Object3D, OrthographicCamera, Plane, Vector3 } from "three"
+import { proxy, useSnapshot } from "valtio"
 import { z } from "zod"
 import { Element } from "../../../../../server/data/elements"
 import { parseDna } from "../../../../../server/data/modules"
@@ -29,7 +22,7 @@ import {
 import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
-import scope, { ScopeElement, clearSelected } from "../../../state/scope"
+import { ScopeElement, clearSelected } from "../../../state/scope"
 import settings from "../../../state/settings"
 import siteCtx, {
   SiteCtxMode,
@@ -37,6 +30,7 @@ import siteCtx, {
   dispatchModeChange,
   getModeBools,
 } from "../../../state/siteCtx"
+import { getRenderer, getScene } from "../FreshApp"
 import {
   findAllGuardDown,
   findFirstGuardAcross,
@@ -48,8 +42,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
-  Layout,
-  LayoutType,
+  ActiveLayout,
+  AltLayout,
   ElementMesh,
   GridGroupUserData,
   HouseLayoutGroup,
@@ -57,7 +51,8 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
-  Layouts,
+  Layout,
+  LayoutType,
   UserDataTypeEnum,
   isElementMesh,
   isHouseTransformsGroup,
@@ -66,11 +61,7 @@ import {
   isStretchHandleGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
-  ActiveLayout,
-  AltLayout,
-  isActiveLayout,
 } from "./userData"
-import { getRenderer, getScene } from "../FreshApp"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
@@ -792,57 +783,46 @@ export const createHouseTransformsGroup = ({
   const updatePNG: typeof houseTransformsGroupUserData.updatePNG = () => {
     const renderer = getRenderer()
     const scene = getScene()
+
     if (!renderer || !scene) return
 
     const { center, halfSize } =
       houseTransformsGroup.userData.getActiveLayoutGroup().userData.obb
 
-    const dimensions = halfSize.clone().multiplyScalar(2) // Assuming halfSize is available and represents half the dimensions of the OBB
+    const activeLayoutGroup =
+      houseTransformsGroup.userData.getActiveLayoutGroup()
 
-    // Assuming dimensions and center are defined as before
-    const aspectRatio = window.innerWidth / window.innerHeight
+    const camera = new OrthographicCamera()
 
-    // Calculate the frustum size based on the OBB dimensions
-    const frustumSize = Math.max(dimensions.x, dimensions.y, dimensions.z)
-    const distanceMultiplier = 5 // Adjust based on your needs
-    const cameraZ = frustumSize * distanceMultiplier
+    adjustCameraToAndFrameOBB(activeLayoutGroup.userData.obb, camera, 45, 45)
 
-    // Define the frustum boundaries
-    const halfFrustumSize = frustumSize / 2
-    const frustumHeight = halfFrustumSize
-    const frustumWidth = frustumHeight * aspectRatio
-
-    // Create an Orthographic camera
-    const camera = new OrthographicCamera(
-      -frustumWidth,
-      frustumWidth,
-      frustumHeight,
-      -frustumHeight,
-      1,
-      cameraZ * 2
+    const otherChildren = scene.children.filter((x) =>
+      [
+        "GroundCircle",
+        "ShadowPlane",
+        "RectangularGrid",
+        "SiteBoundary",
+      ].includes(x.name)
     )
 
-    // Elevated and side positioning
-    const verticalOffset = frustumSize // Position the camera above the OBB
-    const sideOffset = frustumSize * 2 // Position the camera to the side of the OBB
+    console.log(otherChildren.map((x) => x.name))
 
-    // Position camera and point it towards the center of the OBB
-    camera.position.set(
-      center.x + sideOffset,
-      center.y + verticalOffset,
-      center.z + cameraZ / 2
-    )
-    camera.lookAt(center.x, center.y, center.z)
+    const switcher = (b: boolean) => {
+      houseTransformsGroup.traverse(function (object: Object3D) {
+        if (isMesh(object)) {
+          // false first plz
+          object.castShadow = b
+          object.receiveShadow = b
+        }
+      })
+      otherChildren.forEach((x) => {
+        x.visible = b
+      })
+    }
 
-    // Restore shadows for all objects if needed
-    houseTransformsGroup.traverse(function (object: Object3D) {
-      if (isMesh(object)) {
-        object.castShadow = false // or your original setting
-        object.receiveShadow = false // or your original setting
-      }
-    })
-    // Adjust near and far planes if needed (already set in camera constructor)
-    camera.updateProjectionMatrix()
+    switcher(false)
+
+    // De-shadow objects if needed
 
     houseTransformsGroup.userData.switchHandlesVisibility(null)
 
@@ -851,13 +831,9 @@ export const createHouseTransformsGroup = ({
 
     const dataURL = renderer.domElement.toDataURL("image/png")
 
-    // Restore shadows for all objects if needed
-    houseTransformsGroup.traverse(function (object: Object3D) {
-      if (isMesh(object)) {
-        object.castShadow = true // or your original setting
-        object.receiveShadow = true // or your original setting
-      }
-    })
+    console.log({ otherChildren })
+
+    switcher(true)
 
     // Use the dataURL as needed
     console.log({ dataURL })
