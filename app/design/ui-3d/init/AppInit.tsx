@@ -29,7 +29,7 @@ const Common = (props: Props) => {
 
   return (
     <Fragment>
-      <axesHelper />
+      <axesHelper name="AxesHelper" />
       {groundPlane && (
         <>
           <GroundCircle />

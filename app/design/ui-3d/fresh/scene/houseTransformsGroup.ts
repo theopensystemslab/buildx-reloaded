@@ -802,10 +802,9 @@ export const createHouseTransformsGroup = ({
         "ShadowPlane",
         "RectangularGrid",
         "SiteBoundary",
+        "AxesHelper",
       ].includes(x.name)
     )
-
-    console.log(otherChildren.map((x) => x.name))
 
     const switcher = (b: boolean) => {
       houseTransformsGroup.traverse(function (object: Object3D) {
@@ -831,12 +830,9 @@ export const createHouseTransformsGroup = ({
 
     const dataURL = renderer.domElement.toDataURL("image/png")
 
-    console.log({ otherChildren })
-
     switcher(true)
 
     // Use the dataURL as needed
-    console.log({ dataURL })
     const link = document.createElement("a")
     link.href = dataURL
     link.download = "image.png" // Specify the download filename
