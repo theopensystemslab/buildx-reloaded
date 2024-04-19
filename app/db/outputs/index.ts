@@ -1,10 +1,5 @@
 import Dexie from "dexie"
-import {
-  materialsListSub,
-  orderListSub,
-  type MaterialsListRow,
-  type OrderListRow,
-} from "./metrics"
+import { type MaterialsListRow, type OrderListRow } from "./metrics"
 
 export type HouseModelsRow = {
   houseId: string
@@ -12,33 +7,27 @@ export type HouseModelsRow = {
   objData: any
 }
 
-// export type HousePngsRow = {
-//   houseId: string
-//   pngBlob: Blob
-// }
+export type HousePngsRow = {
+  houseId: string
+  pngBlob: Blob
+}
 
-// export type HouseFiles = {
-//   houseId: string
-//   glb: File
-//   obj: File
-//   png: File
-//   orderListCsv: File
-//   materialsListCsv: File
-// }
+export const FILES_DOCUMENT_KEY = "FILES_DOCUMENT_KEY"
 
-// export type ProjectFiles = {
-//   projectName: string
-//   orderListCsv: File
-//   materialsListCsv: File
-//   allFilesZip: File
-//   modelsZip: File
-// }
+export type FilesDocument = {
+  key: typeof FILES_DOCUMENT_KEY
+  allFilesZip?: File
+  orderListCsv?: File
+  materialsListCsv?: File
+  modelsZip?: File
+}
 
 class OutputsDatabase extends Dexie {
   orderListRows: Dexie.Table<OrderListRow, string>
   materialsListRows: Dexie.Table<MaterialsListRow, string>
-  // houseFiles: Dexie.Table<HouseFiles, string>
-  // projectFiles: Dexie.Table<ProjectFiles, string>
+  houseModels: Dexie.Table<HouseModelsRow, string>
+  housePngs: Dexie.Table<HousePngsRow, string>
+  files: Dexie.Table<FilesDocument, typeof FILES_DOCUMENT_KEY>
 
   constructor() {
     super("OutputsDatabase")
@@ -46,18 +35,23 @@ class OutputsDatabase extends Dexie {
     this.version(1).stores({
       orderListRows: "[houseId+blockName]",
       materialsListRows: "[houseId+item]",
-      // houseFiles: "houseId",
-      // projectFiles: "projectName",
+      houseModels: "houseId",
+      housePngs: "houseId",
+      files: "key",
     })
 
     this.orderListRows = this.table("orderListRows")
     this.materialsListRows = this.table("materialsListRows")
-    // this.houseFiles = this.table("houseFiles")
-    // this.projectFiles = this.table("projectFiles")
+    this.houseModels = this.table("houseModels")
+    this.housePngs = this.table("housePngs")
+    this.files = this.table("files")
   }
 }
 
 const outputsDB = new OutputsDatabase()
+
+export const putHousePng = (houseId: string, pngBlob: Blob) =>
+  outputsDB.housePngs.put({ houseId, pngBlob })
 
 export default outputsDB
 

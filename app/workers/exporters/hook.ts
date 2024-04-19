@@ -1,62 +1,10 @@
+import { useLiveQuery } from "dexie-react-hooks"
+import { flow, pipe } from "fp-ts/lib/function"
 import JSZip from "jszip"
 import { useEffect, useState } from "react"
-import { useEvent } from "react-use"
-import { getOutputsWorker } from ".."
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
-import userDB, { useHouse } from "../../db/user"
-import outputsDB, { HouseModelsRow } from "../../db/outputs"
-import { flow, pipe } from "fp-ts/lib/function"
-import { A, O, T, TO } from "../../utils/functions"
-import { useLiveQuery } from "dexie-react-hooks"
-
-export const useExportersWorker = () => {
-  // useEvent(
-  //   GET_EXPORT_MODEL_EVENT,
-  //   async ({ detail: { houseId, format } }: GetModelEvent) => {
-  //     userDB.houses.get(houseId).then(async (house) => {
-  //       if (!house) return
-  //       switch (format) {
-  //         case "GLB": {
-  //           const gltfData = await getExportersWorker().getGLB(houseId)
-  //           if (!gltfData) return
-  //           const blob = new Blob([gltfData], {
-  //             type: "model/gltf-binary",
-  //           })
-  //           const url = URL.createObjectURL(blob)
-  //           const link = document.createElement("a")
-  //           link.href = url
-  //           link.download = `${house.friendlyName}.glb`
-  //           link.style.display = "none"
-  //           document.body.appendChild(link)
-  //           link.click()
-  //           // Cleanup
-  //           document.body.removeChild(link)
-  //           URL.revokeObjectURL(url)
-  //           return
-  //         }
-  //         case "OBJ": {
-  //           const objData = await getExportersWorker().getOBJ(houseId)
-  //           if (!objData) return
-  //           const blob = new Blob([objData], { type: "text/plain" })
-  //           const url = URL.createObjectURL(blob)
-  //           const link = document.createElement("a")
-  //           link.href = url
-  //           link.download = `${house.friendlyName}.obj`
-  //           link.style.display = "none"
-  //           document.body.appendChild(link)
-  //           link.click()
-  //           // Cleanup
-  //           document.body.removeChild(link)
-  //           URL.revokeObjectURL(url)
-  //           return
-  //         }
-  //         default:
-  //           return
-  //       }
-  //     })
-  //   }
-  // )
-}
+import outputsDB from "../../db/outputs"
+import { A, TO } from "../../utils/functions"
 
 export const useHousesModelRows = (houseIds: string[]) =>
   useLiveQuery(

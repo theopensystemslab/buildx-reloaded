@@ -9,6 +9,7 @@ import {
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
+  initFilesWorker,
 } from "../../workers"
 
 const HousesView = () => {
@@ -16,6 +17,7 @@ const HousesView = () => {
   initModelsWorker()
   initLayoutsWorker()
   initOutputsWorker()
+  initFilesWorker()
 
   useIndexedSiteCtx()
 

@@ -9,17 +9,12 @@ let systemsWorker: Worker | null = null
 let layoutsWorker: Remote<LayoutsAPI> | null = null
 let modelsWorker: Remote<ModelsAPI> | null = null
 let exportersWorker: Remote<OutputsAPI> | null = null
+let filesWorker: Worker | null = null
 
 export const initSystemsWorker = () => {
   if (!isSSR() && systemsWorker === null) {
     systemsWorker = new Worker(new URL("./systems.ts", import.meta.url))
   }
-}
-
-export const getSystemsWorker = (): Worker => {
-  if (isSSR()) return undefined as any
-  if (systemsWorker === null) throw new Error(`couldn't get systemsWorker`)
-  return systemsWorker
 }
 
 export const initLayoutsWorker = () => {
@@ -60,4 +55,10 @@ export const getOutputsWorker = (): Remote<OutputsAPI> => {
   if (isSSR()) return undefined as any
   if (exportersWorker === null) throw new Error(`couldn't get exportersWorker`)
   return exportersWorker
+}
+
+export const initFilesWorker = () => {
+  if (!isSSR() && filesWorker === null) {
+    filesWorker = new Worker(new URL("./files.ts", import.meta.url))
+  }
 }

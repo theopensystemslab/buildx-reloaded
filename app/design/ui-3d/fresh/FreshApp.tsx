@@ -75,8 +75,6 @@ const FreshApp = ({ controlsEnabled }: Props) => {
     false
   )
 
-  // useExportersWorker()
-
   const { scene, gl: renderer } = useThree()
 
   useEffect(() => {

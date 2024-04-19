@@ -62,6 +62,7 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
+import { putHousePng } from "~/db/outputs"
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
@@ -680,7 +681,7 @@ export const createHouseTransformsGroup = ({
     ])
 
     updateExportModels()
-    // updatePNG()
+    updatePNG()
   }
 
   const addToDB = async () => {
@@ -786,9 +787,6 @@ export const createHouseTransformsGroup = ({
 
     if (!renderer || !scene) return
 
-    const { center, halfSize } =
-      houseTransformsGroup.userData.getActiveLayoutGroup().userData.obb
-
     const activeLayoutGroup =
       houseTransformsGroup.userData.getActiveLayoutGroup()
 
@@ -809,7 +807,6 @@ export const createHouseTransformsGroup = ({
     const switcher = (b: boolean) => {
       houseTransformsGroup.traverse(function (object: Object3D) {
         if (isMesh(object)) {
-          // false first plz
           object.castShadow = b
           object.receiveShadow = b
         }
@@ -821,24 +818,22 @@ export const createHouseTransformsGroup = ({
 
     switcher(false)
 
-    // De-shadow objects if needed
-
     houseTransformsGroup.userData.switchHandlesVisibility(null)
 
-    // Render and capture the image as before
     renderer.render(scene, camera)
 
-    const dataURL = renderer.domElement.toDataURL("image/png")
+    renderer.domElement.toBlob((pngBlob) => {
+      if (pngBlob) putHousePng(houseId, pngBlob)
+      switcher(true)
+    })
 
-    switcher(true)
-
-    // Use the dataURL as needed
-    const link = document.createElement("a")
-    link.href = dataURL
-    link.download = "image.png" // Specify the download filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    // // Use the dataURL as needed
+    // const link = document.createElement("a")
+    // link.href = dataURL
+    // link.download = "image.png" // Specify the download filename
+    // document.body.appendChild(link)
+    // link.click()
+    // document.body.removeChild(link)
   }
 
   const setLevelCut: typeof houseTransformsGroupUserData.setLevelCut = (

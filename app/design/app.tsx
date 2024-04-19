@@ -6,6 +6,7 @@ import {
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
+  initFilesWorker,
 } from "../workers"
 import { Routing } from "./state/routing"
 import { useIndexedSiteCtx } from "./state/siteCtx"
@@ -17,6 +18,7 @@ const App = () => {
   initModelsWorker()
   initLayoutsWorker()
   initOutputsWorker()
+  initFilesWorker()
 
   useIndexedSiteCtx()
 
