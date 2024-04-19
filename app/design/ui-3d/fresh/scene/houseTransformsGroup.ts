@@ -19,7 +19,7 @@ import {
   setVisible,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
-import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
+import { getOutputsWorker, getLayoutsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
 import { ScopeElement, clearSelected } from "../../../state/scope"
@@ -758,7 +758,7 @@ export const createHouseTransformsGroup = ({
 
       const payload = clone.toJSON()
 
-      getExportersWorker().updateModels({ houseId, payload })
+      getOutputsWorker().updateModels({ houseId, payload })
 
       // function findFunctions(obj: any, path = []) {
       //   // Check if obj is an object

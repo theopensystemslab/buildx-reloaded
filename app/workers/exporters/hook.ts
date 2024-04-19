@@ -1,10 +1,10 @@
 import JSZip from "jszip"
 import { useEffect, useState } from "react"
 import { useEvent } from "react-use"
-import { getExportersWorker } from ".."
+import { getOutputsWorker } from ".."
 import { useSelectedHouses } from "../../analyse/ui/HousesPillsSelector"
 import userDB, { useHouse } from "../../db/user"
-import exportsDB, { HouseModelsRow } from "../../db/exports"
+import outputsDB, { HouseModelsRow } from "../../db/outputs"
 import { flow, pipe } from "fp-ts/lib/function"
 import { A, O, T, TO } from "../../utils/functions"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -60,7 +60,7 @@ export const useExportersWorker = () => {
 
 export const useHousesModelRows = (houseIds: string[]) =>
   useLiveQuery(
-    () => exportsDB.houseModels.where("houseId").anyOf(houseIds).toArray(),
+    () => outputsDB.houseModels.where("houseId").anyOf(houseIds).toArray(),
     [houseIds],
     []
   )
@@ -75,7 +75,7 @@ export const useSelectedHouseModelBlobs = () => {
       houses,
       A.traverse(TO.ApplicativePar)(({ houseId, friendlyName }) =>
         pipe(
-          () => exportsDB.houseModels.get(houseId),
+          () => outputsDB.houseModels.get(houseId),
           TO.fromTask,
           TO.chain(
             flow(

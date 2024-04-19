@@ -11,7 +11,7 @@ import {
   MaterialsListRow,
   useGetColorClass,
   useSelectedHouseMaterialsListRows,
-} from "../../db/exports"
+} from "../../db/outputs"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void

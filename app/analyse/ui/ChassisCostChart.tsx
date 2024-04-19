@@ -12,7 +12,7 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { OrderListRow, useGetColorClass } from "../../db/exports"
+import { OrderListRow, useGetColorClass } from "../../db/outputs"
 
 const ChassisCostChart = ({
   orderListRows,

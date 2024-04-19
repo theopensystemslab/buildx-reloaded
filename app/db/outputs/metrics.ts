@@ -13,7 +13,7 @@ import {
 } from "../../design/ui-3d/fresh/systems"
 import { A, O, R, S } from "../../utils/functions"
 import systemsDB from "../systems"
-import exportsDB from "."
+import outputsDB from "."
 import { useSelectedHouseIds } from "~/analyse/ui/HousesPillsSelector"
 
 export type OrderListRow = {
@@ -45,17 +45,17 @@ export type MaterialsListRow = {
 }
 
 export const useAllOrderListRows = (): OrderListRow[] =>
-  useLiveQuery(() => exportsDB.orderListRows.toArray(), [], [])
+  useLiveQuery(() => outputsDB.orderListRows.toArray(), [], [])
 
 export const useAllMaterialsListRows = (): MaterialsListRow[] =>
-  useLiveQuery(() => exportsDB.materialsListRows.toArray(), [], [])
+  useLiveQuery(() => outputsDB.materialsListRows.toArray(), [], [])
 
 export const useSelectedHouseOrderListRows = (): OrderListRow[] => {
   const selectedHouseIds = useSelectedHouseIds()
 
   return useLiveQuery(
     () =>
-      exportsDB.orderListRows
+      outputsDB.orderListRows
         .where("houseId")
         .anyOf(selectedHouseIds)
         .toArray(),
@@ -69,7 +69,7 @@ export const useSelectedHouseMaterialsListRows = (): MaterialsListRow[] => {
 
   return useLiveQuery(
     () =>
-      exportsDB.materialsListRows
+      outputsDB.materialsListRows
         .where("houseId")
         .anyOf(selectedHouseIds)
         .toArray(),
@@ -86,12 +86,12 @@ export const useMetricsOrderListRows = (): OrderListRow[] => {
   return useLiveQuery(
     () => {
       if (buildingHouseId) {
-        return exportsDB.orderListRows
+        return outputsDB.orderListRows
           .where("houseId")
           .equals(buildingHouseId)
           .toArray()
       } else {
-        return exportsDB.orderListRows.toArray()
+        return outputsDB.orderListRows.toArray()
       }
     },
     [buildingHouseId],
@@ -117,7 +117,7 @@ const materialsListDeps = liveQuery(async () => {
       systemsDB.materials.toArray(),
       systemsDB.windowTypes.toArray(),
       userDB.houses.toArray(),
-      exportsDB.orderListRows.toArray(),
+      outputsDB.orderListRows.toArray(),
     ])
   return {
     modules,
@@ -132,7 +132,7 @@ const materialsListDeps = liveQuery(async () => {
 export const materialsListSub = () =>
   materialsListDeps.subscribe(
     ({ modules, elements, materials, windowTypes, houses, orderListRows }) => {
-      exportsDB.materialsListRows.clear()
+      outputsDB.materialsListRows.clear()
 
       const housesRecord = housesToRecord(houses)
 
@@ -373,14 +373,14 @@ export const materialsListSub = () =>
 
       const materialsListRows = houses.flatMap(houseMaterialCalculator)
 
-      exportsDB.materialsListRows.bulkPut(materialsListRows)
+      outputsDB.materialsListRows.bulkPut(materialsListRows)
     }
   )
 
 export const orderListSub = () =>
   orderListDeps.subscribe(
     ({ houses, modules, blocks, blockModulesEntries }) => {
-      exportsDB.orderListRows.clear()
+      outputsDB.orderListRows.clear()
 
       const accum: Record<string, number> = {}
 
@@ -485,7 +485,7 @@ export const orderListSub = () =>
         )
       )
 
-      exportsDB.orderListRows.bulkPut(orderListRows)
+      outputsDB.orderListRows.bulkPut(orderListRows)
     }
   )
 

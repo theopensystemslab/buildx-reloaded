@@ -1,5 +1,5 @@
 "use client"
-import { useOrderListData } from "../db/exports"
+import { useOrderListData } from "../db/outputs"
 import css from "./app.module.css"
 import { useAnalyseData } from "./state/data"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"

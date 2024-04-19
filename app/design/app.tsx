@@ -2,7 +2,7 @@
 import { useAllHouseTypes } from "../db/systems"
 import Loader from "../ui/Loader"
 import {
-  initExportersWorker,
+  initOutputsWorker,
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
@@ -16,7 +16,7 @@ const App = () => {
   initSystemsWorker()
   initModelsWorker()
   initLayoutsWorker()
-  initExportersWorker()
+  initOutputsWorker()
 
   useIndexedSiteCtx()
 
