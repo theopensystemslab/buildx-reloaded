@@ -111,7 +111,7 @@ dependencies:
     specifier: ^2.11.1
     version: 2.15.0
   next:
-    specifier: ^13.4.19
+    specifier: ^13.5.6
     version: 13.5.6(@babel/core@7.23.5)(react-dom@18.2.0)(react@18.2.0)
   postprocessing:
     specifier: ^6.31.0
