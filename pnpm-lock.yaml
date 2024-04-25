@@ -18,8 +18,8 @@ dependencies:
     specifier: ^5.0.1
     version: 5.0.1(react-dom@18.2.0)(react@18.2.0)
   '@opensystemslab/buildx-core':
-    specifier: ^0.1.2
-    version: 0.1.2(three@0.153.0)
+    specifier: github:theopensystemslab/buildx-core#xp-offscreen
+    version: github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c(three@0.153.0)
   '@react-three/drei':
     specifier: ^9.68.6
     version: 9.90.0(@react-three/fiber@8.15.12)(@types/three@0.153.0)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0)
@@ -838,14 +838,6 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       ua-parser-js: 1.0.2
-    dev: false
-
-  /@opensystemslab/buildx-core@0.1.2(three@0.153.0):
-    resolution: {integrity: sha512-v8l11Q/6yj4acIw3EvgCsTmsZeFVe5+gH9YnzrtQOKnsBoa1Er9AEfoSybIqIdlMd2t9Rb6LNZJ+bKy72udkRA==}
-    peerDependencies:
-      three: '>=0.153.0'
-    dependencies:
-      three: 0.153.0
     dev: false
 
   /@radix-ui/primitive@1.0.1:
@@ -7618,4 +7610,17 @@ packages:
         optional: true
     dependencies:
       react: 18.2.0
+    dev: false
+
+  github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c(three@0.153.0):
+    resolution: {tarball: https://codeload.github.com/theopensystemslab/buildx-core/tar.gz/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c}
+    id: github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c
+    name: '@opensystemslab/buildx-core'
+    version: 0.1.2
+    prepare: true
+    requiresBuild: true
+    peerDependencies:
+      three: '>=0.153.0'
+    dependencies:
+      three: 0.153.0
     dev: false

@@ -50,6 +50,12 @@ class OutputsDatabase extends Dexie {
 
 const outputsDB = new OutputsDatabase()
 
+outputsDB.files.toArray().then((xs) => {
+  if (xs.length === 0) {
+    outputsDB.files.put({ key: FILES_DOCUMENT_KEY })
+  }
+})
+
 export const putHousePng = (houseId: string, pngBlob: Blob) =>
   outputsDB.housePngs.put({ houseId, pngBlob })
 

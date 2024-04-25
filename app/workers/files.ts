@@ -6,6 +6,7 @@ import { values } from "fp-ts-std/Record"
 import { pipe, identity } from "fp-ts/lib/function"
 import produce from "immer"
 import JSZip from "jszip"
+import { PerspectiveCamera, Scene, WebGLRenderer } from "three"
 import outputsDB, {
   FILES_DOCUMENT_KEY,
   MaterialsListRow,
@@ -484,12 +485,8 @@ const updateAllFiles = async () => {
       })
       .then((blob) => new File([blob], "all-files.zip"))
 
-    outputsDB.files.put({
-      key: FILES_DOCUMENT_KEY,
+    outputsDB.files.update(FILES_DOCUMENT_KEY, {
       allFilesZip,
-      orderListCsv,
-      materialsListCsv,
-      modelsZip,
     })
   }
 }
@@ -500,13 +497,14 @@ const updateAllFiles = async () => {
 // then update the all files zip
 deps.subscribe(async (stuff) => {
   const orderListRows = orderListProc(stuff)
+  if (orderListRows.length === 0) return
+
   const materialsListRows = materialsProc({ ...stuff, orderListRows })
 
   const orderListCsv = orderListToCSV(orderListRows)
   const materialsListCsv = materialsListToCSV(materialsListRows)
 
-  await outputsDB.files.put({
-    key: FILES_DOCUMENT_KEY,
+  await outputsDB.files.update(FILES_DOCUMENT_KEY, {
     materialsListCsv,
     orderListCsv,
   })
@@ -531,15 +529,8 @@ liveQuery(() => outputsDB.houseModels.toArray()).subscribe(
       })
       .then((blob) => new File([blob], "models.zip"))
 
-    const currentFiles = await outputsDB.files.get(FILES_DOCUMENT_KEY)
-
-    const { materialsListCsv, orderListCsv } = currentFiles ?? {}
-
-    await outputsDB.files.put({
-      key: FILES_DOCUMENT_KEY,
+    await outputsDB.files.update(FILES_DOCUMENT_KEY, {
       modelsZip,
-      materialsListCsv,
-      orderListCsv,
     })
 
     updateAllFiles()

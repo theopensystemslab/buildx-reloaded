@@ -14,7 +14,7 @@
     "@mapbox/mapbox-gl-draw": "^1.4.1",
     "@mapbox/mapbox-gl-geocoder": "^5.0.1",
     "@oieduardorabelo/use-user-agent": "^5.0.1",
-    "@opensystemslab/buildx-core": "^0.1.2",
+    "@opensystemslab/buildx-core": "github:theopensystemslab/buildx-core#xp-offscreen",
     "@react-three/drei": "^9.68.6",
     "@react-three/fiber": "^8.13.0",
     "@sentry/nextjs": "^7.80.0",

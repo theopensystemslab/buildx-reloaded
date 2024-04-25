@@ -1,4 +1,3 @@
-import { adjustCameraToAndFrameOBB } from "@opensystemslab/buildx-core"
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, OrthographicCamera, Plane, Vector3 } from "three"
@@ -63,12 +62,19 @@ import {
   isZStretchHandleGroup,
 } from "./userData"
 import { putHousePng } from "~/db/outputs"
+import { PngSnapshotsWorker } from "@opensystemslab/buildx-core"
+
+const snapshotsWorker = new PngSnapshotsWorker()
+
+snapshotsWorker.onmessage = ({
+  data: { houseId, blob },
+}: MessageEvent<{ houseId: string; blob: Blob }>) => {
+  putHousePng(houseId, blob)
+}
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
 export const useHtgFoo = () => useSnapshot(htgProxy).foo
-
-const DEBOUNCE_TIME = 50
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -681,7 +687,6 @@ export const createHouseTransformsGroup = ({
     ])
 
     updateExportModels()
-    updatePNG()
   }
 
   const addToDB = async () => {
@@ -761,6 +766,13 @@ export const createHouseTransformsGroup = ({
 
       getOutputsWorker().updateModels({ houseId, payload })
 
+      snapshotsWorker.postMessage({
+        houseId,
+        objectJson: payload,
+        halfSize: houseTransformsGroup.userData
+          .getActiveLayoutGroup()
+          .userData.obb.halfSize.toArray(),
+      })
       // function findFunctions(obj: any, path = []) {
       //   // Check if obj is an object
       //   if (typeof obj === "object" && obj !== null) {
@@ -780,61 +792,6 @@ export const createHouseTransformsGroup = ({
       //   }
       // }
     }
-
-  const updatePNG: typeof houseTransformsGroupUserData.updatePNG = () => {
-    const renderer = getRenderer()
-    const scene = getScene()
-
-    if (!renderer || !scene) return
-
-    const activeLayoutGroup =
-      houseTransformsGroup.userData.getActiveLayoutGroup()
-
-    const camera = new OrthographicCamera()
-
-    adjustCameraToAndFrameOBB(activeLayoutGroup.userData.obb, camera, 45, 45)
-
-    const otherChildren = scene.children.filter((x) =>
-      [
-        "GroundCircle",
-        "ShadowPlane",
-        "RectangularGrid",
-        "SiteBoundary",
-        "AxesHelper",
-      ].includes(x.name)
-    )
-
-    const switcher = (b: boolean) => {
-      houseTransformsGroup.traverse(function (object: Object3D) {
-        if (isMesh(object)) {
-          object.castShadow = b
-          object.receiveShadow = b
-        }
-      })
-      otherChildren.forEach((x) => {
-        x.visible = b
-      })
-    }
-
-    switcher(false)
-
-    houseTransformsGroup.userData.switchHandlesVisibility(null)
-
-    renderer.render(scene, camera)
-
-    renderer.domElement.toBlob((pngBlob) => {
-      if (pngBlob) putHousePng(houseId, pngBlob)
-      switcher(true)
-    })
-
-    // // Use the dataURL as needed
-    // const link = document.createElement("a")
-    // link.href = dataURL
-    // link.download = "image.png" // Specify the download filename
-    // document.body.appendChild(link)
-    // link.click()
-    // document.body.removeChild(link)
-  }
 
   const setLevelCut: typeof houseTransformsGroupUserData.setLevelCut = (
     levelIndex
@@ -922,7 +879,6 @@ export const createHouseTransformsGroup = ({
     deleteHouse,
     switchHandlesVisibility,
     updateExportModels,
-    updatePNG,
   }
 
   houseTransformsGroup.userData =
