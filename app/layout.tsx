@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   title: "Design your WikiHouse",
   description:
     "Explore the prototype WikiHouse design tool, and share your suggestions or ideas for how we can improve it using the ‘feedback’ link. You can find the password at community.wikihouse.cc",
+  metadataBase: new URL("https://build.wikihouse.cc"),
 }
 
 export default Layout
