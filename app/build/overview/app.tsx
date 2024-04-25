@@ -5,15 +5,10 @@ import dynamic from "next/dynamic"
 import { Fragment } from "react"
 import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
-import outputsDB, {
-  FILES_DOCUMENT_KEY,
-  FilesDocument,
-  useOrderListData,
-} from "../../db/outputs"
+import { useOrderListData } from "../../db/outputs"
 import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
 import css from "./app.module.css"
 import useDownloads from "./useDownloads"
-import { useLiveQuery } from "dexie-react-hooks"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 

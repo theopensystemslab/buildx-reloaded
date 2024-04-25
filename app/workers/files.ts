@@ -3,10 +3,9 @@ import { WindowType } from "@/server/data/windowTypes"
 import { csvFormatRows } from "d3-dsv"
 import { liveQuery } from "dexie"
 import { values } from "fp-ts-std/Record"
-import { pipe, identity } from "fp-ts/lib/function"
+import { identity, pipe } from "fp-ts/lib/function"
 import produce from "immer"
 import JSZip from "jszip"
-import { PerspectiveCamera, Scene, WebGLRenderer } from "three"
 import outputsDB, {
   FILES_DOCUMENT_KEY,
   MaterialsListRow,

@@ -1,8 +1,10 @@
+import { PngSnapshotsWorker } from "@opensystemslab/buildx-core"
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
-import { Group, Object3D, OrthographicCamera, Plane, Vector3 } from "three"
+import { Group, Object3D, Plane, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { z } from "zod"
+import { putHousePng } from "~/db/outputs"
 import { Element } from "../../../../../server/data/elements"
 import { parseDna } from "../../../../../server/data/modules"
 import layoutsDB, {
@@ -13,12 +15,11 @@ import systemsDB from "../../../../db/systems"
 import userDB, { House } from "../../../../db/user"
 import { A, O, R, S, T, compareProps } from "../../../../utils/functions"
 import {
-  isMesh,
   setInvisibleNoRaycast,
   setVisible,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
-import { getOutputsWorker, getLayoutsWorker } from "../../../../workers"
+import { getLayoutsWorker, getOutputsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
 import { ScopeElement, clearSelected } from "../../../state/scope"
@@ -29,7 +30,6 @@ import siteCtx, {
   dispatchModeChange,
   getModeBools,
 } from "../../../state/siteCtx"
-import { getRenderer, getScene } from "../FreshApp"
 import {
   findAllGuardDown,
   findFirstGuardAcross,
@@ -61,8 +61,6 @@ import {
   isXStretchHandleGroup,
   isZStretchHandleGroup,
 } from "./userData"
-import { putHousePng } from "~/db/outputs"
-import { PngSnapshotsWorker } from "@opensystemslab/buildx-core"
 
 const snapshotsWorker = new PngSnapshotsWorker()
 
