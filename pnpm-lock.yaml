@@ -18,8 +18,8 @@ dependencies:
     specifier: ^5.0.1
     version: 5.0.1(react-dom@18.2.0)(react@18.2.0)
   '@opensystemslab/buildx-core':
-    specifier: github:theopensystemslab/buildx-core#xp-offscreen
-    version: github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c(three@0.153.0)
+    specifier: ^0.2.0
+    version: 0.2.0(three@0.153.0)
   '@react-three/drei':
     specifier: ^9.68.6
     version: 9.90.0(@react-three/fiber@8.15.12)(@types/three@0.153.0)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0)
@@ -175,6 +175,9 @@ dependencies:
     version: 3.22.4
 
 devDependencies:
+  '@netlify/plugin-nextjs':
+    specifier: ^5.1.2
+    version: 5.1.2
   '@types/carbon__icons-react':
     specifier: 11.12.0
     version: 11.12.0
@@ -717,6 +720,11 @@ packages:
     resolution: {integrity: sha512-Rp7ll8BHrKB3wXaRFKhrltwZl1CiXGdibPxuWXvqGnKTnv8fqa/nvftYNuSbf+pbJWKYCXdBtYTITdAUTGGh0Q==}
     dev: false
 
+  /@netlify/plugin-nextjs@5.1.2:
+    resolution: {integrity: sha512-rftBlZmrkxy8zeXZ/tT2u/v2iIZd9s0cV7MdtjUFOgizjhtY0fCZEUQ7OIEQIMogzGNMDXFcb84HXX9a8OZ8/w==}
+    engines: {node: '>=18.0.0'}
+    dev: true
+
   /@next/env@13.5.6:
     resolution: {integrity: sha512-Yac/bV5sBGkkEXmAX5FWPS9Mmo2rthrOPRQQNfycJPkjUAUclomCPH7QFVCDQ4Mp2k2K1SSM6m0zrxYrOwtFQw==}
     dev: false
@@ -838,6 +846,14 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       ua-parser-js: 1.0.2
+    dev: false
+
+  /@opensystemslab/buildx-core@0.2.0(three@0.153.0):
+    resolution: {integrity: sha512-nbXoGnRUqsQ61HoNY8u+FxlHCiNLdfyyzjU024ZXVFvKM7+1+e2aiESVsN8Ii2RhbrgjVepMgmdeRI7NKPCWrw==}
+    peerDependencies:
+      three: '>=0.153.0'
+    dependencies:
+      three: 0.153.0
     dev: false
 
   /@radix-ui/primitive@1.0.1:
@@ -7610,17 +7626,4 @@ packages:
         optional: true
     dependencies:
       react: 18.2.0
-    dev: false
-
-  github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c(three@0.153.0):
-    resolution: {tarball: https://codeload.github.com/theopensystemslab/buildx-core/tar.gz/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c}
-    id: github.com/theopensystemslab/buildx-core/3cf1cd5ff55fc0208bcadc834524abdae6f86c8c
-    name: '@opensystemslab/buildx-core'
-    version: 0.1.2
-    prepare: true
-    requiresBuild: true
-    peerDependencies:
-      three: '>=0.153.0'
-    dependencies:
-      three: 0.153.0
     dev: false
