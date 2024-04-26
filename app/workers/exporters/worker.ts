@@ -2,7 +2,7 @@ import { expose } from "comlink"
 import { Group, Matrix4, Mesh, Object3D, ObjectLoader } from "three"
 import { GLTFExporter, OBJExporter } from "three-stdlib"
 import { UserDataTypeEnum } from "../../design/ui-3d/fresh/scene/userData"
-import exportsDB from "../../db/exports"
+import outputsDB from "../../db/outputs"
 
 function flattenObject(root: Object3D): Group {
   const flatGroup = new Group()
@@ -72,7 +72,7 @@ const updateModels = async ({
       const flattened2 = flattenObject(parsed2)
 
       const objData = objExporter.parse(flattened2)
-      exportsDB.houseModels.put({ houseId, glbData, objData })
+      outputsDB.houseModels.put({ houseId, glbData, objData })
     },
     function (e: any) {
       console.error(e)
@@ -95,6 +95,6 @@ const api = {
   // getGLB,
 }
 
-export type ExportersAPI = typeof api
+export type OutputsAPI = typeof api
 
 expose(api)

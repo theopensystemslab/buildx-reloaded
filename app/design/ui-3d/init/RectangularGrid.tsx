@@ -93,6 +93,7 @@ const RectangularGrid: React.FC<ReactangularGridProps> = ({
     <lineSegments
       args={[gridGeometry, material]}
       ref={(e: LineSegments) => dashed && e?.computeLineDistances()}
+      name="RectangularGrid"
     />
   )
 }

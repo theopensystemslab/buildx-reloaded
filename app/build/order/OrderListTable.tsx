@@ -8,7 +8,7 @@ import {
   OrderListRow,
   useGetColorClass,
   useOrderListData,
-} from "../../db/exports"
+} from "../../db/outputs"
 import PaginatedTable from "../PaginatedTable"
 import { useSiteCurrency } from "~/design/state/siteCtx"
 

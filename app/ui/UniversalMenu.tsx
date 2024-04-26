@@ -6,7 +6,7 @@ import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
 import userDB, { useHouses } from "../db/user"
-import exportsDB from "~/db/exports"
+import exportsDB from "~/db/outputs"
 import { PromiseExtended } from "dexie"
 import { trashMapPolygon } from "~/locate/state/polygon"
 

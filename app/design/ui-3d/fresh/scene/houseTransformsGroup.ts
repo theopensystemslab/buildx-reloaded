@@ -1,9 +1,10 @@
+import { PngSnapshotsWorker } from "@opensystemslab/buildx-core"
 import { liveQuery } from "dexie"
 import { flow, pipe } from "fp-ts/lib/function"
 import { Group, Object3D, Plane, Vector3 } from "three"
-import { proxy, ref, useSnapshot } from "valtio"
-import { subscribeKey } from "valtio/utils"
+import { proxy, useSnapshot } from "valtio"
 import { z } from "zod"
+import { putHousePng } from "~/db/outputs"
 import { Element } from "../../../../../server/data/elements"
 import { parseDna } from "../../../../../server/data/modules"
 import layoutsDB, {
@@ -18,10 +19,10 @@ import {
   setVisible,
   setVisibleAndRaycast,
 } from "../../../../utils/three"
-import { getExportersWorker, getLayoutsWorker } from "../../../../workers"
+import { getLayoutsWorker, getOutputsWorker } from "../../../../workers"
 import { getSide } from "../../../state/camera"
 import elementCategories from "../../../state/elementCategories"
-import scope, { ScopeElement, clearSelected } from "../../../state/scope"
+import { ScopeElement, clearSelected } from "../../../state/scope"
 import settings from "../../../state/settings"
 import siteCtx, {
   SiteCtxMode,
@@ -40,8 +41,8 @@ import createStretchHandle from "../shapes/stretchHandle"
 import { EnrichedMaterial, getSystemMaterial } from "../systems"
 import { createHouseLayoutGroup } from "./houseLayoutGroup"
 import {
-  Layout,
-  LayoutType,
+  ActiveLayout,
+  AltLayout,
   ElementMesh,
   GridGroupUserData,
   HouseLayoutGroup,
@@ -49,7 +50,8 @@ import {
   HouseTransformsGroupUserData,
   HouseTransformsHandlesGroup,
   HouseTransformsHandlesGroupUserData,
-  Layouts,
+  Layout,
+  LayoutType,
   UserDataTypeEnum,
   isElementMesh,
   isHouseTransformsGroup,
@@ -58,16 +60,19 @@ import {
   isStretchHandleGroup,
   isXStretchHandleGroup,
   isZStretchHandleGroup,
-  ActiveLayout,
-  AltLayout,
-  isActiveLayout,
 } from "./userData"
+
+const snapshotsWorker = new PngSnapshotsWorker()
+
+snapshotsWorker.onmessage = ({
+  data: { houseId, blob },
+}: MessageEvent<{ houseId: string; blob: Blob }>) => {
+  putHousePng(houseId, blob)
+}
 
 export const htgProxy = proxy<{ foo: any }>({ foo: null })
 
 export const useHtgFoo = () => useSnapshot(htgProxy).foo
-
-const DEBOUNCE_TIME = 50
 
 export const BIG_CLIP_NUMBER = 999
 
@@ -757,8 +762,15 @@ export const createHouseTransformsGroup = ({
 
       const payload = clone.toJSON()
 
-      getExportersWorker().updateModels({ houseId, payload })
+      getOutputsWorker().updateModels({ houseId, payload })
 
+      snapshotsWorker.postMessage({
+        houseId,
+        objectJson: payload,
+        halfSize: houseTransformsGroup.userData
+          .getActiveLayoutGroup()
+          .userData.obb.halfSize.toArray(),
+      })
       // function findFunctions(obj: any, path = []) {
       //   // Check if obj is an object
       //   if (typeof obj === "object" && obj !== null) {

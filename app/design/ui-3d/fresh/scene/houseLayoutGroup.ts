@@ -243,15 +243,14 @@ export const createHouseLayoutGroup = ({
 
                 houseTransformsGroup.updateMatrix()
 
-                const rotation = new Matrix3().setFromMatrix4(
-                  new Matrix4().extractRotation(houseTransformsGroup.matrix)
+                const rotationMatrix4 = new Matrix4().extractRotation(
+                  houseTransformsGroup.matrix
                 )
 
-                houseLayoutGroup.userData.obb.set(center, halfSize, rotation)
-
-                // Get the rotation matrix as a Matrix4
-                const rotationMatrix4 = new Matrix4().setFromMatrix3(
-                  houseLayoutGroup.userData.obb.rotation
+                houseLayoutGroup.userData.obb.set(
+                  center,
+                  halfSize,
+                  new Matrix3().setFromMatrix4(rotationMatrix4)
                 )
 
                 // Initialize min and max vectors to extreme values

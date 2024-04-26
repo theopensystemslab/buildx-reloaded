@@ -1,24 +1,14 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
 import { pipe } from "fp-ts/lib/function"
-import JSZip from "jszip"
 import dynamic from "next/dynamic"
-import { Fragment, useEffect, useState } from "react"
-import { A, O, R } from "~/utils/functions"
+import { Fragment } from "react"
+import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
-import {
-  OrderListRow,
-  useOrderListData,
-  useSelectedHouseMaterialsListRows,
-} from "../../db/exports"
+import { useOrderListData } from "../../db/outputs"
 import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
-import {
-  useModelsZipURL,
-  useSelectedHouseModelBlobs,
-} from "../../workers/exporters/hook"
-import { useMaterialsListDownload } from "../materials/MaterialsListTable"
-import { useOrderListDownload } from "../order/OrderListTable"
 import css from "./app.module.css"
+import useDownloads from "./useDownloads"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
@@ -33,56 +23,10 @@ const OverviewIndex = () => {
     costs: { total },
   } = useAnalyseData()
 
-  const { orderListRows, totalTotalCost } = useOrderListData()
+  const { totalTotalCost } = useOrderListData()
 
-  // const orderListByBuilding = pipe(
-  //   orderListRows,
-  //   A.reduce({}, (acc: Record<string, OrderListRow>, x) =>
-  //     pipe(
-  //       acc,
-  //       R.modifyAt(
-  //         x.buildingName,
-  //         ({ totalCost, ...rest }: OrderListRow): OrderListRow => ({
-  //           ...rest,
-  //           totalCost: totalCost + x.totalCost,
-  //         })
-  //       ),
-  //       O.getOrElse(() => pipe(acc, R.upsertAt(x.buildingName, x)))
-  //     )
-  //   )
-  // )
-
-  // const totalChassisCost = Object.values(orderListByBuilding).reduce(
-  //   (acc, v) => acc + v.totalCost,
-  //   0
-  // )
-
-  const materialsListRows = useSelectedHouseMaterialsListRows()
-
-  const orderListDownload = useOrderListDownload(orderListRows)
-
-  const materialsListDownload = useMaterialsListDownload(materialsListRows)
-
-  const modelsDownloadUrl = useModelsZipURL()
-
-  const selectedHouseBlobs = useSelectedHouseModelBlobs()
-
-  const [allFilesUrl, setAllFilesUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    const zip = new JSZip()
-
-    if (orderListDownload) zip.file(`order-list.csv`, orderListDownload.blob)
-    if (materialsListDownload)
-      zip.file(`materials-list.csv`, materialsListDownload.blob)
-    for (let [filename, blob] of selectedHouseBlobs) {
-      zip.file(filename, blob)
-    }
-
-    zip.generateAsync({ type: "blob" }).then(function (content) {
-      setAllFilesUrl(URL.createObjectURL(content))
-    })
-  }, [orderListDownload, materialsListDownload, selectedHouseBlobs])
+  const { allFilesZipURL, materialsListCsvURL, modelsZipURL, orderListCsvURL } =
+    useDownloads()
 
   const overviewFields = [
     {
@@ -112,14 +56,10 @@ const OverviewIndex = () => {
 
   return (
     <Fragment>
-      {/* <div className="w-full h-full"> */}
       <div className="relative w-full h-96">
         <HousesView />
       </div>
-      <div
-        // className="grid grid-cols-2"
-        className={css.markupGrid}
-      >
+      <div className={css.markupGrid}>
         <div className="border-r border-grey-20">
           <h2 className="p-4">Overview</h2>
           <div className="flex flex-col">
@@ -142,12 +82,8 @@ const OverviewIndex = () => {
           <h2>Downloads</h2>
 
           <div className="flex flex-col space-y-4 mt-4">
-            {modelsDownloadUrl && (
-              <a
-                href={modelsDownloadUrl}
-                download={`3d-models.zip`}
-                // className="flex font-semibold items-center"
-              >
+            {modelsZipURL && (
+              <a href={modelsZipURL} download={`3d-models.zip`}>
                 <div className="flex font-semibold tracking-wide">
                   <span>Download 3D models</span>
                   <span>
@@ -160,12 +96,8 @@ const OverviewIndex = () => {
                 </div>
               </a>
             )}
-            {orderListDownload && (
-              <a
-                href={orderListDownload.url}
-                download={`order-list.csv`}
-                // className="flex font-semibold items-center"
-              >
+            {orderListCsvURL && (
+              <a href={orderListCsvURL} download={`order-list.csv`}>
                 <div className="flex font-semibold tracking-wide">
                   <span>Download order list</span>
                   <span>
@@ -178,12 +110,8 @@ const OverviewIndex = () => {
                 </div>
               </a>
             )}
-            {materialsListDownload && (
-              <a
-                href={materialsListDownload.url}
-                download={`materials-list.csv`}
-                // className="flex font-semibold items-center"
-              >
+            {materialsListCsvURL && (
+              <a href={materialsListCsvURL} download={`materials-list.csv`}>
                 <div className="flex font-semibold tracking-wide">
                   <span>Download list of materials</span>
                   <span>
@@ -197,9 +125,9 @@ const OverviewIndex = () => {
               </a>
             )}
           </div>
-          {allFilesUrl && (
+          {allFilesZipURL && (
             <a
-              href={allFilesUrl}
+              href={allFilesZipURL}
               download={`${projectName ?? "all-files"}.zip`}
             >
               <div className="absolute bottom-0 right-0 w-full bg-grey-20 px-3 py-3 font-semibold flex justify-between pb-12 tracking-wide">
@@ -238,20 +166,8 @@ const OverviewIndex = () => {
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
             </div>
           </a>
-          {/* <h2>Find a manufacturer</h2>
-          <p>
-            Search for WikiHouse manufacturer to fabricate your WikiHouse
-            blocks. Send them your order list to request a quote.
-          </p> */}
-          {/* <a href="">
-            <div className="absolute bottom-0 right-0 bg-grey-90 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
-              <div>Get a quote</div>
-              <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
-            </div>
-          </a> */}
         </div>
       </div>
-      {/* </div> */}
     </Fragment>
   )
 }

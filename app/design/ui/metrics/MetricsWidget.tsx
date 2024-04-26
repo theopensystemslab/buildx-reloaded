@@ -8,7 +8,7 @@ import { A, NEA, R, S } from "../../../utils/functions"
 import { getModeBools, useSiteCtx, useSiteCurrency } from "../../state/siteCtx"
 import MetricsCarousel, { Metric } from "./MetricsCarousel"
 import css from "./MetricsWidget.module.css"
-import { OrderListRow, useMetricsOrderListRows } from "../../../db/exports"
+import { OrderListRow, useMetricsOrderListRows } from "../../../db/outputs"
 
 const MetricsWidget = () => {
   const { mode, houseId } = useSiteCtx()

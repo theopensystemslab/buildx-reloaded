@@ -5,17 +5,19 @@ import FreshApp from "../../design/ui-3d/fresh/FreshApp"
 import AppInit from "../../design/ui-3d/init/AppInit"
 import Loader from "../../ui/Loader"
 import {
-  initExportersWorker,
+  initOutputsWorker,
   initLayoutsWorker,
   initModelsWorker,
   initSystemsWorker,
+  initFilesWorker,
 } from "../../workers"
 
 const HousesView = () => {
   initSystemsWorker()
   initModelsWorker()
   initLayoutsWorker()
-  initExportersWorker()
+  initOutputsWorker()
+  initFilesWorker()
 
   useIndexedSiteCtx()
 

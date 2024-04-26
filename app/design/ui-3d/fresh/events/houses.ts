@@ -47,9 +47,7 @@ export const useHousesEvents = (rootRef: RefObject<Group>) => {
 
     dispatchModeChange({ next: siteCtx.mode })
 
-    houseTransformsGroup.userData.updateExportModels()
-
-    // initClippingPlanes(houseId)
+    houseTransformsGroup.userData.updateDB()
   }
 
   const initHouses = () => {

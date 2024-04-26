@@ -1,7 +1,7 @@
 "use client"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { useGetColorClass } from "../../db/exports"
+import { useGetColorClass } from "../../db/outputs"
 import { useSiteCurrency } from "../../design/state/siteCtx"
 import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"

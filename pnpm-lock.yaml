@@ -17,9 +17,12 @@ dependencies:
   '@oieduardorabelo/use-user-agent':
     specifier: ^5.0.1
     version: 5.0.1(react-dom@18.2.0)(react@18.2.0)
+  '@opensystemslab/buildx-core':
+    specifier: ^0.2.0
+    version: 0.2.0(three@0.153.0)
   '@react-three/drei':
     specifier: ^9.68.6
-    version: 9.90.0(@react-three/fiber@8.15.12)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0)
+    version: 9.90.0(@react-three/fiber@8.15.12)(@types/three@0.153.0)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0)
   '@react-three/fiber':
     specifier: ^8.13.0
     version: 8.15.12(react-dom@18.2.0)(react@18.2.0)(three@0.153.0)
@@ -108,7 +111,7 @@ dependencies:
     specifier: ^2.11.1
     version: 2.15.0
   next:
-    specifier: ^13.4.19
+    specifier: ^13.5.6
     version: 13.5.6(@babel/core@7.23.5)(react-dom@18.2.0)(react@18.2.0)
   postprocessing:
     specifier: ^6.31.0
@@ -153,8 +156,8 @@ dependencies:
     specifier: ^0.5.16
     version: 0.5.24(three@0.153.0)
   three-stdlib:
-    specifier: ^2.23.9
-    version: 2.28.7(three@0.153.0)
+    specifier: ^2.29.5
+    version: 2.29.5(three@0.153.0)
   use-debounce:
     specifier: ^9.0.3
     version: 9.0.4(react@18.2.0)
@@ -172,6 +175,9 @@ dependencies:
     version: 3.22.4
 
 devDependencies:
+  '@netlify/plugin-nextjs':
+    specifier: ^5.1.2
+    version: 5.1.2
   '@types/carbon__icons-react':
     specifier: 11.12.0
     version: 11.12.0
@@ -200,8 +206,8 @@ devDependencies:
     specifier: 18.0.6
     version: 18.0.6
   '@types/three':
-    specifier: ^0.152.0
-    version: 0.152.1
+    specifier: ^0.153.0
+    version: 0.153.0
   autoprefixer:
     specifier: ^10.4.8
     version: 10.4.16(postcss@8.4.32)
@@ -714,6 +720,11 @@ packages:
     resolution: {integrity: sha512-Rp7ll8BHrKB3wXaRFKhrltwZl1CiXGdibPxuWXvqGnKTnv8fqa/nvftYNuSbf+pbJWKYCXdBtYTITdAUTGGh0Q==}
     dev: false
 
+  /@netlify/plugin-nextjs@5.1.2:
+    resolution: {integrity: sha512-rftBlZmrkxy8zeXZ/tT2u/v2iIZd9s0cV7MdtjUFOgizjhtY0fCZEUQ7OIEQIMogzGNMDXFcb84HXX9a8OZ8/w==}
+    engines: {node: '>=18.0.0'}
+    dev: true
+
   /@next/env@13.5.6:
     resolution: {integrity: sha512-Yac/bV5sBGkkEXmAX5FWPS9Mmo2rthrOPRQQNfycJPkjUAUclomCPH7QFVCDQ4Mp2k2K1SSM6m0zrxYrOwtFQw==}
     dev: false
@@ -835,6 +846,14 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       ua-parser-js: 1.0.2
+    dev: false
+
+  /@opensystemslab/buildx-core@0.2.0(three@0.153.0):
+    resolution: {integrity: sha512-nbXoGnRUqsQ61HoNY8u+FxlHCiNLdfyyzjU024ZXVFvKM7+1+e2aiESVsN8Ii2RhbrgjVepMgmdeRI7NKPCWrw==}
+    peerDependencies:
+      three: '>=0.153.0'
+    dependencies:
+      three: 0.153.0
     dev: false
 
   /@radix-ui/primitive@1.0.1:
@@ -1244,7 +1263,7 @@ packages:
     resolution: {integrity: sha512-POu8Mk0hIU3lRXB3bGIGe4VHIwwDsQyoD1F394OK7STTiX9w4dG3cTLljjYswkQN+hDSHRrj4O36kuVa7KPU8Q==}
     dev: false
 
-  /@react-three/drei@9.90.0(@react-three/fiber@8.15.12)(@types/three@0.152.1)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0):
+  /@react-three/drei@9.90.0(@react-three/fiber@8.15.12)(@types/three@0.153.0)(react-dom@18.2.0)(react@18.2.0)(three@0.153.0):
     resolution: {integrity: sha512-rf+YWq7xfUkAnyFFMhnQkCJ5GdQazgfEIfpnB8GdrZBA5Z2C8i9F2CYWPS9rA0husowcpnLUnLfu3xIAqGdDAA==}
     peerDependencies:
       '@react-three/fiber': '>=8.0'
@@ -1267,7 +1286,7 @@ packages:
       lodash.clamp: 4.0.3
       lodash.omit: 4.5.0
       lodash.pick: 4.4.0
-      maath: 0.9.0(@types/three@0.152.1)(three@0.153.0)
+      maath: 0.9.0(@types/three@0.153.0)(three@0.153.0)
       meshline: 3.1.7(three@0.153.0)
       react: 18.2.0
       react-composer: 5.0.3(react@18.2.0)
@@ -1278,7 +1297,7 @@ packages:
       suspend-react: 0.1.3(react@18.2.0)
       three: 0.153.0
       three-mesh-bvh: 0.6.8(three@0.153.0)
-      three-stdlib: 2.28.7(three@0.153.0)
+      three-stdlib: 2.29.5(three@0.153.0)
       troika-three-text: 0.47.2(three@0.153.0)
       utility-types: 3.10.0
       uuid: 9.0.1
@@ -2886,8 +2905,8 @@ packages:
   /@types/stats.js@0.17.3:
     resolution: {integrity: sha512-pXNfAD3KHOdif9EQXZ9deK82HVNaXP5ZIF5RP2QG6OQFNTaY2YIetfrE9t528vEreGQvEPRDDc8muaoYeK0SxQ==}
 
-  /@types/three@0.152.1:
-    resolution: {integrity: sha512-PMOCQnx9JRmq+2OUGTPoY9h1hTWD2L7/nmuW/SyNq1Vbq3Lwt3MNdl3wYSa4DvLTGv62NmIXD9jYdAOwohwJyw==}
+  /@types/three@0.153.0:
+    resolution: {integrity: sha512-L9quzIP4lsl6asDCw5zqN5opewCVOKRuB09apw5Acf2AIkoj5gLnUOY5AMB/ntFUt/QfFey0uKZaAd5t+HXSUw==}
     dependencies:
       '@tweenjs/tween.js': 18.6.4
       '@types/stats.js': 0.17.3
@@ -5306,13 +5325,13 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /maath@0.9.0(@types/three@0.152.1)(three@0.153.0):
+  /maath@0.9.0(@types/three@0.153.0)(three@0.153.0):
     resolution: {integrity: sha512-aAR8hoUqPxlsU8VOxkS9y37jhUzdUxM017NpCuxFU1Gk+nMaZASZxymZrV8LRSHzRk/watlbfyNKu6XPUhCFrQ==}
     peerDependencies:
       '@types/three': '>=0.144.0'
       three: '>=0.144.0'
     dependencies:
-      '@types/three': 0.152.1
+      '@types/three': 0.153.0
       three: 0.153.0
     dev: false
 
@@ -7104,8 +7123,8 @@ packages:
       three: 0.153.0
     dev: false
 
-  /three-stdlib@2.28.7(three@0.153.0):
-    resolution: {integrity: sha512-E7NuztilCswBKnEoyqydvA7N4dy0cf/gLA0bKrrg6+Q6j4WtusGa/+t9oK2HVq47S1AHRH2CvFHpdIGNjPKo/A==}
+  /three-stdlib@2.29.5(three@0.153.0):
+    resolution: {integrity: sha512-p9IQsH7gT9wVqAuMsimX2JTtEoCGHlwgm3HsAeXwWqP/PWV9DjYldbggLCr0B1TMzofi/58GG1X5KTQnG6ijpw==}
     peerDependencies:
       three: '>=0.128.0'
     dependencies:

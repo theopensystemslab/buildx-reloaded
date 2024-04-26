@@ -2,7 +2,7 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
-import { useGetColorClass } from "../../db/exports"
+import { useGetColorClass } from "../../db/outputs"
 import { useHousesRecord } from "../../db/user"
 import { AnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
