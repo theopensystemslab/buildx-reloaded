@@ -58,10 +58,6 @@ const useOnDragStretchZ = () => {
     houseTransformsGroup: HouseTransformsGroup
     layoutGroup: HouseLayoutGroup
     lengthWiseNeighbours: HouseTransformsGroup[]
-    // columnGroups: Object3D[]
-    // startColumnGroup: Object3D
-    // midColumnGroups: Object3D[]
-    // maxLength: number
     endColumnGroup: ColumnGroup
     templateVanillaColumnGroup: ColumnGroup
     vanillaLength: number
@@ -314,8 +310,6 @@ const useOnDragStretchZ = () => {
 
     // back side
     if (side === 1) {
-      // const cl = clamp(lo, hi)
-
       // additive direction to back side
       if (direction === 1) {
         if (fenceIndex + 1 < fences.length) {

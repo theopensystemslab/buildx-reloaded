@@ -1,21 +1,24 @@
-import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
-import Radio from "~/ui//Radio"
-import { ChangeLevel } from "~/ui/icons"
-import { A, O, compareProps } from "~/utils/functions"
+import React, { useEffect, useMemo, useState } from "react"
 import { LevelType } from "../../../../../server/data/levelTypes"
-import { parseDna } from "../../../../../server/data/modules"
-import { useAllLevelTypes } from "../../../../db/systems"
 import { ScopeElement } from "../../../state/scope"
 import {
   AltLevelTypeLayout,
   HouseTransformsGroup,
   Layout,
+  LayoutType,
   isActiveLayout,
-  isAltLevelTypeLayout,
 } from "../../../ui-3d/fresh/scene/userData"
+import { parseDna } from "../../../../../server/data/modules"
+import { useAllLevelTypes } from "../../../../db/systems"
+import { A, O, T } from "../../../../utils/functions"
+import { pipe } from "fp-ts/lib/function"
+import { getLayoutsWorker } from "../../../../workers"
+import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
+import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import ContextMenuNested from "../common/ContextMenuNested"
+import { ChangeLevel } from "../../../../ui/icons"
+import Radio from "../../../../ui/Radio"
+import { invalidate } from "@react-three/fiber"
 
 type Props = {
   scopeElement: ScopeElement
@@ -31,105 +34,123 @@ type LevelTypeOption = {
 const ChangeLevelType = (props: Props) => {
   const {
     scopeElement,
-    scopeElement: { dna },
+    scopeElement: { dna, levelIndex },
     houseTransformsGroup,
     close,
   } = props
 
-  const levelTypes = useAllLevelTypes().filter(
-    (x) => x.systemId === houseTransformsGroup.userData.systemId
-  )
+  const { systemId, houseId, dnas } =
+    getActiveHouseUserData(houseTransformsGroup)
 
-  const { levelType } = parseDna(dna)
+  const { levelType: currentLevelTypeCode } = parseDna(dna)
 
-  let levelString = "level"
+  const allLevelTypes = useAllLevelTypes()
 
-  if (levelType[0] === "F") {
-    levelString = "foundations"
-  }
+  const [altOpts, setAltOpts] = useState<LevelTypeOption[]>([])
 
-  if (levelType[0] === "R") {
-    levelString = "roof"
-  }
-
-  const { levelTypeOptions, originalLevelTypeOption } = useMemo(() => {
-    const { dna } = scopeElement
-    const { layouts } = houseTransformsGroup.userData
-
-    const { levelType: thisLevelTypeCode } = parseDna(dna)
-
-    const altLevelLayoutToOpt = (
-      layout: AltLevelTypeLayout
-    ): LevelTypeOption => {
-      const {
-        levelType,
-        levelType: { description: label },
-      } = layout
-
-      return {
-        label,
-        value: { layout, levelType },
-      }
-    }
-
-    return pipe(
-      levelTypes,
-      A.findFirst((x) => x.code === thisLevelTypeCode),
-      O.map((levelType) => {
-        const originalOption: LevelTypeOption = {
+  const origOpt = useMemo(
+    (): O.Option<LevelTypeOption> =>
+      pipe(
+        allLevelTypes,
+        A.findFirst(({ code }) => code === currentLevelTypeCode),
+        O.map((levelType) => ({
           label: levelType.description,
           value: {
-            layout: layouts.active,
+            layout: houseTransformsGroup.userData.getActiveLayout(),
             levelType,
           },
-        }
+        }))
+      ),
+    [allLevelTypes, houseTransformsGroup.userData, currentLevelTypeCode]
+  )
 
-        const newOptions = pipe(
-          layouts.alts,
-          A.filter(
-            (x): x is AltLevelTypeLayout =>
-              isAltLevelTypeLayout(x) &&
-              compareProps(scopeElement, x.target, [
-                "houseId",
-                "columnIndex",
-                "levelIndex",
-              ])
-          ),
+  useEffect(() => {
+    pipe(
+      () =>
+        getLayoutsWorker().getAltLevelTypeLayouts({
+          systemId,
+          dnas,
+          currentLevelTypeCode,
+          levelIndex,
+        }),
+      T.chain((altLevelTypeLayouts) =>
+        pipe(
+          altLevelTypeLayouts,
+          A.traverse(T.ApplicativeSeq)(
+            ({ levelType, dnas, layout: houseLayout }) =>
+              pipe(
+                createHouseLayoutGroup({
+                  systemId,
+                  dnas,
+                  houseId,
+                  houseLayout,
+                  houseTransformsGroup,
+                }),
+                T.map((houseLayoutGroup): LevelTypeOption => {
+                  const layout: AltLevelTypeLayout = {
+                    houseLayoutGroup,
+                    // windowType,
+                    type: LayoutType.Enum.ALT_LEVEL_TYPE,
+                    target: scopeElement,
+                    levelType,
+                  }
 
-          A.map(altLevelLayoutToOpt)
+                  houseTransformsGroup.userData.pushAltLayout(layout)
+
+                  return {
+                    label: levelType.description,
+                    value: {
+                      layout,
+                      levelType,
+                    },
+                  }
+                })
+              )
+          )
         )
-
-        const allOptions = pipe(
-          [...newOptions, originalOption],
-          A.uniq({
-            equals: (x, y) =>
-              x.value.layout.houseLayoutGroup.uuid ===
-              y.value.layout.houseLayoutGroup.uuid,
-          })
-        )
-
-        allOptions.sort((a, b) => {
-          if (a.value.levelType.code > b.value.levelType.code) return 1
-          if (a.value.levelType.code < b.value.levelType.code) return -1
-          return 0
-        })
-
-        return {
-          levelTypeOptions: allOptions,
-          originalLevelTypeOption: originalOption,
-        }
-      }),
-      O.getOrElse(
-        (): {
-          levelTypeOptions: LevelTypeOption[]
-          originalLevelTypeOption: LevelTypeOption | null
-        } => ({
-          levelTypeOptions: [],
-          originalLevelTypeOption: null,
-        })
       )
+    )().then((altOpts) => {
+      // console.log({ altWinTypeOpts })
+      setAltOpts(altOpts)
+    })
+
+    return () => {
+      houseTransformsGroup.userData.dropAltLayoutsByType(
+        LayoutType.Enum.ALT_LEVEL_TYPE
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dnas, houseId, levelIndex, scopeElement, systemId])
+  //       const originalOption: LevelTypeOption =
+  // const origLevelTypeOpt = useMemo((): O.Option<LevelTypeOption> =>
+  // pipe(allLevelTypes, A.findFirst(({})=> levelType. {
+
+  // }))
+  // )
+
+  const levelString = pipe(
+    origOpt,
+    O.match(
+      () => "level height",
+      ({
+        value: {
+          levelType: { code },
+        },
+      }) => {
+        let levelString = "level height"
+
+        if (code[0] === "F") {
+          levelString = "foundations type"
+        }
+
+        if (code[0] === "R") {
+          levelString = "roof type"
+        }
+
+        return levelString
+      }
     )
-  }, [houseTransformsGroup.userData, levelTypes, scopeElement])
+  )
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
     const { setPreviewLayout } = houseTransformsGroup.userData
@@ -162,22 +183,32 @@ const ChangeLevelType = (props: Props) => {
 
     close()
   }
-
-  return originalLevelTypeOption !== null && levelTypeOptions.length > 1 ? (
+  return (
     <ContextMenuNested
       long
-      label={`Change ${levelString} type`}
+      label={`Change ${levelString}`}
       icon={<ChangeLevel />}
       unpaddedSvg
     >
-      <Radio
-        options={levelTypeOptions}
-        selected={originalLevelTypeOption.value}
-        onChange={changeLevelType}
-        onHoverChange={previewLevelType}
-      />
+      {pipe(
+        origOpt,
+        O.chain((origLevelTypeOpt) =>
+          A.isNonEmpty(altOpts)
+            ? O.some(
+                <Radio
+                  options={[origLevelTypeOpt, ...altOpts]}
+                  onChange={changeLevelType}
+                  onHoverChange={previewLevelType}
+                  selected={origLevelTypeOpt.value}
+                  compare={(a, b) => a.levelType.code === b.levelType.code}
+                />
+              )
+            : O.none
+        ),
+        O.toNullable
+      )}
     </ContextMenuNested>
-  ) : null
+  )
 }
 
 export default ChangeLevelType

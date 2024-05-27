@@ -1,27 +1,31 @@
-import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
-import { useMemo } from "react"
-import { WindowType } from "../../../../../server/data/windowTypes"
-import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
-import Radio from "../../../../ui/Radio"
+import React, { useEffect, useMemo, useState } from "react"
+import ContextMenuNested from "./ContextMenuNested"
 import { Opening } from "../../../../ui/icons"
-import { A, O, compareProps } from "../../../../utils/functions"
-import { getWindowType } from "../../../../workers/layouts/worker"
-import { getSide } from "../../../state/camera"
-import { ScopeElement } from "../../../state/scope"
-import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { WindowType } from "../../../../../server/data/windowTypes"
 import {
+  AltLayout,
   AltWindowTypeLayout,
   HouseTransformsGroup,
   Layout,
   LayoutType,
   isActiveLayout,
 } from "../../../ui-3d/fresh/scene/userData"
-import ContextMenuNested from "./ContextMenuNested"
+import { pipe } from "fp-ts/lib/function"
+import { ScopeElement } from "../../../state/scope"
+import { getLayoutsWorker } from "../../../../workers"
+import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
+import { getSide } from "../../../state/camera"
+import { A, O, T, pipeLog } from "../../../../utils/functions"
+import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
+import { getWindowType } from "../../../../workers/layouts/worker"
+import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
+import { Module, parseDna } from "../../../../../server/data/modules"
+import Radio from "../../../../ui/Radio"
+import { invalidate } from "@react-three/fiber"
 
 type WindowTypeOption = {
   label: string
-  value: { windowType: WindowType; layout: Layout }
+  value: { windowType: WindowType; layout: Layout; candidate?: Module }
   thumbnail?: string
 }
 
@@ -34,96 +38,134 @@ type Props = {
 const ChangeWindows = (props: Props) => {
   const { houseTransformsGroup, scopeElement, close } = props
 
-  const { systemId } = getActiveHouseUserData(houseTransformsGroup)
+  const { systemId, houseId, dnas } =
+    getActiveHouseUserData(houseTransformsGroup)
 
-  const windowTypes = useAllWindowTypes()
-  const allModules = useAllModules()
+  const { columnIndex, levelIndex, moduleIndex, dna } = scopeElement
 
-  const { windowTypeOptions, originalWindowTypeOption } = useMemo(
-    () =>
+  const side = getSide(houseTransformsGroup)
+
+  const allWindowTypes = useAllWindowTypes()
+
+  const [altWinTypeOpts, setAltWinTypeOpts] = useState<WindowTypeOption[]>([])
+
+  const origWinTypeOpt = useMemo(
+    (): O.Option<WindowTypeOption> =>
       pipe(
-        allModules,
-        A.findFirst(
-          (x) => x.systemId === systemId && x.dna === scopeElement.dna
+        getWindowType(
+          allWindowTypes,
+          parseDna(dna),
+          getSide(houseTransformsGroup)
         ),
-        O.chain((thisModule) =>
-          pipe(
-            getWindowType(
-              windowTypes,
-              thisModule.structuredDna,
-              getSide(houseTransformsGroup)
-            ),
-            O.map((originalWindowType) => {
-              const originalWindowTypeOption: WindowTypeOption | null = {
-                value: {
-                  layout: houseTransformsGroup.userData.getActiveLayout(),
-                  windowType: originalWindowType,
-                },
-                label: originalWindowType.description,
-              }
+        O.map(
+          (windowType): WindowTypeOption => ({
+            label: windowType.description,
+            value: {
+              layout: houseTransformsGroup.userData.getActiveLayout(),
+              windowType,
+            },
+            thumbnail: windowType.imageUrl,
+          })
+        )
+      ),
 
-              const otherOptions: WindowTypeOption[] = pipe(
-                houseTransformsGroup.userData.layouts.alts,
-                A.filter(
-                  (x): x is AltWindowTypeLayout =>
-                    x.type === LayoutType.Enum.ALT_WINDOW_TYPE &&
-                    compareProps(scopeElement, x.target, [
-                      "houseId",
-                      "columnIndex",
-                      "levelIndex",
-                      "moduleIndex",
-                    ])
-                ),
-                A.map((layout) => {
-                  const { windowType } = layout
+    [allWindowTypes, dna, houseTransformsGroup]
+  )
+
+  // console.log({
+  //   origWinTypeOpt,
+  //   altWinTypeOpts,
+  //   side,
+  //   indices: [columnIndex, levelIndex, moduleIndex],
+  //   dna,
+  // })
+
+  useEffect(() => {
+    pipe(
+      () =>
+        getLayoutsWorker().getAltWindowTypeLayouts({
+          systemId,
+          columnIndex,
+          levelIndex,
+          moduleIndex,
+          dnas,
+          side,
+        }),
+      T.chain((altWindowTypeLayouts) =>
+        pipe(
+          altWindowTypeLayouts,
+          A.traverse(T.ApplicativeSeq)(
+            ({ candidate, dnas, layout: houseLayout, windowType }) =>
+              pipe(
+                createHouseLayoutGroup({
+                  systemId,
+                  dnas,
+                  houseId,
+                  houseLayout,
+                  houseTransformsGroup,
+                }),
+                T.map((houseLayoutGroup): WindowTypeOption => {
+                  const layout: AltWindowTypeLayout = {
+                    houseLayoutGroup,
+                    windowType,
+                    type: LayoutType.Enum.ALT_WINDOW_TYPE,
+                    target: scopeElement,
+                  }
+
+                  houseTransformsGroup.userData.pushAltLayout(layout)
+
                   return {
+                    label: windowType.description,
+                    thumbnail: windowType.imageUrl,
                     value: {
                       layout,
                       windowType,
+                      candidate,
                     },
-                    label: windowType.description,
-                    thumbnail: windowType.imageUrl,
                   }
                 })
               )
-
-              return {
-                originalWindowTypeOption,
-                windowTypeOptions: pipe(
-                  otherOptions,
-                  A.concat(
-                    pipe(
-                      originalWindowTypeOption,
-                      O.fromNullable,
-                      O.match(
-                        () => [],
-                        (x) => [x]
-                      )
-                    )
-                  ),
-                  A.uniq({
-                    equals: (x, y) => {
-                      return x.value.windowType.code === y.value.windowType.code
-                    },
-                  })
-                ),
-              }
-            })
           )
-        ),
-        O.getOrElse(() => ({
-          originalWindowTypeOption: null as WindowTypeOption | null,
-          windowTypeOptions: [] as WindowTypeOption[],
-        }))
-      ),
-    [allModules, houseTransformsGroup, scopeElement, systemId, windowTypes]
-  )
+        )
+      )
+    )().then((altWinTypeOpts) => {
+      // console.log({ altWinTypeOpts })
+      setAltWinTypeOpts(altWinTypeOpts)
+    })
+
+    return () => {
+      houseTransformsGroup.userData.dropAltLayoutsByType(
+        LayoutType.Enum.ALT_WINDOW_TYPE
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    columnIndex,
+    dnas,
+    houseId,
+    levelIndex,
+    moduleIndex,
+    scopeElement,
+    side,
+    systemId,
+  ])
 
   const { setPreviewLayout } = houseTransformsGroup.userData
 
   const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
     if (incoming) {
       if (!isActiveLayout(incoming.layout)) {
+        // console.log(
+        //   `currently active layout dnas`,
+        //   houseTransformsGroup.userData.layouts.active.houseLayoutGroup.userData
+        //     .dnas
+        // )
+        if (incoming.candidate) {
+          const { windowTypeSide1, windowTypeSide2 } =
+            incoming.candidate.structuredDna
+          console.log(`PREVIEW: ${windowTypeSide1}-${windowTypeSide2}`)
+        }
+
         setPreviewLayout(incoming.layout)
       }
       // houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layout)
@@ -153,32 +195,42 @@ const ChangeWindows = (props: Props) => {
       // houseTransformsGroup.userData.dropAltLayoutsByType(
       //   LayoutType.Enum.ALT_WINDOW_TYPE
       // )
-      houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
+      // houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
       houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-      houseTransformsGroup.userData.refreshAltResetLayout()
-      houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
+      // houseTransformsGroup.userData.refreshAltResetLayout()
+      // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
       houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
     })
 
     close()
   }
 
-  return originalWindowTypeOption !== null && windowTypeOptions.length > 1 ? (
+  return (
     <ContextMenuNested
       long
-      label={`Change windows/doors`}
+      label={`Change windows`}
       icon={<Opening />}
       unpaddedSvg
     >
-      <Radio
-        options={windowTypeOptions}
-        selected={originalWindowTypeOption.value}
-        onChange={changeWindowType}
-        onHoverChange={previewWindowType}
-        compare={(a, b) => a.windowType.code === b.windowType.code}
-      />
+      {pipe(
+        origWinTypeOpt,
+        O.chain((origWinTypeOpt) =>
+          A.isNonEmpty(altWinTypeOpts)
+            ? O.some(
+                <Radio
+                  options={[origWinTypeOpt, ...altWinTypeOpts]}
+                  onChange={changeWindowType}
+                  onHoverChange={previewWindowType}
+                  selected={origWinTypeOpt.value}
+                  compare={(a, b) => a.windowType.code === b.windowType.code}
+                />
+              )
+            : O.none
+        ),
+        O.toNullable
+      )}
     </ContextMenuNested>
-  ) : null
+  )
 }
 
 export default ChangeWindows

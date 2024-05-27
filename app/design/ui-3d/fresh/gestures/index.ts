@@ -1,7 +1,7 @@
 import { invalidate, ThreeEvent } from "@react-three/fiber"
 import { useGesture } from "@use-gesture/react"
 import { useRef } from "react"
-import { ref } from "valtio"
+import { compareProps } from "../../../../utils/functions"
 import { setCameraControlsEnabled } from "../../../state/camera"
 import menu, { openMenu } from "../../../state/menu"
 import scope, {
@@ -35,7 +35,6 @@ import useOnDragMove from "./move"
 import useOnDragRotate from "./rotate"
 import useOnDragStretchX from "./stretchX"
 import useOnDragStretchZ from "./stretchZ"
-import { compareProps } from "../../../../utils/functions"
 
 const useGestures = (controlsEnabled: boolean) => {
   const onDragMove = useOnDragMove()

@@ -1,20 +1,17 @@
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
-import { Suspense } from "react"
 import { Pencil } from "../../../../ui/icons"
 import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
+import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
 import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
+import ChangeMaterial from "../common/ChangeMaterial"
+import ChangeWindows from "../common/ChangeWindows"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
 import ChangeLevelType from "./ChangeLevelType"
-import ChangeWindows from "../common/ChangeWindows"
-import ChangeMaterial from "../common/ChangeMaterial"
-import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
-import ChangeWindowsFresh from "../common/ChangeWindowsFresh"
-import ChangeLevelTypeFresh from "./ChangeLevelTypeFresh"
 
 const BuildingModeContextMenu = ({
   x,
@@ -68,13 +65,13 @@ const BuildingModeContextMenu = ({
         close={close}
       />
 
-      <ChangeWindowsFresh
+      <ChangeWindows
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}
         close={close}
       />
 
-      <ChangeLevelTypeFresh
+      <ChangeLevelType
         close={close}
         houseTransformsGroup={houseTransformsGroup}
         scopeElement={scopeElement}

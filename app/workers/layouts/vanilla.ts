@@ -68,12 +68,13 @@ liveQuery(() => systemsDB.modules.toArray()).subscribe(
     pipe(
       modules,
       A.map(getVanillaModule),
+      // Array<Option> -> Option<Array>
       A.traverse(O.Applicative)(identity),
       O.map(
         flow(
           A.uniq({ equals: (x, y) => x.dna === y.dna }),
           A.map(
-            async ({
+            ({
               systemId,
               structuredDna: { sectionType, positionType, levelType, gridType },
               dna,
@@ -142,9 +143,7 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
     arbitraryColumn.positionedRows,
     A.traverse(T.ApplicativeSeq)(
       ({
-        levelIndex,
         levelType,
-        y,
         positionedModules: [
           {
             module,
@@ -154,11 +153,6 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
           },
         ],
       }) => {
-        const {
-          systemId,
-          structuredDna: { gridType, positionType },
-        } = module
-
         return pipe(
           () => getModules(),
           T.chain((modules) => {
@@ -173,21 +167,9 @@ export const postVanillaColumn = (arbitraryColumn: PositionedColumn) =>
               getVanillaModule(module),
               O.map((vanillaModule) => createRow([vanillaModule])),
               someOrError(`no vanilla module for ${module.dna}`)
-              // T.map((vanillaModule) => createRow([vanillaModule]))
             )
           })
         )
-
-        // return pipe(
-        //   getVanillaModule({
-        //     systemId,
-        //     sectionType,
-        //     positionType,
-        //     levelType,
-        //     gridType,
-        //   }),
-        //   T.chain((vanillaModule) => createRow([vanillaModule]))
-        // )
       }
     ),
     retryTask,

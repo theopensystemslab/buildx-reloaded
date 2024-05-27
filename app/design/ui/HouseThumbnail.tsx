@@ -17,9 +17,10 @@ import {
   isHouseTransformsGroup,
 } from "../ui-3d/fresh/scene/userData"
 import clsx from "clsx"
+import type { CachedHouseType } from "@opensystemslab/buildx-core"
 
 type Props = {
-  houseType: HouseType
+  houseType: CachedHouseType
 }
 
 const HouseThumbnailButton = memo(({ houseType }: Props) => {
@@ -165,7 +166,7 @@ const HouseThumbnail = ({ houseType }: Props) => {
       <div
         className="h-20 w-20 flex-none rounded-full bg-grey-20"
         style={{
-          backgroundImage: `url(${houseType.imageUrl})`,
+          backgroundImage: `url(${URL.createObjectURL(houseType.imageBlob)})`,
           backgroundSize: "cover",
           backgroundPosition: "50% 50%",
         }}
