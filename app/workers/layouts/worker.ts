@@ -25,7 +25,6 @@ import {
   O,
   T,
   TO,
-  pipeLogWith,
   reduceToOption,
   someOrError,
   unwrapSome,

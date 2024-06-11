@@ -21,8 +21,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@opensystemslab/buildx-core':
-        specifier: 0.2.1-experimental
-        version: 0.2.1-experimental(react@18.2.0)(three@0.153.0)
+        specifier: 0.2.6-experimental
+        version: 0.2.6-experimental(react@18.2.0)(three-bvh-csg@0.0.16(three-mesh-bvh@0.7.4(three@0.153.0))(three@0.153.0))(three@0.153.0)
       '@react-three/drei':
         specifier: ^9.68.6
         version: 9.90.0(@react-three/fiber@8.15.12(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.153.0))(@types/three@0.153.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.153.0)
@@ -60,8 +60,8 @@ importers:
         specifier: ^0.11.4
         version: 0.11.6(encoding@0.1.13)
       camera-controls:
-        specifier: ^1.37.2
-        version: 1.38.2(three@0.153.0)
+        specifier: ^2.8.4
+        version: 2.8.4(three@0.153.0)
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
@@ -156,8 +156,8 @@ importers:
         specifier: ^0.153.0
         version: 0.153.0
       three-mesh-bvh:
-        specifier: ^0.5.16
-        version: 0.5.24(three@0.153.0)
+        specifier: ^0.7.4
+        version: 0.7.4(three@0.153.0)
       three-stdlib:
         specifier: ^2.29.5
         version: 2.29.5(three@0.153.0)
@@ -561,11 +561,12 @@ packages:
       react: 16.8 - 18
       react-dom: 16.8 - 18
 
-  '@opensystemslab/buildx-core@0.2.1-experimental':
-    resolution: {integrity: sha512-uwHUf4t5+serWuB94vnvO26d+2MNEOawShZdggmE8VuwBunXq702wiRMB7CgwRCQ/00NUNHcrPXroe/6Wv4ZpA==}
+  '@opensystemslab/buildx-core@0.2.6-experimental':
+    resolution: {integrity: sha512-8DmGvrayU4DevN3BYytTBl/WLbtfp+Bt/uVOzKActvBGI5i1ScTHjAGm9l0IpyYloPL1ztgZ4z1m5UJpq5I0ng==}
     peerDependencies:
       react: '>=18.2.0'
       three: '>=0.153.0'
+      three-bvh-csg: ^0.0.16
 
   '@radix-ui/primitive@1.0.1':
     resolution: {integrity: sha512-yQ8oGX2GVsEYMWGxcovu1uGWPCxV5BFfeeYxqPmuAzUyLT9qmaMXSAhXpb0WrspIeqYzdJpkh2vHModJPgRIaw==}
@@ -1682,13 +1683,8 @@ packages:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
 
-  camera-controls@1.38.2:
-    resolution: {integrity: sha512-EfzbovxLssyWpJVG9uKcazSDDIEcd1hUsPhPF/OWWnICsKY9WbLY/2S4UPW73HHbvnVeR/Z9wsWaQKtANy/2Yg==}
-    peerDependencies:
-      three: '>=0.126.1'
-
-  camera-controls@2.7.3:
-    resolution: {integrity: sha512-L4mxjBd3u8qiOLozdWrH2P8ZybSsDXBF7iyNyqNEFJhPUkovmuARWR8JTc1B/qlclOIg6FvZZA/0uAZMMim0mw==}
+  camera-controls@2.8.4:
+    resolution: {integrity: sha512-pzVKpeZCRXIx2VOMB+E4OPjOhErHqhxrHYxcRLofOVgBeCeKSb8QAC2toc1onMllrxldRWXR8bl4K50hkrtwsg==}
     peerDependencies:
       three: '>=0.126.1'
 
@@ -3731,13 +3727,19 @@ packages:
   thread-stream@2.4.1:
     resolution: {integrity: sha512-d/Ex2iWd1whipbT681JmTINKw0ZwOUBZm7+Gjs64DHuX34mmw8vJL2bFAaNacaW72zYiTJxSHi5abUuOi5nsfg==}
 
-  three-mesh-bvh@0.5.24:
-    resolution: {integrity: sha512-VTIgfjz8aFoPKTQoMIQQv9jJD4ybFRZuKKE1/kqy78FQcuHQ0+iIWv7C5cSb2inlvs7bNMVY3yRx3RXGZfrvzQ==}
+  three-bvh-csg@0.0.16:
+    resolution: {integrity: sha512-RgC5dY0hAKdfd1bmD3o2CDfmK9GTkvsA1ECzoqTMhSkjSc2zp1z4Wpa5+emLi/EosF5P6+aK2veTxTLZA9+Mhw==}
     peerDependencies:
-      three: '>= 0.123.0'
+      three: '>=0.151.0'
+      three-mesh-bvh: '>=0.6.6'
 
   three-mesh-bvh@0.6.8:
     resolution: {integrity: sha512-EGebF9DZx1S8+7OZYNNTT80GXJZVf+UYXD/HyTg/e2kR/ApofIFfUS4ZzIHNnUVIadpnLSzM4n96wX+l7GMbnQ==}
+    peerDependencies:
+      three: '>= 0.151.0'
+
+  three-mesh-bvh@0.7.4:
+    resolution: {integrity: sha512-flxe0A4uflTPR6elgq/Y8VrLoljDNS899i422SxQcU3EtMj6o8z4kZRyqZqGWzR0qMf1InTZzY1/0xZl/rnvVw==}
     peerDependencies:
       three: '>= 0.151.0'
 
@@ -4409,10 +4411,11 @@ snapshots:
       react-dom: 18.2.0(react@18.2.0)
       ua-parser-js: 1.0.2
 
-  '@opensystemslab/buildx-core@0.2.1-experimental(react@18.2.0)(three@0.153.0)':
+  '@opensystemslab/buildx-core@0.2.6-experimental(react@18.2.0)(three-bvh-csg@0.0.16(three-mesh-bvh@0.7.4(three@0.153.0))(three@0.153.0))(three@0.153.0)':
     dependencies:
       react: 18.2.0
       three: 0.153.0
+      three-bvh-csg: 0.0.16(three-mesh-bvh@0.7.4(three@0.153.0))(three@0.153.0)
 
   '@radix-ui/primitive@1.0.1':
     dependencies:
@@ -4644,7 +4647,7 @@ snapshots:
       '@react-spring/three': 9.6.1(@react-three/fiber@8.15.12(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.153.0))(react@18.2.0)(three@0.153.0)
       '@react-three/fiber': 8.15.12(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(three@0.153.0)
       '@use-gesture/react': 10.3.0(react@18.2.0)
-      camera-controls: 2.7.3(three@0.153.0)
+      camera-controls: 2.8.4(three@0.153.0)
       cross-env: 7.0.3
       detect-gpu: 5.0.37
       glsl-noise: 0.0.0
@@ -6137,11 +6140,7 @@ snapshots:
 
   camelcase@5.3.1: {}
 
-  camera-controls@1.38.2(three@0.153.0):
-    dependencies:
-      three: 0.153.0
-
-  camera-controls@2.7.3(three@0.153.0):
+  camera-controls@2.8.4(three@0.153.0):
     dependencies:
       three: 0.153.0
 
@@ -8407,11 +8406,16 @@ snapshots:
     dependencies:
       real-require: 0.2.0
 
-  three-mesh-bvh@0.5.24(three@0.153.0):
+  three-bvh-csg@0.0.16(three-mesh-bvh@0.7.4(three@0.153.0))(three@0.153.0):
+    dependencies:
+      three: 0.153.0
+      three-mesh-bvh: 0.7.4(three@0.153.0)
+
+  three-mesh-bvh@0.6.8(three@0.153.0):
     dependencies:
       three: 0.153.0
 
-  three-mesh-bvh@0.6.8(three@0.153.0):
+  three-mesh-bvh@0.7.4(three@0.153.0):
     dependencies:
       three: 0.153.0
 

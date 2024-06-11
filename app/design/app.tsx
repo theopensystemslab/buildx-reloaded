@@ -1,36 +1,61 @@
 "use client"
-import { useAllHouseTypes } from "../db/systems"
-import Loader from "../ui/Loader"
 import {
-  initOutputsWorker,
-  initLayoutsWorker,
-  initModelsWorker,
-  initSystemsWorker,
-  initFilesWorker,
-} from "../workers"
-import { Routing } from "./state/routing"
-import { useIndexedSiteCtx } from "./state/siteCtx"
-import FreshApp from "./ui-3d/fresh/FreshApp"
-import AppInit from "./ui-3d/init/AppInit"
+  BuildXScene,
+  cachedHouseTypesTE,
+  houseGroupTE,
+} from "@opensystemslab/buildx-core"
+import { flow, pipe } from "fp-ts/lib/function"
+import { Fragment, useEffect, useRef } from "react"
+import { useKey } from "react-use"
+import { A, TE } from "~/utils/functions"
+import HtmlUi from "./ui/HtmlUi"
+
+let scene: BuildXScene | null = null
+
+export const getBuildXScene = (): BuildXScene | null => {
+  return scene
+}
 
 const App = () => {
-  initSystemsWorker()
-  initModelsWorker()
-  initLayoutsWorker()
-  initOutputsWorker()
-  initFilesWorker()
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  useIndexedSiteCtx()
+  useEffect(() => {
+    if (!canvasRef.current || scene !== null) return
 
-  const houseTypes = useAllHouseTypes()
+    scene = new BuildXScene(canvasRef.current)
+  }, [])
 
-  return houseTypes.length > 0 ? (
-    <AppInit controlsEnabled={true} mapEnabled={false}>
-      <Routing />
-      <FreshApp controlsEnabled />
-    </AppInit>
-  ) : (
-    <Loader />
+  useKey("h", () => {
+    console.log("h")
+    pipe(
+      cachedHouseTypesTE,
+      TE.chain(
+        flow(
+          A.lookup(0),
+          TE.fromOption(() => Error())
+        )
+      ),
+      TE.chain(({ systemId, dnas, name, id }) =>
+        houseGroupTE({
+          systemId,
+          dnas,
+          houseId: name,
+          houseTypeId: id,
+          friendlyName: name,
+        })
+      ),
+      TE.map((houseGroup) => {
+        scene?.addHouseGroup(houseGroup)
+        console.log("hey")
+      })
+    )()
+  })
+
+  return (
+    <Fragment>
+      <canvas className="w-full h-full" ref={canvasRef} />
+      <HtmlUi />
+    </Fragment>
   )
 }
 

@@ -18,147 +18,148 @@ import {
 } from "../ui-3d/fresh/scene/userData"
 import clsx from "clsx"
 import type { CachedHouseType } from "@opensystemslab/buildx-core"
+import HouseThumbnailButton from "./HouseThumbnailButton"
 
 type Props = {
   houseType: CachedHouseType
 }
 
-const HouseThumbnailButton = memo(({ houseType }: Props) => {
-  const scene = useScene()
+// const HouseThumbnailButton = memo(({ houseType }: Props) => {
+//   const scene = useScene()
 
-  const maybeWorldGroup = useMemo(
-    () =>
-      pipe(
-        scene,
-        O.fromNullable,
-        O.chain((scene) =>
-          pipe(
-            scene,
-            findFirstGuardDown((x): x is Group => {
-              return x.name === "WORLD"
-            })
-          )
-        )
-      ),
-    [scene]
-  )
+//   const maybeWorldGroup = useMemo(
+//     () =>
+//       pipe(
+//         scene,
+//         O.fromNullable,
+//         O.chain((scene) =>
+//           pipe(
+//             scene,
+//             findFirstGuardDown((x): x is Group => {
+//               return x.name === "WORLD"
+//             })
+//           )
+//         )
+//       ),
+//     [scene]
+//   )
 
-  const getFriendlyName = useGetFriendlyName()
+//   const getFriendlyName = useGetFriendlyName()
 
-  const houses = useHouses()
+//   const houses = useHouses()
 
-  const [maybeHouseTransformsGroup, setHouseTransformsGroup] = useState<
-    O.Option<HouseTransformsGroup>
-  >(O.none)
+//   const [maybeHouseTransformsGroup, setHouseTransformsGroup] = useState<
+//     O.Option<HouseTransformsGroup>
+//   >(O.none)
 
-  useEffect(() => {
-    if (!scene) return
+//   useEffect(() => {
+//     if (!scene) return
 
-    const { dnas, id: houseTypeId, systemId } = houseType
+//     const { dnas, id: houseTypeId, systemId } = houseType
 
-    createHouseTransformsGroup({
-      friendlyName: "", // getFriendlyName(),
-      activeElementMaterials: {},
-      dnas,
-      houseId: nanoid(),
-      houseTypeId,
-      systemId,
-    })().then((houseTransformsGroup) => {
-      setRaycasting(houseTransformsGroup, true)
+//     createHouseTransformsGroup({
+//       friendlyName: "", // getFriendlyName(),
+//       activeElementMaterials: {},
+//       dnas,
+//       houseId: nanoid(),
+//       houseTypeId,
+//       systemId,
+//     })().then((houseTransformsGroup) => {
+//       setRaycasting(houseTransformsGroup, true)
 
-      setHouseTransformsGroup(O.some(houseTransformsGroup))
-    })
-  }, [houseType, houses, scene])
+//       setHouseTransformsGroup(O.some(houseTransformsGroup))
+//     })
+//   }, [houseType, houses, scene])
 
-  const addHouse = () => {
-    if (!scene) return
+//   const addHouse = () => {
+//     if (!scene) return
 
-    pipe(
-      maybeHouseTransformsGroup,
-      O.map((houseTransformsGroup) =>
-        pipe(
-          maybeWorldGroup,
-          O.map((worldGroup) => {
-            const collisionsCheck = () =>
-              pipe(
-                maybeWorldGroup,
-                O.match(
-                  () => false,
-                  (worldGroup) => {
-                    const nearNeighbours =
-                      houseTransformsGroup.userData.computeNearNeighbours(
-                        worldGroup
-                      )
+//     pipe(
+//       maybeHouseTransformsGroup,
+//       O.map((houseTransformsGroup) =>
+//         pipe(
+//           maybeWorldGroup,
+//           O.map((worldGroup) => {
+//             const collisionsCheck = () =>
+//               pipe(
+//                 maybeWorldGroup,
+//                 O.match(
+//                   () => false,
+//                   (worldGroup) => {
+//                     const nearNeighbours =
+//                       houseTransformsGroup.userData.computeNearNeighbours(
+//                         worldGroup
+//                       )
 
-                    return houseTransformsGroup.userData.checkCollisions(
-                      nearNeighbours
-                    )
-                  }
-                )
-              )
+//                     return houseTransformsGroup.userData.checkCollisions(
+//                       nearNeighbours
+//                     )
+//                   }
+//                 )
+//               )
 
-            const MAX_T = 99
-            let t = 0 // parameter for the spiral
-            let a = 1 // tightness of the spiral, might need adjustment
+//             const MAX_T = 99
+//             let t = 0 // parameter for the spiral
+//             let a = 1 // tightness of the spiral, might need adjustment
 
-            do {
-              // Calculate the new position on the spiral
-              const x = a * t * Math.cos(t)
-              const z = a * t * Math.sin(t)
+//             do {
+//               // Calculate the new position on the spiral
+//               const x = a * t * Math.cos(t)
+//               const z = a * t * Math.sin(t)
 
-              // Move the houseTransformsGroup to new position
-              houseTransformsGroup.position.set(x, 0, z)
+//               // Move the houseTransformsGroup to new position
+//               houseTransformsGroup.position.set(x, 0, z)
 
-              houseTransformsGroup.userData
-                .getActiveLayoutGroup()
-                .userData.updateBBs()
-              t += 1 // Increment t by an amount to ensure the loop can exit
-            } while (t < MAX_T && collisionsCheck())
+//               houseTransformsGroup.userData
+//                 .getActiveLayoutGroup()
+//                 .userData.updateBBs()
+//               t += 1 // Increment t by an amount to ensure the loop can exit
+//             } while (t < MAX_T && collisionsCheck())
 
-            if (t >= MAX_T) throw new Error(`Infinite collision!`)
+//             if (t >= MAX_T) throw new Error(`Infinite collision!`)
 
-            houseTransformsGroup.userData.setVerticalCuts()
+//             houseTransformsGroup.userData.setVerticalCuts()
 
-            worldGroup.add(houseTransformsGroup)
+//             worldGroup.add(houseTransformsGroup)
 
-            houseTransformsGroup.userData
-              .getActiveLayoutGroup()
-              .userData.updateBBs()
+//             houseTransformsGroup.userData
+//               .getActiveLayoutGroup()
+//               .userData.updateBBs()
 
-            houseTransformsGroup.userData.friendlyName = getFriendlyName()
-            houseTransformsGroup.userData.addToDB()
+//             houseTransformsGroup.userData.friendlyName = getFriendlyName()
+//             houseTransformsGroup.userData.addToDB()
 
-            // clear handles
-            pipe(worldGroup.children, A.filter(isHouseTransformsGroup)).forEach(
-              (x) => x.userData.switchHandlesVisibility()
-            )
+//             // clear handles
+//             pipe(worldGroup.children, A.filter(isHouseTransformsGroup)).forEach(
+//               (x) => x.userData.switchHandlesVisibility()
+//             )
 
-            setSidebar(false)
+//             setSidebar(false)
 
-            invalidate()
-          })
-        )
-      )
-    )
-  }
+//             invalidate()
+//           })
+//         )
+//       )
+//     )
+//   }
 
-  const illuminate = O.isSome(maybeHouseTransformsGroup)
+//   const illuminate = O.isSome(maybeHouseTransformsGroup)
 
-  return (
-    <button
-      onClick={addHouse}
-      className={clsx(
-        "rounded px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black",
-        {
-          ["bg-grey-80"]: illuminate,
-          ["bg-grey-30"]: !illuminate,
-        }
-      )}
-    >
-      Add to site
-    </button>
-  )
-})
+//   return (
+//     <button
+//       onClick={addHouse}
+//       className={clsx(
+//         "rounded px-3 py-1 text-sm text-white transition-colors duration-200 ease-in-out hover:bg-black",
+//         {
+//           ["bg-grey-80"]: illuminate,
+//           ["bg-grey-30"]: !illuminate,
+//         }
+//       )}
+//     >
+//       Add to site
+//     </button>
+//   )
+// })
 
 const HouseThumbnail = ({ houseType }: Props) => {
   return (
