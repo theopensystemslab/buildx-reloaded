@@ -1,15 +1,16 @@
 import { proxy, ref, useSnapshot } from "valtio"
 import { ElementMesh } from "../ui-3d/fresh/scene/userData"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 
-export type ScopeElement = {
-  ifcTag: string
-  dna: string
-  columnIndex: number
-  levelIndex: number
-  moduleIndex: number
-  houseId: string
-  object: ElementMesh
-}
+// export type ScopeElement = {
+//   ifcTag: string
+//   dna: string
+//   columnIndex: number
+//   levelIndex: number
+//   moduleIndex: number
+//   houseId: string
+//   object: ElementMesh
+// }
 
 export type Scope = {
   selected: ScopeElement | null

@@ -1,14 +1,12 @@
 "use client"
-import {
-  BuildXScene,
-  cachedHouseTypesTE,
-  houseGroupTE,
-} from "@opensystemslab/buildx-core"
-import { flow, pipe } from "fp-ts/lib/function"
-import { Fragment, useEffect, useRef } from "react"
-import { useKey } from "react-use"
-import { A, TE } from "~/utils/functions"
+import type { ScopeElement } from "@opensystemslab/buildx-core"
+import { BuildXScene } from "@opensystemslab/buildx-core"
+import { useEffect, useRef } from "react"
+import { Vector2 } from "three"
+import FullScreenContainer from "~/ui/FullScreenContainer"
+import { closeMenu, openMenu } from "./state/menu"
 import HtmlUi from "./ui/HtmlUi"
+import { setSelected } from "./state/scope"
 
 let scene: BuildXScene | null = null
 
@@ -22,40 +20,25 @@ const App = () => {
   useEffect(() => {
     if (!canvasRef.current || scene !== null) return
 
-    scene = new BuildXScene(canvasRef.current)
+    const f = (scopeElement: ScopeElement, xy: Vector2): void => {
+      const { x, y } = xy
+      setSelected(scopeElement)
+      openMenu(x, y)
+    }
+
+    scene = new BuildXScene({
+      canvas: canvasRef.current,
+      onLongTapBuildElement: f,
+      onRightClickBuildElement: f,
+      onTapMissed: closeMenu,
+    })
   }, [])
 
-  useKey("h", () => {
-    console.log("h")
-    pipe(
-      cachedHouseTypesTE,
-      TE.chain(
-        flow(
-          A.lookup(0),
-          TE.fromOption(() => Error())
-        )
-      ),
-      TE.chain(({ systemId, dnas, name, id }) =>
-        houseGroupTE({
-          systemId,
-          dnas,
-          houseId: name,
-          houseTypeId: id,
-          friendlyName: name,
-        })
-      ),
-      TE.map((houseGroup) => {
-        scene?.addHouseGroup(houseGroup)
-        console.log("hey")
-      })
-    )()
-  })
-
   return (
-    <Fragment>
-      <canvas className="w-full h-full" ref={canvasRef} />
+    <FullScreenContainer>
+      <canvas ref={canvasRef} className="w-full h-full" />
       <HtmlUi />
-    </Fragment>
+    </FullScreenContainer>
   )
 }
 

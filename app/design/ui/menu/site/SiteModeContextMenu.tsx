@@ -1,44 +1,28 @@
 import { TrashCan } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
 import { Fragment, useState } from "react"
 import userDB from "../../../../db/user"
 import { Pencil, TextCursor } from "../../../../ui/icons"
-import { someOrError } from "../../../../utils/functions"
 import { closeMenu } from "../../../state/menu"
 import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
-import { findFirstGuardUp } from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { isHouseTransformsGroup } from "../../../ui-3d/fresh/scene/userData"
+import { dispatchOutline } from "../../../ui-3d/fresh/events/outlines"
 import RenameForm from "../../RenameForm"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
-import Exporters from "../common/Exporters"
 import { ModeContextMenuProps } from "../common/props"
-import ResetContextMenuButton from "./ResetContextMenuButton"
-import { dispatchOutline } from "../../../ui-3d/fresh/events/outlines"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
-  const { object } = scopeElement
+  const { elementGroup } = scopeElement
 
   const close = () => {
     closeMenu()
     invalidate()
   }
 
-  const houseTransformsGroup = pipe(
-    object,
-    findFirstGuardUp(isHouseTransformsGroup),
-    someOrError(
-      `no HouseTransformsGroup found upwards of: ${JSON.stringify(
-        scopeElement,
-        null,
-        2
-      )}`
-    )
-  )
+  const houseGroup = elementGroup.houseGroup
 
   const deleteHouse = () => {
-    houseTransformsGroup.userData.deleteHouse()
+    houseGroup.delete()
     close()
   }
 
@@ -78,10 +62,10 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
         />
         {renaming && (
           <RenameForm
-            currentName={houseTransformsGroup.userData.friendlyName}
+            currentName={houseGroup.userData.friendlyName}
             onNewName={(friendlyName) => {
-              const { houseId } = houseTransformsGroup.userData
-              houseTransformsGroup.userData.friendlyName = friendlyName
+              const { houseId } = houseGroup.userData
+              houseGroup.userData.friendlyName = friendlyName
               userDB.houses.update(houseId, {
                 friendlyName,
               })
@@ -91,7 +75,9 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
         )}
         {!renaming && (
           <Fragment>
-            <ResetContextMenuButton {...{ houseTransformsGroup, close }} />
+            {/* <ResetContextMenuButton
+              {...{ houseTransformsGroup: houseGroup, close }}
+            /> */}
             <ContextMenuButton
               icon={<TrashCan size={20} />}
               text="Delete"
@@ -99,10 +85,7 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             />
           </Fragment>
         )}
-        <Exporters
-          houseId={houseTransformsGroup.userData.houseId}
-          close={close}
-        />
+        {/* <Exporters houseId={houseGroup.userData.houseId} close={close} /> */}
       </Fragment>
     </ContextMenu>
   )

@@ -7,29 +7,6 @@ const intensityScale = 0.76
 const Lighting = () => {
   const shadowLightRef = useRef<DirectionalLight>(null!)
 
-  // useHelper(shadowLightRef, DirectionalLightHelper)
-
-  // const scene = useThree((t) => t.scene)
-
-  // const cameraHelperRef = useRef<any>()
-
-  // useEffect(() => {
-  //   const cleaner = () => {
-  //     if (cameraHelperRef.current) scene.remove(cameraHelperRef.current)
-  //   }
-
-  //   if (!shadowLightRef.current || !shadowLightRef.current.shadow.camera)
-  //     return cleaner
-
-  //   cameraHelperRef.current = new CameraHelper(
-  //     shadowLightRef.current.shadow.camera
-  //   )
-
-  //   scene.add(cameraHelperRef.current)
-
-  //   return cleaner
-  // }, [scene])
-
   return (
     <Fragment>
       <ambientLight intensity={0.5 * intensityScale} />

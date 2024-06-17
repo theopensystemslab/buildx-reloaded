@@ -7,24 +7,12 @@ import clsx from "clsx"
 import { O, R, TE } from "~/utils/functions"
 import { getBuildXScene } from "../app"
 
-const templates: Record<string, HouseGroup> = {}
+// const templates: Record<string, HouseGroup> = {}
 
-const initTemplate = (houseType: CachedHouseType) => {
-  const { dnas, id: houseTypeId, systemId } = houseType
+// const initTemplate = (houseType: CachedHouseType) => {
+//   const { dnas, id: houseTypeId, systemId } = houseType
 
-  pipe(
-    houseGroupTE({
-      systemId,
-      dnas,
-      friendlyName: "",
-      houseId: nanoid(),
-      houseTypeId,
-    }),
-    TE.map((template) => {
-      templates[houseTypeId] = template
-    })
-  )()
-}
+// }
 
 const HouseThumbnailButton = ({
   houseType,
@@ -33,7 +21,7 @@ const HouseThumbnailButton = ({
 }) => {
   const { dnas, id: houseTypeId, systemId } = houseType
 
-  useEffect(() => initTemplate(houseType), [houseType])
+  // useEffect(() => initTemplate(houseType), [houseType])
 
   const addHouse = () => {
     const scene = getBuildXScene()
@@ -41,18 +29,32 @@ const HouseThumbnailButton = ({
     if (!scene) return
 
     pipe(
-      templates,
-      R.lookup(houseTypeId),
-      O.map((template) => {
-        // clone called here
-        const clone = template.clone()
-
-        clone.userData.houseId = nanoid()
-        clone.userData.friendlyName = ""
-
-        scene.addHouseGroup(clone)
+      houseGroupTE({
+        systemId,
+        dnas,
+        friendlyName: "",
+        houseId: nanoid(),
+        houseTypeId,
+      }),
+      TE.map((houseGroup) => {
+        scene.addHouseGroup(houseGroup)
       })
-    )
+    )()
+
+    // pipe(
+    //   templates,
+    //   R.lookup(houseTypeId),
+    //   O.map((template) => {
+    //     // clone called here
+    //     console.log({ foo: template.layoutsManager.activeLayoutGroup })
+    //     const clone = template.clone()
+
+    //     clone.userData.houseId = nanoid()
+    //     clone.userData.friendlyName = ""
+
+    //     scene.addHouseGroup(clone)
+    //   })
+    // )
   }
 
   const illuminate = true

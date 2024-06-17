@@ -12,7 +12,6 @@ const ShadowPlane = () => {
       name="ShadowPlane"
     >
       <shadowMaterial color="#898989" side={DoubleSide} />
-      {/* <meshBasicMaterial side={DoubleSide} color="red" /> */}
     </Plane>
   )
 }

@@ -74,6 +74,8 @@ const HtmlUi = () => {
 
     const { x, y } = menu
 
+    console.log([x, y])
+
     switch (mode) {
       case SiteCtxModeEnum.Enum.SITE:
         return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />

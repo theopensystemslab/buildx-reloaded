@@ -8,6 +8,7 @@ const menu = proxy({
 })
 
 export const openMenu = (x: number, y: number) => {
+  console.log(`open menu`)
   menu.open = true
   menu.x = x
   menu.y = y

@@ -1,4 +1,4 @@
-import { ScopeElement } from "../../../state/scope"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 
 export type ModeContextMenuProps = {
   x: number
