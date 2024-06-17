@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { LevelType } from "../../../../../server/data/levelTypes"
-import { ScopeElement } from "../../../state/scope"
 import {
   AltLevelTypeLayout,
   HouseTransformsGroup,
@@ -19,10 +18,10 @@ import ContextMenuNested from "../common/ContextMenuNested"
 import { ChangeLevel } from "../../../../ui/icons"
 import Radio from "../../../../ui/Radio"
 import { invalidate } from "@react-three/fiber"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 
 type Props = {
   scopeElement: ScopeElement
-  houseTransformsGroup: HouseTransformsGroup
   close: () => void
 }
 
@@ -34,13 +33,13 @@ type LevelTypeOption = {
 const ChangeLevelType = (props: Props) => {
   const {
     scopeElement,
-    scopeElement: { dna, levelIndex },
-    houseTransformsGroup,
+    scopeElement: { dna, rowIndex },
     close,
   } = props
 
-  const { systemId, houseId, dnas } =
-    getActiveHouseUserData(houseTransformsGroup)
+  const houseGroup = scopeElement.elementGroup.houseGroup
+  const { systemId, houseId } = houseGroup.userData
+  const { dnas } = houseGroup.activeLayoutGroup.userData
 
   const { levelType: currentLevelTypeCode } = parseDna(dna)
 
@@ -56,12 +55,12 @@ const ChangeLevelType = (props: Props) => {
         O.map((levelType) => ({
           label: levelType.description,
           value: {
-            layout: houseTransformsGroup.userData.getActiveLayout(),
+            layout: houseGroup.activeLayoutGroup.userData.layout,
             levelType,
           },
         }))
       ),
-    [allLevelTypes, houseTransformsGroup.userData, currentLevelTypeCode]
+    [allLevelTypes, houseGroup.userData, currentLevelTypeCode]
   )
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const ChangeLevelType = (props: Props) => {
           systemId,
           dnas,
           currentLevelTypeCode,
-          levelIndex,
+          levelIndex: rowIndex,
         }),
       T.chain((altLevelTypeLayouts) =>
         pipe(
@@ -84,7 +83,7 @@ const ChangeLevelType = (props: Props) => {
                   dnas,
                   houseId,
                   houseLayout,
-                  houseTransformsGroup,
+                  houseTransformsGroup: houseGroup,
                 }),
                 T.map((houseLayoutGroup): LevelTypeOption => {
                   const layout: AltLevelTypeLayout = {
@@ -95,7 +94,7 @@ const ChangeLevelType = (props: Props) => {
                     levelType,
                   }
 
-                  houseTransformsGroup.userData.pushAltLayout(layout)
+                  houseGroup.userData.pushAltLayout(layout)
 
                   return {
                     label: levelType.description,
@@ -115,12 +114,10 @@ const ChangeLevelType = (props: Props) => {
     })
 
     return () => {
-      houseTransformsGroup.userData.dropAltLayoutsByType(
-        LayoutType.Enum.ALT_LEVEL_TYPE
-      )
+      houseGroup.userData.dropAltLayoutsByType(LayoutType.Enum.ALT_LEVEL_TYPE)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dnas, houseId, levelIndex, scopeElement, systemId])
+  }, [dnas, houseId, rowIndex, scopeElement, systemId])
   //       const originalOption: LevelTypeOption =
   // const origLevelTypeOpt = useMemo((): O.Option<LevelTypeOption> =>
   // pipe(allLevelTypes, A.findFirst(({})=> levelType. {
@@ -153,7 +150,7 @@ const ChangeLevelType = (props: Props) => {
   )
 
   const previewLevelType = (incoming: LevelTypeOption["value"] | null) => {
-    const { setPreviewLayout } = houseTransformsGroup.userData
+    const { setPreviewLayout } = houseGroup.userData
 
     if (incoming) {
       if (!isActiveLayout(incoming.layout)) {
@@ -167,8 +164,7 @@ const ChangeLevelType = (props: Props) => {
   }
 
   const changeLevelType = ({ layout }: LevelTypeOption["value"]) => {
-    const { setActiveLayout, setPreviewLayout, updateDB } =
-      houseTransformsGroup.userData
+    const { setActiveLayout, setPreviewLayout, updateDB } = houseGroup.userData
 
     if (!isActiveLayout(layout)) {
       setActiveLayout(layout)
@@ -177,8 +173,8 @@ const ChangeLevelType = (props: Props) => {
     setPreviewLayout(null)
 
     updateDB().then(() => {
-      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
+      houseGroup.userData.refreshAltSectionTypeLayouts()
+      houseGroup.userData.switchHandlesVisibility("STRETCH")
     })
 
     close()

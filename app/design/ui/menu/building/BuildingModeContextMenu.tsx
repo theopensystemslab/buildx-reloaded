@@ -23,19 +23,9 @@ const BuildingModeContextMenu = ({
     invalidate()
   }
 
-  const houseTransformsGroup = pipe(
-    scopeElement.object,
-    findFirstGuardUp(isHouseTransformsGroup),
-    someOrError(
-      `no HouseTransformsGroup found upwards of: ${JSON.stringify(
-        scopeElement,
-        null,
-        2
-      )}`
-    )
-  )
+  const { rowIndex, elementGroup } = scopeElement
 
-  const { levelIndex } = scopeElement
+  const houseGroup = elementGroup.houseGroup
 
   return (
     <ContextMenu
@@ -45,7 +35,7 @@ const BuildingModeContextMenu = ({
         onClose: close,
       }}
     >
-      <ContextMenuButton
+      {/* <ContextMenuButton
         icon={<Pencil />}
         text="Edit level"
         unpaddedSvg
@@ -53,29 +43,25 @@ const BuildingModeContextMenu = ({
           dispatchModeChange({
             prev: SiteCtxModeEnum.Enum.BUILDING,
             next: SiteCtxModeEnum.Enum.LEVEL,
-            levelIndex,
+            levelIndex: rowIndex,
           })
           close()
         }}
-      />
+      /> */}
 
-      <ChangeMaterial
-        houseTransformsGroup={houseTransformsGroup}
+      {/* <ChangeMaterial
+        houseTransformsGroup={houseGroup}
         scopeElement={scopeElement}
         close={close}
-      />
+      /> */}
 
-      <ChangeWindows
-        houseTransformsGroup={houseTransformsGroup}
-        scopeElement={scopeElement}
-        close={close}
-      />
+      <ChangeWindows scopeElement={scopeElement} close={close} />
 
-      <ChangeLevelType
+      {/* <ChangeLevelType
         close={close}
-        houseTransformsGroup={houseTransformsGroup}
+        houseTransformsGroup={houseGroup}
         scopeElement={scopeElement}
-      />
+      /> */}
 
       {/* <AddRemoveLevels
         {...{

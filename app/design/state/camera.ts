@@ -1,8 +1,9 @@
 import CameraControls from "camera-controls"
 import { useMemo } from "react"
-import { Matrix4, Raycaster, Vector3 } from "three"
+import { Matrix4, Object3D, Raycaster, Vector3 } from "three"
 import { proxy, useSnapshot } from "valtio"
 import { HouseTransformsGroup } from "../ui-3d/fresh/scene/userData"
+import { HouseGroup } from "@opensystemslab/buildx-core"
 
 type CameraProxy = {
   controls: CameraControls | null
@@ -25,11 +26,9 @@ export const setCameraControlsEnabled = (b: boolean) => {
 
 export type Side = "LEFT" | "RIGHT"
 
-export const getSide = (houseTransformsGroup: HouseTransformsGroup) => {
+export const getSide = (object: Object3D) => {
   const houseDirection = new Vector3(0, 0, -1)
-  const rotationMatrix = new Matrix4().makeRotationY(
-    houseTransformsGroup.rotation.y
-  )
+  const rotationMatrix = new Matrix4().makeRotationY(object.rotation.y)
   houseDirection.applyMatrix4(rotationMatrix)
 
   const cameraDirection = new Vector3()

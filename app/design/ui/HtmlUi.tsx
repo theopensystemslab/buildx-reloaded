@@ -62,7 +62,7 @@ const HtmlUi = () => {
     internalShowHide: false,
   })
 
-  const { mode } = useSiteCtx()
+  // const { mode } = useSiteCtx()
   const { hovered, selected } = useScope()
 
   const menu = useMenu()
@@ -74,6 +74,8 @@ const HtmlUi = () => {
 
     const { x, y } = menu
 
+    const mode = scopeElement.elementGroup.houseGroup.modeManager.mode
+
     console.log([x, y])
 
     switch (mode) {
@@ -84,7 +86,7 @@ const HtmlUi = () => {
       default:
         return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
     }
-  }, [menu, selected, mode])
+  }, [menu, selected])
 
   // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
 

@@ -11,7 +11,6 @@ import {
   isActiveLayout,
 } from "../../../ui-3d/fresh/scene/userData"
 import { pipe } from "fp-ts/lib/function"
-import { ScopeElement } from "../../../state/scope"
 import { getLayoutsWorker } from "../../../../workers"
 import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
 import { getSide } from "../../../state/camera"
@@ -22,6 +21,7 @@ import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
 import { Module, parseDna } from "../../../../../server/data/modules"
 import Radio from "../../../../ui/Radio"
 import { invalidate } from "@react-three/fiber"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 
 type WindowTypeOption = {
   label: string
@@ -31,46 +31,44 @@ type WindowTypeOption = {
 
 type Props = {
   scopeElement: ScopeElement
-  houseTransformsGroup: HouseTransformsGroup
   close: () => void
 }
 
 const ChangeWindows = (props: Props) => {
-  const { houseTransformsGroup, scopeElement, close } = props
+  console.log(`ChangeWindows`)
+  const { scopeElement, close } = props
 
-  const { systemId, houseId, dnas } =
-    getActiveHouseUserData(houseTransformsGroup)
+  const houseGroup = scopeElement.elementGroup.houseGroup
 
-  const { columnIndex, levelIndex, moduleIndex, dna } = scopeElement
+  const { systemId, houseId } = houseGroup.userData
+  const { dnas } = houseGroup.activeLayoutGroup.userData
 
-  const side = getSide(houseTransformsGroup)
+  const { columnIndex, rowIndex, moduleIndex, dna } = scopeElement
 
-  const allWindowTypes = useAllWindowTypes()
+  // const side = getSide(houseGroup)
 
-  const [altWinTypeOpts, setAltWinTypeOpts] = useState<WindowTypeOption[]>([])
+  // const allWindowTypes = useAllWindowTypes()
 
-  const origWinTypeOpt = useMemo(
-    (): O.Option<WindowTypeOption> =>
-      pipe(
-        getWindowType(
-          allWindowTypes,
-          parseDna(dna),
-          getSide(houseTransformsGroup)
-        ),
-        O.map(
-          (windowType): WindowTypeOption => ({
-            label: windowType.description,
-            value: {
-              layout: houseTransformsGroup.userData.getActiveLayout(),
-              windowType,
-            },
-            thumbnail: windowType.imageUrl,
-          })
-        )
-      ),
+  // const [altWinTypeOpts, setAltWinTypeOpts] = useState<WindowTypeOption[]>([])
 
-    [allWindowTypes, dna, houseTransformsGroup]
-  )
+  // const origWinTypeOpt = useMemo(
+  //   (): O.Option<WindowTypeOption> =>
+  //     pipe(
+  //       getWindowType(allWindowTypes, parseDna(dna), getSide(houseGroup)),
+  //       O.map(
+  //         (windowType): WindowTypeOption => ({
+  //           label: windowType.description,
+  //           value: {
+  //             layout: houseGroup.userData.getActiveLayout(),
+  //             windowType,
+  //           },
+  //           thumbnail: windowType.imageUrl,
+  //         })
+  //       )
+  //     ),
+
+  //   [allWindowTypes, dna, houseGroup]
+  // )
 
   // console.log({
   //   origWinTypeOpt,
@@ -80,130 +78,129 @@ const ChangeWindows = (props: Props) => {
   //   dna,
   // })
 
+  // useEffect(() => {
+  //   pipe(
+  //     () =>
+  //       getLayoutsWorker().getAltWindowTypeLayouts({
+  //         systemId,
+  //         columnIndex,
+  //         levelIndex: rowIndex,
+  //         moduleIndex,
+  //         dnas,
+  //         side,
+  //       }),
+  //     T.chain((altWindowTypeLayouts) =>
+  //       pipe(
+  //         altWindowTypeLayouts,
+  //         A.traverse(T.ApplicativeSeq)(
+  //           ({ candidate, dnas, layout: houseLayout, windowType }) =>
+  //             pipe(
+  //               createHouseLayoutGroup({
+  //                 systemId,
+  //                 dnas,
+  //                 houseId,
+  //                 houseLayout,
+  //                 houseTransformsGroup: houseGroup,
+  //               }),
+  //               T.map((houseLayoutGroup): WindowTypeOption => {
+  //                 const layout: AltWindowTypeLayout = {
+  //                   houseLayoutGroup,
+  //                   windowType,
+  //                   type: LayoutType.Enum.ALT_WINDOW_TYPE,
+  //                   target: scopeElement,
+  //                 }
+
+  //                 houseGroup.userData.pushAltLayout(layout)
+
+  //                 return {
+  //                   label: windowType.description,
+  //                   thumbnail: windowType.imageUrl,
+  //                   value: {
+  //                     layout,
+  //                     windowType,
+  //                     candidate,
+  //                   },
+  //                 }
+  //               })
+  //             )
+  //         )
+  //       )
+  //     )
+  //   )().then((altWinTypeOpts) => {
+  //     // console.log({ altWinTypeOpts })
+  //     setAltWinTypeOpts(altWinTypeOpts)
+  //   })
+
+  //   return () => {
+  //     houseGroup.userData.dropAltLayoutsByType(LayoutType.Enum.ALT_WINDOW_TYPE)
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [
+  //   columnIndex,
+  //   dnas,
+  //   houseId,
+  //   rowIndex,
+  //   moduleIndex,
+  //   scopeElement,
+  //   side,
+  //   systemId,
+  // ])
+
+  // const { setPreviewLayout } = houseGroup.userData
+
+  // const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
+  //   if (incoming) {
+  //     if (!isActiveLayout(incoming.layout)) {
+  //       if (incoming.candidate) {
+  //         const { windowTypeSide1, windowTypeSide2 } =
+  //           incoming.candidate.structuredDna
+  //         console.log(`PREVIEW: ${windowTypeSide1}-${windowTypeSide2}`)
+  //       }
+
+  //       setPreviewLayout(incoming.layout)
+  //     }
+  //   } else {
+  //     setPreviewLayout(null)
+  //   }
+
+  //   invalidate()
+  // }
+
+  // const changeWindowType = ({ layout }: WindowTypeOption["value"]) => {
+  //   const { setActiveLayout, setPreviewLayout, updateDB } = houseGroup.userData
+
+  //   if (!isActiveLayout(layout)) {
+  //     setActiveLayout(layout)
+  //   }
+
+  //   setPreviewLayout(null)
+
+  //   updateDB().then(() => {
+  //     houseGroup.userData.refreshAltSectionTypeLayouts()
+  //     houseGroup.userData.switchHandlesVisibility("STRETCH")
+  //   })
+
+  //   close()
+  // }
+
+  const [options, setOptions] = useState<
+    Array<{ layoutGroup: any; windowType: WindowType }>
+  >([])
+
   useEffect(() => {
-    pipe(
-      () =>
-        getLayoutsWorker().getAltWindowTypeLayouts({
-          systemId,
-          columnIndex,
-          levelIndex,
-          moduleIndex,
-          dnas,
-          side,
-        }),
-      T.chain((altWindowTypeLayouts) =>
-        pipe(
-          altWindowTypeLayouts,
-          A.traverse(T.ApplicativeSeq)(
-            ({ candidate, dnas, layout: houseLayout, windowType }) =>
-              pipe(
-                createHouseLayoutGroup({
-                  systemId,
-                  dnas,
-                  houseId,
-                  houseLayout,
-                  houseTransformsGroup,
-                }),
-                T.map((houseLayoutGroup): WindowTypeOption => {
-                  const layout: AltWindowTypeLayout = {
-                    houseLayoutGroup,
-                    windowType,
-                    type: LayoutType.Enum.ALT_WINDOW_TYPE,
-                    target: scopeElement,
-                  }
-
-                  houseTransformsGroup.userData.pushAltLayout(layout)
-
-                  return {
-                    label: windowType.description,
-                    thumbnail: windowType.imageUrl,
-                    value: {
-                      layout,
-                      windowType,
-                      candidate,
-                    },
-                  }
-                })
-              )
-          )
+    const go = async () => {
+      const t0 = performance.now()
+      const { options } =
+        await houseGroup.layoutsManager.prepareAltWindowTypeLayouts(
+          scopeElement,
+          getSide(houseGroup)
         )
-      )
-    )().then((altWinTypeOpts) => {
-      // console.log({ altWinTypeOpts })
-      setAltWinTypeOpts(altWinTypeOpts)
-    })
-
-    return () => {
-      houseTransformsGroup.userData.dropAltLayoutsByType(
-        LayoutType.Enum.ALT_WINDOW_TYPE
-      )
+      const t1 = performance.now()
+      console.log(`prepareAltWindowTypeLayouts ${t1 - t0}`)
+      setOptions(options)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    columnIndex,
-    dnas,
-    houseId,
-    levelIndex,
-    moduleIndex,
-    scopeElement,
-    side,
-    systemId,
-  ])
-
-  const { setPreviewLayout } = houseTransformsGroup.userData
-
-  const previewWindowType = (incoming: WindowTypeOption["value"] | null) => {
-    if (incoming) {
-      if (!isActiveLayout(incoming.layout)) {
-        // console.log(
-        //   `currently active layout dnas`,
-        //   houseTransformsGroup.userData.layouts.active.houseLayoutGroup.userData
-        //     .dnas
-        // )
-        if (incoming.candidate) {
-          const { windowTypeSide1, windowTypeSide2 } =
-            incoming.candidate.structuredDna
-          console.log(`PREVIEW: ${windowTypeSide1}-${windowTypeSide2}`)
-        }
-
-        setPreviewLayout(incoming.layout)
-      }
-      // houseTransformsGroup.userData.setActiveLayoutGroup(incoming.layout)
-      // houseTransformsGroup.userData.updateHandles()
-    } else {
-      setPreviewLayout(null)
-      // if (originalWindowTypeOption)
-      //   houseTransformsGroup.userData.setActiveLayoutGroup(
-      //     originalWindowTypeOption.value.layout
-      //   )
-    }
-
-    invalidate()
-  }
-
-  const changeWindowType = ({ layout }: WindowTypeOption["value"]) => {
-    const { setActiveLayout, setPreviewLayout, updateDB } =
-      houseTransformsGroup.userData
-
-    if (!isActiveLayout(layout)) {
-      setActiveLayout(layout)
-    }
-
-    setPreviewLayout(null)
-
-    updateDB().then(() => {
-      // houseTransformsGroup.userData.dropAltLayoutsByType(
-      //   LayoutType.Enum.ALT_WINDOW_TYPE
-      // )
-      // houseTransformsGroup.userData.refreshAltWindowTypeLayouts(scopeElement)
-      houseTransformsGroup.userData.refreshAltSectionTypeLayouts()
-      // houseTransformsGroup.userData.refreshAltResetLayout()
-      // houseTransformsGroup.userData.refreshAltLevelTypeLayouts(scopeElement)
-      houseTransformsGroup.userData.switchHandlesVisibility("STRETCH")
-    })
-
-    close()
-  }
+    go()
+  }, [houseGroup, scopeElement])
 
   return (
     <ContextMenuNested
@@ -212,23 +209,15 @@ const ChangeWindows = (props: Props) => {
       icon={<Opening />}
       unpaddedSvg
     >
-      {pipe(
-        origWinTypeOpt,
-        O.chain((origWinTypeOpt) =>
-          A.isNonEmpty(altWinTypeOpts)
-            ? O.some(
-                <Radio
-                  options={[origWinTypeOpt, ...altWinTypeOpts]}
-                  onChange={changeWindowType}
-                  onHoverChange={previewWindowType}
-                  selected={origWinTypeOpt.value}
-                  compare={(a, b) => a.windowType.code === b.windowType.code}
-                />
-              )
-            : O.none
-        ),
-        O.toNullable
-      )}
+      {options.length > 1 ? (
+        <Radio
+          options={options}
+          onChange={changeWindowType}
+          onHoverChange={previewWindowType}
+          selected={origWinTypeOpt.value}
+          compare={(a, b) => a.windowType.code === b.windowType.code}
+        />
+      ) : null}
     </ContextMenuNested>
   )
 }
