@@ -171,21 +171,19 @@ const ChangeWindows = (props: Props) => {
 
   useEffect(() => {
     const go = async () => {
-      const t0 = performance.now()
       const opts = await houseGroup.layoutsManager.prepareAltWindowTypeLayouts(
         scopeElement,
         getSide(houseGroup)
       )
-      const t1 = performance.now()
-      console.log(`prepareAltWindowTypeLayouts ${t1 - t0}`)
       setData(opts)
     }
     go()
-  }, [houseGroup, data, scopeElement])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const children =
     data === null
-      ? []
+      ? undefined
       : pipe(
           [...data.options, data.current].sort((a, b) =>
             a.windowType.code.localeCompare(b.windowType.code)
@@ -197,10 +195,19 @@ const ChangeWindows = (props: Props) => {
                 value,
               }))}
               onHoverChange={(value) => {
-                houseGroup.layoutsManager.previewLayoutGroup =
-                  value === null ? null : value.layoutGroup
+                if (
+                  value &&
+                  value.layoutGroup.uuid !==
+                    houseGroup.layoutsManager.previewLayoutGroup?.uuid
+                ) {
+                  houseGroup.layoutsManager.previewLayoutGroup =
+                    value === null ? null : value.layoutGroup
+                }
               }}
-              onChange={() => {}}
+              onChange={(value) => {
+                houseGroup.layoutsManager.activeLayoutGroup = value.layoutGroup
+                close()
+              }}
               selected={data.current}
               compare={(a, b) => a.windowType.code === b.windowType.code}
             />

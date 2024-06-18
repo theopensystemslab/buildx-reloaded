@@ -32,6 +32,8 @@ export default function ContextMenuNested(props: Props) {
       ? -(menuDims.bottom - windowSize.height - y0)
       : y0
 
+  console.log({ children: props.children })
+
   return (
     <div
       className={clsx(css.root, { ["text-grey-40"]: !props.children })}
