@@ -1,27 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react"
-import ContextMenuNested from "./ContextMenuNested"
-import { Opening } from "../../../../ui/icons"
-import { WindowType } from "../../../../../server/data/windowTypes"
-import {
-  AltLayout,
-  AltWindowTypeLayout,
-  HouseTransformsGroup,
-  Layout,
-  LayoutType,
-  isActiveLayout,
-} from "../../../ui-3d/fresh/scene/userData"
-import { pipe } from "fp-ts/lib/function"
-import { getLayoutsWorker } from "../../../../workers"
-import { getActiveHouseUserData } from "../../../ui-3d/fresh/helpers/sceneQueries"
-import { getSide } from "../../../state/camera"
-import { A, O, T, pipeLog } from "../../../../utils/functions"
-import { createHouseLayoutGroup } from "../../../ui-3d/fresh/scene/houseLayoutGroup"
-import { getWindowType } from "../../../../workers/layouts/worker"
-import { useAllModules, useAllWindowTypes } from "../../../../db/systems"
-import { Module, parseDna } from "../../../../../server/data/modules"
-import Radio from "../../../../ui/Radio"
-import { invalidate } from "@react-three/fiber"
 import { ScopeElement } from "@opensystemslab/buildx-core"
+import { pipe } from "fp-ts/lib/function"
+import { useEffect, useState } from "react"
+import { Module } from "../../../../../server/data/modules"
+import { WindowType } from "../../../../../server/data/windowTypes"
+import Radio from "../../../../ui/Radio"
+import { Opening } from "../../../../ui/icons"
+import { getSide } from "../../../state/camera"
+import { Layout } from "../../../ui-3d/fresh/scene/userData"
+import ContextMenuNested from "./ContextMenuNested"
 
 type WindowTypeOption = {
   label: string
@@ -39,11 +25,6 @@ const ChangeWindows = (props: Props) => {
   const { scopeElement, close } = props
 
   const houseGroup = scopeElement.elementGroup.houseGroup
-
-  const { systemId, houseId } = houseGroup.userData
-  const { dnas } = houseGroup.activeLayoutGroup.userData
-
-  const { columnIndex, rowIndex, moduleIndex, dna } = scopeElement
 
   // const side = getSide(houseGroup)
 
@@ -183,24 +164,48 @@ const ChangeWindows = (props: Props) => {
   //   close()
   // }
 
-  const [options, setOptions] = useState<
-    Array<{ layoutGroup: any; windowType: WindowType }>
-  >([])
+  type AltsData = Awaited<
+    ReturnType<typeof houseGroup.layoutsManager.prepareAltWindowTypeLayouts>
+  >
+  const [data, setData] = useState<AltsData | null>(null)
 
   useEffect(() => {
     const go = async () => {
       const t0 = performance.now()
-      const { options } =
-        await houseGroup.layoutsManager.prepareAltWindowTypeLayouts(
-          scopeElement,
-          getSide(houseGroup)
-        )
+      const opts = await houseGroup.layoutsManager.prepareAltWindowTypeLayouts(
+        scopeElement,
+        getSide(houseGroup)
+      )
       const t1 = performance.now()
       console.log(`prepareAltWindowTypeLayouts ${t1 - t0}`)
-      setOptions(options)
+      setData(opts)
     }
     go()
-  }, [houseGroup, scopeElement])
+  }, [houseGroup, data, scopeElement])
+
+  const children =
+    data === null
+      ? []
+      : pipe(
+          [...data.options, data.current].sort((a, b) =>
+            a.windowType.code.localeCompare(b.windowType.code)
+          ),
+          (allAlts) => (
+            <Radio
+              options={allAlts.map((value) => ({
+                label: value.windowType.description,
+                value,
+              }))}
+              onHoverChange={(value) => {
+                houseGroup.layoutsManager.previewLayoutGroup =
+                  value === null ? null : value.layoutGroup
+              }}
+              onChange={() => {}}
+              selected={data.current}
+              compare={(a, b) => a.windowType.code === b.windowType.code}
+            />
+          )
+        )
 
   return (
     <ContextMenuNested
@@ -209,15 +214,7 @@ const ChangeWindows = (props: Props) => {
       icon={<Opening />}
       unpaddedSvg
     >
-      {options.length > 1 ? (
-        <Radio
-          options={options}
-          onChange={changeWindowType}
-          onHoverChange={previewWindowType}
-          selected={origWinTypeOpt.value}
-          compare={(a, b) => a.windowType.code === b.windowType.code}
-        />
-      ) : null}
+      {children}
     </ContextMenuNested>
   )
 }

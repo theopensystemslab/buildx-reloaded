@@ -1,23 +1,5 @@
-import type { HouseType } from "@/server/data/houseTypes"
-import { invalidate } from "@react-three/fiber"
-import { pipe } from "fp-ts/lib/function"
-import { nanoid } from "nanoid"
-import { Suspense, memo, useEffect, useMemo, useState } from "react"
-import { suspend } from "suspend-react"
-import { Group } from "three"
-import { useGetFriendlyName, useHouses } from "../../db/user"
-import { A, O } from "../../utils/functions"
-import { setRaycasting } from "../../utils/three"
-import { setSidebar } from "../state/settings"
-import { useScene } from "../ui-3d/fresh/FreshApp"
-import { findFirstGuardDown } from "../ui-3d/fresh/helpers/sceneQueries"
-import { createHouseTransformsGroup } from "../ui-3d/fresh/scene/houseTransformsGroup"
-import {
-  HouseTransformsGroup,
-  isHouseTransformsGroup,
-} from "../ui-3d/fresh/scene/userData"
-import clsx from "clsx"
 import type { CachedHouseType } from "@opensystemslab/buildx-core"
+import { memo } from "react"
 import HouseThumbnailButton from "./HouseThumbnailButton"
 
 type Props = {

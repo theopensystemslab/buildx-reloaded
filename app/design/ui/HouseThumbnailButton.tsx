@@ -6,6 +6,7 @@ import { pipe } from "fp-ts/lib/function"
 import clsx from "clsx"
 import { O, R, TE } from "~/utils/functions"
 import { getBuildXScene } from "../app"
+import { setSidebar } from "../state/settings"
 
 // const templates: Record<string, HouseGroup> = {}
 
@@ -38,6 +39,7 @@ const HouseThumbnailButton = ({
       }),
       TE.map((houseGroup) => {
         scene.addHouseGroup(houseGroup)
+        setSidebar(false)
       })
     )()
 
