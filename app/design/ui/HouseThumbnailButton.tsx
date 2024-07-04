@@ -1,10 +1,8 @@
-import React, { useEffect } from "react"
-import type { HouseGroup } from "@opensystemslab/buildx-core"
 import { CachedHouseType, houseGroupTE } from "@opensystemslab/buildx-core"
-import { nanoid } from "nanoid"
-import { pipe } from "fp-ts/lib/function"
 import clsx from "clsx"
-import { O, R, TE } from "~/utils/functions"
+import { pipe } from "fp-ts/lib/function"
+import { nanoid } from "nanoid"
+import { TE } from "~/utils/functions"
 import { getBuildXScene } from "../app"
 import { setSidebar } from "../state/settings"
 
@@ -42,21 +40,6 @@ const HouseThumbnailButton = ({
         setSidebar(false)
       })
     )()
-
-    // pipe(
-    //   templates,
-    //   R.lookup(houseTypeId),
-    //   O.map((template) => {
-    //     // clone called here
-    //     console.log({ foo: template.layoutsManager.activeLayoutGroup })
-    //     const clone = template.clone()
-
-    //     clone.userData.houseId = nanoid()
-    //     clone.userData.friendlyName = ""
-
-    //     scene.addHouseGroup(clone)
-    //   })
-    // )
   }
 
   const illuminate = true
