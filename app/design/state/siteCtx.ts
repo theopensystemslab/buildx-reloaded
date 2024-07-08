@@ -9,6 +9,7 @@ import { useSubscribe } from "../../utils/hooks"
 import { BUILDX_LOCAL_STORAGE_CONTEXT_KEY } from "./constants"
 
 export const SiteCtxModeEnum = z.enum(["SITE", "BUILDING", "LEVEL"])
+
 export type SiteCtxMode = z.infer<typeof SiteCtxModeEnum>
 
 export type SiteCtx = {

@@ -1,12 +1,20 @@
 "use client"
 import type { ScopeElement } from "@opensystemslab/buildx-core"
-import { BuildXScene } from "@opensystemslab/buildx-core"
+import {
+  BuildXScene,
+  cachedHousesTE,
+  defaultCachedHousesOps,
+  houseGroupTE,
+} from "@opensystemslab/buildx-core"
+import { pipe } from "fp-ts/lib/function"
 import { useEffect, useRef } from "react"
 import { Vector2 } from "three"
 import FullScreenContainer from "~/ui/FullScreenContainer"
+import { A, TE } from "~/utils/functions"
 import { closeMenu, openMenu } from "./state/menu"
-import HtmlUi from "./ui/HtmlUi"
 import { setSelected } from "./state/scope"
+import { setSidebar } from "./state/settings"
+import HtmlUi from "./ui/HtmlUi"
 
 let scene: BuildXScene | null = null
 
@@ -31,7 +39,47 @@ const App = () => {
       onLongTapBuildElement: f,
       onRightClickBuildElement: f,
       onTapMissed: closeMenu,
+      ...defaultCachedHousesOps,
     })
+
+    pipe(
+      cachedHousesTE,
+      TE.map((houses) => {
+        // this is new
+        if (houses.length === 0) setSidebar(true)
+
+        pipe(
+          houses,
+          A.traverse(TE.ApplicativePar)(
+            ({
+              houseId,
+              systemId,
+              friendlyName,
+              houseTypeId,
+              dnas,
+              position: { x, y, z },
+              activeElementMaterials,
+              rotation,
+            }) =>
+              pipe(
+                {
+                  houseId,
+                  systemId,
+                  friendlyName,
+                  houseTypeId,
+                  dnas,
+                },
+                houseGroupTE,
+                TE.map((houseGroup) => {
+                  houseGroup.position.set(x, y, z)
+                  houseGroup.rotation.set(0, rotation, 0)
+                  scene?.addHouseGroup(houseGroup)
+                })
+              )
+          )
+        )
+      })
+    )()
   }, [])
 
   return (

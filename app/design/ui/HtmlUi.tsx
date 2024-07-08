@@ -11,6 +11,7 @@ import {
   useVerticalCuts,
 } from "../state/settings"
 // import Checklist from "./Checklist"
+import { SiteCtxModeEnum } from "@opensystemslab/buildx-core"
 import { keys } from "fp-ts/lib/Record"
 import { pipe } from "fp-ts/lib/function"
 import usePortal from "react-cool-portal"
@@ -27,14 +28,12 @@ import elementCategories, {
 } from "../state/elementCategories"
 import { useMenu } from "../state/menu"
 import { useScope } from "../state/scope"
-import { SiteCtxModeEnum, useSiteCtx } from "../state/siteCtx"
 import Breadcrumbs from "./Breadcrumbs"
 import ExitMode from "./ExitMode"
 import ObjectsSidebar from "./ObjectsSidebar"
 import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
 import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
 import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
-import MetricsWidget from "./metrics/MetricsWidget"
 
 const HtmlUi = () => {
   const { groundPlaneEnabled: groundPlane } = useDesignSettings()
@@ -74,23 +73,19 @@ const HtmlUi = () => {
 
     const { x, y } = menu
 
-    const mode = scopeElement.elementGroup.houseGroup.modeManager.mode
-
-    console.log([x, y])
+    const mode = scopeElement.elementGroup.houseGroup.scene.contextManager?.mode
 
     switch (mode) {
       case SiteCtxModeEnum.Enum.SITE:
         return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
       case SiteCtxModeEnum.Enum.BUILDING:
         return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
-      default:
+      case SiteCtxModeEnum.Enum.ROW:
         return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
+      default:
+        return () => null
     }
   }, [menu, selected])
-
-  // {menu.open && selected !== null && <ContextMenuEntry {...{ x: menu.x, y: menu.y }} />}
-
-  // const foo = useHtgFoo()
 
   return (
     <Fragment>
@@ -207,7 +202,7 @@ const HtmlUi = () => {
         </IconMenu>
       </div>
 
-      <MetricsWidget />
+      {/* <MetricsWidget /> */}
 
       <ObjectsSidebar />
 

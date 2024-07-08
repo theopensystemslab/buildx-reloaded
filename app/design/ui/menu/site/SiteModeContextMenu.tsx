@@ -4,12 +4,12 @@ import { Fragment, useState } from "react"
 import userDB from "../../../../db/user"
 import { Pencil, TextCursor } from "../../../../ui/icons"
 import { closeMenu } from "../../../state/menu"
-import { SiteCtxModeEnum, dispatchModeChange } from "../../../state/siteCtx"
 import { dispatchOutline } from "../../../ui-3d/fresh/events/outlines"
 import RenameForm from "../../RenameForm"
 import ContextMenu from "../common/ContextMenu"
 import ContextMenuButton from "../common/ContextMenuButton"
 import { ModeContextMenuProps } from "../common/props"
+import { O } from "~/utils/functions"
 
 const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
   const { elementGroup } = scopeElement
@@ -43,13 +43,14 @@ const SiteModeContextMenu = ({ x, y, scopeElement }: ModeContextMenuProps) => {
             text="Edit building"
             unpaddedSvg
             onClick={() => {
-              dispatchModeChange({
-                prev: SiteCtxModeEnum.Enum.SITE,
-                next: SiteCtxModeEnum.Enum.BUILDING,
-              })
-              dispatchOutline({
-                selectedObjects: [],
-              })
+              houseGroup.editHouse()
+              // dispatchModeChange({
+              //   prev: SiteCtxModeEnum.Enum.SITE,
+              //   next: SiteCtxModeEnum.Enum.BUILDING,
+              // })
+              // dispatchOutline({
+              //   selectedObjects: [],
+              // })
               close()
             }}
           />
