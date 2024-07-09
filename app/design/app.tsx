@@ -13,7 +13,7 @@ import FullScreenContainer from "~/ui/FullScreenContainer"
 import { A, TE } from "~/utils/functions"
 import { closeMenu } from "./state/menu"
 import { setSidebar } from "./state/settings"
-import Foo from "./Foo"
+import BuildXContextMenu from "./menu/BuildXContextMenu"
 import HtmlUi from "./ui/HtmlUi"
 
 let scene: BuildXScene | null = null
@@ -25,14 +25,22 @@ export const getBuildXScene = (): BuildXScene | null => {
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  const [foo, setFoo] = useState<any>(null)
+  const [contextMenu, setContextMenu] = useState<{
+    scopeElement: ScopeElement
+    x: number
+    y: number
+  } | null>(null)
 
   useEffect(() => {
     if (!canvasRef.current || scene !== null) return
 
     const contextMenu = (scopeElement: ScopeElement, xy: Vector2): void => {
       const { x, y } = xy
-      setFoo(scopeElement)
+      setContextMenu({
+        scopeElement,
+        x,
+        y,
+      })
       // setSelected(scopeElement)
       // openMenu(x, y)
     }
@@ -90,7 +98,7 @@ const App = () => {
   return (
     <FullScreenContainer>
       <canvas ref={canvasRef} className="w-full h-full" />
-      <Foo foo={foo} />
+      {contextMenu && <BuildXContextMenu {...contextMenu} />}
       <HtmlUi />
     </FullScreenContainer>
   )
