@@ -1,5 +1,5 @@
 "use client"
-import type { ScopeElement } from "@opensystemslab/buildx-core"
+import type { ScopeElement, SiteCtxMode } from "@opensystemslab/buildx-core"
 import {
   BuildXScene,
   cachedHousesTE,
@@ -11,7 +11,6 @@ import { useEffect, useRef, useState } from "react"
 import { Vector2 } from "three"
 import FullScreenContainer from "~/ui/FullScreenContainer"
 import { A, TE } from "~/utils/functions"
-import { closeMenu } from "./state/menu"
 import { setSidebar } from "./state/settings"
 import BuildXContextMenu from "./menu/BuildXContextMenu"
 import HtmlUi from "./ui/HtmlUi"
@@ -31,26 +30,36 @@ const App = () => {
     y: number
   } | null>(null)
 
+  const [mode, setMode] = useState<SiteCtxMode | null>(null)
+
+  const close = () => setContextMenu(null)
+
   useEffect(() => {
     if (!canvasRef.current || scene !== null) return
 
     const contextMenu = (scopeElement: ScopeElement, xy: Vector2): void => {
       const { x, y } = xy
+
       setContextMenu({
         scopeElement,
         x,
         y,
       })
+
+      setMode(scopeElement.elementGroup.scene.contextManager?.mode ?? null)
       // setSelected(scopeElement)
       // openMenu(x, y)
     }
 
     scene = new BuildXScene({
       canvas: canvasRef.current,
+      ...defaultCachedHousesOps,
       onLongTapBuildElement: contextMenu,
       onRightClickBuildElement: contextMenu,
-      onTapMissed: closeMenu,
-      ...defaultCachedHousesOps,
+      onTapMissed: close,
+      onModeChange: (prev, next) => {
+        setMode(next)
+      },
     })
 
     pipe(
@@ -98,7 +107,14 @@ const App = () => {
   return (
     <FullScreenContainer>
       <canvas ref={canvasRef} className="w-full h-full" />
-      {contextMenu && <BuildXContextMenu {...contextMenu} />}
+      {contextMenu && (
+        <BuildXContextMenu
+          {...contextMenu}
+          mode={mode}
+          setMode={setMode}
+          close={close}
+        />
+      )}
       <HtmlUi />
     </FullScreenContainer>
   )

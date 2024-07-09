@@ -1,8 +1,4 @@
-import {
-  ScopeElement,
-  SiteCtxMode,
-  SiteCtxModeEnum,
-} from "@opensystemslab/buildx-core"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 import { Fragment } from "react"
 import { Pencil } from "~/ui/icons"
 import ChangeWindows from "../common/ChangeWindows"
@@ -10,13 +6,10 @@ import ContextMenuButton from "../common/ContextMenuButton"
 
 type Props = {
   scopeElement: ScopeElement
-  setMode: (mode: SiteCtxMode) => void
   close: () => void
 }
-const BuildingModeContextMenuItems = ({ scopeElement, setMode }: Props) => {
-  const { rowIndex, elementGroup } = scopeElement
-
-  const houseGroup = elementGroup.houseGroup
+const BuildingModeContextMenuItems = ({ scopeElement }: Props) => {
+  const { elementGroup } = scopeElement
 
   return (
     <Fragment>
@@ -25,7 +18,7 @@ const BuildingModeContextMenuItems = ({ scopeElement, setMode }: Props) => {
         text="Edit level"
         unpaddedSvg
         onClick={() => {
-          setMode(SiteCtxModeEnum.Enum.ROW)
+          elementGroup.scene.contextManager?.contextDown(elementGroup)
         }}
       />
 

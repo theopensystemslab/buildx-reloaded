@@ -1,24 +1,16 @@
 import { TrashCan } from "@carbon/icons-react"
-import { invalidate } from "@react-three/fiber"
+import { ScopeElement } from "@opensystemslab/buildx-core"
 import { Fragment, useState } from "react"
-import userDB from "../../../db/user"
 import { Pencil, TextCursor } from "../../../ui/icons"
-import { closeMenu } from "../../state/menu"
 import RenameForm from "../../ui/RenameForm"
 import ContextMenuButton from "../common/ContextMenuButton"
-import {
-  ScopeElement,
-  SiteCtxMode,
-  SiteCtxModeEnum,
-} from "@opensystemslab/buildx-core"
 
 type Props = {
   scopeElement: ScopeElement
-  setMode: (mode: SiteCtxMode) => void
   close: () => void
 }
 
-const SiteModeContextMenuItems = ({ scopeElement, setMode, close }: Props) => {
+const SiteModeContextMenuItems = ({ scopeElement, close }: Props) => {
   const { elementGroup } = scopeElement
 
   const houseGroup = elementGroup.houseGroup
@@ -39,7 +31,6 @@ const SiteModeContextMenuItems = ({ scopeElement, setMode, close }: Props) => {
           unpaddedSvg
           onClick={() => {
             houseGroup.editHouse()
-            setMode(SiteCtxModeEnum.Enum.BUILDING)
             // dispatchModeChange({
             //   prev: SiteCtxModeEnum.Enum.SITE,
             //   next: SiteCtxModeEnum.Enum.BUILDING,

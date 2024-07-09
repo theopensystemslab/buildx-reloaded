@@ -1,37 +1,32 @@
-import { ScopeElement, SiteCtxModeEnum } from "@opensystemslab/buildx-core"
-import React, { useState } from "react"
-import SiteModeContextMenuItems from "./site/SiteModeContextMenuItems"
+import {
+  ScopeElement,
+  SiteCtxMode,
+  SiteCtxModeEnum,
+} from "@opensystemslab/buildx-core"
+import { useState } from "react"
 import BuildingModeContextMenuItems from "./building/BuildingModeContextMenuItems"
-import LevelModeContextMenu from "../ui/menu/level/LevelModeContextMenu"
 import ContextMenu from "./common/ContextMenu"
+import SiteModeContextMenuItems from "./site/SiteModeContextMenuItems"
 
 type Props = {
   scopeElement: ScopeElement
   x: number
   y: number
   close: () => void
+  mode: SiteCtxMode | null
+  setMode: (mode: SiteCtxMode) => void
 }
 
 const BuildXContextMenu = (props: Props) => {
-  const { scopeElement, x, y, close } = props
-
-  const [mode, setMode] = useState(
-    scopeElement.elementGroup.scene.contextManager?.mode
-  )
+  const { scopeElement, x, y, close, mode } = props
 
   const children = (function () {
-    switch (mode) {
+    switch (mode?.label) {
       case SiteCtxModeEnum.Enum.SITE:
-        return (
-          <SiteModeContextMenuItems
-            {...{ x, y, scopeElement, setMode, close }}
-          />
-        )
+        return <SiteModeContextMenuItems {...{ x, y, scopeElement, close }} />
       case SiteCtxModeEnum.Enum.BUILDING:
         return (
-          <BuildingModeContextMenuItems
-            {...{ x, y, scopeElement, setMode, close }}
-          />
+          <BuildingModeContextMenuItems {...{ x, y, scopeElement, close }} />
         )
       // case SiteCtxModeEnum.Enum.ROW:
       //   return <LevelModeContextMenu {...{ x, y, scopeElement }} />
