@@ -149,7 +149,9 @@ const HouseThumbnail = ({ houseType }: Props) => {
       <div
         className="h-20 w-20 flex-none rounded-full bg-grey-20"
         style={{
-          backgroundImage: `url(${URL.createObjectURL(houseType.imageBlob)})`,
+          backgroundImage: houseType.imageBlob
+            ? `url(${URL.createObjectURL(houseType.imageBlob)})`
+            : undefined,
           backgroundSize: "cover",
           backgroundPosition: "50% 50%",
         }}

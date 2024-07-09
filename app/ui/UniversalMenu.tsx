@@ -1,4 +1,4 @@
-import Sidebar from "~/ui//Sidebar"
+import Sidebar from "~/ui/Sidebar"
 // import map from "@/src/hooks/map"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"

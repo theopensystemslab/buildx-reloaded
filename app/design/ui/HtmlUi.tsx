@@ -1,52 +1,27 @@
-import { Add, Reset, View, WatsonHealthSubVolume } from "@carbon/icons-react"
-import { Fragment, useMemo, useState } from "react"
+import { Add } from "@carbon/icons-react"
+import { Fragment, useState } from "react"
 import IconButton from "~/ui/IconButton"
-import IconMenu from "~/ui/IconMenu"
-import UniversalMenu from "~/ui/UniversalMenu"
-import { Menu, SectionCuts } from "~/ui/icons"
-import {
-  setGroundPlaneEnabled,
-  setSidebar,
-  useDesignSettings,
-  useVerticalCuts,
-} from "../state/settings"
+import { Menu } from "~/ui/icons"
+import { setSidebar } from "../state/settings"
 // import Checklist from "./Checklist"
-import { SiteCtxModeEnum } from "@opensystemslab/buildx-core"
-import { keys } from "fp-ts/lib/Record"
-import { pipe } from "fp-ts/lib/function"
 import usePortal from "react-cool-portal"
-import Checklist from "~/ui/Checklist"
-import Radio from "~/ui/Radio"
-import { R, S } from "~/utils/functions"
-import {
-  setOrthographic,
-  useCameraReset,
-  useOrthographic,
-} from "../state/camera"
-import elementCategories, {
-  useElementCategories,
-} from "../state/elementCategories"
-import { useMenu } from "../state/menu"
-import { useScope } from "../state/scope"
-import Breadcrumbs from "./Breadcrumbs"
-import ExitMode from "./ExitMode"
 import ObjectsSidebar from "./ObjectsSidebar"
-import BuildingModeContextMenu from "./menu/building/BuildingModeContextMenu"
-import LevelModeContextMenu from "./menu/level/LevelModeContextMenu"
-import SiteModeContextMenu from "./menu/site/SiteModeContextMenu"
 
 const HtmlUi = () => {
-  const { groundPlaneEnabled: groundPlane } = useDesignSettings()
-  const orthographic = useOrthographic()
+  // const { groundPlaneEnabled: groundPlane } = useDesignSettings()
+
+  // const orthographic = useOrthographic()
 
   // const { mapboxEnabled } = useMapboxStore()
 
   const [universalMenu, setUniversalMenu] = useState(false)
-  const cameraReset = useCameraReset()
 
-  const categories = useElementCategories()
+  // const cameraReset = useCameraReset()
 
-  const [verticalCuts, setVerticalCuts] = useVerticalCuts()
+  // const categories = useElementCategories()
+
+  // const [verticalCuts, setVerticalCuts] = useVerticalCuts()
+
   // useInsert1000Skylarks()
 
   const { Portal: HeaderEndPortal } = usePortal({
@@ -62,30 +37,31 @@ const HtmlUi = () => {
   })
 
   // const { mode } = useSiteCtx()
-  const { hovered, selected } = useScope()
 
-  const menu = useMenu()
+  // const { hovered, selected } = useScope()
 
-  const ContextMenu = useMemo((): (() => JSX.Element | null) => {
-    if (!menu.open || selected === null) return () => null
+  // const menu = useMenu()
 
-    const scopeElement = selected
+  // const ContextMenu = useMemo((): (() => JSX.Element | null) => {
+  //   if (!menu.open || selected === null) return () => null
 
-    const { x, y } = menu
+  //   const scopeElement = selected
 
-    const mode = scopeElement.elementGroup.houseGroup.scene.contextManager?.mode
+  //   const { x, y } = menu
 
-    switch (mode) {
-      case SiteCtxModeEnum.Enum.SITE:
-        return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
-      case SiteCtxModeEnum.Enum.BUILDING:
-        return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
-      case SiteCtxModeEnum.Enum.ROW:
-        return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
-      default:
-        return () => null
-    }
-  }, [menu, selected])
+  //   const mode = scopeElement.elementGroup.houseGroup.scene.contextManager?.mode
+
+  //   switch (mode) {
+  //     case SiteCtxModeEnum.Enum.SITE:
+  //       return () => <SiteModeContextMenu {...{ x, y, scopeElement }} />
+  //     case SiteCtxModeEnum.Enum.BUILDING:
+  //       return () => <BuildingModeContextMenu {...{ x, y, scopeElement }} />
+  //     case SiteCtxModeEnum.Enum.ROW:
+  //       return () => <LevelModeContextMenu {...{ x, y, scopeElement }} />
+  //     default:
+  //       return () => null
+  //   }
+  // }, [menu, selected])
 
   return (
     <Fragment>
@@ -123,7 +99,7 @@ const HtmlUi = () => {
             onChange={setMapboxEnabled}
           />
         </IconMenu> */}
-        <IconMenu icon={() => <View size={24} className="m-auto" />}>
+        {/* <IconMenu icon={() => <View size={24} className="m-auto" />}>
           <Radio
             id="camera"
             label="Camera"
@@ -143,9 +119,9 @@ const HtmlUi = () => {
           <IconButton onClick={cameraReset}>
             <Reset size={24} className="m-auto" />
           </IconButton>
-        </IconMenu>
+        </IconMenu> */}
 
-        <IconMenu icon={SectionCuts}>
+        {/* <IconMenu icon={SectionCuts}>
           <Checklist
             label="Vertical cuts"
             options={[
@@ -171,8 +147,8 @@ const HtmlUi = () => {
               setGroundPlaneEnabled(newValue)
             }}
           />
-        </IconMenu>
-        <IconMenu
+        </IconMenu> */}
+        {/* <IconMenu
           icon={() => <WatsonHealthSubVolume size={24} className="m-auto" />}
         >
           <Checklist
@@ -199,25 +175,25 @@ const HtmlUi = () => {
               )
             }
           />
-        </IconMenu>
+        </IconMenu> */}
       </div>
 
       {/* <MetricsWidget /> */}
 
       <ObjectsSidebar />
 
-      <UniversalMenu
+      {/* <UniversalMenu
         open={universalMenu}
         close={() => setUniversalMenu(false)}
-      />
+      /> */}
 
-      <HeaderStartPortal>
+      {/* <HeaderStartPortal>
         <Breadcrumbs />
-      </HeaderStartPortal>
+      </HeaderStartPortal> */}
 
-      <ContextMenu />
+      {/* <ContextMenu /> */}
 
-      <ExitMode />
+      {/* <ExitMode /> */}
     </Fragment>
   )
 }

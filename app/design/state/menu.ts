@@ -1,5 +1,4 @@
 import { proxy, useSnapshot } from "valtio"
-import scope, { clearHovered, clearSelected } from "./scope"
 
 const menu = proxy({
   open: false,
@@ -8,7 +7,6 @@ const menu = proxy({
 })
 
 export const openMenu = (x: number, y: number) => {
-  console.log(`open menu`)
   menu.open = true
   menu.x = x
   menu.y = y

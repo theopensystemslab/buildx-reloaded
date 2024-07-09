@@ -31,8 +31,6 @@ const HouseThumbnailButton = ({
       houseGroupTE({
         systemId,
         dnas,
-        friendlyName: "",
-        houseId: nanoid(),
         houseTypeId,
       }),
       TE.map((houseGroup) => {
