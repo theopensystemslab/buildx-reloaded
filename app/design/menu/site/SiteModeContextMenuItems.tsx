@@ -6,19 +6,20 @@ import { Pencil, TextCursor } from "../../../ui/icons"
 import { closeMenu } from "../../state/menu"
 import RenameForm from "../../ui/RenameForm"
 import ContextMenuButton from "../common/ContextMenuButton"
-import { ScopeElement } from "@opensystemslab/buildx-core"
+import {
+  ScopeElement,
+  SiteCtxMode,
+  SiteCtxModeEnum,
+} from "@opensystemslab/buildx-core"
 
 type Props = {
   scopeElement: ScopeElement
+  setMode: (mode: SiteCtxMode) => void
+  close: () => void
 }
 
-const SiteContextMenu = ({ scopeElement }: Props) => {
+const SiteModeContextMenuItems = ({ scopeElement, setMode, close }: Props) => {
   const { elementGroup } = scopeElement
-
-  const close = () => {
-    closeMenu()
-    invalidate()
-  }
 
   const houseGroup = elementGroup.houseGroup
 
@@ -38,6 +39,7 @@ const SiteContextMenu = ({ scopeElement }: Props) => {
           unpaddedSvg
           onClick={() => {
             houseGroup.editHouse()
+            setMode(SiteCtxModeEnum.Enum.BUILDING)
             // dispatchModeChange({
             //   prev: SiteCtxModeEnum.Enum.SITE,
             //   next: SiteCtxModeEnum.Enum.BUILDING,
@@ -45,7 +47,7 @@ const SiteContextMenu = ({ scopeElement }: Props) => {
             // dispatchOutline({
             //   selectedObjects: [],
             // })
-            close()
+            // close()
           }}
         />
       )}
@@ -81,4 +83,4 @@ const SiteContextMenu = ({ scopeElement }: Props) => {
   )
 }
 
-export default SiteContextMenu
+export default SiteModeContextMenuItems

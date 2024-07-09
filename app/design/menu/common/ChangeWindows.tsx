@@ -1,10 +1,10 @@
 import { OpeningsChangeInfo, ScopeElement } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useState } from "react"
+import { getSide } from "~/design/state/camera"
+import Radio from "~/ui/Radio"
+import { Opening } from "~/ui/icons"
 import { O, TE } from "~/utils/functions"
-import Radio from "../../../../ui/Radio"
-import { Opening } from "../../../../ui/icons"
-import { getSide } from "../../../state/camera"
 import ContextMenuNested from "./ContextMenuNested"
 
 type Props = {

@@ -1,24 +1,22 @@
+import { ScopeElement } from "@opensystemslab/buildx-core"
+import { invalidate } from "@react-three/fiber"
+import { pipe } from "fp-ts/lib/function"
 import React, { useEffect, useMemo, useState } from "react"
 import { LevelType } from "../../../../server/data/levelTypes"
+import { parseDna } from "../../../../server/data/modules"
+import { useAllLevelTypes } from "../../../db/systems"
+import Radio from "../../../ui/Radio"
+import { ChangeLevel } from "../../../ui/icons"
+import { A, O, T } from "../../../utils/functions"
+import { getLayoutsWorker } from "../../../workers"
+import { createHouseLayoutGroup } from "../../ui-3d/fresh/scene/houseLayoutGroup"
 import {
   AltLevelTypeLayout,
-  HouseTransformsGroup,
   Layout,
   LayoutType,
   isActiveLayout,
 } from "../../ui-3d/fresh/scene/userData"
-import { parseDna } from "../../../../server/data/modules"
-import { useAllLevelTypes } from "../../../db/systems"
-import { A, O, T } from "../../../utils/functions"
-import { pipe } from "fp-ts/lib/function"
-import { getLayoutsWorker } from "../../../workers"
-import { createHouseLayoutGroup } from "../../ui-3d/fresh/scene/houseLayoutGroup"
-import { getActiveHouseUserData } from "../../ui-3d/fresh/helpers/sceneQueries"
 import ContextMenuNested from "../common/ContextMenuNested"
-import { ChangeLevel } from "../../../ui/icons"
-import Radio from "../../../ui/Radio"
-import { invalidate } from "@react-three/fiber"
-import { ScopeElement } from "@opensystemslab/buildx-core"
 
 type Props = {
   scopeElement: ScopeElement

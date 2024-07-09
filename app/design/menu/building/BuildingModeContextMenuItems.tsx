@@ -1,44 +1,33 @@
-import { invalidate } from "@react-three/fiber"
-import { closeMenu } from "../../state/menu"
+import {
+  ScopeElement,
+  SiteCtxMode,
+  SiteCtxModeEnum,
+} from "@opensystemslab/buildx-core"
+import { Fragment } from "react"
+import { Pencil } from "~/ui/icons"
 import ChangeWindows from "../common/ChangeWindows"
-import ContextMenu from "../common/ContextMenu"
-import { ModeContextMenuProps } from "../common/props"
+import ContextMenuButton from "../common/ContextMenuButton"
 
-const BuildingModeContextMenu = ({
-  x,
-  y,
-  scopeElement,
-}: ModeContextMenuProps) => {
-  const close = () => {
-    closeMenu()
-    invalidate()
-  }
-
+type Props = {
+  scopeElement: ScopeElement
+  setMode: (mode: SiteCtxMode) => void
+  close: () => void
+}
+const BuildingModeContextMenuItems = ({ scopeElement, setMode }: Props) => {
   const { rowIndex, elementGroup } = scopeElement
 
   const houseGroup = elementGroup.houseGroup
 
   return (
-    <ContextMenu
-      {...{
-        pageX: x,
-        pageY: y,
-        onClose: close,
-      }}
-    >
-      {/* <ContextMenuButton
+    <Fragment>
+      <ContextMenuButton
         icon={<Pencil />}
         text="Edit level"
         unpaddedSvg
         onClick={() => {
-          dispatchModeChange({
-            prev: SiteCtxModeEnum.Enum.BUILDING,
-            next: SiteCtxModeEnum.Enum.LEVEL,
-            levelIndex: rowIndex,
-          })
-          close()
+          setMode(SiteCtxModeEnum.Enum.ROW)
         }}
-      /> */}
+      />
 
       {/* <ChangeMaterial
         houseTransformsGroup={houseGroup}
@@ -63,8 +52,8 @@ const BuildingModeContextMenu = ({
           onComplete: props.onClose,
         }}
       /> */}
-    </ContextMenu>
+    </Fragment>
   )
 }
 
-export default BuildingModeContextMenu
+export default BuildingModeContextMenuItems
