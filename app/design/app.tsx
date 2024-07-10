@@ -1,4 +1,5 @@
 "use client"
+import { Add } from "@carbon/icons-react"
 import type { ScopeElement, SiteCtxMode } from "@opensystemslab/buildx-core"
 import {
   BuildXScene,
@@ -8,12 +9,14 @@ import {
 } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useRef, useState } from "react"
+import usePortal from "react-cool-portal"
 import { Vector2 } from "three"
 import FullScreenContainer from "~/ui/FullScreenContainer"
+import IconButton from "~/ui/IconButton"
+import { Menu } from "~/ui/icons"
 import { A, TE } from "~/utils/functions"
-import { setSidebar } from "./state/settings"
 import BuildXContextMenu from "./menu/BuildXContextMenu"
-import HtmlUi from "./ui/HtmlUi"
+import ObjectsSidebar from "./ui/objects-sidebar/ObjectsSidebar"
 
 let scene: BuildXScene | null = null
 
@@ -30,9 +33,25 @@ const App = () => {
     y: number
   } | null>(null)
 
+  const closeContextMenu = () => setContextMenu(null)
+
   const [mode, setMode] = useState<SiteCtxMode | null>(null)
 
-  const close = () => setContextMenu(null)
+  const [objectsSidebar, setObjectsSidebar] = useState(false)
+
+  const [universalMenu, setUniversalMenu] = useState(false)
+
+  const { Portal: HeaderEndPortal } = usePortal({
+    containerId: "headerEnd",
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
+
+  const { Portal: HeaderStartPortal } = usePortal({
+    containerId: "headerStart",
+    autoRemoveContainer: false,
+    internalShowHide: false,
+  })
 
   useEffect(() => {
     if (!canvasRef.current || scene !== null) return
@@ -56,8 +75,8 @@ const App = () => {
       ...defaultCachedHousesOps,
       onLongTapBuildElement: contextMenu,
       onRightClickBuildElement: contextMenu,
-      onTapMissed: close,
-      onModeChange: (prev, next) => {
+      onTapMissed: closeContextMenu,
+      onModeChange: (_, next) => {
         setMode(next)
       },
     })
@@ -66,7 +85,7 @@ const App = () => {
       cachedHousesTE,
       TE.chain((houses) => {
         // this is new
-        if (houses.length === 0) setSidebar(true)
+        if (houses.length === 0) setObjectsSidebar(true)
 
         console.log(houses)
 
@@ -107,15 +126,37 @@ const App = () => {
   return (
     <FullScreenContainer>
       <canvas ref={canvasRef} className="w-full h-full" />
+      <HeaderEndPortal>
+        <div className="flex items-center justify-end">
+          <IconButton onClick={() => setObjectsSidebar(true)}>
+            <div className="flex items-center justify-center">
+              <Add size={32} />
+            </div>
+          </IconButton>
+          <IconButton onClick={() => setUniversalMenu(true)}>
+            <Menu />
+          </IconButton>
+        </div>
+      </HeaderEndPortal>
+
+      <ObjectsSidebar
+        expanded={objectsSidebar}
+        close={() => setObjectsSidebar(false)}
+      />
+
+      {/* <UniversalMenu
+        open={universalMenu}
+        close={() => setUniversalMenu(false)}
+      /> */}
+
       {contextMenu && (
         <BuildXContextMenu
           {...contextMenu}
           mode={mode}
           setMode={setMode}
-          close={close}
+          close={closeContextMenu}
         />
       )}
-      <HtmlUi />
     </FullScreenContainer>
   )
 }

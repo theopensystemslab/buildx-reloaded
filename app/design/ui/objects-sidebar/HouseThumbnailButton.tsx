@@ -1,26 +1,17 @@
 import { CachedHouseType, houseGroupTE } from "@opensystemslab/buildx-core"
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
-import { nanoid } from "nanoid"
+import { getBuildXScene } from "~/design/app"
 import { TE } from "~/utils/functions"
-import { getBuildXScene } from "../app"
-import { setSidebar } from "../state/settings"
-
-// const templates: Record<string, HouseGroup> = {}
-
-// const initTemplate = (houseType: CachedHouseType) => {
-//   const { dnas, id: houseTypeId, systemId } = houseType
-
-// }
 
 const HouseThumbnailButton = ({
   houseType,
+  close,
 }: {
   houseType: CachedHouseType
+  close: () => void
 }) => {
   const { dnas, id: houseTypeId, systemId } = houseType
-
-  // useEffect(() => initTemplate(houseType), [houseType])
 
   const addHouse = () => {
     const scene = getBuildXScene()
@@ -35,7 +26,7 @@ const HouseThumbnailButton = ({
       }),
       TE.map((houseGroup) => {
         scene.addHouseGroup(houseGroup)
-        setSidebar(false)
+        close()
       })
     )()
   }

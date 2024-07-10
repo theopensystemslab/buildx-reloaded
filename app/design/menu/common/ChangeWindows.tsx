@@ -1,7 +1,6 @@
 import { OpeningsChangeInfo, ScopeElement } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { useEffect, useState } from "react"
-import { getSide } from "~/design/state/camera"
 import Radio from "~/ui/Radio"
 import { Opening } from "~/ui/icons"
 import { O, TE } from "~/utils/functions"
@@ -24,7 +23,7 @@ const ChangeWindows = (props: Props) => {
     pipe(
       houseGroup.openingsManager,
       TE.fromNullable(Error(`houseGroup.openingsManager undefined`)),
-      TE.chain((x) => x.createAlts(scopeElement, getSide(houseGroup))),
+      TE.chain((x) => x.createAlts(scopeElement)),
       TE.map((openingsChangeInfo) => {
         setOpeningsChangeInfo(openingsChangeInfo)
       })

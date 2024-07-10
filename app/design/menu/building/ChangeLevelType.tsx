@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ScopeElement } from "@opensystemslab/buildx-core"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"
@@ -58,6 +59,7 @@ const ChangeLevelType = (props: Props) => {
           },
         }))
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [allLevelTypes, houseGroup.userData, currentLevelTypeCode]
   )
 

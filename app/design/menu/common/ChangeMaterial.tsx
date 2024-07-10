@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { WatsonHealthSubVolume } from "@carbon/icons-react"
 import { invalidate } from "@react-three/fiber"
 import { pipe } from "fp-ts/lib/function"

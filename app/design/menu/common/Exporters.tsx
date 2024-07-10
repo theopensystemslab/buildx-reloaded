@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ArrowDown } from "@carbon/icons-react"
 import { identity, pipe } from "fp-ts/lib/function"
 import { useHouse } from "../../../../db/user"
