@@ -4,7 +4,6 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { pipe } from "fp-ts/lib/function"
 import { memo, useEffect, useMemo } from "react"
 import { A, capitalizeFirstLetters } from "~/utils/functions"
-import { useSiteCurrency } from "../../design/state/siteCtx"
 import PaginatedTable from "../PaginatedTable"
 import { csvFormatRows } from "d3-dsv"
 import {
@@ -12,6 +11,7 @@ import {
   useGetColorClass,
   useSelectedHouseMaterialsListRows,
 } from "../../db/outputs"
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -74,7 +74,7 @@ const MaterialsListTable = (props: Props) => {
     )
   )
 
-  const { formatWithSymbol } = useSiteCurrency()
+  const { formatWithSymbol } = useProjectCurrency()
 
   const columnHelper = createColumnHelper<MaterialsListRow>()
 

@@ -1,8 +1,9 @@
 "use client"
 import { ArrowUp } from "@carbon/icons-react"
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { useSiteCurrency } from "../../design/state/siteCtx"
+import { OrderListRow, useGetColorClass } from "../../db/outputs"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -12,7 +13,6 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { OrderListRow, useGetColorClass } from "../../db/outputs"
 
 const ChassisCostChart = ({
   orderListRows,
@@ -43,7 +43,7 @@ const ChassisCostChart = ({
     0
   )
 
-  const currency = useSiteCurrency()
+  const currency = useProjectCurrency()
 
   function formatNumberWithK(number: number): string {
     if (number >= 1000) {

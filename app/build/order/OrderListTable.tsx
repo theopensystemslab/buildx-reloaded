@@ -10,7 +10,7 @@ import {
   useOrderListData,
 } from "../../db/outputs"
 import PaginatedTable from "../PaginatedTable"
-import { useSiteCurrency } from "~/design/state/siteCtx"
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -54,7 +54,7 @@ const OrderListTable = (props: Props) => {
 
   const orderListDownload = useOrderListDownload(orderListRows)
 
-  const { formatWithSymbol } = useSiteCurrency()
+  const { formatWithSymbol } = useProjectCurrency()
 
   useEffect(() => {
     if (orderListDownload) setCsvDownloadUrl(orderListDownload.url)

@@ -1,8 +1,8 @@
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 import { useLiveQuery } from "dexie-react-hooks"
 import { pipe } from "fp-ts/lib/function"
 import { useSelectedHouseIds } from "~/analyse/ui/HousesPillsSelector"
 import outputsDB from "."
-import { useSiteCurrency } from "../../design/state/siteCtx"
 import { A } from "../../utils/functions"
 import { useBuildingHouseId } from "../user"
 
@@ -146,7 +146,7 @@ export const getBlockCountsByHouse = A.reduce(
 export const useOrderListData = () => {
   const orderListRows = useSelectedHouseOrderListRows()
 
-  const { code: currencyCode } = useSiteCurrency()
+  const { code: currencyCode } = useProjectCurrency()
 
   const fmt = (value: number) =>
     new Intl.NumberFormat("en-US", {

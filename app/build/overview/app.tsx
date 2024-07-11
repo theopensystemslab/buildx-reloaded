@@ -6,14 +6,15 @@ import { Fragment } from "react"
 import { A } from "~/utils/functions"
 import { useAnalyseData } from "../../analyse/state/data"
 import { useOrderListData } from "../../db/outputs"
-import { useSiteCtx, useSiteCurrency } from "../../design/state/siteCtx"
+import { useSiteCtx } from "../../design/state/siteCtx"
 import css from "./app.module.css"
 import useDownloads from "./useDownloads"
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 
 const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
-  const { formatWithSymbol } = useSiteCurrency()
+  const { formatWithSymbol } = useProjectCurrency()
 
   const { projectName } = useSiteCtx()
 

@@ -2,7 +2,6 @@
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
 import { useGetColorClass } from "../../db/outputs"
-import { useSiteCurrency } from "../../design/state/siteCtx"
 import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
@@ -14,13 +13,14 @@ import {
   WhatIsThis,
 } from "./chartComponents"
 import { useSelectedHouses } from "./HousesPillsSelector"
+import { useProjectCurrency } from "@opensystemslab/buildx-core"
 
 const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
   const selectedHouses = useSelectedHouses()
 
   const getColorClass = useGetColorClass()
 
-  const { formatWithSymbol } = useSiteCurrency()
+  const { formatWithSymbol } = useProjectCurrency()
 
   const { areas, costs } = analyseData
 
