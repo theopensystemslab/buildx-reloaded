@@ -1,5 +1,4 @@
 "use client"
-
 import { useHouses } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { useMemo } from "react"

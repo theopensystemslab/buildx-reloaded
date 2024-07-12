@@ -1,9 +1,8 @@
 import {
+  SceneContextMode,
+  SceneContextModeLabel,
   ScopeElement,
-  SiteCtxMode,
-  SiteCtxModeEnum,
 } from "@opensystemslab/buildx-core"
-import { useState } from "react"
 import BuildingModeContextMenuItems from "./building/BuildingModeContextMenuItems"
 import ContextMenu from "./common/ContextMenu"
 import SiteModeContextMenuItems from "./site/SiteModeContextMenuItems"
@@ -13,8 +12,8 @@ type Props = {
   x: number
   y: number
   close: () => void
-  mode: SiteCtxMode | null
-  setMode: (mode: SiteCtxMode) => void
+  mode: SceneContextMode | null
+  setMode: (mode: SceneContextMode) => void
 }
 
 const BuildXContextMenu = (props: Props) => {
@@ -22,9 +21,9 @@ const BuildXContextMenu = (props: Props) => {
 
   const children = (function () {
     switch (mode?.label) {
-      case SiteCtxModeEnum.Enum.SITE:
+      case SceneContextModeLabel.Enum.SITE:
         return <SiteModeContextMenuItems {...{ x, y, scopeElement, close }} />
-      case SiteCtxModeEnum.Enum.BUILDING:
+      case SceneContextModeLabel.Enum.BUILDING:
         return (
           <BuildingModeContextMenuItems {...{ x, y, scopeElement, close }} />
         )

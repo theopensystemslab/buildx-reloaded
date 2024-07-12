@@ -5,6 +5,7 @@ import {
   useProjectCurrency,
   useProjectData,
   useAnalysisData,
+  SharingWorker,
 } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { Fragment } from "react"
@@ -12,12 +13,26 @@ import { A } from "~/utils/functions"
 import css from "./app.module.css"
 import useDownloads from "./useDownloads"
 
+new SharingWorker()
+
 // const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
   const { format } = useProjectCurrency()
 
-  const { projectName } = useProjectData()
+  const { projectName, saveString } = useProjectData()
+
+  const _typeformLink = `https://form.typeform.com/to/SVFFF12s?typeform-source=www.wikihouse.cc#source=configurator`
+
+  const typeformLink =
+    saveString === null ? _typeformLink : `${_typeformLink}#url=${saveString}`
+
+  const _testLink = `https://form.typeform.com/to/zePfnP4K`
+
+  const testLink =
+    saveString === null
+      ? _testLink
+      : `https://form.typeform.com/to/zePfnP4K#url=${saveString}`
 
   const {
     areas: { totalFloor },
@@ -158,11 +173,7 @@ const OverviewIndex = () => {
           </p>
         </div>
         <div className="relative">
-          <a
-            href="https://form.typeform.com/to/SVFFF12s?typeform-source=www.wikihouse.cc#source=configurator"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={testLink} target="_blank" rel="noopener noreferrer">
             <div className="absolute bottom-0 right-0 w-full bg-grey-90 text-white px-5 py-3 font-semibold flex justify-between pb-12 tracking-wide">
               <div>Contact us about your project</div>
               <ArrowDown size="20" className="ml-8 rotate-[225deg]" />
