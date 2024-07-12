@@ -2,8 +2,6 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
-import { useGetColorClass } from "../../db/outputs"
-import { useHousesRecord } from "../../db/user"
 import { AnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
@@ -14,15 +12,17 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
+import { useHouses, housesToRecord } from "@opensystemslab/buildx-core"
+import { getColorClass } from "./colors"
 
 const CarbonEmissionsChart = ({
+  selectedHouseIds,
   analyseData,
 }: {
+  selectedHouseIds: string[]
   analyseData: AnalyseData
 }) => {
-  const getColorClass = useGetColorClass()
-
-  const houses = useHousesRecord()
+  const houses = housesToRecord(useHouses())
 
   return (
     <ChartColumn>
@@ -50,7 +50,9 @@ const CarbonEmissionsChart = ({
                   buildingName: houses[houseId].friendlyName,
                 }))
               )}
-              itemToColorClass={(item) => getColorClass(item.houseId)}
+              itemToColorClass={(item) =>
+                getColorClass(selectedHouseIds, item.houseId)
+              }
               itemToValue={(item) => item.value}
               itemToKey={(item) => item.houseId}
               // renderItem={(item) => (

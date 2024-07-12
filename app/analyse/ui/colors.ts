@@ -36,5 +36,6 @@ export const getColorClass = (
   stale: boolean = false
 ) => {
   const index = houseIds.indexOf(houseId)
+  console.log({ houseIds, houseId, index })
   return stale ? staleColorVariants[index] : buildingColorVariants[index]
 }

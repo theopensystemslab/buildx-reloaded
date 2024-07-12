@@ -1,8 +1,11 @@
 "use client"
+import {
+  AnalysisData,
+  useHouses,
+  useProjectCurrency,
+} from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { useGetColorClass } from "../../db/outputs"
-import { AnalyseData, formatWithUnit } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -12,15 +15,21 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { useSelectedHouses } from "./HousesPillsSelector"
-import { useProjectCurrency } from "@opensystemslab/buildx-core"
+import { getColorClass } from "./colors"
+import { formatWithUnit } from "@opensystemslab/buildx-core"
 
-const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
-  const selectedHouses = useSelectedHouses()
+const FloorAreaChart = ({
+  analyseData,
+  selectedHouseIds,
+}: {
+  analyseData: AnalysisData
+  selectedHouseIds: string[]
+}) => {
+  const selectedHouses = useHouses().filter(({ houseId }) =>
+    selectedHouseIds.includes(houseId)
+  )
 
-  const getColorClass = useGetColorClass()
-
-  const { formatWithSymbol } = useProjectCurrency()
+  const { format } = useProjectCurrency()
 
   const { areas, costs } = analyseData
 
@@ -48,7 +57,7 @@ const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
                       ? O.some({
                           houseId,
                           floorArea,
-                          colorClass: getColorClass(houseId),
+                          colorClass: getColorClass(selectedHouseIds, houseId),
                           displayName: capitalizeFirstLetters(
                             selectedHouse.friendlyName
                           ),
@@ -81,7 +90,7 @@ const FloorAreaChart = ({ analyseData }: { analyseData: AnalyseData }) => {
         </div>
         <div>
           <div>
-            <span className="text-3xl">{`${formatWithSymbol(
+            <span className="text-3xl">{`${format(
               costs.total / areas.totalFloor
             )}/m²`}</span>
           </div>
