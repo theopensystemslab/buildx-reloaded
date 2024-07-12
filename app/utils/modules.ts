@@ -5,10 +5,9 @@ import { A, Num, O, Ord, R, SG } from "~/utils/functions"
 import { abs, hamming } from "~/utils/math"
 import { Module, StructuredDna } from "../../server/data/modules"
 import { StairType } from "../../server/data/stairTypes"
-import { useSystemModules } from "../db/systems"
+import { useSystemModules } from "@opensystemslab/buildx-core"
 
 export const useGetStairsModule = (systemId: string) => {
-  // const { modules: allModules } = useSystemsData()
   const systemModules = useSystemModules(systemId)
 
   return (

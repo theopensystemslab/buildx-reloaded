@@ -8,10 +8,12 @@ import PaginatedTable from "../PaginatedTable"
 import { csvFormatRows } from "d3-dsv"
 import {
   MaterialsListRow,
-  useGetColorClass,
-  useSelectedHouseMaterialsListRows,
-} from "../../db/outputs"
-import { useProjectCurrency } from "@opensystemslab/buildx-core"
+  useHouses,
+  useMaterialsListRows,
+  useProjectCurrency,
+} from "@opensystemslab/buildx-core"
+import { useSelectedHouseIds } from "~/analyse/ui/HousePillsSelector"
+import { getColorClass } from "~/analyse/ui/colors"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -47,13 +49,16 @@ export const useMaterialsListDownload = (
 const MaterialsListTable = (props: Props) => {
   const { setCsvDownloadUrl } = props
 
-  const getColorClass = useGetColorClass()
+  const selectedHouseIds = useSelectedHouseIds()
 
-  const materialsListRows = pipe(
-    useSelectedHouseMaterialsListRows(),
-    A.filter((x) => x.quantity !== 0),
-    A.map((x) => ({ ...x, colorClass: getColorClass(x.houseId) }))
-  )
+  const houses = useHouses()
+
+  const allHouseIds = houses.map((x) => x.houseId)
+
+  const materialsListRows = useMaterialsListRows(selectedHouseIds).map((x) => ({
+    ...x,
+    colorClass: getColorClass(allHouseIds, x.houseId),
+  }))
 
   const materialsListDownload = useMaterialsListDownload(materialsListRows)
 
@@ -74,7 +79,7 @@ const MaterialsListTable = (props: Props) => {
     )
   )
 
-  const { formatWithSymbol } = useProjectCurrency()
+  const { format } = useProjectCurrency()
 
   const columnHelper = createColumnHelper<MaterialsListRow>()
 
@@ -116,7 +121,7 @@ const MaterialsListTable = (props: Props) => {
 
           return (
             <span>
-              {formatWithSymbol(info.getValue())}
+              {format(info.getValue())}
               {unit !== null ? `/${unit}` : null}
             </span>
           )
@@ -124,11 +129,9 @@ const MaterialsListTable = (props: Props) => {
         header: () => <span>Estimated cost per unit</span>,
       }),
       columnHelper.accessor("cost", {
-        cell: (info) => (
-          <span>{formatWithSymbol(info.getValue().toFixed(0))}</span>
-        ),
+        cell: (info) => <span>{format(info.getValue().toFixed(0))}</span>,
         header: () => <span>Estimated cost</span>,
-        footer: () => <span>{formatWithSymbol(totalEstimatedCost)}</span>,
+        footer: () => <span>{format(totalEstimatedCost)}</span>,
       }),
       columnHelper.accessor("embodiedCarbonCost", {
         cell: (info) => (
@@ -159,7 +162,7 @@ const MaterialsListTable = (props: Props) => {
         header: () => <span>Link</span>,
       }),
     ],
-    [columnHelper, formatWithSymbol, totalCarbonCost, totalEstimatedCost]
+    [columnHelper, format, totalCarbonCost, totalEstimatedCost]
   )
 
   return <PaginatedTable data={materialsListRows} columns={columns} />

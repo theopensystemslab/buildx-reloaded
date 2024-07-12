@@ -9,9 +9,9 @@ import css from "./app.module.css"
 import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
-import HousesPillsSelector2, {
+import HousesPillsSelector, {
   useSelectedHouseIds,
-} from "./ui/HousePillsSelector2"
+} from "./ui/HousePillsSelector"
 
 new OutputsWorker()
 
@@ -26,7 +26,7 @@ const AnalyseIndex = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 flex-grow-0">
-        <HousesPillsSelector2 />
+        <HousesPillsSelector />
       </div>
       <div className="flex-auto">
         <div className={css.pageRoot}>
@@ -40,7 +40,7 @@ const AnalyseIndex = () => {
           />
           <CarbonEmissionsChart
             selectedHouseIds={selectedHouseIds}
-            analyseData={analysisData}
+            analysisData={analysisData}
           />
         </div>
       </div>

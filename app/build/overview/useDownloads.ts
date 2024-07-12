@@ -1,5 +1,4 @@
 import { useOutputsFiles } from "@opensystemslab/buildx-core"
-import { useLiveQuery } from "dexie-react-hooks"
 
 const useDownloads = (): {
   allFilesZipURL: string | null

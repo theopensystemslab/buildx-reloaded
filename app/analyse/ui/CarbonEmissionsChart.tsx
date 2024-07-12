@@ -2,7 +2,6 @@
 import clsx from "clsx"
 import { pipe } from "fp-ts/lib/function"
 import { capitalizeFirstLetters, R, S } from "~/utils/functions"
-import { AnalyseData } from "../state/data"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -12,15 +11,19 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
-import { useHouses, housesToRecord } from "@opensystemslab/buildx-core"
+import {
+  useHouses,
+  housesToRecord,
+  AnalysisData,
+} from "@opensystemslab/buildx-core"
 import { getColorClass } from "./colors"
 
 const CarbonEmissionsChart = ({
   selectedHouseIds,
-  analyseData,
+  analysisData,
 }: {
   selectedHouseIds: string[]
-  analyseData: AnalyseData
+  analysisData: AnalysisData
 }) => {
   const houses = housesToRecord(useHouses())
 
@@ -31,19 +34,19 @@ const CarbonEmissionsChart = ({
         <div
           className={clsx(
             "grid grid-cols-3 border-black h-full",
-            analyseData.embodiedCo2.total === 0
+            analysisData.embodiedCo2.total === 0
               ? "hidden"
-              : analyseData.embodiedCo2.total > 0
+              : analysisData.embodiedCo2.total > 0
               ? "border-b"
               : "border-t"
           )}
         >
           <div />
 
-          {Object.keys(analyseData.byHouse).length > 0 && (
+          {Object.keys(analysisData.byHouse).length > 0 && (
             <ChartBar
               items={pipe(
-                analyseData.byHouse,
+                analysisData.byHouse,
                 R.collect(S.Ord)((houseId, { embodiedCo2 }) => ({
                   houseId,
                   value: embodiedCo2.total,
@@ -75,7 +78,7 @@ const CarbonEmissionsChart = ({
       </ChartContainer>
       <ChartMetrics2>
         <div className="text-5xl font-normal">
-          {`${(analyseData.embodiedCo2.total / 1000).toFixed(2)} tCO₂e`}
+          {`${(analysisData.embodiedCo2.total / 1000).toFixed(2)} tCO₂e`}
         </div>
         <div>Project will remove carbon dioxide from the atmosphere</div>
       </ChartMetrics2>

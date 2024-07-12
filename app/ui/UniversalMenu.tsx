@@ -5,10 +5,7 @@ import { useState } from "react"
 import usePortal from "react-cool-portal"
 import Loader from "./Loader"
 import Modal from "./Modal"
-import userDB, { useHouses } from "../db/user"
-import exportsDB from "~/db/outputs"
-import { PromiseExtended } from "dexie"
-import { trashMapPolygon } from "~/locate/state/polygon"
+import { deleteProject as trulyDelete } from "@opensystemslab/buildx-core"
 
 type Props = {
   open: boolean
@@ -26,22 +23,7 @@ const UniversalMenu = ({ open, close }: Props) => {
   const reallyDelete = async () => {
     setDeleting(true)
 
-    const dbs = [userDB, exportsDB]
-
-    // Create an array to hold all the promises
-    const clearTablePromises: PromiseExtended<void>[] = []
-
-    dbs.forEach((database) => {
-      database.tables.forEach((table) => {
-        // Assume `clear()` returns a promise. Push each promise to the array.
-        clearTablePromises.push(table.clear())
-      })
-    })
-
-    trashMapPolygon()
-
-    // Wait for all the clear table promises to resolve
-    await Promise.all(clearTablePromises)
+    await trulyDelete()
 
     if (pathname === "/locate") {
       window.location.reload()

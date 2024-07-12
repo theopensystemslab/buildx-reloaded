@@ -1,6 +1,9 @@
 "use client"
 import { Add } from "@carbon/icons-react"
-import type { ScopeElement, SiteCtxMode } from "@opensystemslab/buildx-core"
+import type {
+  ScopeElement,
+  SceneContextMode,
+} from "@opensystemslab/buildx-core"
 import {
   BuildXScene,
   cachedHousesTE,
@@ -35,7 +38,7 @@ const App = () => {
 
   const closeContextMenu = () => setContextMenu(null)
 
-  const [mode, setMode] = useState<SiteCtxMode | null>(null)
+  const [mode, setMode] = useState<SceneContextMode | null>(null)
 
   const [objectsSidebar, setObjectsSidebar] = useState(false)
 

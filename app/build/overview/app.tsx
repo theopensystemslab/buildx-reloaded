@@ -20,19 +20,21 @@ new SharingWorker()
 const OverviewIndex = () => {
   const { format } = useProjectCurrency()
 
-  const { projectName, saveString } = useProjectData()
+  const { projectName, shareUrlPayload } = useProjectData()
 
   const _typeformLink = `https://form.typeform.com/to/SVFFF12s?typeform-source=www.wikihouse.cc#source=configurator`
 
   const typeformLink =
-    saveString === null ? _typeformLink : `${_typeformLink}#url=${saveString}`
+    shareUrlPayload === null
+      ? _typeformLink
+      : `${_typeformLink}#url=${shareUrlPayload}`
 
   const _testLink = `https://form.typeform.com/to/zePfnP4K`
 
   const testLink =
-    saveString === null
+    shareUrlPayload === null
       ? _testLink
-      : `https://form.typeform.com/to/zePfnP4K#url=${saveString}`
+      : `https://form.typeform.com/to/zePfnP4K#url=${shareUrlPayload}`
 
   const {
     areas: { totalFloor },

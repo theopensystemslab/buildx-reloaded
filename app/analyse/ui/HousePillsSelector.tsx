@@ -49,7 +49,7 @@ export const removeSelectedHouseId = (houseId: string) => {
   setSelectedHouseIds(store.selectedHouseIds.filter((x) => x !== houseId))
 }
 
-const HousesPillsSelector2 = () => {
+const HousesPillsSelector = () => {
   const selectedHouses = useSelectedHouses()
 
   // Render the component UI
@@ -67,4 +67,4 @@ const HousesPillsSelector2 = () => {
   )
 }
 
-export default HousesPillsSelector2
+export default HousesPillsSelector

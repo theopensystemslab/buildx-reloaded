@@ -4,13 +4,14 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { csvFormatRows } from "d3-dsv"
 import { memo, useEffect, useMemo } from "react"
 import { capitalizeFirstLetters } from "~/utils/functions"
+import PaginatedTable from "../PaginatedTable"
 import {
   OrderListRow,
-  useGetColorClass,
+  useHouses,
   useOrderListData,
-} from "../../db/outputs"
-import PaginatedTable from "../PaginatedTable"
-import { useProjectCurrency } from "@opensystemslab/buildx-core"
+  useProjectCurrency,
+} from "@opensystemslab/buildx-core"
+import { getColorClass } from "~/analyse/ui/colors"
 
 type Props = {
   setCsvDownloadUrl: (s: string) => void
@@ -54,13 +55,11 @@ const OrderListTable = (props: Props) => {
 
   const orderListDownload = useOrderListDownload(orderListRows)
 
-  const { formatWithSymbol } = useProjectCurrency()
+  const { format } = useProjectCurrency()
 
   useEffect(() => {
     if (orderListDownload) setCsvDownloadUrl(orderListDownload.url)
   }, [orderListDownload, setCsvDownloadUrl])
-
-  const getColorClass = useGetColorClass()
 
   const columnHelper = createColumnHelper<OrderListRow>()
 
@@ -93,13 +92,13 @@ const OrderListTable = (props: Props) => {
         id: "Materials Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Material Cost</span>,
-        footer: () => <span>{formatWithSymbol(totalMaterialCost)}</span>,
+        footer: () => <span>{format(totalMaterialCost)}</span>,
       }),
       columnHelper.accessor("manufacturingCost", {
         id: "Manufacturing Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Manufacturing Cost</span>,
-        footer: () => <span>{formatWithSymbol(totalManufacturingCost)}</span>,
+        footer: () => <span>{format(totalManufacturingCost)}</span>,
       }),
       columnHelper.accessor("cuttingFileUrl", {
         id: "Cutting File URL",
@@ -119,26 +118,26 @@ const OrderListTable = (props: Props) => {
         id: "Total Cost",
         cell: (info) => <span>{fmt(info.getValue())}</span>,
         header: () => <span>Total cost</span>,
-        footer: () => (
-          <span>{`${formatWithSymbol(totalTotalCost)} + VAT`}</span>
-        ),
+        footer: () => <span>{`${format(totalTotalCost)} + VAT`}</span>,
       }),
     ],
     [
       columnHelper,
       fmt,
-      formatWithSymbol,
+      format,
       totalManufacturingCost,
       totalMaterialCost,
       totalTotalCost,
     ]
   )
 
+  const allHouseIds = useHouses().map((x) => x.houseId)
+
   return (
     <PaginatedTable
       data={orderListRows.map((x) => ({
         ...x,
-        colorClass: getColorClass(x.houseId),
+        colorClass: getColorClass(allHouseIds, x.houseId),
       }))}
       columns={columns}
     />
