@@ -1,19 +1,12 @@
-import dynamic from "next/dynamic"
 import { PropsWithChildren } from "react"
+import HousesPillsSelector2 from "~/analyse/ui/HousePillsSelector2"
 import BuildNav from "./common/BuildNav"
-
-const HousesPillsSelector = dynamic(
-  () => import("../analyse/ui/HousesPillsSelector"),
-  {
-    ssr: false,
-  }
-)
 
 const BuildLayout = ({ children }: PropsWithChildren<{}>) => {
   return (
     <div className="flex-auto overflow-y-auto flex flex-col">
       <div className="flex-1 flex-grow-0">
-        <HousesPillsSelector />
+        <HousesPillsSelector2 />
       </div>
       <div className="flex flex-auto h-full overflow-y-auto">
         <div className="flex-1 flex-grow-0 flex-shrink-0 h-full">

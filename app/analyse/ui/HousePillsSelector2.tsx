@@ -1,27 +1,57 @@
-import React, { useState, useEffect, useMemo } from "react"
-import { usePathname } from "next/navigation"
+"use client"
+
+import { useHouses } from "@opensystemslab/buildx-core"
+import { pipe } from "fp-ts/lib/function"
+import { useMemo } from "react"
+import { proxy, useSnapshot } from "valtio"
 import { Close } from "~/ui/icons"
-import { useHouses, useProjectData } from "@opensystemslab/buildx-core"
+import { A } from "~/utils/functions"
 
-const HousesPillsSelector2 = ({
-  selectedHouseIds,
-  onSelectedHouseIdsChange,
-}: {
+const store = proxy<{
   selectedHouseIds: string[]
-  onSelectedHouseIdsChange: (newSelectedHouseIds: string[]) => void
-}) => {
-  const houses = useHouses()
+}>({
+  selectedHouseIds: [],
+})
 
-  const selectedHouses = useMemo(
-    () => houses.filter((house) => selectedHouseIds.includes(house.houseId)),
+export const useSelectedHouseIds = (): string[] => {
+  const { selectedHouseIds } = useSnapshot(store) as typeof store
+
+  return selectedHouseIds
+
+  // const pathname = usePathname()
+
+  // const { mode, houseId } = useSiteCtx()
+
+  // if (pathname === "/design") {
+  //   if (mode !== SiteCtxModeEnum.Enum.SITE && houseId) return [houseId]
+  //   else return houses.map((house) => house.houseId)
+  // }
+}
+
+export const useSelectedHouses = () => {
+  const houses = useHouses()
+  const selectedHouseIds = useSelectedHouseIds()
+
+  return useMemo(
+    () =>
+      pipe(
+        houses,
+        A.filter(({ houseId }) => selectedHouseIds.includes(houseId))
+      ),
     [houses, selectedHouseIds]
   )
+}
 
-  const removeHouseId = (id: string) => {
-    onSelectedHouseIdsChange(
-      selectedHouseIds.filter((houseId) => houseId !== id)
-    )
-  }
+export const setSelectedHouseIds = (newSelectedHouseIds: string[]) => {
+  store.selectedHouseIds = newSelectedHouseIds
+}
+
+export const removeSelectedHouseId = (houseId: string) => {
+  setSelectedHouseIds(store.selectedHouseIds.filter((x) => x !== houseId))
+}
+
+const HousesPillsSelector2 = () => {
+  const selectedHouses = useSelectedHouses()
 
   // Render the component UI
   return (
@@ -29,7 +59,7 @@ const HousesPillsSelector2 = ({
       {selectedHouses.map((house) => (
         <div key={house.houseId}>
           {house.friendlyName}
-          <button onClick={() => removeHouseId(house.houseId)}>
+          <button onClick={() => removeSelectedHouseId(house.houseId)}>
             <Close />
           </button>
         </div>

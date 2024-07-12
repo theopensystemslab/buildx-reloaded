@@ -1,28 +1,29 @@
 "use client"
 import { ArrowDown } from "@carbon/icons-react"
+import {
+  useOrderListData,
+  useProjectCurrency,
+  useProjectData,
+  useAnalysisData,
+} from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
-import dynamic from "next/dynamic"
 import { Fragment } from "react"
 import { A } from "~/utils/functions"
-import { useAnalyseData } from "../../analyse/state/data"
-import { useOrderListData } from "../../db/outputs"
-import { useSiteCtx } from "../../design/state/siteCtx"
 import css from "./app.module.css"
 import useDownloads from "./useDownloads"
-import { useProjectCurrency } from "@opensystemslab/buildx-core"
 
-const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
+// const HousesView = dynamic(() => import("./HousesView"), { ssr: false })
 
 const OverviewIndex = () => {
-  const { formatWithSymbol } = useProjectCurrency()
+  const { format } = useProjectCurrency()
 
-  const { projectName } = useSiteCtx()
+  const { projectName } = useProjectData()
 
   const {
     areas: { totalFloor },
     embodiedCo2,
     costs: { total },
-  } = useAnalyseData()
+  } = useAnalysisData()
 
   const { totalTotalCost } = useOrderListData()
 
@@ -43,11 +44,11 @@ const OverviewIndex = () => {
           </div>
         </div>
       ),
-      value: formatWithSymbol(totalTotalCost),
+      value: format(totalTotalCost),
     },
     {
       label: "Total estimated build cost",
-      value: formatWithSymbol(total),
+      value: format(total),
     },
     {
       label: "Total estimated carbon cost",
@@ -57,9 +58,9 @@ const OverviewIndex = () => {
 
   return (
     <Fragment>
-      <div className="relative w-full h-96">
+      {/* <div className="relative w-full h-96">
         <HousesView />
-      </div>
+      </div> */}
       <div className={css.markupGrid}>
         <div className="border-r border-grey-20">
           <h2 className="p-4">Overview</h2>

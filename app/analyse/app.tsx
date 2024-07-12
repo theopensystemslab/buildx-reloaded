@@ -1,17 +1,17 @@
 "use client"
 import {
-  useAnalyseData,
-  useHouses,
-  useOrderListData,
-  fetchAllBuildSystems,
   OutputsWorker,
+  fetchAllBuildSystems,
+  useAnalysisData,
+  useOrderListData,
 } from "@opensystemslab/buildx-core"
-import { useEffect, useState } from "react"
 import css from "./app.module.css"
-import HousesPillsSelector2 from "./ui/HousePillsSelector2"
+import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
 import ChassisCostChart from "./ui/ChassisCostChart"
 import FloorAreaChart from "./ui/FloorAreaChart"
-import CarbonEmissionsChart from "./ui/CarbonEmissionsChart"
+import HousesPillsSelector2, {
+  useSelectedHouseIds,
+} from "./ui/HousePillsSelector2"
 
 new OutputsWorker()
 
@@ -19,28 +19,14 @@ const AnalyseIndex = () => {
   fetchAllBuildSystems()
 
   const { orderListRows } = useOrderListData()
-  const analyseData = useAnalyseData()
+  const analysisData = useAnalysisData()
 
-  const [selectedHouseIds, setSelectedHouseIds] = useState<string[]>([])
-
-  const houses = useHouses()
-
-  useEffect(() => {
-    if (selectedHouseIds.length === 0) {
-      setSelectedHouseIds(houses.map((x) => x.houseId))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [houses])
+  const selectedHouseIds = useSelectedHouseIds()
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 flex-grow-0">
-        <HousesPillsSelector2
-          {...{
-            selectedHouseIds, // console.log({ analyseData, orderListRows, houses })
-            onSelectedHouseIdsChange: setSelectedHouseIds,
-          }}
-        />
+        <HousesPillsSelector2 />
       </div>
       <div className="flex-auto">
         <div className={css.pageRoot}>
@@ -50,11 +36,11 @@ const AnalyseIndex = () => {
           />
           <FloorAreaChart
             selectedHouseIds={selectedHouseIds}
-            analyseData={analyseData}
+            analyseData={analysisData}
           />
           <CarbonEmissionsChart
             selectedHouseIds={selectedHouseIds}
-            analyseData={analyseData}
+            analyseData={analysisData}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
+import { useOutputsFiles } from "@opensystemslab/buildx-core"
 import { useLiveQuery } from "dexie-react-hooks"
-import outputsDB, { FILES_DOCUMENT_KEY, FilesDocument } from "~/db/outputs"
 
 const useDownloads = (): {
   allFilesZipURL: string | null
@@ -7,16 +7,8 @@ const useDownloads = (): {
   materialsListCsvURL: string | null
   orderListCsvURL: string | null
 } => {
-  const {
-    allFilesZip,
-    materialsListCsv,
-    modelsZip,
-    orderListCsv,
-  }: FilesDocument = useLiveQuery(
-    () => outputsDB.files.get(FILES_DOCUMENT_KEY),
-    [],
-    { key: FILES_DOCUMENT_KEY }
-  ) as FilesDocument
+  const { allFilesZip, materialsListCsv, modelsZip, orderListCsv } =
+    useOutputsFiles()
 
   let allFilesZipURL = null,
     modelsZipURL = null,
