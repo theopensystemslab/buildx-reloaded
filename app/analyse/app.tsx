@@ -4,11 +4,14 @@ import {
   useHouses,
   useOrderListData,
   fetchAllBuildSystems,
+  OutputsWorker,
 } from "@opensystemslab/buildx-core"
 import { useState } from "react"
 import css from "./app.module.css"
 import HousesPillsSelector2 from "./ui/HousePillsSelector2"
 import ChassisCostChart from "./ui/ChassisCostChart"
+
+new OutputsWorker()
 
 const AnalyseIndex = () => {
   fetchAllBuildSystems()
@@ -17,8 +20,6 @@ const AnalyseIndex = () => {
   const analyseData = useAnalyseData()
 
   const houses = useHouses()
-
-  console.log({ analyseData, orderListRows, houses })
 
   const [selectedHouseIds, setSelectedHouseIds] = useState<string[]>(
     houses.map((x) => x.houseId)
