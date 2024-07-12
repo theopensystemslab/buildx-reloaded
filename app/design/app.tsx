@@ -87,8 +87,6 @@ const App = () => {
         // this is new
         if (houses.length === 0) setObjectsSidebar(true)
 
-        console.log(houses)
-
         return pipe(
           houses,
           A.traverse(TE.ApplicativePar)(

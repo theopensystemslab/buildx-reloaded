@@ -1,9 +1,8 @@
 "use client"
 import { ArrowUp } from "@carbon/icons-react"
-import { useProjectCurrency } from "@opensystemslab/buildx-core"
+import { OrderListRow, useProjectCurrency } from "@opensystemslab/buildx-core"
 import { pipe } from "fp-ts/lib/function"
 import { A, capitalizeFirstLetters, O, R } from "~/utils/functions"
-import { OrderListRow, useGetColorClass } from "../../db/outputs"
 import ChartBar from "./ChartBar"
 import {
   ChartColumn,
@@ -13,14 +12,15 @@ import {
   HowIsItCalculated,
   WhatIsThis,
 } from "./chartComponents"
+import { getColorClass } from "./colors"
 
 const ChassisCostChart = ({
   orderListRows,
+  selectedHouseIds,
 }: {
   orderListRows: OrderListRow[]
+  selectedHouseIds: string[]
 }) => {
-  const getColorClass = useGetColorClass()
-
   const orderListByBuilding = pipe(
     orderListRows,
     A.reduce({}, (acc: Record<string, OrderListRow>, x) =>
@@ -69,7 +69,9 @@ const ChassisCostChart = ({
           {Object.keys(orderListByBuilding).length > 0 && (
             <ChartBar
               items={Object.values(orderListByBuilding)}
-              itemToColorClass={(item) => getColorClass(item.houseId)}
+              itemToColorClass={(item) =>
+                getColorClass(selectedHouseIds, item.houseId)
+              }
               itemToValue={(item) => item.totalCost}
               itemToKey={(item) => item.houseId}
               renderItem={(item) => (
